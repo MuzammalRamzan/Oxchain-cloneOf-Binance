@@ -736,7 +736,7 @@ route.all("/updatePhone", upload.none(), (req, res) => {
             User.findOneAndUpdate(filter, update, (err, doc) => {
               if (err) {
                 console.log(err);
-                res.json("error");
+                res.json("error"); 
               } else {
                 res.json("update_success");
               }
