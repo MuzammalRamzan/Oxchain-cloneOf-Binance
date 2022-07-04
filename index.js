@@ -8,6 +8,7 @@ const Referral = require("./models/Referral");
 const UserRef = require("./models/UserRef");
 const Pairs = require("./models/Pairs");
 const Orders = require("./models/Orders");
+const LoginLogs = require("./models/LoginLogs");
 
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
@@ -79,6 +80,7 @@ function makeId(length) {
 }
 
 route.all("/login", upload.none(), (req, res) => {
+  let newRegisteredId;
   var api_key_result = req.body.api_key;
 
   if (api_key_result == api_key) {
@@ -94,10 +96,10 @@ route.all("/login", upload.none(), (req, res) => {
           UserRef.findOne({
             user_id: user._id,
           })
-            .then((userRef) => {
-              console.log(userRef["refCode"]);
+            .then(async (userRef) => {
+              //console.log(userRef["refCode"]);
               refId = userRef["refCode"];
-              results.push({
+              await results.push({
                 status: user["status"],
                 response: "success",
                 twofa: twofaStatus,
@@ -110,13 +112,11 @@ route.all("/login", upload.none(), (req, res) => {
               console.log(e);
             });
 
-          console.log(results);
           var status = user["status"];
 
           if (status == 1) {
             CoinList.find({})
               .then((coins) => {
-                console.log(coins.length);
                 for (let i = 0; i < coins.length; i++) {
                   const newWallet = new Wallet({
                     name: coins[i]["name"],
@@ -136,16 +136,63 @@ route.all("/login", upload.none(), (req, res) => {
                     .then((wallets) => {
                       if (wallets == null) {
                         newWallet.save();
-                        console.log("wallet added");
+                        //console.log("wallet added");
                       } else {
-                        console.log("wallet already exists");
+                        //console.log("wallet already exists");
                       }
                     })
                     .catch((err) => {
                       console.log(err);
                     });
                 }
-                res.json(results);
+              })
+              .then(() => {
+                LoginLogs.findOne({
+                  user_id: user["_id"],
+                  ip: req.body.ip,
+                  deviceName: req.body.deviceName,
+                  manufacturer: req.body.manufacturer,
+                  model: req.body.deviceModel,
+                })
+                  .then((logs) => {
+                    const newUserLog = new LoginLogs({
+                      user_id: user["_id"],
+                      ip: req.body.ip,
+                      deviceName: req.body.deviceName,
+                      manufacturer: req.body.manufacturer,
+                      model: req.body.deviceModel,
+                    });
+
+                    newUserLog.save(function (err, room) {
+                      newRegisteredId = room.id;
+                    });
+
+                    console.log("logs:" + logs);
+                    if (logs != null) {
+                      if (logs["trust"] == "yes") {
+                        results.push({
+                          trust: "yes",
+                          log_id: logs["_id"],
+                        });
+                      } else {
+                        results.push({
+                          trust: "no",
+                          log_id: logs["_id"],
+                        });
+                      }
+                    } else {
+                      results.push({
+                        trust: "no",
+                        log_id: newRegisteredId,
+                      });
+                    }
+
+                    console.log(results);
+                    res.json(results);
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                  });
               })
               .catch((err) => {
                 console.log("2  *** " + err);
@@ -464,7 +511,7 @@ route.all("/getDigits", upload.none(), (req, res) => {
         res.json(list);
       })
       .catch((err) => {
-        res.json(err);
+        res.json("asd" + err);
       });
   } else {
     res.json("Forbidden 403");
@@ -582,6 +629,8 @@ route.all("/2fa", upload.none(), (req, res) => {
   var twofapin = req.body.twofapin;
   var user_id = req.body.user_id;
   var api_key_result = req.body.api_key;
+  var wantToTrust = req.body.wantToTrust;
+  var log_id = req.body.log_id;
   if (api_key_result == api_key) {
     User.findOne({
       id: user_id,
@@ -593,7 +642,20 @@ route.all("/2fa", upload.none(), (req, res) => {
           var formattedToken = authenticator.generateToken(twofa);
           console;
           if (twofapin == formattedToken) {
-            res.json("2fa_success");
+            console.log(wantToTrust);
+            if (wantToTrust == "yes") {
+              var update = { trust: "yes" };
+              LoginLogs.findOneAndUpdate({ _id: log_id }, update)
+                .then((log) => {
+                  console.log(log);
+                  res.json("2fa_success");
+                })
+                .catch((err) => {
+                  res.json(err);
+                });
+            } else {
+              res.json("2fa_success");
+            }
           } else {
             res.json("2fa_failed");
           }
@@ -711,6 +773,28 @@ route.all("/cancelOrder", upload.none(), (req, res) => {
   }
 });
 
+route.all("/lastActivities", upload.none(), (req, res) => {
+  var user_id = req.body.user_id;
+  var api_key_result = req.body.api_key;
+  var limit = req.body.limit;
+  if (api_key_result == api_key) {
+    if (limit <= 100) {
+      var sort = { createdAt: -1 };
+      LoginLogs.find({ user_id: user_id })
+        .sort(sort)
+        .limit(limit)
+        .then((logs) => {
+          res.json(logs);
+        })
+        .catch((err) => {
+          res.json(err);
+        });
+    } else {
+      res.json("max_limit_100");
+    }
+  }
+});
+
 route.all("/updatePhone", upload.none(), (req, res) => {
   var user_id = req.body.user_id;
   var twofapin = req.body.twofapin;
@@ -736,7 +820,7 @@ route.all("/updatePhone", upload.none(), (req, res) => {
             User.findOneAndUpdate(filter, update, (err, doc) => {
               if (err) {
                 console.log(err);
-                res.json("error"); 
+                res.json("error");
               } else {
                 res.json("update_success");
               }
