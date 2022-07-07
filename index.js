@@ -9,6 +9,11 @@ const UserRef = require("./models/UserRef");
 const Pairs = require("./models/Pairs");
 const Orders = require("./models/Orders");
 const LoginLogs = require("./models/LoginLogs");
+const SecurityKey = require("./models/SecurityKey");
+const Notification = require("./models/Notifications");
+const ReadNotification = require("./models/ReadNotifications");
+const axios = require("axios");
+const NotificationTokens = require("./models/NotificationTokens");
 
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
@@ -82,6 +87,7 @@ function makeId(length) {
 route.all("/login", upload.none(), (req, res) => {
   let newRegisteredId;
   var api_key_result = req.body.api_key;
+  var notificationToken = req.body.notificationToken;
 
   if (api_key_result == api_key) {
     User.findOne({
@@ -187,8 +193,30 @@ route.all("/login", upload.none(), (req, res) => {
                       });
                     }
 
-                    console.log(results);
-                    res.json(results);
+                    NotificationTokens.findOne({
+                      user_id: user["_id"],
+                      token_id: notificationToken,
+                    })
+                      .then((response) => {
+                        if (response == null) {
+                          const newNotificationToken = new NotificationTokens({
+                            user_id: user["_id"],
+                            token_id: notificationToken,
+                          });
+                          newNotificationToken.save(function (err, room) {
+                            if (err) {
+                              console.log(err);
+                            } else {
+                              res.json(results);
+                            }
+                          });
+                        } else {
+                          res.json(results);
+                        }
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                      });
                   })
                   .catch((err) => {
                     console.log(err);
@@ -343,8 +371,6 @@ route.all("/addOrders", upload.none(), (req, res) => {
   });
 
   if (api_key_result == api_key) {
-    const axios = require("axios");
-
     var urlPair = req.body.pair_name.replace("/", "");
     axios
       .get(
@@ -429,6 +455,76 @@ route.all("/addOrders", upload.none(), (req, res) => {
       });
   } else {
     res.json("Forbidden 403");
+  }
+});
+
+route.all("/addNotification", upload.none(), (req, res) => {
+  var api_key_result = req.body.api_key;
+
+  if (api_key_result == api_key) {
+    const newNotification = new Notification({
+      notificationTitle: req.body.notificationTitle,
+      notificationMessage: req.body.notificationMessage,
+    });
+    newNotification
+      .save()
+      .then((notification) => {
+        NotificationTokens.find({}).then((tokens) => {
+          for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i].token_id;
+            sendPushNotification(token, notification.notificationMessage);
+          }
+        });
+        res.json("success");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+});
+
+route.all("/getNotification", upload.none(), (req, res) => {
+  var api_key_result = req.body.api_key;
+  var user_id = req.body.user_id;
+  var readStatus = "unread";
+  if (api_key_result == api_key) {
+    var myArray = new Array();
+    Notification.find({})
+      .sort({ createdAt: -1 })
+      .then((notification) => {
+        for (var i = 0; i < notification.length; i++) {
+          var messageId = notification[i].id;
+          var messageTitle = notification[i].notificationTitle;
+          var messageMessage = notification[i].notificationMessage;
+          var messageDate = notification[i].createdAt;
+          ReadNotification.findOne({
+            user_id: user_id,
+            notification_id: messageId,
+          }).then((readNotification) => {
+            if (readNotification == null) {
+              readStatus = "unread";
+            } else {
+              readStatus = "read";
+            }
+          });
+          var message = {
+            messageId: messageId,
+            messageTitle: messageTitle,
+            messageMessage: messageMessage,
+            messageDate: messageDate,
+            readStatus: readStatus,
+          };
+          myArray.push(message);
+        }
+        if (notification.length == 0) {
+          res.json("no_notification");
+        } else {
+          res.json(myArray);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 });
 
@@ -633,14 +729,13 @@ route.all("/2fa", upload.none(), (req, res) => {
   var log_id = req.body.log_id;
   if (api_key_result == api_key) {
     User.findOne({
-      id: user_id,
+      _id: user_id,
     })
       .then((user) => {
         if (user != null) {
           var twofa = user["twofa"];
 
           var formattedToken = authenticator.generateToken(twofa);
-          console;
           if (twofapin == formattedToken) {
             console.log(wantToTrust);
             if (wantToTrust == "yes") {
@@ -678,7 +773,7 @@ route.all("/update2fa", upload.none(), (req, res) => {
   var api_key_result = req.body.api_key;
 
   if (api_key_result == api_key) {
-    const filter = { id: user_id };
+    const filter = { _id: user_id };
     const update = { twofa: twofa };
 
     var formattedToken = authenticator.generateToken(twofa);
@@ -773,6 +868,91 @@ route.all("/cancelOrder", upload.none(), (req, res) => {
   }
 });
 
+route.all("/addSecurityKey", upload.none(), (req, res) => {
+  var user_id = req.body.user_id;
+  var security_key = hashData(req.body.security_key);
+  var api_key_result = req.body.api_key;
+  var trade = req.body.trade;
+  var wallet = req.body.wallet;
+  var deposit = req.body.deposit;
+  var withdraw = req.body.withdraw;
+
+  if (api_key_result == api_key) {
+    SecurityKey.findOne({
+      user_id: user_id,
+      status: 1,
+    })
+      .then((securityKey) => {
+        if (securityKey != null) {
+          res.json("security_key_active");
+        } else {
+          var newSecurityKey = new SecurityKey({
+            user_id: user_id,
+            key: security_key,
+            status: 1,
+            trade: trade,
+            wallet: wallet,
+            deposit: deposit,
+            withdraw: withdraw,
+          });
+          newSecurityKey.save((err, doc) => {
+            if (err) {
+              console.log(err);
+              res.json("error");
+            } else {
+              res.json("success");
+            }
+          });
+        }
+      })
+      .catch((err) => {
+        res.json(err);
+      });
+  }
+});
+
+route.all("/updateSecurityKey", upload.none(), (req, res) => {
+  var user_id = req.body.user_id;
+  var security_key = req.body.security_key;
+  var api_key_result = req.body.api_key;
+  var trade = req.body.trade;
+  var wallet = req.body.wallet;
+  var deposit = req.body.deposit;
+  var withdraw = req.body.withdraw;
+
+  if (api_key_result == api_key) {
+    SecurityKey.findOne({
+      user_id: user_id,
+      status: 1,
+      id: req.body.id,
+    })
+      .then((securityKey) => {
+        if (securityKey != null) {
+          const filter = { id: req.body.id, status: 1 };
+          const update = {
+            wallet: wallet,
+            deposit: deposit,
+            withdraw: withdraw,
+            trade: trade,
+          };
+          SecurityKey.findOneAndUpdate(filter, update, (err, doc) => {
+            if (err) {
+              console.log(err);
+              res.json("error");
+            } else {
+              res.json("update_success");
+            }
+          });
+        } else {
+          res.json("security_key_not_found");
+        }
+      })
+      .catch((err) => {
+        res.json(err);
+      });
+  }
+});
+
 route.all("/lastActivities", upload.none(), (req, res) => {
   var user_id = req.body.user_id;
   var api_key_result = req.body.api_key;
@@ -810,7 +990,7 @@ route.all("/updatePhone", upload.none(), (req, res) => {
       .then((user) => {
         if (user != null) {
           var twofa = user["twofa"];
-          const filter = { id: user_id, status: 1 };
+          const filter = { _id: user_id, status: 1 };
           var formattedToken = authenticator.generateToken(twofa);
           if (formattedToken == twofapin) {
             const update = {
@@ -853,7 +1033,7 @@ route.all("/resetPassword", upload.none(), (req, res) => {
       .then((user) => {
         if (user != null) {
           var twofa = user["twofa"];
-          const filter = { id: user_id, status: 1 };
+          const filter = { _id: user_id, status: 1 };
           var formattedToken = authenticator.generateToken(twofa);
           if (formattedToken == twofapin) {
             const update = { password: hashData(password) };
@@ -895,7 +1075,7 @@ route.all("/changePassword", upload.none(), (req, res) => {
         if (user != null) {
           var twofa = user["twofa"];
           var db_password = user["password"];
-          const filter = { id: user_id, status: 1 };
+          const filter = { _id: user_id, status: 1 };
           if (hashData(old_password) == db_password) {
             var formattedToken = authenticator.generateToken(twofa);
             if (formattedToken == twofapin) {
@@ -940,10 +1120,11 @@ route.all("/get2fa", upload.none(), (req, res) => {
 route.all("/getUserInfo", upload.none(), (req, res) => {
   var user_id = req.body.user_id;
   var api_key_result = req.body.api_key;
+  console.log(user_id);
 
   if (api_key_result == api_key) {
     User.findOne({
-      id: user_id,
+      _id: user_id,
     })
       .then((user) => {
         if (user != null) {
@@ -1006,6 +1187,106 @@ route.all("/getUserId", upload.none(), (req, res) => {
     res.json("Forbidden 403");
   }
 });
+
+route.all("/getSecurityKey", upload.none(), (req, res) => {
+  var user_id = req.body.user_id;
+  var api_key_result = req.body.api_key;
+
+  if (api_key_result == api_key) {
+    SecurityKey.findOne({
+      user_id: user_id,
+      status: 1,
+    }).then((securityKey) => {
+      if (securityKey != null) {
+        var myArray = [];
+        myArray.push({
+          response: "success",
+          createdAt: securityKey["createdAt"],
+          wallet: securityKey["wallet"],
+          trade: securityKey["trade"],
+          deposit: securityKey["deposit"],
+          withdraw: securityKey["withdraw"],
+          id: securityKey["id"],
+        });
+        res.json(myArray);
+      } else {
+        var myArray = [];
+        myArray.push({
+          response: "security_key_not_active",
+        });
+        res.json(myArray);
+      }
+    });
+  }
+});
+
+route.all("/checkSecurityKey", upload.none(), (req, res) => {
+  var user_id = req.body.user_id;
+  var api_key_result = req.body.api_key;
+
+  if (api_key_result == api_key) {
+    SecurityKey.findOne({
+      user_id: user_id,
+      status: 1,
+      key: hashData(req.body.key),
+    }).then((securityKey) => {
+      if (securityKey != null) {
+        res.json("success");
+      } else {
+        res.json("wrong_key");
+      }
+    });
+  }
+});
+
+route.all("/deleteSecurityKey", upload.none(), (req, res) => {
+  var user_id = req.body.user_id;
+  var api_key_result = req.body.api_key;
+  var twofapin = req.body.twofapin;
+
+  if (api_key_result == api_key) {
+    User.findOne({
+      _id: user_id,
+    }).then((user) => {
+      if (user != null) {
+        var twofa = user["twofa"];
+
+        var formattedToken = authenticator.generateToken(twofa);
+        if (twofapin == formattedToken) {
+          SecurityKey.findOneAndUpdate(
+            { user_id: user_id, id: req.body.key_id },
+            { status: 0 },
+            (err, doc) => {
+              if (err) {
+                console.log(err);
+                res.json("error");
+              } else {
+                res.json("success");
+              }
+            }
+          );
+        } else {
+          res.json("2fa_failed");
+        }
+      }
+    });
+  } else {
+    res.json("not_enough_balance");
+  }
+});
+
+async function sendPushNotification(expoPushToken, body) {
+  const message = {
+    to: expoPushToken,
+    sound: "default",
+    title: "Oxhain",
+    body: body,
+  };
+
+  axios.post("https://exp.host/--/api/v2/push/send", message).then((result) => {
+    console.log(result.data);
+  });
+}
 
 route.listen(port, () => {
   console.log("Server Ayakta");

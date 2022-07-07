@@ -17,6 +17,5 @@ const OrdersSchema = new mongoose.Schema({
   },
 });
 
-OrdersSchema.plugin(uniqueValidator);
 
 module.exports = mongoose.model("Orders", OrdersSchema);
