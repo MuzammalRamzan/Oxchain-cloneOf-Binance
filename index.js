@@ -14,6 +14,8 @@ const Notification = require("./models/Notifications");
 const ReadNotification = require("./models/ReadNotifications");
 const axios = require("axios");
 const NotificationTokens = require("./models/NotificationTokens");
+const Deposits = require("./models/Deposits");
+const Withdraws = require("./models/Withdraw");
 
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
@@ -496,6 +498,7 @@ route.all("/getNotification", upload.none(), (req, res) => {
           var messageId = notification[i].id;
           var messageTitle = notification[i].notificationTitle;
           var messageMessage = notification[i].notificationMessage;
+          var createdAt = notification[i].createdAt;
           var messageDate = notification[i].createdAt;
           ReadNotification.findOne({
             user_id: user_id,
@@ -509,6 +512,7 @@ route.all("/getNotification", upload.none(), (req, res) => {
           });
           var message = {
             messageId: messageId,
+            createdAt: createdAt,
             messageTitle: messageTitle,
             messageMessage: messageMessage,
             messageDate: messageDate,
@@ -1274,6 +1278,104 @@ route.all("/deleteSecurityKey", upload.none(), (req, res) => {
     res.json("not_enough_balance");
   }
 });
+
+route.all("/addWithdraw", upload.none(), (req, res) => {
+  console.log("asd");
+  var user_id = req.body.user_id;
+  var api_key_result = req.body.api_key;
+  var amount = req.body.amount;
+  var currency = req.body.currency;
+  var withdraw_address = req.body.withdraw_address;
+  var coin_id = req.body.coin_id;
+
+  if (api_key_result == api_key) {
+    Wallet.findOne({ user_id: user_id, coin_id: coin_id }, { amount: 1 })
+      .then((list) => {
+        if (parseFloat(list.amount) >= parseFloat(amount)) {
+          const newWithdraw = new Withdraws({
+            user_id: user_id,
+            coin_id: coin_id,
+            amount: amount,
+            withdraw_address: withdraw_address,
+            status: 1,
+          });
+          NotificationTokens.findOne({
+            user_id: user_id,
+          }).then((response) => {
+            if (response == null) {
+            } else {
+              console.log(response);
+              var token = response["token_id"];
+              newWithdraw.save(function (err, room) {
+                if (err) {
+                  console.log(token);
+                  res.json("error");
+                } else {
+                  var body =
+                    "A withdraw order has been given from your account. Please wait for the admin to confirm your order.\n\n";
+                  sendPushNotification(token, body);
+                  res.json("success");
+                }
+              });
+            }
+          });
+        } else {
+          res.json("not_enough_balance");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  } else {
+    res.json("Forbidden 403");
+  }
+});
+
+route.all("/getDepositsUSDT", upload.none(), (req, res) => {
+  var coin_id = "62bc116eb65b02b777c97b3d";
+  var user_id = "62a89a7bebd4b6fca58d18a0";
+  var amount = 10;
+  var address = "THPvaUhoh2Qn2y9THCZML3H815hhFhn5YC";
+  var txid = "253f666b515d1668a7e0088130732ea1c2336825aa92638c2c8b88a9e66f2ab3";
+
+  //find deposits here, then call addDeposit Function in while loop.
+  addDeposit(user_id, coin_id, amount, address, txid);
+  res.json("success");
+});
+
+async function addDeposit(user_id, coin_id, amount, address, txid) {
+  const newDeposit = new Deposits({
+    user_id: user_id,
+    coin_id: coin_id,
+    amount: amount,
+    tx_id: txid,
+    address: address,
+    status: 1,
+  });
+
+  NotificationTokens.findOne({
+    user_id: user_id,
+  }).then((response) => {
+    if (response == null) {
+    } else {
+      var token = response["token_id"];
+      newDeposit.save(function (err, room) {
+        if (err) {
+          console.log(err);
+        } else {
+          var body =
+            "You have received a deposit of " +
+            amount +
+            " " +
+            coin_id +
+            " from " +
+            address;
+          sendPushNotification(token, body);
+        }
+      });
+    }
+  });
+}
 
 async function sendPushNotification(expoPushToken, body) {
   const message = {
