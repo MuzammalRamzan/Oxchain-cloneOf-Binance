@@ -100,12 +100,40 @@ function parseUsers(ref_user, user_table) {
 route.all("/login", upload.none(), (req, res) => {
   let newRegisteredId;
   var api_key_result = req.body.api_key;
+  var deviceName = "null";
+  var deviceToken = "null";
+  var deviceType = "null";
+  var manufacturer = "null";
+  var ip = "null";
+  var searchType = req.body.searchType;
+  var deviceModel = "null";
+  var loginType = req.body.loginType;
+  if (req.body.deviceName != undefined) {
+    deviceName = req.body.deviceName;
+  }
+
+  if (req.body.deviceModel != undefined) {
+    deviceModel = req.body.deviceModel;
+  }
+
+  if (req.body.deviceType != undefined) {
+    deviceModel = req.body.deviceType;
+  }
+
+  if (req.body.manufacturer != undefined) {
+    manufacturer = req.body.manufacturer;
+  }
+  if (req.body.ip != undefined) {
+    ip = req.body.ip;
+  }
+
+
 
   var notificationToken = req.body.notificationToken;
   authFile.apiKeyChecker(api_key_result).then((result) => {
     if (result === true) {
       User.findOne({
-        email: req.body.email,
+        [searchType]: req.body.email,
         password: utilities.hashData(req.body.password),
       })
         .then((user) => {
@@ -120,12 +148,14 @@ route.all("/login", upload.none(), (req, res) => {
                 //console.log(userRef["refCode"]);
                 refId = userRef["refCode"];
                 await results.push({
-                  status: user["status"],
                   response: "success",
-                  twofa: twofaStatus,
-                  status: user["status"],
-                  user_id: user["_id"],
-                  ref_id: refId,
+                  data: {
+                    response: "success",
+                    twofa: twofaStatus,
+                    status: user["status"],
+                    user_id: user["_id"],
+                    ref_id: refId,
+                  },
                 });
               })
               .catch((e) => {
@@ -169,18 +199,18 @@ route.all("/login", upload.none(), (req, res) => {
                 .then(() => {
                   LoginLogs.findOne({
                     user_id: user["_id"],
-                    ip: req.body.ip,
-                    deviceName: req.body.deviceName,
-                    manufacturer: req.body.manufacturer,
-                    model: req.body.deviceModel,
+                    ip: ip,
+                    deviceName: deviceName,
+                    manufacturer: manufacturer,
+                    model: deviceModel,
                   })
                     .then((logs) => {
                       const newUserLog = new LoginLogs({
                         user_id: user["_id"],
-                        ip: req.body.ip,
-                        deviceName: req.body.deviceName,
-                        manufacturer: req.body.manufacturer,
-                        model: req.body.deviceModel,
+                        ip: ip,
+                        deviceName: deviceName,
+                        manufacturer: manufacturer,
+                        model: deviceModel,
                       });
 
                       newUserLog.save(function (err, room) {
@@ -207,32 +237,35 @@ route.all("/login", upload.none(), (req, res) => {
                         });
                       }
 
-                      NotificationTokens.findOne({
-                        user_id: user["_id"],
-                        token_id: notificationToken,
-                      })
-                        .then((response) => {
-                          if (response == null) {
-                            const newNotificationToken = new NotificationTokens(
-                              {
-                                user_id: user["_id"],
-                                token_id: notificationToken,
-                              }
-                            );
-                            newNotificationToken.save(function (err, room) {
-                              if (err) {
-                                console.log(err);
-                              } else {
-                                res.json(results);
-                              }
-                            });
-                          } else {
-                            res.json(results);
-                          }
+                      if (loginType == "mobile") {
+                        NotificationTokens.findOne({
+                          user_id: user["_id"],
+                          token_id: notificationToken,
                         })
-                        .catch((err) => {
-                          console.log(err);
-                        });
+                          .then((response) => {
+                            if (response == null) {
+                              const newNotificationToken =
+                                new NotificationTokens({
+                                  user_id: user["_id"],
+                                  token_id: notificationToken,
+                                });
+                              newNotificationToken.save(function (err, room) {
+                                if (err) {
+                                  console.log(err);
+                                } else {
+                                  res.json(results);
+                                }
+                              });
+                            } else {
+                              res.json(results);
+                            }
+                          })
+                          .catch((err) => {
+                            console.log(err);
+                          });
+                      } else {
+                        res.json(results);
+                      }
                     })
                     .catch((err) => {
                       console.log(err);
@@ -247,13 +280,19 @@ route.all("/login", upload.none(), (req, res) => {
               res.json("account_not_active");
             }
           } else {
-            res.json("login_failed");
+            (results = {
+              status: "fail",
+              data: {},
+            }),
+              res.json(results);
           }
         })
         .catch((err) => {
           console.log("3   ***  " + err);
         });
     } else {
+      console.log(api_key_result);
+      console.log(authFile.apiKeyChecker(api_key_result));
       res.json("Forbidden 403");
     }
   });
