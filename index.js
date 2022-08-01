@@ -127,16 +127,17 @@ route.all("/login", upload.none(), (req, res) => {
     ip = req.body.ip;
   }
 
-
-
+  console.log("ASD" + req.body.user);
   var notificationToken = req.body.notificationToken;
   authFile.apiKeyChecker(api_key_result).then((result) => {
     if (result === true) {
+      console.log(searchType);
       User.findOne({
-        [searchType]: req.body.email,
+        [searchType]: req.body.user,
         password: utilities.hashData(req.body.password),
       })
         .then((user) => {
+          console.log(user);
           if (user != null) {
             var twofaStatus = user["twofa"];
             var results = [];
@@ -275,8 +276,8 @@ route.all("/login", upload.none(), (req, res) => {
                   console.log("2  *** " + err);
                 });
             }
-
-            if (status == 0) {
+            console.log(status);
+            if (status == "0") {
               res.json("account_not_active");
             }
           } else {
