@@ -254,18 +254,18 @@ route.all("/login", upload.none(), (req, res) => {
                                 if (err) {
                                   console.log(err);
                                 } else {
-                                  res.json(results);
+                                  res.json({"status" : "success", "data" : results});
                                 }
                               });
                             } else {
-                              res.json(results);
+                              res.json({"status" : "success", "data" : results});
                             }
                           })
                           .catch((err) => {
                             console.log(err);
                           });
                       } else {
-                        res.json(results);
+                        res.json({"status" : "success", "data" : results});
                       }
                     })
                     .catch((err) => {
@@ -278,14 +278,14 @@ route.all("/login", upload.none(), (req, res) => {
             }
             console.log(status);
             if (status == "0") {
-              res.json("account_not_active");
+              res.json({"status" : "fail", "message" : "account_not_active"});
             }
           } else {
             (results = {
               status: "fail",
               data: {},
             }),
-              res.json(results);
+              res.json({"status" : "success", "data" : results});
           }
         })
         .catch((err) => {
@@ -294,7 +294,7 @@ route.all("/login", upload.none(), (req, res) => {
     } else {
       console.log(api_key_result);
       console.log(authFile.apiKeyChecker(api_key_result));
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "Forbidden 403"});
     }
   });
 });
@@ -334,7 +334,7 @@ route.all("/register", upload.none(), (req, res) => {
         }
       })
       .catch((err) => {
-        res.json(err);
+        res.json({"status" : "fail", "message" : err});
       });
 
     User.findOne({ phone_number: req.body.phone_number })
@@ -344,7 +344,7 @@ route.all("/register", upload.none(), (req, res) => {
         }
       })
       .catch((err) => {
-        res.json(err);
+        res.json({"status" : "fail", "message" : err});
       });
   }
 
@@ -360,7 +360,7 @@ route.all("/register", upload.none(), (req, res) => {
               });
               newReferral.save();
             } else {
-              res.json("referral_not_found");
+              res.json({"status" : "fail", "message" : "referral_not_found"});
             }
           });
         }
@@ -373,7 +373,7 @@ route.all("/register", upload.none(), (req, res) => {
         });
         newRef.save();
       });
-      res.json("success");
+      res.json({"status" : "success", "data" : newRef});
     } else {
       var uniqueArray = [];
       uniqueArray.push({
@@ -381,7 +381,7 @@ route.all("/register", upload.none(), (req, res) => {
         phoneUnique: phoneUnique,
         response: "not_unique",
       });
-      res.json(uniqueArray[0]);
+      res.json({"status" : "fail", "message" : uniqueArray[0]});
     }
   }
 
@@ -408,9 +408,9 @@ route.all("/addCoin", upload.none(), (req, res) => {
   authFile.apiKeyChecker(api_key_result).then((result) => {
     if (result === true) {
       newCoin.save();
-      res.json("success");
+      res.json({"status" : "success", "data" : result});
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "Forbidden 403"});
     }
   });
 });
@@ -466,13 +466,13 @@ route.all("/addOrders", upload.none(), (req, res) => {
                     Wallet.findOneAndUpdate(filter, update, (err, doc) => {
                       if (err) {
                         console.log(err);
-                        res.json("error");
+                        res.json({"status" : "error", "message" : err.message});
                       } else {
-                        res.json("success");
+                        res.json({"status" : "success", "data" : ""});
                       }
                     });
                   } else {
-                    res.json("not_enough_balance");
+                    res.json({"status" : "fail", "message" : "not_enougth_balance"});
                   }
                 } else {
                   if (
@@ -495,17 +495,17 @@ route.all("/addOrders", upload.none(), (req, res) => {
                     Wallet.findOneAndUpdate(filter, update, (err, doc) => {
                       if (err) {
                         console.log(err);
-                        res.json("error");
+                        res.json({"status" : "fail", "message" : err});
                       } else {
-                        res.json("success");
+                        res.json({"status" : "success", "data" : ""});
                       }
                     });
                   } else {
-                    res.json("not_enough_balance");
+                    res.json({"status" : "fail", "message" : "not_enough_balance"});
                   }
                 }
               } else {
-                res.json("second_pair_not_found");
+                res.json({"status" : "fail", "message" : "second_pair_not_found"});
               }
             })
             .catch((err) => {
@@ -516,7 +516,7 @@ route.all("/addOrders", upload.none(), (req, res) => {
           console.error(error);
         });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "Forbidden 403"});
     }
   });
 });
@@ -542,7 +542,7 @@ route.all("/addNotification", upload.none(), (req, res) => {
               );
             }
           });
-          res.json("success");
+          res.json({"status" : "success", "data" : ""});
         })
         .catch((err) => {
           console.log(err);
@@ -589,9 +589,9 @@ route.all("/getNotification", upload.none(), (req, res) => {
             myArray.push(message);
           }
           if (notification.length == 0) {
-            res.json("no_notification");
+            res.json({"status" : "fail", "message" : "no_notification"});
           } else {
-            res.json(myArray);
+            res.json({"status" : "success", "data" : myArray});
           }
         })
         .catch((err) => {
@@ -608,13 +608,13 @@ route.all("/getOrders", upload.none(), (req, res) => {
       Orders.find({ user_id: req.body.user_id, type: "Limit", status: "0" })
         .sort({ createdAt: -1 })
         .then((list) => {
-          res.json(list);
+          res.json({"status" : "success", "data" : list});
         })
         .catch((err) => {
-          res.json(err);
+          res.json({"status" : "fail", "message" : err});
         });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "Forbidden 403"});
     }
   });
 });
@@ -628,14 +628,14 @@ route.all("/getUSDTBalance", upload.none(), (req, res) => {
         coin_id: "62bc116eb65b02b777c97b3d",
       })
         .then((list) => {
-          res.json(list.amount);
+          res.json({"status" : "success", "data" : list.amount});
         })
         .catch((err) => {
-          res.json("error");
+          res.json({"status" : "fail", "message" : err});
           console.log(err);
         });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "Forbidden 403"});
     }
   });
 });
@@ -646,13 +646,13 @@ route.all("/getPairs", upload.none(), (req, res) => {
     if (result === true) {
       Pairs.find({})
         .then((list) => {
-          res.json(list);
+          res.json({"status" : "success", "data" : list});
         })
         .catch((err) => {
-          res.json(err);
+          res.json({"status" : "fail", "message" : err});
         });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "Forbidden 403"});
     }
   });
 });
@@ -672,9 +672,9 @@ route.all("/addPair", upload.none(), (req, res) => {
       });
 
       newPair.save();
-      res.json("success");
+      res.json({"status" : "success", "data" : ""});
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "Forbidden 403"});
     }
   });
 });
@@ -686,13 +686,13 @@ route.all("/getDigits", upload.none(), (req, res) => {
     if (result === true) {
       Pairs.findOne({ name: pairName }, { digits: 1, _id: 1 })
         .then((list) => {
-          res.json(list);
+          res.json({"status" : "success", "data" : list});
         })
         .catch((err) => {
-          res.json(err);
+          res.json({"status" : "fail", "message" : err});
         });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "Forbidden 403"});
     }
   });
 });
@@ -708,13 +708,13 @@ route.all("/getCoinList", upload.none(), async (req, res) => {
           console.log(coins.length);
           let amounst = await Wallet.find({ user_id: user_id });
           let result = await parseCoins(coins, amounst);
-          res.json(result);
+          res.json({"status" : "success", "data" : result});
         })
         .catch((err) => {
-          res.json(err);
+          res.json({"status" : "fail", "message" : err});
         });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "Forbidden 403"});
     }
   });
 });
@@ -726,13 +726,13 @@ route.all("/getCoinInfo", upload.none(), (req, res) => {
     if (result === true) {
       CoinList.findOne({ coin_id: req.body.coin_id })
         .then((coins) => {
-          res.json(coins);
+          res.json({"status" : "success", "data" : coins});
         })
         .catch((err) => {
-          res.json(err);
+          res.json({"status" : "fail", "message" : err});
         });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "Forbidden 403"});
     }
   });
 });
@@ -755,13 +755,13 @@ route.all("/getReferral", upload.none(), (req, res) => {
             var result = await parseUsers(ref_user, user_table);
 
             console.log(result);
-            res.json(result);
+            res.json({"status" : "success", "data" : result});
           } else {
-            res.json("not_found");
+            res.json({"status" : "fail", "message" : "not_found"});
           }
         })
         .catch((err) => {
-          res.json(err);
+          res.json({"status" : "fail", "message" : err});
         });
     }
   });
@@ -773,10 +773,10 @@ route.all("/getWallet", upload.none(), (req, res) => {
     if (result === true) {
       Wallet.find({ user_id: req.body.user_id })
         .then((wallets) => {
-          res.json(wallets);
+          res.json({"status" : "success", "data" : wallets});
         })
         .catch((err) => {
-          res.json(err);
+          res.json({"status" : "fail", "message" : err});
         });
     }
   });
@@ -805,27 +805,27 @@ route.all("/2fa", upload.none(), (req, res) => {
                   LoginLogs.findOneAndUpdate({ _id: log_id }, update)
                     .then((log) => {
                       console.log(log);
-                      res.json("2fa_success");
+                      res.json({"status" : "success", "data" : "2fa_success"});
                     })
                     .catch((err) => {
                       res.json(err);
                     });
                 } else {
-                  res.json("2fa_success");
+                  res.json({"status" : "data", "message" : "2fa_success"});
                 }
               } else {
-                res.json("2fa_failed");
+                res.json({"status" : "fail", "message" : "2fa_failed"});
               }
             });
           } else {
-            res.json("login_failed");
+            res.json({"status" : "fail", "message" : "login_failed"});
           }
         })
         .catch((err) => {
-          res.json(err);
+          res.json({"status" : "fail", "message" : err});
         });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "403 Forbidden"});
     }
   });
 });
@@ -846,17 +846,17 @@ route.all("/update2fa", upload.none(), (req, res) => {
           User.findOneAndUpdate(filter, update, (err, doc) => {
             if (err) {
               console.log(err);
-              res.json("error");
+              res.json({"status" : "fail", "message" : err});
             } else {
-              res.json("2fa_updated");
+              res.json({"status" : "success", "data" : "2fa_updated"});
             }
           });
         } else {
-          res.json("wrong_auth_pin");
+          res.json({"status" : "fail", "message" : "wrong_auth_pin"});
         }
       });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "403 Forbidden"});
     }
   });
 });
@@ -895,7 +895,7 @@ route.all("/cancelOrder", upload.none(), (req, res) => {
                           (err, doc) => {
                             if (err) {
                               console.log(err);
-                              res.json("error");
+                              res.json({"status" : "fail", "message" : error});
                             } else {
                               Orders.findOneAndUpdate(
                                 filter,
@@ -903,9 +903,9 @@ route.all("/cancelOrder", upload.none(), (req, res) => {
                                 (err, doc) => {
                                   if (err) {
                                     console.log(err);
-                                    res.json("error");
+                                    res.json({"status" : "fail", "message" : err});
                                   } else {
-                                    res.json("cancelled");
+                                    res.json({"status" : "success", "data" : "cancelled"});
                                   }
                                 }
                               );
@@ -913,26 +913,26 @@ route.all("/cancelOrder", upload.none(), (req, res) => {
                           }
                         );
                       } else {
-                        res.json("pair_not_found");
+                        res.json({"status" : "fail", "message" : "pair_not_found"});
                       }
                     })
                     .catch((err) => {
-                      res.json(err);
+                      res.json({"status" : "fail", "message" : err});
                     });
                 }
               })
               .catch((err) => {
-                res.json(err);
+                res.json({"status" : "fail", "message" : err});
               });
           } else {
-            res.json("wallet_not_found");
+            res.json({"status" : "fail", "message" : "wallet_not_found"});
           }
         })
         .catch((err) => {
-          console.log(err);
+          console.log({"status" : "fail", "message" : err});
         });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "403 Forbidden"});
     }
   });
 });
@@ -954,7 +954,7 @@ route.all("/addSecurityKey", upload.none(), (req, res) => {
       })
         .then((securityKey) => {
           if (securityKey != null) {
-            res.json("security_key_active");
+            res.json({"status" : "success", "data" : "secury_key_active"});
           } else {
             var newSecurityKey = new SecurityKey({
               user_id: user_id,
@@ -968,15 +968,15 @@ route.all("/addSecurityKey", upload.none(), (req, res) => {
             newSecurityKey.save((err, doc) => {
               if (err) {
                 console.log(err);
-                res.json("error");
+                res.json({"status" : "fail", "message" : err});
               } else {
-                res.json("success");
+                res.json({"status" : "success", "data" : ""});
               }
             });
           }
         })
         .catch((err) => {
-          res.json(err);
+          res.json({"status" : "fail", "message" : err});
         });
     }
   });
@@ -1010,17 +1010,17 @@ route.all("/updateSecurityKey", upload.none(), (req, res) => {
             SecurityKey.findOneAndUpdate(filter, update, (err, doc) => {
               if (err) {
                 console.log(err);
-                res.json("error");
+                res.json({"status" : "fail", "message" : err});
               } else {
-                res.json("update_success");
+                res.json({"status" : "success", "data" : "update_success"});
               }
             });
           } else {
-            res.json("security_key_not_found");
+            res.json({"status" : "fail", "message" : "security_key_not_found"});
           }
         })
         .catch((err) => {
-          res.json(err);
+          res.json({"status" : "fail", "message" : err});
         });
     }
   });
@@ -1038,13 +1038,13 @@ route.all("/lastActivities", upload.none(), (req, res) => {
           .sort(sort)
           .limit(limit)
           .then((logs) => {
-            res.json(logs);
+            res.json({"status" : "success", "data" : logs});
           })
           .catch((err) => {
-            res.json(err);
+            res.json({"status" : "fail", "message" : err});
           });
       } else {
-        res.json("max_limit_100");
+        res.json({"status" : "success", "data" : "max_limit_100"});
       }
     }
   });
@@ -1076,22 +1076,22 @@ route.all("/updatePhone", upload.none(), (req, res) => {
                 User.findOneAndUpdate(filter, update, (err, doc) => {
                   if (err) {
                     console.log(err);
-                    res.json("error");
+                    res.json({"status" : "fail", "message" : err});
                   } else {
-                    res.json("update_success");
+                    res.json({"status" : "success", "data" : "update_success"});
                   }
                 });
               } else {
-                res.json("2fa_failed");
+                res.json({"status" : "fail", "message" : "2fa_failed"});
               }
             });
           }
         })
         .catch((err) => {
-          res.json(err);
+          res.json({"status" : "fail", "message" : err});
         });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "403 Forbidden"});
     }
   });
 });
@@ -1119,22 +1119,22 @@ route.all("/resetPassword", upload.none(), (req, res) => {
                 User.findOneAndUpdate(filter, update, (err, doc) => {
                   if (err) {
                     console.log(err);
-                    res.json("error");
+                    res.json({"status" : "fail", "message" : err});
                   } else {
-                    res.json("update_success");
+                    res.json({"status" : "succes", "message" : "update_success"});
                   }
                 });
               } else {
-                res.json("2fa_failed");
+                res.json({"status" : "fail", "message" : "2fa_failed"});
               }
             });
           }
         })
         .catch((err) => {
-          res.json(err);
+          res.json({"status" : "fail", "message" : err});
         });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "403 Forbidden"});
     }
   });
 });
@@ -1165,27 +1165,27 @@ route.all("/changePassword", upload.none(), (req, res) => {
                   User.findOneAndUpdate(filter, update, (err, doc) => {
                     if (err) {
                       console.log(err);
-                      res.json("error");
+                      res.json({"status" : "fail", "message" : err});
                     } else {
-                      res.json("update_success");
+                      res.json({"status" : "success", "data" : "update_success"});
                     }
                   });
                 } else {
-                  res.json("2fa_failed");
+                  res.json({"status" : "fail", "message" : "2fa_failed"});
                 }
               });
             } else {
-              res.json("wrong_old_password");
+              res.json({"status" : "fail", "message" : "wrong_old_password"});
             }
           } else {
-            res.json("user_not_found");
+            res.json({"status" : "fail", "message" : "user_not_found"});
           }
         })
         .catch((err) => {
-          res.json(err);
+          res.json({"status" : "fail", "message" : err});
         });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "403 Forbidden"});
     }
   });
 });
@@ -1196,9 +1196,9 @@ route.all("/get2fa", upload.none(), (req, res) => {
   authFile.apiKeyChecker(api_key_result).then((result) => {
     if (result === true) {
       var formattedKey = authenticator.generateKey();
-      res.json(formattedKey);
+      res.json({"status" : "success", "data" : formattedKey});
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "403 Forbidden"});
     }
   });
 });
@@ -1229,21 +1229,21 @@ route.all("/getUserInfo", upload.none(), (req, res) => {
             var status = user["status"];
 
             if (status == 1) {
-              res.json(results);
+              res.json({"status" : "success", "data" : results});
             }
 
             if (status == 0) {
-              res.json("account_not_active");
+              res.json({"status" : "fail", "message" : "account_not_activated"});
             }
           } else {
-            res.json("login_failed");
+            res.json({"status" : "fail", "message" : "login_failed"});
           }
         })
         .catch((err) => {
-          res.json(err);
+          res.json({"status" : "fail", "message" : err});
         });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "403 Forbidden"});
     }
   });
 });
@@ -1264,16 +1264,16 @@ route.all("/getUserId", upload.none(), (req, res) => {
               response: "success",
               user_id: user["id"],
             });
-            res.json(myArray);
+            res.json({"status" : "success", "data" : myArray});
           } else {
-            res.json("user_not_found");
+            res.json({"status" : "fail", "message" : "user_not_found"});
           }
         })
         .catch((err) => {
-          res.json(err);
+          res.json({"status" : "fail", "message" : err});
         });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "403 Forbidden"});
     }
   });
 });
@@ -1299,13 +1299,13 @@ route.all("/getSecurityKey", upload.none(), (req, res) => {
             withdraw: securityKey["withdraw"],
             id: securityKey["id"],
           });
-          res.json(myArray);
+          res.json({"status" : "success", "data" : myArray});
         } else {
           var myArray = [];
           myArray.push({
             response: "security_key_not_active",
           });
-          res.json(myArray);
+          res.json({"status" : "fail", "message" : "security_key_not_active"});
         }
       });
     }
@@ -1324,9 +1324,9 @@ route.all("/checkSecurityKey", upload.none(), (req, res) => {
         key: utilities.hashData(req.body.key),
       }).then((securityKey) => {
         if (securityKey != null) {
-          res.json("success");
+          res.json({"status" : "success", "data" : ""});
         } else {
-          res.json("wrong_key");
+          res.json({"status" : "fail", "message" : "wrong_key"});
         }
       });
     }
@@ -1354,20 +1354,20 @@ route.all("/deleteSecurityKey", upload.none(), (req, res) => {
                 (err, doc) => {
                   if (err) {
                     console.log(err);
-                    res.json("error");
+                    res.json({"status" : "fail", "message" : err});
                   } else {
-                    res.json("success");
+                    res.json({"status" : "success", "data" : ""});
                   }
                 }
               );
             } else {
-              res.json("2fa_failed");
+              res.json({"status" : "fail", "message" : "2fa_failed"});
             }
           });
         }
       });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "403 Forbidden"});
     }
   });
 });
@@ -1403,25 +1403,25 @@ route.all("/addWithdraw", upload.none(), (req, res) => {
                 newWithdraw.save(function (err, room) {
                   if (err) {
                     console.log(token);
-                    res.json("error");
+                    res.json({"status" : "fail", "message" : err});
                   } else {
                     var body =
                       "A withdraw order has been given from your account. Please wait for the admin to confirm your order.\n\n";
                     notifications.sendPushNotification(token, body);
-                    res.json("success");
+                    res.json({"status" : "success", "data" : ""});
                   }
                 });
               }
             });
           } else {
-            res.json("not_enough_balance");
+            res.json({"status" : "fail", "message" : "not_enough_balance"});
           }
         })
         .catch((err) => {
           console.log(err);
         });
     } else {
-      res.json("Forbidden 403");
+      res.json({"status" : "fail", "message" : "403 Forbidden"});
     }
   });
 });
@@ -1442,7 +1442,7 @@ route.all("/getDepositsUSDT", upload.none(), (req, res) => {
       utilities.addDeposit(user_id, coin_symbol, amount, address, txid);
     }
   });
-  res.json("success");
+  res.json({"status" : "success", "data" : ""});
 });
 
 route.listen(port, () => {
