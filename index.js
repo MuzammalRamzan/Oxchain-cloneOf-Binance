@@ -1075,7 +1075,7 @@ route.all("/get2fa", upload.none(), (req, res) => {
   }
 });
 
-route.all("/getUserInfo", upload.none(), (req, res) => {
+route.all("/getUserInfo", upload.none(), async(req, res) => {
   var user_id = req.body.user_id;
   var api_key_result = req.body.api_key;
   console.log(user_id);
@@ -1083,38 +1083,34 @@ route.all("/getUserInfo", upload.none(), (req, res) => {
   let result = await authFile.apiKeyChecker(api_key_result).exec();
 
   if (result === true) {
-    User.findOne({
+    let user = await User.findOne({
       _id: user_id,
-    })
-      .then((user) => {
-        if (user != null) {
-          var twofaStatus = user["twofa"];
-          var results = [];
-          results.push({
-            name: user["name"],
-            response: "success",
-            surname: user["surname"],
-            email: user["email"],
-            country_code: user["country_code"],
-            phone_number: user["phone_number"],
-          });
-          console.log(results);
-          var status = user["status"];
+    }).exec();
 
-          if (status == 1) {
-            res.json({ "status": "success", "data": results });
-          }
-
-          if (status == 0) {
-            res.json({ "status": "fail", "message": "account_not_activated" });
-          }
-        } else {
-          res.json({ "status": "fail", "message": "login_failed" });
-        }
-      })
-      .catch((err) => {
-        res.json({ "status": "fail", "message": err });
+    if (user != null) {
+      var twofaStatus = user["twofa"];
+      var results = [];
+      results.push({
+        name: user["name"],
+        response: "success",
+        surname: user["surname"],
+        email: user["email"],
+        country_code: user["country_code"],
+        phone_number: user["phone_number"],
       });
+      console.log(results);
+      var status = user["status"];
+
+      if (status == 1) {
+        res.json({ "status": "success", "data": results });
+      }
+
+      if (status == 0) {
+        res.json({ "status": "fail", "message": "account_not_activated" });
+      }
+    } else {
+      res.json({ "status": "fail", "message": "login_failed" });
+    }
   } else {
     res.json({ "status": "fail", "message": "403 Forbidden" });
   }
