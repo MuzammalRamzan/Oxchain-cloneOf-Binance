@@ -306,8 +306,8 @@ route.all("/register", upload.none(), (req, res) => {
     api_key_result: req.body.api_key,
   });
 
-  function uniqueChecker() {
-    let products = await User.findOne({ email: req.body.email });
+  async function uniqueChecker() {
+    let products = await User.findOne({ email: req.body.email }).exec();
     if (products != null) {
       emailUnique = "false";
     }
@@ -1089,7 +1089,6 @@ route.all("/getUserInfo", upload.none(), async(req, res) => {
 
     if (user != null) {
       var twofaStatus = user["twofa"];
-      var results = [];
       
       var status = user["status"];
 
