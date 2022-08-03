@@ -1090,19 +1090,18 @@ route.all("/getUserInfo", upload.none(), async(req, res) => {
     if (user != null) {
       var twofaStatus = user["twofa"];
       var results = [];
-      results.push({
-        name: user["name"],
-        response: "success",
-        surname: user["surname"],
-        email: user["email"],
-        country_code: user["country_code"],
-        phone_number: user["phone_number"],
-      });
-      console.log(results);
+      
       var status = user["status"];
 
       if (status == 1) {
-        res.json({ "status": "success", "data": results });
+        res.json({ "status": "success", "data": {
+          name: user["name"],
+          response: "success",
+          surname: user["surname"],
+          email: user["email"],
+          country_code: user["country_code"],
+          phone_number: user["phone_number"],
+        } });
       }
 
       if (status == 0) {
