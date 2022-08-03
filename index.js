@@ -317,7 +317,7 @@ route.all("/register", upload.none(), (req, res) => {
     }
   }
 
-  function register() {
+  async function register() {
     if (emailUnique == "true" && phoneUnique == "true") {
       newUser.save((err, usr) => {
         if (refStatus == "yes") {
