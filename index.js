@@ -40,7 +40,7 @@ var connection =
   "@cluster0.d1oo7iq.mongodb.net/?retryWrites=true&w=majority";
 mongoose.connect(connection, (e) => {
   if (e) {
-    console.log(e);
+    console.log("test" + e);
   } else {
     console.log("connected");
   }
@@ -97,7 +97,7 @@ function parseUsers(ref_user, user_table) {
   });
 }
 
-route.all("/login", upload.none(), (req, res) => {
+route.all("/login", upload.none(), async (req, res) => {
   let newRegisteredId;
   var api_key_result = req.body.api_key;
   var deviceName = "null";
@@ -129,174 +129,154 @@ route.all("/login", upload.none(), (req, res) => {
 
   console.log("ASD" + req.body.user);
   var notificationToken = req.body.notificationToken;
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      console.log(searchType);
-      User.findOne({
-        [searchType]: req.body.user,
-        password: utilities.hashData(req.body.password),
-      })
-        .then((user) => {
-          console.log(user);
-          if (user != null) {
-            var twofaStatus = user["twofa"];
-            var results = [];
-            var refId = "";
-            UserRef.findOne({
-              user_id: user._id,
-            })
-              .then(async (userRef) => {
-                //console.log(userRef["refCode"]);
-                refId = userRef["refCode"];
-                await results.push({
-                  response: "success",
-                  data: {
-                    response: "success",
-                    twofa: twofaStatus,
-                    status: user["status"],
-                    user_id: user["_id"],
-                    ref_id: refId,
-                  },
-                });
-              })
-              .catch((e) => {
-                console.log(e);
-              });
+  let result = await authFile.apiKeyChecker(api_key_result);
 
-            var status = user["status"];
+  if (result === true) {
+    console.log(searchType);
+    let user = await User.findOne({
+      [searchType]: req.body.user,
+      password: utilities.hashData(req.body.password),
+    }).exec();
 
-            if (status == 1) {
-              CoinList.find({})
-                .then((coins) => {
-                  for (let i = 0; i < coins.length; i++) {
-                    const newWallet = new Wallet({
-                      name: coins[i]["name"],
-                      symbol: coins[i]["symbol"],
-                      user_id: user["id"],
-                      amount: 0,
-                      coin_id: coins[i]["id"],
-                      type: "spot",
-                      address: "",
-                      status: 1,
-                    });
 
-                    Wallet.findOne({
-                      user_id: user["_id"],
-                      coin_id: coins[i]["id"],
-                    })
-                      .then((wallets) => {
-                        if (wallets == null) {
-                          newWallet.save();
-                          //console.log("wallet added");
-                        } else {
-                          //console.log("wallet already exists");
-                        }
-                      })
-                      .catch((err) => {
-                        console.log(err);
-                      });
-                  }
-                })
-                .then(() => {
-                  LoginLogs.findOne({
-                    user_id: user["_id"],
-                    ip: ip,
-                    deviceName: deviceName,
-                    manufacturer: manufacturer,
-                    model: deviceModel,
-                  })
-                    .then((logs) => {
-                      const newUserLog = new LoginLogs({
-                        user_id: user["_id"],
-                        ip: ip,
-                        deviceName: deviceName,
-                        manufacturer: manufacturer,
-                        model: deviceModel,
-                      });
+    console.log(user);
+    if (user != null) {
+      var twofaStatus = user["twofa"];
+      var results = [];
+      var refId = "";
+      let userRef = await UserRef.findOne({
+        user_id: user._id,
+      }).exec();
 
-                      newUserLog.save(function (err, room) {
-                        newRegisteredId = room.id;
-                      });
 
-                      console.log("logs:" + logs);
-                      if (logs != null) {
-                        if (logs["trust"] == "yes") {
-                          results.push({
-                            trust: "yes",
-                            log_id: logs["_id"],
-                          });
-                        } else {
-                          results.push({
-                            trust: "no",
-                            log_id: logs["_id"],
-                          });
-                        }
-                      } else {
-                        results.push({
-                          trust: "no",
-                          log_id: newRegisteredId,
-                        });
-                      }
+      //console.log(userRef["refCode"]);
+      refId = userRef["refCode"];
+      await results.push({
+        response: "success",
+        data: {
+          response: "success",
+          twofa: twofaStatus,
+          status: user["status"],
+          user_id: user["_id"],
+          ref_id: refId,
+        },
+      });
 
-                      if (loginType == "mobile") {
-                        NotificationTokens.findOne({
-                          user_id: user["_id"],
-                          token_id: notificationToken,
-                        })
-                          .then((response) => {
-                            if (response == null) {
-                              const newNotificationToken =
-                                new NotificationTokens({
-                                  user_id: user["_id"],
-                                  token_id: notificationToken,
-                                });
-                              newNotificationToken.save(function (err, room) {
-                                if (err) {
-                                  console.log(err);
-                                } else {
-                                  res.json({"status" : "success", "data" : results});
-                                }
-                              });
-                            } else {
-                              res.json({"status" : "success", "data" : results});
-                            }
-                          })
-                          .catch((err) => {
-                            console.log(err);
-                          });
-                      } else {
-                        res.json({"status" : "success", "data" : results});
-                      }
-                    })
-                    .catch((err) => {
-                      console.log(err);
-                    });
-                })
-                .catch((err) => {
-                  console.log("2  *** " + err);
-                });
-            }
-            console.log(status);
-            if (status == "0") {
-              res.json({"status" : "fail", "message" : "account_not_active"});
-            }
+      var status = user["status"];
+
+      if (status == 1) {
+        let coins = await CoinList.find({}).exec();
+
+        for (let i = 0; i < coins.length; i++) {
+          const newWallet = new Wallet({
+            name: coins[i]["name"],
+            symbol: coins[i]["symbol"],
+            user_id: user["id"],
+            amount: 0,
+            coin_id: coins[i]["id"],
+            type: "spot",
+            address: "",
+            status: 1,
+          });
+
+          let wallets = await Wallet.findOne({
+            user_id: user["_id"],
+            coin_id: coins[i]["id"],
+          });
+
+
+          if (wallets == null) {
+            newWallet.save();
+            //console.log("wallet added");
           } else {
-            (results = {
-              status: "fail",
-              data: {},
-            }),
-              res.json({"status" : "success", "data" : results});
+            //console.log("wallet already exists");
           }
-        })
-        .catch((err) => {
-          console.log("3   ***  " + err);
+        }
+
+        let logs = await LoginLogs.findOne({
+          user_id: user["_id"],
+          ip: ip,
+          deviceName: deviceName,
+          manufacturer: manufacturer,
+          model: deviceModel,
         });
+
+        const newUserLog = new LoginLogs({
+          user_id: user["_id"],
+          ip: ip,
+          deviceName: deviceName,
+          manufacturer: manufacturer,
+          model: deviceModel,
+        });
+
+        newUserLog.save(function (err, room) {
+          newRegisteredId = room.id;
+        });
+
+        console.log("logs:" + logs);
+        if (logs != null) {
+          if (logs["trust"] == "yes") {
+            results.push({
+              trust: "yes",
+              log_id: logs["_id"],
+            });
+          } else {
+            results.push({
+              trust: "no",
+              log_id: logs["_id"],
+            });
+          }
+        } else {
+          results.push({
+            trust: "no",
+            log_id: newRegisteredId,
+          });
+        }
+
+        if (loginType == "mobile") {
+          let response = await NotificationTokens.findOne({
+            user_id: user["_id"],
+            token_id: notificationToken,
+          });
+
+          if (response == null) {
+            const newNotificationToken =
+              new NotificationTokens({
+                user_id: user["_id"],
+                token_id: notificationToken,
+              });
+            newNotificationToken.save(function (err, room) {
+              if (err) {
+                console.log(err);
+              } else {
+                res.json({ "status": "success", "data": results });
+              }
+            });
+          } else {
+            res.json({ "status": "success", "data": results });
+          }
+
+        } else {
+          res.json({ "status": "success", "data": results });
+        }
+      }
+      console.log(status);
+      if (status == "0") {
+        res.json({ "status": "fail", "message": "account_not_active" });
+      }
     } else {
-      console.log(api_key_result);
-      console.log(authFile.apiKeyChecker(api_key_result));
-      res.json({"status" : "fail", "message" : "Forbidden 403"});
+      (results = {
+        status: "fail",
+        data: {},
+      }),
+        res.json({ "status": "success", "data": results });
     }
-  });
+
+  } else {
+    console.log(api_key_result);
+    console.log(authFile.apiKeyChecker(api_key_result));
+    res.json({ "status": "fail", "message": "Forbidden 403" });
+  }
 });
 
 route.all("/register", upload.none(), (req, res) => {
@@ -327,42 +307,31 @@ route.all("/register", upload.none(), (req, res) => {
   });
 
   function uniqueChecker() {
-    User.findOne({ email: req.body.email })
-      .then((products) => {
-        if (products != null) {
-          emailUnique = "false";
-        }
-      })
-      .catch((err) => {
-        res.json({"status" : "fail", "message" : err});
-      });
-
-    User.findOne({ phone_number: req.body.phone_number })
-      .then((products) => {
-        if (products != null) {
-          phoneUnique = "false";
-        }
-      })
-      .catch((err) => {
-        res.json({"status" : "fail", "message" : err});
-      });
+    let products = await User.findOne({ email: req.body.email });
+    if (products != null) {
+      emailUnique = "false";
+    }
+    products = User.findOne({ phone_number: req.body.phone_number }).exec();
+    if (products != null) {
+      phoneUnique = "false";
+    }
   }
 
   function register() {
     if (emailUnique == "true" && phoneUnique == "true") {
       newUser.save((err, usr) => {
         if (refStatus == "yes") {
-          UserRef.findOne({ refCode: reffer }).then((user) => {
-            if (user != null) {
-              var newReferral = new Referral({
-                user_id: usr._id,
-                reffer: reffer,
-              });
-              newReferral.save();
-            } else {
-              res.json({"status" : "fail", "message" : "referral_not_found"});
-            }
-          });
+          let user = await UserRef.findOne({ refCode: reffer }).exec();
+
+          if (user != null) {
+            var newReferral = new Referral({
+              user_id: usr._id,
+              reffer: reffer,
+            });
+            newReferral.save();
+          } else {
+            res.json({ "status": "fail", "message": "referral_not_found" });
+          }
         }
         var regUserId = usr._id;
         // make unique control
@@ -373,7 +342,7 @@ route.all("/register", upload.none(), (req, res) => {
         });
         newRef.save();
       });
-      res.json({"status" : "success", "data" : newRef});
+      res.json({ "status": "success", "data": newRef });
     } else {
       var uniqueArray = [];
       uniqueArray.push({
@@ -381,7 +350,7 @@ route.all("/register", upload.none(), (req, res) => {
         phoneUnique: phoneUnique,
         response: "not_unique",
       });
-      res.json({"status" : "fail", "message" : uniqueArray[0]});
+      res.json({ "status": "fail", "message": uniqueArray[0] });
     }
   }
 
@@ -405,14 +374,14 @@ route.all("/addCoin", upload.none(), (req, res) => {
     image_url: req.body.image_url,
   });
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      newCoin.save();
-      res.json({"status" : "success", "data" : result});
-    } else {
-      res.json({"status" : "fail", "message" : "Forbidden 403"});
-    }
-  });
+  let resutl = await authFile.apiKeyChecker(api_key_result);
+
+  if (result === true) {
+    newCoin.save();
+    res.json({ "status": "success", "data": result });
+  } else {
+    res.json({ "status": "fail", "message": "Forbidden 403" });
+  }
 });
 
 route.all("/addOrders", upload.none(), (req, res) => {
@@ -430,125 +399,112 @@ route.all("/addOrders", upload.none(), (req, res) => {
     target_price: req.body.target_price,
   });
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      var urlPair = req.body.pair_name.replace("/", "");
-      axios
-        .get(
-          'https://api.binance.com/api/v3/ticker/price?symbols=["' +
-            urlPair +
-            '"]'
-        )
-        .then((result) => {
-          var price = result.data[0].price;
-          Wallet.findOne(
-            { user_id: req.body.user_id, coin_id: "62bc116eb65b02b777c97b3d" },
-            { amount: 1 }
-          )
-            .then((list) => {
-              if (list != null) {
-                if (req.body.type == "Limit") {
-                  if (
-                    parseFloat(list.amount) >=
-                    parseFloat(req.body.amount * req.body.target_price)
-                  ) {
-                    orders.save();
-                    const filter = {
-                      user_id: req.body.user_id,
-                      coin_id: "62bc116eb65b02b777c97b3d",
-                    };
-                    const update = {
-                      amount:
-                        parseFloat(list.amount) -
-                        parseFloat(req.body.amount * req.body.target_price),
-                    };
+  let result = await authFile.apiKeyChecker(api_key_result).exect();
 
-                    Wallet.findOneAndUpdate(filter, update, (err, doc) => {
-                      if (err) {
-                        console.log(err);
-                        res.json({"status" : "error", "message" : err.message});
-                      } else {
-                        res.json({"status" : "success", "data" : ""});
-                      }
-                    });
-                  } else {
-                    res.json({"status" : "fail", "message" : "not_enougth_balance"});
-                  }
-                } else {
-                  if (
-                    parseFloat(list.amount) >=
-                    parseFloat(req.body.amount * price)
-                  ) {
-                    console.log("ücret " + req.body.amount * price);
-                    console.log("bakiye " + list.amount);
-                    orders.save();
-                    const filter = {
-                      user_id: req.body.user_id,
-                      coin_id: "62bc116eb65b02b777c97b3d",
-                    };
-                    const update = {
-                      amount:
-                        parseFloat(list.amount) -
-                        parseFloat(req.body.amount * price),
-                    };
+  if (result === true) {
+    var urlPair = req.body.pair_name.replace("/", "");
+    let result = await axios
+      .get(
+        'https://api.binance.com/api/v3/ticker/price?symbols=["' +
+        urlPair +
+        '"]'
+      ).exec();
 
-                    Wallet.findOneAndUpdate(filter, update, (err, doc) => {
-                      if (err) {
-                        console.log(err);
-                        res.json({"status" : "fail", "message" : err});
-                      } else {
-                        res.json({"status" : "success", "data" : ""});
-                      }
-                    });
-                  } else {
-                    res.json({"status" : "fail", "message" : "not_enough_balance"});
-                  }
-                }
-              } else {
-                res.json({"status" : "fail", "message" : "second_pair_not_found"});
-              }
-            })
-            .catch((err) => {
+    var price = result.data[0].price;
+    let list = await Wallet.findOne(
+      { user_id: req.body.user_id, coin_id: "62bc116eb65b02b777c97b3d" },
+      { amount: 1 }
+    ).exec();
+
+    if (list != null) {
+      if (req.body.type == "Limit") {
+        if (
+          parseFloat(list.amount) >=
+          parseFloat(req.body.amount * req.body.target_price)
+        ) {
+          orders.save();
+          const filter = {
+            user_id: req.body.user_id,
+            coin_id: "62bc116eb65b02b777c97b3d",
+          };
+          const update = {
+            amount:
+              parseFloat(list.amount) -
+              parseFloat(req.body.amount * req.body.target_price),
+          };
+
+          Wallet.findOneAndUpdate(filter, update, (err, doc) => {
+            if (err) {
               console.log(err);
-            });
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+              res.json({ "status": "error", "message": err.message });
+            } else {
+              res.json({ "status": "success", "data": "" });
+            }
+          });
+        } else {
+          res.json({ "status": "fail", "message": "not_enougth_balance" });
+        }
+      } else {
+        if (
+          parseFloat(list.amount) >=
+          parseFloat(req.body.amount * price)
+        ) {
+          console.log("ücret " + req.body.amount * price);
+          console.log("bakiye " + list.amount);
+          orders.save();
+          const filter = {
+            user_id: req.body.user_id,
+            coin_id: "62bc116eb65b02b777c97b3d",
+          };
+          const update = {
+            amount:
+              parseFloat(list.amount) -
+              parseFloat(req.body.amount * price),
+          };
+
+          Wallet.findOneAndUpdate(filter, update, (err, doc) => {
+            if (err) {
+              console.log(err);
+              res.json({ "status": "fail", "message": err });
+            } else {
+              res.json({ "status": "success", "data": "" });
+            }
+          });
+        } else {
+          res.json({ "status": "fail", "message": "not_enough_balance" });
+        }
+      }
     } else {
-      res.json({"status" : "fail", "message" : "Forbidden 403"});
+      res.json({ "status": "fail", "message": "second_pair_not_found" });
     }
-  });
+  } else {
+    res.json({ "status": "fail", "message": "Forbidden 403" });
+  }
 });
 
 route.all("/addNotification", upload.none(), (req, res) => {
   var api_key_result = req.body.api_key;
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      const newNotification = new Notification({
-        notificationTitle: req.body.notificationTitle,
-        notificationMessage: req.body.notificationMessage,
-      });
-      newNotification
-        .save()
-        .then((notification) => {
-          NotificationTokens.find({}).then((tokens) => {
-            for (var i = 0; i < tokens.length; i++) {
-              var token = tokens[i].token_id;
-              notifications.sendPushNotification(
-                token,
-                notification.notificationMessage
-              );
-            }
-          });
-          res.json({"status" : "success", "data" : ""});
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+  let result = await authFile.apiKeyChecker(api_key_result).exec();
+
+  if (result === true) {
+    const newNotification = new Notification({
+      notificationTitle: req.body.notificationTitle,
+      notificationMessage: req.body.notificationMessage,
+    });
+    let notifications = newNotification.save().exec();
+
+    let tokens = await NotificationTokens.find({}).exec();
+
+    for (var i = 0; i < tokens.length; i++) {
+      var token = tokens[i].token_id;
+      notifications.sendPushNotification(
+        token,
+        notification.notificationMessage
+      );
     }
-  });
+    res.json({ "status": "success", "data": "" });
+  }
 });
 
 route.all("/getNotification", upload.none(), (req, res) => {
@@ -556,185 +512,155 @@ route.all("/getNotification", upload.none(), (req, res) => {
   var user_id = req.body.user_id;
   var readStatus = "unread";
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      var myArray = new Array();
-      Notification.find({})
-        .sort({ createdAt: -1 })
-        .then((notification) => {
-          for (var i = 0; i < notification.length; i++) {
-            var messageId = notification[i].id;
-            var messageTitle = notification[i].notificationTitle;
-            var messageMessage = notification[i].notificationMessage;
-            var createdAt = notification[i].createdAt;
-            var messageDate = notification[i].createdAt;
-            ReadNotification.findOne({
-              user_id: user_id,
-              notification_id: messageId,
-            }).then((readNotification) => {
-              if (readNotification == null) {
-                readStatus = "unread";
-              } else {
-                readStatus = "read";
-              }
-            });
-            var message = {
-              messageId: messageId,
-              createdAt: createdAt,
-              messageTitle: messageTitle,
-              messageMessage: messageMessage,
-              messageDate: messageDate,
-              readStatus: readStatus,
-            };
-            myArray.push(message);
-          }
-          if (notification.length == 0) {
-            res.json({"status" : "fail", "message" : "no_notification"});
-          } else {
-            res.json({"status" : "success", "data" : myArray});
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+  let result = await authFile.apiKeyChecker(api_key_result).exec();
+
+  if (result === true) {
+    var myArray = new Array();
+    let notification = Notification.find({}).sort({ createdAt: -1 }).exec();
+
+    for (var i = 0; i < notification.length; i++) {
+      var messageId = notification[i].id;
+      var messageTitle = notification[i].notificationTitle;
+      var messageMessage = notification[i].notificationMessage;
+      var createdAt = notification[i].createdAt;
+      var messageDate = notification[i].createdAt;
+      let readNotification = await ReadNotification.findOne({
+        user_id: user_id,
+        notification_id: messageId,
+      }).exec();
+
+      if (readNotification == null) {
+        readStatus = "unread";
+      } else {
+        readStatus = "read";
+      }
+      var message = {
+        messageId: messageId,
+        createdAt: createdAt,
+        messageTitle: messageTitle,
+        messageMessage: messageMessage,
+        messageDate: messageDate,
+        readStatus: readStatus,
+      };
+      myArray.push(message);
     }
-  });
+    if (notification.length == 0) {
+      res.json({ "status": "fail", "message": "no_notification" });
+    } else {
+      res.json({ "status": "success", "data": myArray });
+    }
+  }
 });
 
 route.all("/getOrders", upload.none(), (req, res) => {
   var api_key_result = req.body.api_key;
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      Orders.find({ user_id: req.body.user_id, type: "Limit", status: "0" })
-        .sort({ createdAt: -1 })
-        .then((list) => {
-          res.json({"status" : "success", "data" : list});
-        })
-        .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
-        });
-    } else {
-      res.json({"status" : "fail", "message" : "Forbidden 403"});
-    }
-  });
+  let result = await authFile.apiKeyChecker(api_key_result).exec();
+
+  if (result === true) {
+    let list = await Orders.find({ user_id: req.body.user_id, type: "Limit", status: "0" })
+      .sort({ createdAt: -1 }).exec();
+    res.json({ "status": "success", "data": list });
+  } else {
+    res.json({ "status": "fail", "message": "Forbidden 403" });
+  }
 });
 
 route.all("/getUSDTBalance", upload.none(), (req, res) => {
   var api_key_result = req.body.api_key;
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      Wallet.findOne({
-        user_id: req.body.user_id,
-        coin_id: "62bc116eb65b02b777c97b3d",
-      })
-        .then((list) => {
-          res.json({"status" : "success", "data" : list.amount});
-        })
-        .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
-          console.log(err);
-        });
-    } else {
-      res.json({"status" : "fail", "message" : "Forbidden 403"});
-    }
-  });
+  let result = await authFile.apiKeyChecker(api_key_result).exec();
+
+  if (result === true) {
+    var list = await Wallet.findOne({
+      user_id: req.body.user_id,
+      coin_id: "62bc116eb65b02b777c97b3d",
+    }).exec();
+    res.json({ "status": "success", "data": list.amount });
+  } else {
+    res.json({ "status": "fail", "message": "Forbidden 403" });
+  }
 });
 
 route.all("/getPairs", upload.none(), (req, res) => {
   var api_key_result = req.body.api_key;
   authFile.apiKeyChecker(api_key_result).then((result) => {
     if (result === true) {
-      Pairs.find({})
-        .then((list) => {
-          res.json({"status" : "success", "data" : list});
-        })
-        .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
-        });
+      var list = await Pairs.find({}).exec();
+      res.json({ "status": "success", "data": list });
     } else {
-      res.json({"status" : "fail", "message" : "Forbidden 403"});
+      res.json({ "status": "fail", "message": "Forbidden 403" });
     }
   });
 });
 
 route.all("/addPair", upload.none(), (req, res) => {
   var api_key_result = req.body.api_key;
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      const newPair = new Pairs({
-        name: req.body.name,
-        symbolOne: req.body.symbolOne,
-        symbolTwo: req.body.symbolTwo,
-        digits: req.body.digits,
-        type: req.body.type,
-        symbolOneID: req.body.symbolOneID,
-        symbolTwoID: req.body.symbolTwoID,
-      });
+  var result = await authFile.apiKeyChecker(api_key_result).exec();
 
-      newPair.save();
-      res.json({"status" : "success", "data" : ""});
-    } else {
-      res.json({"status" : "fail", "message" : "Forbidden 403"});
-    }
-  });
+  if (result === true) {
+    const newPair = new Pairs({
+      name: req.body.name,
+      symbolOne: req.body.symbolOne,
+      symbolTwo: req.body.symbolTwo,
+      digits: req.body.digits,
+      type: req.body.type,
+      symbolOneID: req.body.symbolOneID,
+      symbolTwoID: req.body.symbolTwoID,
+    });
+
+    newPair.save();
+    res.json({ "status": "success", "data": "" });
+  } else {
+    res.json({ "status": "fail", "message": "Forbidden 403" });
+  }
 });
 
 route.all("/getDigits", upload.none(), (req, res) => {
   var api_key_result = req.body.api_key;
   var pairName = req.body.pairName;
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      Pairs.findOne({ name: pairName }, { digits: 1, _id: 1 })
-        .then((list) => {
-          res.json({"status" : "success", "data" : list});
-        })
-        .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
-        });
-    } else {
-      res.json({"status" : "fail", "message" : "Forbidden 403"});
-    }
-  });
+  var result = await authFile.apiKeyChecker(api_key_result).exec();
+
+  if (result === true) {
+    var list = await Pairs.findOne({ name: pairName }, { digits: 1, _id: 1 }).exec();
+    res.json({ "status": "success", "data": list });
+  } else {
+    res.json({ "status": "fail", "message": "Forbidden 403" });
+  }
 });
 
 route.all("/getCoinList", upload.none(), async (req, res) => {
   var api_key_result = req.body.api_key;
   var user_id = req.body.user_id;
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      CoinList.find({})
-        .then(async (coins) => {
-          console.log(coins.length);
-          let amounst = await Wallet.find({ user_id: user_id });
-          let result = await parseCoins(coins, amounst);
-          res.json({"status" : "success", "data" : result});
-        })
-        .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
-        });
-    } else {
-      res.json({"status" : "fail", "message" : "Forbidden 403"});
-    }
-  });
+  var resutl = await authFile.apiKeyChecker(api_key_result).exec();
+
+  if (result === true) {
+    var coins = await CoinList.find({}).exec();
+
+    console.log(coins.length);
+    let amounst = await Wallet.find({ user_id: user_id });
+    let result = await parseCoins(coins, amounst);
+    res.json({ "status": "success", "data": result });
+  } else {
+    res.json({ "status": "fail", "message": "Forbidden 403" });
+  }
 });
 
 route.all("/getCoinInfo", upload.none(), (req, res) => {
   var api_key_result = req.body.api_key;
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      CoinList.findOne({ coin_id: req.body.coin_id })
-        .then((coins) => {
-          res.json({"status" : "success", "data" : coins});
-        })
-        .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
-        });
-    } else {
-      res.json({"status" : "fail", "message" : "Forbidden 403"});
-    }
-  });
+  var result = await authFile.apiKeyChecker(api_key_result).exec();
+
+  if (result === true) {
+    CoinList.findOne({ coin_id: req.body.coin_id })
+      .then((coins) => {
+        res.json({ "status": "success", "data": coins });
+      })
+      .catch((err) => {
+        res.json({ "status": "fail", "message": err });
+      });
+  } else {
+    res.json({ "status": "fail", "message": "Forbidden 403" });
+  }
 });
 
 route.all("/getReferral", upload.none(), (req, res) => {
@@ -742,44 +668,35 @@ route.all("/getReferral", upload.none(), (req, res) => {
   var user_id = req.body.user_id;
   var refCode = req.body.refCode;
   var results = [];
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      Referral.find({ reffer: refCode })
-        .then(async (ref_user) => {
-          if (ref_user != null) {
-            for (let i = 0; i < ref_user.length; i++) {
-              var user_table = await User.find({
-                user_id: ref_user[i].user_id,
-              });
-            }
-            var result = await parseUsers(ref_user, user_table);
+  var result = await authFile.apiKeyChecker(api_key_result).exec();
 
-            console.log(result);
-            res.json({"status" : "success", "data" : result});
-          } else {
-            res.json({"status" : "fail", "message" : "not_found"});
-          }
-        })
-        .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
+  if (result === true) {
+    var ref_user = await Referral.find({ reffer: refCode }).exec();
+
+    if (ref_user != null) {
+      for (let i = 0; i < ref_user.length; i++) {
+        var user_table = await User.find({
+          user_id: ref_user[i].user_id,
         });
+      }
+      var result = await parseUsers(ref_user, user_table);
+
+      console.log(result);
+      res.json({ "status": "success", "data": result });
+    } else {
+      res.json({ "status": "fail", "message": "not_found" });
     }
-  });
+  }
 });
 
 route.all("/getWallet", upload.none(), (req, res) => {
   var api_key_result = req.body.api_key;
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      Wallet.find({ user_id: req.body.user_id })
-        .then((wallets) => {
-          res.json({"status" : "success", "data" : wallets});
-        })
-        .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
-        });
-    }
-  });
+  var result = await authFile.apiKeyChecker(api_key_result).exec();
+
+  if (result === true) {
+    var wallets = await Wallet.find({ user_id: req.body.user_id }).exec();
+    res.json({ "status": "success", "data": wallets });
+  }
 });
 
 route.all("/2fa", upload.none(), (req, res) => {
@@ -788,46 +705,37 @@ route.all("/2fa", upload.none(), (req, res) => {
   var api_key_result = req.body.api_key;
   var wantToTrust = req.body.wantToTrust;
   var log_id = req.body.log_id;
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      User.findOne({
-        _id: user_id,
-      })
-        .then((user) => {
-          if (user != null) {
-            var twofa = user["twofa"];
+  var result = await authFile.apiKeyChecker(api_key_result).exec();
 
-            authFile.verifyToken(twofapin, twofa).then((result2) => {
-              if (result2 === true) {
-                console.log(wantToTrust);
-                if (wantToTrust == "yes") {
-                  var update = { trust: "yes" };
-                  LoginLogs.findOneAndUpdate({ _id: log_id }, update)
-                    .then((log) => {
-                      console.log(log);
-                      res.json({"status" : "success", "data" : "2fa_success"});
-                    })
-                    .catch((err) => {
-                      res.json(err);
-                    });
-                } else {
-                  res.json({"status" : "data", "message" : "2fa_success"});
-                }
-              } else {
-                res.json({"status" : "fail", "message" : "2fa_failed"});
-              }
-            });
-          } else {
-            res.json({"status" : "fail", "message" : "login_failed"});
-          }
-        })
-        .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
-        });
+  if (result === true) {
+    var user = await User.findOne({
+      _id: user_id,
+    }).exec();
+
+    if (user != null) {
+      var twofa = user["twofa"];
+
+      var result2 = await authFile.verifyToken(twofapin, twofa).exec();
+
+      if (result2 === true) {
+        console.log(wantToTrust);
+        if (wantToTrust == "yes") {
+          var update = { trust: "yes" };
+          var log = await LoginLogs.findOneAndUpdate({ _id: log_id }, update).exec();
+          res.json({ "status": "success", "data": "2fa_success" });
+
+        } else {
+          res.json({ "status": "data", "message": "2fa_success" });
+        }
+      } else {
+        res.json({ "status": "fail", "message": "2fa_failed" });
+      }
     } else {
-      res.json({"status" : "fail", "message" : "403 Forbidden"});
+      res.json({ "status": "fail", "message": "login_failed" });
     }
-  });
+  } else {
+    res.json({ "status": "fail", "message": "403 Forbidden" });
+  }
 });
 
 route.all("/update2fa", upload.none(), (req, res) => {
@@ -836,29 +744,29 @@ route.all("/update2fa", upload.none(), (req, res) => {
   var twofapin = req.body.twofapin;
   var api_key_result = req.body.api_key;
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      const filter = { _id: user_id };
-      const update = { twofa: twofa };
+  var result = await authFile.apiKeyChecker(api_key_result).exec();
 
-      authFile.verifyToken(twofapin, twofa).then((result2) => {
-        if (result2 === true) {
-          User.findOneAndUpdate(filter, update, (err, doc) => {
-            if (err) {
-              console.log(err);
-              res.json({"status" : "fail", "message" : err});
-            } else {
-              res.json({"status" : "success", "data" : "2fa_updated"});
-            }
-          });
+  if (result === true) {
+    const filter = { _id: user_id };
+    const update = { twofa: twofa };
+
+    var result2 = await authFile.verifyToken(twofapin, twofa).exec();
+
+    if (result2 === true) {
+      User.findOneAndUpdate(filter, update, (err, doc) => {
+        if (err) {
+          console.log(err);
+          res.json({ "status": "fail", "message": err });
         } else {
-          res.json({"status" : "fail", "message" : "wrong_auth_pin"});
+          res.json({ "status": "success", "data": "2fa_updated" });
         }
       });
     } else {
-      res.json({"status" : "fail", "message" : "403 Forbidden"});
+      res.json({ "status": "fail", "message": "wrong_auth_pin" });
     }
-  });
+  } else {
+    res.json({ "status": "fail", "message": "403 Forbidden" });
+  }
 });
 
 route.all("/cancelOrder", upload.none(), (req, res) => {
@@ -868,73 +776,61 @@ route.all("/cancelOrder", upload.none(), (req, res) => {
 
   var api_key_result = req.body.api_key;
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      const filter = { user_id: user_id, _id: order_id };
-      const update = { status: "2" };
-      Pairs.findOne({ id: pair_id })
-        .then((pair) => {
-          if (pair != null) {
-            var symbolTwoID = pair.symbolTwoID;
-            var symbolOneID = pair.symbolOneID;
+  var result = await authFile.apiKeyChecker(api_key_result).exec();
 
-            Wallet.findOne({ user_id: user_id, coin_id: symbolTwoID })
-              .then((wallet) => {
-                if (wallet != null) {
-                  var balance = wallet.amount;
-                  Orders.findOne(filter)
-                    .then((order) => {
-                      if (order != null) {
-                        var priceAmount = order.priceAmount;
-                        var newBalance =
-                          parseFloat(balance) + parseFloat(priceAmount);
-                        var update2 = { amount: newBalance };
-                        Wallet.findOneAndUpdate(
-                          { user_id: user_id, coin_id: symbolTwoID },
-                          update2,
-                          (err, doc) => {
-                            if (err) {
-                              console.log(err);
-                              res.json({"status" : "fail", "message" : error});
-                            } else {
-                              Orders.findOneAndUpdate(
-                                filter,
-                                update,
-                                (err, doc) => {
-                                  if (err) {
-                                    console.log(err);
-                                    res.json({"status" : "fail", "message" : err});
-                                  } else {
-                                    res.json({"status" : "success", "data" : "cancelled"});
-                                  }
-                                }
-                              );
-                            }
-                          }
-                        );
-                      } else {
-                        res.json({"status" : "fail", "message" : "pair_not_found"});
-                      }
-                    })
-                    .catch((err) => {
-                      res.json({"status" : "fail", "message" : err});
-                    });
-                }
-              })
-              .catch((err) => {
-                res.json({"status" : "fail", "message" : err});
-              });
-          } else {
-            res.json({"status" : "fail", "message" : "wallet_not_found"});
-          }
-        })
-        .catch((err) => {
-          console.log({"status" : "fail", "message" : err});
-        });
+  if (result === true) {
+    const filter = { user_id: user_id, _id: order_id };
+    const update = { status: "2" };
+    var pair = await Pairs.findOne({ id: pair_id }).exec();
+
+    if (pair != null) {
+      var symbolTwoID = pair.symbolTwoID;
+      var symbolOneID = pair.symbolOneID;
+
+      var wallet = await Wallet.findOne({ user_id: user_id, coin_id: symbolTwoID }).exec();
+
+      if (wallet != null) {
+        var balance = wallet.amount;
+        let order = await Orders.findOne(filter).exec();
+
+        if (order != null) {
+          var priceAmount = order.priceAmount;
+          var newBalance =
+            parseFloat(balance) + parseFloat(priceAmount);
+          var update2 = { amount: newBalance };
+          Wallet.findOneAndUpdate(
+            { user_id: user_id, coin_id: symbolTwoID },
+            update2,
+            (err, doc) => {
+              if (err) {
+                console.log(err);
+                res.json({ "status": "fail", "message": error });
+              } else {
+                Orders.findOneAndUpdate(
+                  filter,
+                  update,
+                  (err, doc) => {
+                    if (err) {
+                      console.log(err);
+                      res.json({ "status": "fail", "message": err });
+                    } else {
+                      res.json({ "status": "success", "data": "cancelled" });
+                    }
+                  }
+                );
+              }
+            }
+          );
+        } else {
+          res.json({ "status": "fail", "message": "pair_not_found" });
+        }
+      }
     } else {
-      res.json({"status" : "fail", "message" : "403 Forbidden"});
+      res.json({ "status": "fail", "message": "wallet_not_found" });
     }
-  });
+  } else {
+    res.json({ "status": "fail", "message": "403 Forbidden" });
+  }
 });
 
 route.all("/addSecurityKey", upload.none(), (req, res) => {
@@ -946,40 +842,36 @@ route.all("/addSecurityKey", upload.none(), (req, res) => {
   var deposit = req.body.deposit;
   var withdraw = req.body.withdraw;
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      SecurityKey.findOne({
+  var result = await authFile.apiKeyChecker(api_key_result).exec();
+
+  if (result === true) {
+    var securityKey = await SecurityKey.findOne({
+      user_id: user_id,
+      status: 1,
+    }).exec();
+
+    if (securityKey != null) {
+      res.json({ "status": "success", "data": "secury_key_active" });
+    } else {
+      var newSecurityKey = new SecurityKey({
         user_id: user_id,
+        key: security_key,
         status: 1,
-      })
-        .then((securityKey) => {
-          if (securityKey != null) {
-            res.json({"status" : "success", "data" : "secury_key_active"});
-          } else {
-            var newSecurityKey = new SecurityKey({
-              user_id: user_id,
-              key: security_key,
-              status: 1,
-              trade: trade,
-              wallet: wallet,
-              deposit: deposit,
-              withdraw: withdraw,
-            });
-            newSecurityKey.save((err, doc) => {
-              if (err) {
-                console.log(err);
-                res.json({"status" : "fail", "message" : err});
-              } else {
-                res.json({"status" : "success", "data" : ""});
-              }
-            });
-          }
-        })
-        .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
-        });
+        trade: trade,
+        wallet: wallet,
+        deposit: deposit,
+        withdraw: withdraw,
+      });
+      newSecurityKey.save((err, doc) => {
+        if (err) {
+          console.log(err);
+          res.json({ "status": "fail", "message": err });
+        } else {
+          res.json({ "status": "success", "data": "" });
+        }
+      });
     }
-  });
+  }
 });
 
 route.all("/updateSecurityKey", upload.none(), (req, res) => {
@@ -991,39 +883,35 @@ route.all("/updateSecurityKey", upload.none(), (req, res) => {
   var deposit = req.body.deposit;
   var withdraw = req.body.withdraw;
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      SecurityKey.findOne({
-        user_id: user_id,
-        status: 1,
-        id: req.body.id,
-      })
-        .then((securityKey) => {
-          if (securityKey != null) {
-            const filter = { id: req.body.id, status: 1 };
-            const update = {
-              wallet: wallet,
-              deposit: deposit,
-              withdraw: withdraw,
-              trade: trade,
-            };
-            SecurityKey.findOneAndUpdate(filter, update, (err, doc) => {
-              if (err) {
-                console.log(err);
-                res.json({"status" : "fail", "message" : err});
-              } else {
-                res.json({"status" : "success", "data" : "update_success"});
-              }
-            });
-          } else {
-            res.json({"status" : "fail", "message" : "security_key_not_found"});
-          }
-        })
-        .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
-        });
+  var result = await authFile.apiKeyChecker(api_key_result).exec();
+
+  if (result === true) {
+    var securityKey = await SecurityKey.findOne({
+      user_id: user_id,
+      status: 1,
+      id: req.body.id,
+    }).exec();
+
+    if (securityKey != null) {
+      const filter = { id: req.body.id, status: 1 };
+      const update = {
+        wallet: wallet,
+        deposit: deposit,
+        withdraw: withdraw,
+        trade: trade,
+      };
+      SecurityKey.findOneAndUpdate(filter, update, (err, doc) => {
+        if (err) {
+          console.log(err);
+          res.json({ "status": "fail", "message": err });
+        } else {
+          res.json({ "status": "success", "data": "update_success" });
+        }
+      });
+    } else {
+      res.json({ "status": "fail", "message": "security_key_not_found" });
     }
-  });
+  }
 });
 
 route.all("/lastActivities", upload.none(), (req, res) => {
@@ -1034,17 +922,13 @@ route.all("/lastActivities", upload.none(), (req, res) => {
     if (result === true) {
       if (limit <= 100) {
         var sort = { createdAt: -1 };
-        LoginLogs.find({ user_id: user_id })
+        var logs = await LoginLogs.find({ user_id: user_id })
           .sort(sort)
-          .limit(limit)
-          .then((logs) => {
-            res.json({"status" : "success", "data" : logs});
-          })
-          .catch((err) => {
-            res.json({"status" : "fail", "message" : err});
-          });
+          .limit(limit).exec();
+        res.json({ "status": "success", "data": logs });
+
       } else {
-        res.json({"status" : "success", "data" : "max_limit_100"});
+        res.json({ "status": "success", "data": "max_limit_100" });
       }
     }
   });
@@ -1057,43 +941,39 @@ route.all("/updatePhone", upload.none(), (req, res) => {
   var newPhoneNumber = req.body.phone_number;
   var api_key_result = req.body.api_key;
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      User.findOne({
-        user_id: user_id,
-        status: 1,
-      })
-        .then((user) => {
-          if (user != null) {
-            var twofa = user["twofa"];
-            const filter = { _id: user_id, status: 1 };
-            authFile.verifyToken(twofapin, twofa).then((result2) => {
-              if (result2 === true) {
-                const update = {
-                  country_code: country_code,
-                  phone_number: newPhoneNumber,
-                };
-                User.findOneAndUpdate(filter, update, (err, doc) => {
-                  if (err) {
-                    console.log(err);
-                    res.json({"status" : "fail", "message" : err});
-                  } else {
-                    res.json({"status" : "success", "data" : "update_success"});
-                  }
-                });
-              } else {
-                res.json({"status" : "fail", "message" : "2fa_failed"});
-              }
-            });
+  var result = await authFile.apiKeyChecker(api_key_result).exec();
+
+  if (result === true) {
+    let user = await User.findOne({
+      user_id: user_id,
+      status: 1,
+    }).exec();
+
+    if (user != null) {
+      var twofa = user["twofa"];
+      const filter = { _id: user_id, status: 1 };
+      let result2 = await authFile.verifyToken(twofapin, twofa).exec();
+
+      if (result2 === true) {
+        const update = {
+          country_code: country_code,
+          phone_number: newPhoneNumber,
+        };
+        User.findOneAndUpdate(filter, update, (err, doc) => {
+          if (err) {
+            console.log(err);
+            res.json({ "status": "fail", "message": err });
+          } else {
+            res.json({ "status": "success", "data": "update_success" });
           }
-        })
-        .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
         });
-    } else {
-      res.json({"status" : "fail", "message" : "403 Forbidden"});
+      } else {
+        res.json({ "status": "fail", "message": "2fa_failed" });
+      }
     }
-  });
+  } else {
+    res.json({ "status": "fail", "message": "403 Forbidden" });
+  }
 });
 
 route.all("/resetPassword", upload.none(), (req, res) => {
@@ -1103,40 +983,36 @@ route.all("/resetPassword", upload.none(), (req, res) => {
 
   var api_key_result = req.body.api_key;
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      User.findOne({
-        user_id: user_id,
-        status: 1,
-      })
-        .then((user) => {
-          if (user != null) {
-            var twofa = user["twofa"];
-            const filter = { _id: user_id, status: 1 };
-            authFile.verifyToken(twofapin, twofa).then((result2) => {
-              if (result2 === true) {
-                const update = { password: utilities.hashData(password) };
-                User.findOneAndUpdate(filter, update, (err, doc) => {
-                  if (err) {
-                    console.log(err);
-                    res.json({"status" : "fail", "message" : err});
-                  } else {
-                    res.json({"status" : "succes", "message" : "update_success"});
-                  }
-                });
-              } else {
-                res.json({"status" : "fail", "message" : "2fa_failed"});
-              }
-            });
+  var result = await authFile.apiKeyChecker(api_key_result).exec();
+
+  if (result === true) {
+    let user = await User.findOne({
+      user_id: user_id,
+      status: 1,
+    }).exec();
+
+    if (user != null) {
+      var twofa = user["twofa"];
+      const filter = { _id: user_id, status: 1 };
+      let result2 = await authFile.verifyToken(twofapin, twofa).exec();
+
+      if (result2 === true) {
+        const update = { password: utilities.hashData(password) };
+        User.findOneAndUpdate(filter, update, (err, doc) => {
+          if (err) {
+            console.log(err);
+            res.json({ "status": "fail", "message": err });
+          } else {
+            res.json({ "status": "succes", "message": "update_success" });
           }
-        })
-        .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
         });
-    } else {
-      res.json({"status" : "fail", "message" : "403 Forbidden"});
+      } else {
+        res.json({ "status": "fail", "message": "2fa_failed" });
+      }
     }
-  });
+  } else {
+    res.json({ "status": "fail", "message": "403 Forbidden" });
+  }
 });
 
 route.all("/changePassword", upload.none(), (req, res) => {
@@ -1147,60 +1023,56 @@ route.all("/changePassword", upload.none(), (req, res) => {
 
   var api_key_result = req.body.api_key;
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      User.findOne({
-        user_id: user_id,
-        status: 1,
-      })
-        .then((user) => {
-          if (user != null) {
-            var twofa = user["twofa"];
-            var db_password = user["password"];
-            const filter = { _id: user_id, status: 1 };
-            if (utilities.hashData(old_password) == db_password) {
-              authFile.verifyToken(twofapin, twofa).then((result2) => {
-                if (result2 === true) {
-                  const update = { password: utilities.hashData(password) };
-                  User.findOneAndUpdate(filter, update, (err, doc) => {
-                    if (err) {
-                      console.log(err);
-                      res.json({"status" : "fail", "message" : err});
-                    } else {
-                      res.json({"status" : "success", "data" : "update_success"});
-                    }
-                  });
-                } else {
-                  res.json({"status" : "fail", "message" : "2fa_failed"});
-                }
-              });
+  let result = await authFile.apiKeyChecker(api_key_result).exec();
+
+  if (result === true) {
+    let user = await User.findOne({
+      user_id: user_id,
+      status: 1,
+    }).exec();
+
+    if (user != null) {
+      var twofa = user["twofa"];
+      var db_password = user["password"];
+      const filter = { _id: user_id, status: 1 };
+      if (utilities.hashData(old_password) == db_password) {
+        let result2 = await authFile.verifyToken(twofapin, twofa).exec();
+
+        if (result2 === true) {
+          const update = { password: utilities.hashData(password) };
+          User.findOneAndUpdate(filter, update, (err, doc) => {
+            if (err) {
+              console.log(err);
+              res.json({ "status": "fail", "message": err });
             } else {
-              res.json({"status" : "fail", "message" : "wrong_old_password"});
+              res.json({ "status": "success", "data": "update_success" });
             }
-          } else {
-            res.json({"status" : "fail", "message" : "user_not_found"});
-          }
-        })
-        .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
-        });
+          });
+        } else {
+          res.json({ "status": "fail", "message": "2fa_failed" });
+        }
+      } else {
+        res.json({ "status": "fail", "message": "wrong_old_password" });
+      }
     } else {
-      res.json({"status" : "fail", "message" : "403 Forbidden"});
+      res.json({ "status": "fail", "message": "user_not_found" });
     }
-  });
+  } else {
+    res.json({ "status": "fail", "message": "403 Forbidden" });
+  }
 });
 
 route.all("/get2fa", upload.none(), (req, res) => {
   var api_key_result = req.body.api_key;
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      var formattedKey = authenticator.generateKey();
-      res.json({"status" : "success", "data" : formattedKey});
-    } else {
-      res.json({"status" : "fail", "message" : "403 Forbidden"});
-    }
-  });
+  let result = await authFile.apiKeyChecker(api_key_result).exec();
+
+  if (result === true) {
+    var formattedKey = authenticator.generateKey();
+    res.json({ "status": "success", "data": formattedKey });
+  } else {
+    res.json({ "status": "fail", "message": "403 Forbidden" });
+  }
 });
 
 route.all("/getUserInfo", upload.none(), (req, res) => {
@@ -1208,44 +1080,44 @@ route.all("/getUserInfo", upload.none(), (req, res) => {
   var api_key_result = req.body.api_key;
   console.log(user_id);
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      User.findOne({
-        _id: user_id,
-      })
-        .then((user) => {
-          if (user != null) {
-            var twofaStatus = user["twofa"];
-            var results = [];
-            results.push({
-              name: user["name"],
-              response: "success",
-              surname: user["surname"],
-              email: user["email"],
-              country_code: user["country_code"],
-              phone_number: user["phone_number"],
-            });
-            console.log(results);
-            var status = user["status"];
+  let result = await authFile.apiKeyChecker(api_key_result).exec();
 
-            if (status == 1) {
-              res.json({"status" : "success", "data" : results});
-            }
+  if (result === true) {
+    User.findOne({
+      _id: user_id,
+    })
+      .then((user) => {
+        if (user != null) {
+          var twofaStatus = user["twofa"];
+          var results = [];
+          results.push({
+            name: user["name"],
+            response: "success",
+            surname: user["surname"],
+            email: user["email"],
+            country_code: user["country_code"],
+            phone_number: user["phone_number"],
+          });
+          console.log(results);
+          var status = user["status"];
 
-            if (status == 0) {
-              res.json({"status" : "fail", "message" : "account_not_activated"});
-            }
-          } else {
-            res.json({"status" : "fail", "message" : "login_failed"});
+          if (status == 1) {
+            res.json({ "status": "success", "data": results });
           }
-        })
-        .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
-        });
-    } else {
-      res.json({"status" : "fail", "message" : "403 Forbidden"});
-    }
-  });
+
+          if (status == 0) {
+            res.json({ "status": "fail", "message": "account_not_activated" });
+          }
+        } else {
+          res.json({ "status": "fail", "message": "login_failed" });
+        }
+      })
+      .catch((err) => {
+        res.json({ "status": "fail", "message": err });
+      });
+  } else {
+    res.json({ "status": "fail", "message": "403 Forbidden" });
+  }
 });
 
 route.all("/getUserId", upload.none(), (req, res) => {
@@ -1264,16 +1136,16 @@ route.all("/getUserId", upload.none(), (req, res) => {
               response: "success",
               user_id: user["id"],
             });
-            res.json({"status" : "success", "data" : myArray});
+            res.json({ "status": "success", "data": myArray });
           } else {
-            res.json({"status" : "fail", "message" : "user_not_found"});
+            res.json({ "status": "fail", "message": "user_not_found" });
           }
         })
         .catch((err) => {
-          res.json({"status" : "fail", "message" : err});
+          res.json({ "status": "fail", "message": err });
         });
     } else {
-      res.json({"status" : "fail", "message" : "403 Forbidden"});
+      res.json({ "status": "fail", "message": "403 Forbidden" });
     }
   });
 });
@@ -1299,13 +1171,13 @@ route.all("/getSecurityKey", upload.none(), (req, res) => {
             withdraw: securityKey["withdraw"],
             id: securityKey["id"],
           });
-          res.json({"status" : "success", "data" : myArray});
+          res.json({ "status": "success", "data": myArray });
         } else {
           var myArray = [];
           myArray.push({
             response: "security_key_not_active",
           });
-          res.json({"status" : "fail", "message" : "security_key_not_active"});
+          res.json({ "status": "fail", "message": "security_key_not_active" });
         }
       });
     }
@@ -1324,9 +1196,9 @@ route.all("/checkSecurityKey", upload.none(), (req, res) => {
         key: utilities.hashData(req.body.key),
       }).then((securityKey) => {
         if (securityKey != null) {
-          res.json({"status" : "success", "data" : ""});
+          res.json({ "status": "success", "data": "" });
         } else {
-          res.json({"status" : "fail", "message" : "wrong_key"});
+          res.json({ "status": "fail", "message": "wrong_key" });
         }
       });
     }
@@ -1354,20 +1226,20 @@ route.all("/deleteSecurityKey", upload.none(), (req, res) => {
                 (err, doc) => {
                   if (err) {
                     console.log(err);
-                    res.json({"status" : "fail", "message" : err});
+                    res.json({ "status": "fail", "message": err });
                   } else {
-                    res.json({"status" : "success", "data" : ""});
+                    res.json({ "status": "success", "data": "" });
                   }
                 }
               );
             } else {
-              res.json({"status" : "fail", "message" : "2fa_failed"});
+              res.json({ "status": "fail", "message": "2fa_failed" });
             }
           });
         }
       });
     } else {
-      res.json({"status" : "fail", "message" : "403 Forbidden"});
+      res.json({ "status": "fail", "message": "403 Forbidden" });
     }
   });
 });
@@ -1403,25 +1275,25 @@ route.all("/addWithdraw", upload.none(), (req, res) => {
                 newWithdraw.save(function (err, room) {
                   if (err) {
                     console.log(token);
-                    res.json({"status" : "fail", "message" : err});
+                    res.json({ "status": "fail", "message": err });
                   } else {
                     var body =
                       "A withdraw order has been given from your account. Please wait for the admin to confirm your order.\n\n";
                     notifications.sendPushNotification(token, body);
-                    res.json({"status" : "success", "data" : ""});
+                    res.json({ "status": "success", "data": "" });
                   }
                 });
               }
             });
           } else {
-            res.json({"status" : "fail", "message" : "not_enough_balance"});
+            res.json({ "status": "fail", "message": "not_enough_balance" });
           }
         })
         .catch((err) => {
           console.log(err);
         });
     } else {
-      res.json({"status" : "fail", "message" : "403 Forbidden"});
+      res.json({ "status": "fail", "message": "403 Forbidden" });
     }
   });
 });
@@ -1442,7 +1314,7 @@ route.all("/getDepositsUSDT", upload.none(), (req, res) => {
       utilities.addDeposit(user_id, coin_symbol, amount, address, txid);
     }
   });
-  res.json({"status" : "success", "data" : ""});
+  res.json({ "status": "success", "data": "" });
 });
 
 route.listen(port, () => {
