@@ -319,7 +319,7 @@ route.all("/register", upload.none(), (req, res) => {
 
   async function register() {
     if (emailUnique == "true" && phoneUnique == "true") {
-      newUser.save((err, usr) => {
+      newUser.save(async function(err, usr) {
         if (refStatus == "yes") {
           let user = await UserRef.findOne({ refCode: reffer }).exec();
 
@@ -363,7 +363,7 @@ route.all("/register", upload.none(), (req, res) => {
   uniqueCheck();
 });
 
-route.all("/addCoin", upload.none(), (req, res) => {
+route.all("/addCoin", upload.none(), async function(req, res)  {
   var api_key_result = req.body.api_key;
 
   const newCoin = new CoinList({
@@ -384,7 +384,7 @@ route.all("/addCoin", upload.none(), (req, res) => {
   }
 });
 
-route.all("/addOrders", upload.none(), (req, res) => {
+route.all("/addOrders", upload.none(), async function(req, res)  {
   var api_key_result = req.body.api_key;
 
   const orders = new Orders({
@@ -482,7 +482,7 @@ route.all("/addOrders", upload.none(), (req, res) => {
   }
 });
 
-route.all("/addNotification", upload.none(), (req, res) => {
+route.all("/addNotification", upload.none(), async function(req, res)  {
   var api_key_result = req.body.api_key;
 
   let result = await authFile.apiKeyChecker(api_key_result).exec();
@@ -507,7 +507,7 @@ route.all("/addNotification", upload.none(), (req, res) => {
   }
 });
 
-route.all("/getNotification", upload.none(), (req, res) => {
+route.all("/getNotification", upload.none(), async function(req, res) {
   var api_key_result = req.body.api_key;
   var user_id = req.body.user_id;
   var readStatus = "unread";
@@ -552,7 +552,7 @@ route.all("/getNotification", upload.none(), (req, res) => {
   }
 });
 
-route.all("/getOrders", upload.none(), (req, res) => {
+route.all("/getOrders", upload.none(), async function(req, res) {
   var api_key_result = req.body.api_key;
   let result = await authFile.apiKeyChecker(api_key_result).exec();
 
@@ -565,7 +565,7 @@ route.all("/getOrders", upload.none(), (req, res) => {
   }
 });
 
-route.all("/getUSDTBalance", upload.none(), (req, res) => {
+route.all("/getUSDTBalance", upload.none(), async function(req, res)  {
   var api_key_result = req.body.api_key;
   let result = await authFile.apiKeyChecker(api_key_result).exec();
 
@@ -580,9 +580,9 @@ route.all("/getUSDTBalance", upload.none(), (req, res) => {
   }
 });
 
-route.all("/getPairs", upload.none(), (req, res) => {
+route.all("/getPairs", upload.none(), async function(req, res) {
   var api_key_result = req.body.api_key;
-  authFile.apiKeyChecker(api_key_result).then((result) => {
+  authFile.apiKeyChecker(api_key_result).then(async function(result) {
     if (result === true) {
       var list = await Pairs.find({}).exec();
       res.json({ "status": "success", "data": list });
@@ -592,7 +592,7 @@ route.all("/getPairs", upload.none(), (req, res) => {
   });
 });
 
-route.all("/addPair", upload.none(), (req, res) => {
+route.all("/addPair", upload.none(), async function(req, res) {
   var api_key_result = req.body.api_key;
   var result = await authFile.apiKeyChecker(api_key_result).exec();
 
@@ -614,7 +614,7 @@ route.all("/addPair", upload.none(), (req, res) => {
   }
 });
 
-route.all("/getDigits", upload.none(), (req, res) => {
+route.all("/getDigits", upload.none(), async function(req, res)  {
   var api_key_result = req.body.api_key;
   var pairName = req.body.pairName;
   var result = await authFile.apiKeyChecker(api_key_result).exec();
@@ -627,7 +627,7 @@ route.all("/getDigits", upload.none(), (req, res) => {
   }
 });
 
-route.all("/getCoinList", upload.none(), async (req, res) => {
+route.all("/getCoinList", upload.none(), async  function(req, res) {
   var api_key_result = req.body.api_key;
   var user_id = req.body.user_id;
 
@@ -645,7 +645,7 @@ route.all("/getCoinList", upload.none(), async (req, res) => {
   }
 });
 
-route.all("/getCoinInfo", upload.none(), (req, res) => {
+route.all("/getCoinInfo", upload.none(), async function(req, res) {
   var api_key_result = req.body.api_key;
 
   var result = await authFile.apiKeyChecker(api_key_result).exec();
@@ -663,7 +663,7 @@ route.all("/getCoinInfo", upload.none(), (req, res) => {
   }
 });
 
-route.all("/getReferral", upload.none(), (req, res) => {
+route.all("/getReferral", upload.none(), async function(req, res){
   var api_key_result = req.body.api_key;
   var user_id = req.body.user_id;
   var refCode = req.body.refCode;
@@ -689,7 +689,7 @@ route.all("/getReferral", upload.none(), (req, res) => {
   }
 });
 
-route.all("/getWallet", upload.none(), (req, res) => {
+route.all("/getWallet", upload.none(), async function(req, res) {
   var api_key_result = req.body.api_key;
   var result = await authFile.apiKeyChecker(api_key_result).exec();
 
@@ -699,7 +699,7 @@ route.all("/getWallet", upload.none(), (req, res) => {
   }
 });
 
-route.all("/2fa", upload.none(), (req, res) => {
+route.all("/2fa", upload.none(), async function(req, res) {
   var twofapin = req.body.twofapin;
   var user_id = req.body.user_id;
   var api_key_result = req.body.api_key;
@@ -738,7 +738,7 @@ route.all("/2fa", upload.none(), (req, res) => {
   }
 });
 
-route.all("/update2fa", upload.none(), (req, res) => {
+route.all("/update2fa", upload.none(), async function(req, res)  {
   var user_id = req.body.user_id;
   var twofa = req.body.twofa;
   var twofapin = req.body.twofapin;
@@ -769,7 +769,7 @@ route.all("/update2fa", upload.none(), (req, res) => {
   }
 });
 
-route.all("/cancelOrder", upload.none(), (req, res) => {
+route.all("/cancelOrder", upload.none(), async function(req, res)  {
   var user_id = req.body.user_id;
   var order_id = req.body.order_id;
   var pair_id = req.body.pair_id;
@@ -833,7 +833,7 @@ route.all("/cancelOrder", upload.none(), (req, res) => {
   }
 });
 
-route.all("/addSecurityKey", upload.none(), (req, res) => {
+route.all("/addSecurityKey", upload.none(),async function (req, res)  {
   var user_id = req.body.user_id;
   var security_key = utilities.hashData(req.body.security_key);
   var api_key_result = req.body.api_key;
@@ -874,7 +874,7 @@ route.all("/addSecurityKey", upload.none(), (req, res) => {
   }
 });
 
-route.all("/updateSecurityKey", upload.none(), (req, res) => {
+route.all("/updateSecurityKey", upload.none(), async function(req, res)  {
   var user_id = req.body.user_id;
   var security_key = req.body.security_key;
   var api_key_result = req.body.api_key;
@@ -914,11 +914,11 @@ route.all("/updateSecurityKey", upload.none(), (req, res) => {
   }
 });
 
-route.all("/lastActivities", upload.none(), (req, res) => {
+route.all("/lastActivities", upload.none(), async function(req, res) {
   var user_id = req.body.user_id;
   var api_key_result = req.body.api_key;
   var limit = req.body.limit;
-  authFile.apiKeyChecker(api_key_result).then((result) => {
+  authFile.apiKeyChecker(api_key_result).then(async function(result)  {
     if (result === true) {
       if (limit <= 100) {
         var sort = { createdAt: -1 };
@@ -934,7 +934,7 @@ route.all("/lastActivities", upload.none(), (req, res) => {
   });
 });
 
-route.all("/updatePhone", upload.none(), (req, res) => {
+route.all("/updatePhone", upload.none(), async function(req, res)  {
   var user_id = req.body.user_id;
   var twofapin = req.body.twofapin;
   var newCountryCode = req.body.country_code;
@@ -976,7 +976,7 @@ route.all("/updatePhone", upload.none(), (req, res) => {
   }
 });
 
-route.all("/resetPassword", upload.none(), (req, res) => {
+route.all("/resetPassword", upload.none(), async function(req, res)  {
   var user_id = req.body.user_id;
   var twofapin = req.body.twofapin;
   var password = req.body.password;
@@ -1015,7 +1015,7 @@ route.all("/resetPassword", upload.none(), (req, res) => {
   }
 });
 
-route.all("/changePassword", upload.none(), (req, res) => {
+route.all("/changePassword", upload.none(), async function(req, res)  {
   var user_id = req.body.user_id;
   var twofapin = req.body.twofapin;
   var password = req.body.password;
@@ -1062,7 +1062,7 @@ route.all("/changePassword", upload.none(), (req, res) => {
   }
 });
 
-route.all("/get2fa", upload.none(), (req, res) => {
+route.all("/get2fa", upload.none(), async function(req, res)  {
   var api_key_result = req.body.api_key;
 
   let result = await authFile.apiKeyChecker(api_key_result).exec();
@@ -1075,7 +1075,7 @@ route.all("/get2fa", upload.none(), (req, res) => {
   }
 });
 
-route.all("/getUserInfo", upload.none(), async(req, res) => {
+route.all("/getUserInfo", upload.none(), async function(req, res)  {
   var user_id = req.body.user_id;
   var api_key_result = req.body.api_key;
   console.log(user_id);
@@ -1114,7 +1114,7 @@ route.all("/getUserInfo", upload.none(), async(req, res) => {
   }
 });
 
-route.all("/getUserId", upload.none(), (req, res) => {
+route.all("/getUserId", upload.none(), async function(req, res)  {
   var email = req.body.email;
   var api_key_result = req.body.api_key;
 
