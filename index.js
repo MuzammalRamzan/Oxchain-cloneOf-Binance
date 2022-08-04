@@ -497,8 +497,7 @@ route.all("/getNotification", upload.none(), async function(req, res) {
 
   if (result === true) {
     var myArray = new Array();
-    let notification = Notification.find({}).sort({ createdAt: -1 }).exec();
-
+    let notification = await Notification.find({}).sort({ createdAt: -1 }).exec();
     for (var i = 0; i < notification.length; i++) {
       var messageId = notification[i].id;
       var messageTitle = notification[i].notificationTitle;
