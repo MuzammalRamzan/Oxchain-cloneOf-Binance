@@ -699,7 +699,6 @@ route.all("/2fa", upload.none(), async function(req, res) {
       var result2 = await authFile.verifyToken(twofapin, twofa);
 
       if (result2 === true) {
-        console.log(wantToTrust);
         if (wantToTrust == "yes") {
           var update = { trust: "yes" };
           var log = await LoginLogs.findOneAndUpdate({ _id: log_id }, update).exec();
@@ -1130,8 +1129,8 @@ route.all("/getSecurityKey", upload.none(), (req, res) => {
         status: 1,
       }).then((securityKey) => {
         if (securityKey != null) {
-          var myArray = [];
-          myArray.push({
+          
+          res.json({ "status": "success", "data": {
             response: "success",
             createdAt: securityKey["createdAt"],
             wallet: securityKey["wallet"],
@@ -1139,13 +1138,9 @@ route.all("/getSecurityKey", upload.none(), (req, res) => {
             deposit: securityKey["deposit"],
             withdraw: securityKey["withdraw"],
             id: securityKey["id"],
-          });
-          res.json({ "status": "success", "data": myArray });
+          } });
         } else {
-          var myArray = [];
-          myArray.push({
-            response: "security_key_not_active",
-          });
+          
           res.json({ "status": "fail", "message": "security_key_not_active" });
         }
       });
