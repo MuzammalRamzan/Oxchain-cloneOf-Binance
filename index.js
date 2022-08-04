@@ -612,7 +612,7 @@ route.all("/getCoinList", upload.none(), async  function(req, res) {
   var api_key_result = req.body.api_key;
   var user_id = req.body.user_id;
 
-  var resutl = await authFile.apiKeyChecker(api_key_result);
+  var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     var coins = await CoinList.find({}).exec();
