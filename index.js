@@ -79,14 +79,16 @@ function parseCoins(coins, amounts) {
 }
 
 function parseUsers(ref_user, user_table) {
+  console.log(user_table);
   return new Promise((resolve) => {
     let parsedUsers = [];
     for (let i = 0; i < ref_user.length; i++) {
       let a = ref_user[i].toObject();
-      a.name = user_table.filter((amount) => amount._id == a.user_id)[0][
+      console.log("Test u : " + a.user_id);
+      a.name = user_table.filter((amount) => amount._id == a.user_id)[
         "name"
       ];
-      a.surname = user_table.filter((amount) => amount._id == a.user_id)[0][
+      a.surname = user_table.filter((amount) => amount._id == a.user_id)[
         "surname"
       ];
 
@@ -139,7 +141,7 @@ route.all("/login", upload.none(), async (req, res) => {
     }).exec();
 
 
-    console.log(user);
+    console.log("User : " + user);
     if (user != null) {
       var twofaStatus = user["twofa"];
       var results = [];
@@ -151,22 +153,19 @@ route.all("/login", upload.none(), async (req, res) => {
 
       //console.log(userRef["refCode"]);
       refId = userRef["refCode"];
-      await results.push({
-        response: "success",
-        data: {
+     var data =  {
           response: "success",
           twofa: twofaStatus,
           status: user["status"],
           user_id: user["_id"],
           ref_id: refId,
-        },
-      });
+         };
 
       var status = user["status"];
-
+         console.log("MyStatus : " + status);
       if (status == 1) {
         let coins = await CoinList.find({}).exec();
-
+        console.log("coins " + coins);
         for (let i = 0; i < coins.length; i++) {
           const newWallet = new Wallet({
             name: coins[i]["name"],
@@ -182,12 +181,12 @@ route.all("/login", upload.none(), async (req, res) => {
           let wallets = await Wallet.findOne({
             user_id: user["_id"],
             coin_id: coins[i]["id"],
-          });
+          }).exec();
 
-
+          console.log("Wallets : " + wallets);
           if (wallets == null) {
             newWallet.save();
-            //console.log("wallet added");
+            console.log("wallet added");
           } else {
             //console.log("wallet already exists");
           }
@@ -199,7 +198,7 @@ route.all("/login", upload.none(), async (req, res) => {
           deviceName: deviceName,
           manufacturer: manufacturer,
           model: deviceModel,
-        });
+        }).exec();
 
         const newUserLog = new LoginLogs({
           user_id: user["_id"],
@@ -209,28 +208,23 @@ route.all("/login", upload.none(), async (req, res) => {
           model: deviceModel,
         });
 
-        newUserLog.save(function (err, room) {
-          newRegisteredId = room.id;
-        });
+        let room = await newUserLog.save();
+        newRegisteredId = room.id;
 
         console.log("logs:" + logs);
         if (logs != null) {
           if (logs["trust"] == "yes") {
-            results.push({
-              trust: "yes",
-              log_id: logs["_id"],
-            });
+            data.trust = 'yes';
+            data.log_id = logs['_id'];
+            
           } else {
-            results.push({
-              trust: "no",
-              log_id: logs["_id"],
-            });
+            data.trust = 'no';
+            data.log_id = logs['_id'];
           }
         } else {
-          results.push({
-            trust: "no",
-            log_id: newRegisteredId,
-          });
+          data.trust = 'no';
+            data.log_id = newRegisteredId;
+          
         }
 
         if (loginType == "mobile") {
@@ -249,15 +243,15 @@ route.all("/login", upload.none(), async (req, res) => {
               if (err) {
                 console.log(err);
               } else {
-                res.json({ "status": "success", "data": results });
+                res.json({ "status": "success", "data": data });
               }
             });
           } else {
-            res.json({ "status": "success", "data": results });
+            res.json({ "status": "success", "data": data });
           }
 
         } else {
-          res.json({ "status": "success", "data": results });
+          res.json({ "status": "success", "data": data });
         }
       }
       console.log(status);
@@ -265,11 +259,7 @@ route.all("/login", upload.none(), async (req, res) => {
         res.json({ "status": "fail", "message": "account_not_active" });
       }
     } else {
-      (results = {
-        status: "fail",
-        data: {},
-      }),
-        res.json({ "status": "success", "data": results });
+        res.json({ "status": "fail", "message": "user_not_found" });
     }
 
   } else {
@@ -307,41 +297,41 @@ route.all("/register", upload.none(), (req, res) => {
   });
 
   async function uniqueChecker() {
-    let products = await User.findOne({ email: req.body.email }).exec();
-    if (products != null) {
+    let emailC = await User.findOne({ email: req.body.email }).exec();
+    if (emailC != null) {
       emailUnique = "false";
     }
-    products = User.findOne({ phone_number: req.body.phone_number }).exec();
-    if (products != null) {
+    let phoneC = await User.findOne({ phone_number: req.body.phone_number }).exec();
+    if (phoneC != null) {
       phoneUnique = "false";
     }
   }
 
   async function register() {
     if (emailUnique == "true" && phoneUnique == "true") {
-      newUser.save(async function(err, usr) {
-        if (refStatus == "yes") {
-          let user = await UserRef.findOne({ refCode: reffer }).exec();
+      let usr = await newUser.save();
 
-          if (user != null) {
-            var newReferral = new Referral({
-              user_id: usr._id,
-              reffer: reffer,
-            });
-            newReferral.save();
-          } else {
-            res.json({ "status": "fail", "message": "referral_not_found" });
-          }
+      if (refStatus == "yes") {
+        let user = await UserRef.findOne({ refCode: reffer }).exec();
+
+        if (user != null) {
+          var newReferral = new Referral({
+            user_id: usr._id,
+            reffer: reffer,
+          });
+          newReferral.save();
+        } else {
+          res.json({ "status": "fail", "message": "referral_not_found" });
         }
-        var regUserId = usr._id;
-        // make unique control
-        var refCode = makeId(10);
-        const newRef = new UserRef({
-          user_id: regUserId,
-          refCode: refCode,
-        });
-        newRef.save();
+      }
+      var regUserId = usr._id;
+      // make unique control
+      var refCode = utilities.makeId(10);
+      const newRef = new UserRef({
+        user_id: regUserId,
+        refCode: refCode,
       });
+      await newRef.save();
       res.json({ "status": "success", "data": newRef });
     } else {
       var uniqueArray = [];
@@ -386,7 +376,7 @@ route.all("/addCoin", upload.none(), async function(req, res)  {
 
 route.all("/addOrders", upload.none(), async function(req, res)  {
   var api_key_result = req.body.api_key;
-
+  
   const orders = new Orders({
     pair_id: req.body.pair_id,
     second_pair: "62bc116eb65b02b777c97b3d",
@@ -399,17 +389,21 @@ route.all("/addOrders", upload.none(), async function(req, res)  {
     target_price: req.body.target_price,
   });
 
-  let result = await authFile.apiKeyChecker(api_key_result).exect();
 
+
+  let result = await authFile.apiKeyChecker(api_key_result);
+  if(req.body.amount <= 0) {
+    res.json({'status' : 'fail', 'message' : 'invalid_amount'});
+  }
   if (result === true) {
     var urlPair = req.body.pair_name.replace("/", "");
-    let result = await axios
-      .get(
-        'https://api.binance.com/api/v3/ticker/price?symbols=["' +
-        urlPair +
-        '"]'
-      ).exec();
+    let url = 'https://api.binance.com/api/v3/ticker/price?symbols=["' +
+    urlPair +
+    '"]';
+    console.log(url);
+    let result = await axios(url);
 
+      console.log(result.status);
     var price = result.data[0].price;
     let list = await Wallet.findOne(
       { user_id: req.body.user_id, coin_id: "62bc116eb65b02b777c97b3d" },
@@ -433,14 +427,8 @@ route.all("/addOrders", upload.none(), async function(req, res)  {
               parseFloat(req.body.amount * req.body.target_price),
           };
 
-          Wallet.findOneAndUpdate(filter, update, (err, doc) => {
-            if (err) {
-              console.log(err);
-              res.json({ "status": "error", "message": err.message });
-            } else {
-              res.json({ "status": "success", "data": "" });
-            }
-          });
+          await Wallet.findOneAndUpdate(filter, update);
+          res.json({ "status": "error", "message": err.message });
         } else {
           res.json({ "status": "fail", "message": "not_enougth_balance" });
         }
@@ -462,14 +450,8 @@ route.all("/addOrders", upload.none(), async function(req, res)  {
               parseFloat(req.body.amount * price),
           };
 
-          Wallet.findOneAndUpdate(filter, update, (err, doc) => {
-            if (err) {
-              console.log(err);
-              res.json({ "status": "fail", "message": err });
-            } else {
-              res.json({ "status": "success", "data": "" });
-            }
-          });
+          await Wallet.findOneAndUpdate(filter, update);
+          res.json({ "status": "success", "data": "" });
         } else {
           res.json({ "status": "fail", "message": "not_enough_balance" });
         }
@@ -485,17 +467,16 @@ route.all("/addOrders", upload.none(), async function(req, res)  {
 route.all("/addNotification", upload.none(), async function(req, res)  {
   var api_key_result = req.body.api_key;
 
-  let result = await authFile.apiKeyChecker(api_key_result).exec();
+  let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     const newNotification = new Notification({
       notificationTitle: req.body.notificationTitle,
       notificationMessage: req.body.notificationMessage,
     });
-    let notifications = newNotification.save().exec();
+    let notifications = await newNotification.save();
 
     let tokens = await NotificationTokens.find({}).exec();
-
     for (var i = 0; i < tokens.length; i++) {
       var token = tokens[i].token_id;
       notifications.sendPushNotification(
@@ -512,7 +493,7 @@ route.all("/getNotification", upload.none(), async function(req, res) {
   var user_id = req.body.user_id;
   var readStatus = "unread";
 
-  let result = await authFile.apiKeyChecker(api_key_result).exec();
+  let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     var myArray = new Array();
@@ -554,11 +535,11 @@ route.all("/getNotification", upload.none(), async function(req, res) {
 
 route.all("/getOrders", upload.none(), async function(req, res) {
   var api_key_result = req.body.api_key;
-  let result = await authFile.apiKeyChecker(api_key_result).exec();
+  let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
-    let list = await Orders.find({ user_id: req.body.user_id, type: "Limit", status: "0" })
-      .sort({ createdAt: -1 }).exec();
+    let list = await Orders.find({ user_id: req.body.user_id, type: "Limit", status: "0" }).sort({ createdAt: -1 }).exec();
+    console.log(list);
     res.json({ "status": "success", "data": list });
   } else {
     res.json({ "status": "fail", "message": "Forbidden 403" });
@@ -567,7 +548,7 @@ route.all("/getOrders", upload.none(), async function(req, res) {
 
 route.all("/getUSDTBalance", upload.none(), async function(req, res)  {
   var api_key_result = req.body.api_key;
-  let result = await authFile.apiKeyChecker(api_key_result).exec();
+  let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     var list = await Wallet.findOne({
@@ -594,7 +575,7 @@ route.all("/getPairs", upload.none(), async function(req, res) {
 
 route.all("/addPair", upload.none(), async function(req, res) {
   var api_key_result = req.body.api_key;
-  var result = await authFile.apiKeyChecker(api_key_result).exec();
+  var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     const newPair = new Pairs({
@@ -617,7 +598,7 @@ route.all("/addPair", upload.none(), async function(req, res) {
 route.all("/getDigits", upload.none(), async function(req, res)  {
   var api_key_result = req.body.api_key;
   var pairName = req.body.pairName;
-  var result = await authFile.apiKeyChecker(api_key_result).exec();
+  var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     var list = await Pairs.findOne({ name: pairName }, { digits: 1, _id: 1 }).exec();
@@ -631,7 +612,7 @@ route.all("/getCoinList", upload.none(), async  function(req, res) {
   var api_key_result = req.body.api_key;
   var user_id = req.body.user_id;
 
-  var resutl = await authFile.apiKeyChecker(api_key_result).exec();
+  var resutl = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     var coins = await CoinList.find({}).exec();
@@ -648,7 +629,7 @@ route.all("/getCoinList", upload.none(), async  function(req, res) {
 route.all("/getCoinInfo", upload.none(), async function(req, res) {
   var api_key_result = req.body.api_key;
 
-  var result = await authFile.apiKeyChecker(api_key_result).exec();
+  var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     CoinList.findOne({ coin_id: req.body.coin_id })
@@ -668,7 +649,7 @@ route.all("/getReferral", upload.none(), async function(req, res){
   var user_id = req.body.user_id;
   var refCode = req.body.refCode;
   var results = [];
-  var result = await authFile.apiKeyChecker(api_key_result).exec();
+  var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     var ref_user = await Referral.find({ reffer: refCode }).exec();
@@ -691,7 +672,7 @@ route.all("/getReferral", upload.none(), async function(req, res){
 
 route.all("/getWallet", upload.none(), async function(req, res) {
   var api_key_result = req.body.api_key;
-  var result = await authFile.apiKeyChecker(api_key_result).exec();
+  var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     var wallets = await Wallet.find({ user_id: req.body.user_id }).exec();
@@ -705,7 +686,7 @@ route.all("/2fa", upload.none(), async function(req, res) {
   var api_key_result = req.body.api_key;
   var wantToTrust = req.body.wantToTrust;
   var log_id = req.body.log_id;
-  var result = await authFile.apiKeyChecker(api_key_result).exec();
+  var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     var user = await User.findOne({
@@ -715,7 +696,7 @@ route.all("/2fa", upload.none(), async function(req, res) {
     if (user != null) {
       var twofa = user["twofa"];
 
-      var result2 = await authFile.verifyToken(twofapin, twofa).exec();
+      var result2 = await authFile.verifyToken(twofapin, twofa);
 
       if (result2 === true) {
         console.log(wantToTrust);
@@ -744,13 +725,13 @@ route.all("/update2fa", upload.none(), async function(req, res)  {
   var twofapin = req.body.twofapin;
   var api_key_result = req.body.api_key;
 
-  var result = await authFile.apiKeyChecker(api_key_result).exec();
+  var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     const filter = { _id: user_id };
     const update = { twofa: twofa };
 
-    var result2 = await authFile.verifyToken(twofapin, twofa).exec();
+    var result2 = await authFile.verifyToken(twofapin, twofa);
 
     if (result2 === true) {
       User.findOneAndUpdate(filter, update, (err, doc) => {
@@ -776,7 +757,7 @@ route.all("/cancelOrder", upload.none(), async function(req, res)  {
 
   var api_key_result = req.body.api_key;
 
-  var result = await authFile.apiKeyChecker(api_key_result).exec();
+  var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     const filter = { user_id: user_id, _id: order_id };
@@ -842,7 +823,7 @@ route.all("/addSecurityKey", upload.none(),async function (req, res)  {
   var deposit = req.body.deposit;
   var withdraw = req.body.withdraw;
 
-  var result = await authFile.apiKeyChecker(api_key_result).exec();
+  var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     var securityKey = await SecurityKey.findOne({
@@ -883,7 +864,7 @@ route.all("/updateSecurityKey", upload.none(), async function(req, res)  {
   var deposit = req.body.deposit;
   var withdraw = req.body.withdraw;
 
-  var result = await authFile.apiKeyChecker(api_key_result).exec();
+  var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     var securityKey = await SecurityKey.findOne({
@@ -941,32 +922,27 @@ route.all("/updatePhone", upload.none(), async function(req, res)  {
   var newPhoneNumber = req.body.phone_number;
   var api_key_result = req.body.api_key;
 
-  var result = await authFile.apiKeyChecker(api_key_result).exec();
+  var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
+    console.log("UserID : " + user_id);
     let user = await User.findOne({
-      user_id: user_id,
+      _id: user_id,
       status: 1,
     }).exec();
 
     if (user != null) {
       var twofa = user["twofa"];
       const filter = { _id: user_id, status: 1 };
-      let result2 = await authFile.verifyToken(twofapin, twofa).exec();
-
+      let result2 = await authFile.verifyToken(twofapin, twofa);
       if (result2 === true) {
         const update = {
-          country_code: country_code,
+          country_code: newCountryCode,
           phone_number: newPhoneNumber,
         };
-        User.findOneAndUpdate(filter, update, (err, doc) => {
-          if (err) {
-            console.log(err);
-            res.json({ "status": "fail", "message": err });
-          } else {
-            res.json({ "status": "success", "data": "update_success" });
-          }
-        });
+        let doc = await User.findOneAndUpdate(filter, update).exec();
+
+        res.json({ "status": "success", "data": "update_success" });
       } else {
         res.json({ "status": "fail", "message": "2fa_failed" });
       }
@@ -983,18 +959,18 @@ route.all("/resetPassword", upload.none(), async function(req, res)  {
 
   var api_key_result = req.body.api_key;
 
-  var result = await authFile.apiKeyChecker(api_key_result).exec();
+  var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     let user = await User.findOne({
-      user_id: user_id,
+      _id: user_id,
       status: 1,
     }).exec();
 
     if (user != null) {
       var twofa = user["twofa"];
       const filter = { _id: user_id, status: 1 };
-      let result2 = await authFile.verifyToken(twofapin, twofa).exec();
+      let result2 = await authFile.verifyToken(twofapin, twofa);
 
       if (result2 === true) {
         const update = { password: utilities.hashData(password) };
@@ -1023,11 +999,11 @@ route.all("/changePassword", upload.none(), async function(req, res)  {
 
   var api_key_result = req.body.api_key;
 
-  let result = await authFile.apiKeyChecker(api_key_result).exec();
+  let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     let user = await User.findOne({
-      user_id: user_id,
+      _id: user_id,
       status: 1,
     }).exec();
 
@@ -1036,7 +1012,7 @@ route.all("/changePassword", upload.none(), async function(req, res)  {
       var db_password = user["password"];
       const filter = { _id: user_id, status: 1 };
       if (utilities.hashData(old_password) == db_password) {
-        let result2 = await authFile.verifyToken(twofapin, twofa).exec();
+        let result2 = await authFile.verifyToken(twofapin, twofa);
 
         if (result2 === true) {
           const update = { password: utilities.hashData(password) };
@@ -1065,7 +1041,7 @@ route.all("/changePassword", upload.none(), async function(req, res)  {
 route.all("/get2fa", upload.none(), async function(req, res)  {
   var api_key_result = req.body.api_key;
 
-  let result = await authFile.apiKeyChecker(api_key_result).exec();
+  let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     var formattedKey = authenticator.generateKey();
@@ -1080,7 +1056,7 @@ route.all("/getUserInfo", upload.none(), async function(req, res)  {
   var api_key_result = req.body.api_key;
   console.log(user_id);
 
-  let result = await authFile.apiKeyChecker(api_key_result).exec();
+  let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     let user = await User.findOne({
@@ -1095,7 +1071,6 @@ route.all("/getUserInfo", upload.none(), async function(req, res)  {
       if (status == 1) {
         res.json({ "status": "success", "data": {
           name: user["name"],
-          response: "success",
           surname: user["surname"],
           email: user["email"],
           country_code: user["country_code"],

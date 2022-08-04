@@ -9,7 +9,7 @@ const OrdersSchema = new mongoose.Schema({
   amount: { type: String, required: true },
   target_price: { type: String, required: false },
   method: { type: String, required: true },
-  priceAmount: { type: String, required: true },
+  priceAmount: { type: String, required: false },
   status: { type: String, required: false, default: 0 },
   createdAt: {
     type: Date,
