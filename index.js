@@ -706,7 +706,7 @@ route.all("/2fa", upload.none(), async function(req, res) {
           res.json({ "status": "success", "data": "2fa_success" });
 
         } else {
-          res.json({ "status": "data", "message": "2fa_success" });
+          res.json({ "status": "success", "message": "2fa_success" });
         }
       } else {
         res.json({ "status": "fail", "message": "2fa_failed" });
