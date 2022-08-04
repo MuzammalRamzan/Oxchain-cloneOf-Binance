@@ -428,7 +428,7 @@ route.all("/addOrders", upload.none(), async function(req, res)  {
           };
 
           await Wallet.findOneAndUpdate(filter, update);
-          res.json({ "status": "error", "message": err.message });
+          res.json({ "status": "success", "data": "" });
         } else {
           res.json({ "status": "fail", "message": "not_enougth_balance" });
         }
@@ -554,6 +554,7 @@ route.all("/getUSDTBalance", upload.none(), async function(req, res)  {
       user_id: req.body.user_id,
       coin_id: "62bc116eb65b02b777c97b3d",
     }).exec();
+    console.log(list);
     res.json({ "status": "success", "data": list.amount });
   } else {
     res.json({ "status": "fail", "message": "Forbidden 403" });
