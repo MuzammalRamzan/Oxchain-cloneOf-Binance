@@ -18,7 +18,7 @@ function makeId(length) {
   return result;
 }
 
-async function addDeposit(user_id, coin_id, amount, address, txid) {
+async function addDeposit(user_id, coin_name, amount, address, txid,coin_id) {
   const newDeposit = new Deposits({
     user_id: user_id,
     coin_id: coin_id,
@@ -26,6 +26,7 @@ async function addDeposit(user_id, coin_id, amount, address, txid) {
     tx_id: txid,
     address: address,
     status: 1,
+    currency: coin_name,
   });
 
   NotificationTokens.findOne({
@@ -42,7 +43,7 @@ async function addDeposit(user_id, coin_id, amount, address, txid) {
             "You have received a deposit of " +
             amount +
             " " +
-            coin_id +
+            coin_name +
             " from " +
             address;
           notifications.sendPushNotification(token, body);

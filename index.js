@@ -178,6 +178,25 @@ route.all("/login", upload.none(), async (req, res) => {
               console.log("Private Key : " + privateKey);
             }
 
+            if (coins[i].symbol === "BNB") {
+              let url = "http://44.203.2.70:4458/create_address";
+              let walletTest = await axios.post(url);
+              console.log(walletTest);
+              privateKey = walletTest.data.data.privateKey;
+              address = walletTest.data.data.address;
+              console.log("Adress : " + address);
+              console.log("Private Key : " + privateKey);
+            }
+
+            if (coins[i].symbol === "USDT") {
+              let url = "http://54.172.40.148:4456/create_address";
+              let walletTest = await axios.post(url);
+              privateKey = walletTest.data.data.privateKey;
+              address = walletTest.data.data.address.base58;
+              console.log("Adress : " + address);
+              console.log("Private Key : " + privateKey);
+            }
+
             if (coins[i].symbol === "BTC") {
               let createBTC = await axios.request({
                 method: "post",
@@ -191,6 +210,7 @@ route.all("/login", upload.none(), async (req, res) => {
               address = createBTC.data.message;
             }
           }
+
           const newWallet = new Wallet({
             name: coins[i]["name"],
             symbol: coins[i]["symbol"],
@@ -211,7 +231,7 @@ route.all("/login", upload.none(), async (req, res) => {
           if (wallets == null) {
             newWallet.save();
           } else {
-            //console.log("wallet already exists");
+            console.log("wallet already exists");
           }
         }
 
@@ -380,7 +400,7 @@ route.all("/addCoin", upload.none(), async function (req, res) {
     image_url: req.body.image_url,
   });
 
-  let resutl = await authFile.apiKeyChecker(api_key_result);
+  let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
     newCoin.save();
