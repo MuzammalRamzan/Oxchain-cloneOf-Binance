@@ -11,6 +11,7 @@ const MarginOrderSchema = new mongoose.Schema({
   open_time: { type: Date, default: Date.now },
   sl: { type: Number, required: false, default: 0.00 },
   tp: { type: Number, required: false, default: 0.00 },
+  leverage : {type: Number, required : true, default : 5 },
   close_price: { type: Number, required: false },
   close_time: { type: Date}, 
   status: { type: String, required: false, default: 0 },

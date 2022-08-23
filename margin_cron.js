@@ -60,7 +60,7 @@ async function initialize() {
                     
                     if(order.pair_name == symbol) {
                         let price = parseFloat(list[i].a);
-                        let open_price = order.open_price.toFixed(2);
+                        let open_price = parsefloat(order.open_price) * parseInt(order.leverage).toFixed(2);
                         
                         let userBalance = await Wallet.findOne({user_id : order.user_id, coin_id : MarginWalletId});
                         
