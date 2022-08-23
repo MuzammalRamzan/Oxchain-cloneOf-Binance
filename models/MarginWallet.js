@@ -1,13 +1,11 @@
 const mongoose = require("mongoose");
 var uniqueValidator = require("mongoose-unique-validator");
 
-const WalletSchema = new mongoose.Schema({
+const MarginWalletSchema = new mongoose.Schema({
   user_id: { type: String, required: true },
   coin_id: { type: String, required: true },
-  amount: { type: Number, required: true, default: 0.00 },
+  amount: { type: String, required: true },
   type: { type: String, required: true },
-  address: { type: String, required: false, default: null },
-  privateKey: { type: String, required: false, default: null },
   status: { type: String, required: false, default: 0 },
   createdAt: {
     type: Date,
@@ -15,6 +13,6 @@ const WalletSchema = new mongoose.Schema({
   },
 });
 
-WalletSchema.plugin(uniqueValidator);
+MarginWalletSchema.plugin(uniqueValidator);
 
-module.exports = mongoose.model("Wallet", WalletSchema);
+module.exports = mongoose.model("MarginWallet", MarginWalletSchema);

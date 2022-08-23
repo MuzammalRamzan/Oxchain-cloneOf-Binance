@@ -57,6 +57,8 @@ const { Console } = require("console");
 const { exit } = require("process");
 const { isFloat32Array } = require("util/types");
 const auth = require("./auth.js");
+const MarginOrder = require("./models/MarginOrder");
+const MarginWallet = require("./models/MarginWallet");
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
@@ -156,13 +158,13 @@ route.all("/login", upload.none(), async (req, res) => {
       var status = user["status"];
       if (status == 1) {
         let coins = await CoinList.find({ status: 1 }).exec();
-
+        
         for (let i = 0; i < coins.length; i++) {
           let walletResult = await Wallet.findOne({
             user_id: user._id,
             coin_id: coins[i]._id,
           }).exec();
-
+          console.log(coins[i].symbol);
           let privateKey = "";
           let address = "";
           console.log(coins[i].symbol);
@@ -195,6 +197,13 @@ route.all("/login", upload.none(), async (req, res) => {
               address = walletTest.data.data.address.base58;
               console.log("Adress : " + address);
               console.log("Private Key : " + privateKey);
+            }
+
+            if (coins[i].symbol === "Margin") {
+              let getUsdtWalelt = await Wallet.find({'symbol' : 'USDT'}).exec();
+              
+              privateKey = getUsdtWalelt.privateKey;
+              address = getUsdtWalelt.address;
             }
 
             if (coins[i].symbol === "BTC") {
@@ -303,6 +312,29 @@ route.all("/login", upload.none(), async (req, res) => {
   }
 });
 
+route.post('/transfer', async function(req,res) {
+  var from = req.body.from;
+  var to = req.body.to;
+  var amount = req.body.amount;
+  var getFromDetail = await Wallet.findOne({'coin_id' : from}).exec();
+  var getToDetail = await Wallet.findOne({'coin_id' : to}).exec();
+  if(getFromDetail.amount < amount) {
+    res.json({ status: "fail", message: "insufficient_balance" }); 
+    return;
+  }
+
+  console.log(getToDetail);
+  let fromBalance = getFromDetail.amount - amount;
+  let toBalance = getToDetail.amount + amount;
+
+  console.log(toBalance);
+  await Wallet.findOneAndUpdate({coin_id : getFromDetail._id}, {amount: fromBalance});
+  await Wallet.findOneAndUpdate({coin_id : getToDetail._id}, {amount: toBalance});
+
+  res.json({ status: "success", data: {from: fromBalance, to : toBalance} });  
+
+});
+
 route.all("/register", upload.none(), (req, res) => {
   var emailUnique = "true";
   var phoneUnique = "true";
@@ -408,6 +440,68 @@ route.all("/addCoin", upload.none(), async function (req, res) {
   } else {
     res.json({ status: "fail", message: "Forbidden 403" });
   }
+});
+
+route.post('/getMarginOrders', async function(req, res) {
+  var api_key_result = req.body.api_key;
+  let result = await authFile.apiKeyChecker(api_key_result);
+  if(result !== true) {
+    res.json({ status: "fail", message: "Forbidden 403" });
+    return;
+  }
+  //No Content: https://poloniex.com/public?command=returnOrderBook¤cyPair=BTC_ETH&depth=50
+  let orders = await MarginOrder.find().exec();
+
+  res.json({ status: "success", data: orders });
+});
+
+route.post('/addMarginOrder', async function(req,res) {
+  try {
+    const MarginWalletId = "62ff3c742bebf06a81be98fd";
+  var api_key_result = req.body.api_key;
+  let result = await authFile.apiKeyChecker(api_key_result);
+  if(result !== true) {
+    res.json({ status: "fail", message: "Forbidden 403" });
+    return;
+  }
+  if (req.body.amount <= 0) {
+    res.json({ status: "fail", message: "invalid_amount" });
+    return;
+  }
+
+  let userBalance = await Wallet.findOne({coin_id : MarginWalletId, user_id : req.body.user_id}).exec();
+  if(userBalance.amount <= 0) {
+    res.json({ status: "fail", message: "invalid_balance" });
+    return;
+  }
+  var urlPair = req.body.pair_name.replace("/", "");
+  let url =
+    'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
+  console.log(url);
+  result = await axios(url);
+  var price = result.data[0].price;
+  let total = price * req.body.amount;
+  if(userBalance.amount <= total) {
+    res.json({ status: "fail", message: "invalid_balance" });
+    return;
+  }
+  let order = new MarginOrder({
+    pair_id: req.body.pair_id,
+    pair_name: req.body.pair_name,
+    type: req.body.type,
+    user_id: req.body.user_id,
+    amount: req.body.amount,
+    open_price: price,
+    
+  });
+
+  order.save();
+
+  console.log(order);
+  res.json({ status: "success", data: order});
+} catch(err) {
+  res.json({ status: "fail", message: err.message });
+}
 });
 
 route.all("/addOrders", upload.none(), async function (req, res) {
