@@ -59,6 +59,7 @@ const { isFloat32Array } = require("util/types");
 const auth = require("./auth.js");
 const MarginOrder = require("./models/MarginOrder");
 const MarginWallet = require("./models/MarginWallet");
+const { ObjectId } = require("mongodb");
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
@@ -444,17 +445,50 @@ route.all("/addCoin", upload.none(), async function (req, res) {
 
 route.post('/getMarginOrders', async function(req, res) {
   var api_key_result = req.body.api_key;
+  console.log(req.body);
   let result = await authFile.apiKeyChecker(api_key_result);
   if(result !== true) {
     res.json({ status: "fail", message: "Forbidden 403" });
     return;
   }
-  //No Content: https://poloniex.com/public?command=returnOrderBook¤cyPair=BTC_ETH&depth=50
-  let orders = await MarginOrder.find().exec();
+  
+  let orders = await MarginOrder.find({user_id : req.body.user_id}).exec();
 
   res.json({ status: "success", data: orders });
 });
+route.post('/closeMarginOrder', async function(req,res) {
+  try {
+    
+    var api_key_result = req.body.api_key;
+    let result = await authFile.apiKeyChecker(api_key_result);
+    if(result !== true) {
+      res.json({ status: "fail", message: "Forbidden 403" });
+      return;
+    }
+    let orderId  = req.body.order_id ?? null;
+    if(orderId == null) {
+      res.json({ status: "fail", message: "invalid_order" });
+      return;
+    }
 
+    console.log("Order : ", orderId);
+    var urlPair = req.body.pair_name.replace("/", "");
+  let url =
+    'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
+    result = await axios(url);
+  var price = result.data[0].price;
+    MarginOrder.findOneAndUpdate({_id : new ObjectId(orderId)},{$set : {status: 1, close_time : Date.now(), close_price: price}}, function(err, doc) {
+      if(err) {
+        res.json({ status: "fail", message: err.message });
+        return;
+      }
+      res.json({ status: "success", data : doc });
+    })
+    
+  } catch(err) {
+
+  }
+});
 route.post('/addMarginOrder', async function(req,res) {
   try {
     const MarginWalletId = "62ff3c742bebf06a81be98fd";
@@ -480,9 +514,11 @@ route.post('/addMarginOrder', async function(req,res) {
   console.log(url);
   result = await axios(url);
   var price = result.data[0].price;
-  let total = price * req.body.amount;
-  if(userBalance.amount <= total) {
-    res.json({ status: "fail", message: "invalid_balance" });
+  //let total = price * req.body.amount;
+  let imr = 1 / req.body.leverage;
+  let initialMargin = req.body.amount * price * imr;
+  if(userBalance.amount <= initialMargin) {
+    res.json({ status: "fail", message: "Invalid balance. Required margin : " + initialMargin });
     return;
   }
   let order = new MarginOrder({
@@ -490,6 +526,9 @@ route.post('/addMarginOrder', async function(req,res) {
     pair_name: req.body.pair_name,
     type: req.body.type,
     user_id: req.body.user_id,
+    sl : req.body.sl ?? 0,
+    tp : req.body.tp ?? 0,
+    leverage : req.body.leverage,
     amount: req.body.amount,
     open_price: price,
     
