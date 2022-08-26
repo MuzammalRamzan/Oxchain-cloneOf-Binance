@@ -8,8 +8,8 @@ const PairsSchema = new mongoose.Schema({
   symbolTwo: { type: String, required: true },
   symbolTwoID: { type: String, required: true },
   type: { type: String, required: true },
-  digits: { type: String, required: true },
-  status: { type: String, required: false, default: 0 },
+  digits: { type: Number, required: true, default : 2 },
+  status: { type: Number, required: false, default: 0 },
   createdAt: {
     type: Date,
     default: Date.now,

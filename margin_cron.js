@@ -52,7 +52,7 @@ async function initialize() {
     let isDelete = MarginOrder.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
         console.log("silindi 2");
         orders = await MarginOrder.find({ status: 0 }).exec();
-        
+
     });
 
 
@@ -68,7 +68,11 @@ async function initialize() {
 
                     if (order.pair_name == symbol) {
                         let userBalance = await Wallet.findOne({ user_id: order.user_id, coin_id: MarginWalletId });
-                        let balance = (userBalance.amount * 1.0).toFixed(2);
+                        let balance = 0.00;
+                        if (order.margin_type == 'cross')
+                            balance = (userBalance.amount * 1.0).toFixed(2);
+                        else if (order.margin_type == 'isolated')
+                            balance = order.isolated;
                         let price = parseFloat(list[i].a);
                         let open_price = parseFloat(order.open_price).toFixed(2);
                         let imr = 1 / order.leverage;
@@ -80,7 +84,7 @@ async function initialize() {
                             let roe = ((pnl / initialMargin) * (1 - order.open_price / price)) / imr;
 
                             //let pl = (((open_price - price) *  order.amount) * parseInt(order.leverage)).toFixed(2);
-                            
+
                             balance = parseFloat(balance) + parseFloat(pnl) * 1.0;
                             let tp = order.tp ?? 0.00;
                             let sl = order.sl ?? 0.00;

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Hello world</title>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+
+
+<script>
+    const socket = io();
+    function Send() {
+        let data = document.getElementById("content");
+        socket.emit(data);
+        socket.on('connection', (io) => {
+            io.on(data, (msg) => {
+                console.log('message: ' + msg);
+            });
+        });
+    }
+</script>
+
+<body>
+    <input type="text" id="content" placeholder="KEY">
+    <div style="display: block; width:100%; " id="data">
+    </div>
+    <button type="button" id="send" onclick="Send()">Send</button>
+</body>
+
+</html>

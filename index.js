@@ -732,15 +732,8 @@ route.all("/getUSDTBalance", upload.none(), async function (req, res) {
 });
 
 route.all("/getPairs", upload.none(), async function (req, res) {
-  var api_key_result = req.body.api_key;
-  authFile.apiKeyChecker(api_key_result).then(async function (result) {
-    if (result === true) {
-      var list = await Pairs.find({}).exec();
-      res.json({ status: "success", data: list });
-    } else {
-      res.json({ status: "fail", message: "Forbidden 403" });
-    }
-  });
+    var list = await Pairs.find({status:1}).exec();
+    res.json({ status: "success", data: list });
 });
 
 route.all("/addPair", upload.none(), async function (req, res) {
@@ -1461,3 +1454,4 @@ route.all("/getDepositsUSDT", upload.none(), (req, res) => {
 route.listen(port, () => {
   console.log("Server Ayakta");
 });
+
