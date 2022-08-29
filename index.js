@@ -843,6 +843,8 @@ route.all("/getWallet", upload.none(), async function (req, res) {
   if (result === true) {
     var wallets = await Wallet.find({ user_id: req.body.user_id }).exec();
     res.json({ status: "success", data: wallets });
+  } else {
+    res.json({ status: "fail", message: "not_found" });
   }
 });
 
