@@ -6,10 +6,10 @@ const OrdersSchema = new mongoose.Schema({
   pair_name: { type: String, required: true },
   type: { type: String, required: true },
   user_id: { type: String, required: true },
-  amount: { type: String, required: true },
-  target_price: { type: String, required: false },
+  amount: { type: Number, required: true },
+  target_price: { type: Number, required: false },
   method: { type: String, required: true },
-  priceAmount: { type: String, required: false },
+  open_price: { type: Number, required: true },
   status: { type: String, required: false, default: 0 },
   createdAt: {
     type: Date,

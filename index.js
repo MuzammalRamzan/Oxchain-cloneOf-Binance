@@ -159,7 +159,7 @@ route.all("/login", upload.none(), async (req, res) => {
       var status = user["status"];
       if (status == 1) {
         let coins = await CoinList.find({ status: 1 }).exec();
-        
+
         for (let i = 0; i < coins.length; i++) {
           let walletResult = await Wallet.findOne({
             user_id: user._id,
@@ -201,8 +201,8 @@ route.all("/login", upload.none(), async (req, res) => {
             }
 
             if (coins[i].symbol === "Margin") {
-              let getUsdtWalelt = await Wallet.find({'symbol' : 'USDT'}).exec();
-              
+              let getUsdtWalelt = await Wallet.find({ 'symbol': 'USDT' }).exec();
+
               privateKey = getUsdtWalelt.privateKey;
               address = getUsdtWalelt.address;
             }
@@ -313,14 +313,14 @@ route.all("/login", upload.none(), async (req, res) => {
   }
 });
 
-route.post('/transfer', async function(req,res) {
+route.post('/transfer', async function (req, res) {
   var from = req.body.from;
   var to = req.body.to;
   var amount = req.body.amount;
-  var getFromDetail = await Wallet.findOne({'coin_id' : from}).exec();
-  var getToDetail = await Wallet.findOne({'coin_id' : to}).exec();
-  if(getFromDetail.amount < amount) {
-    res.json({ status: "fail", message: "insufficient_balance" }); 
+  var getFromDetail = await Wallet.findOne({ 'coin_id': from }).exec();
+  var getToDetail = await Wallet.findOne({ 'coin_id': to }).exec();
+  if (getFromDetail.amount < amount) {
+    res.json({ status: "fail", message: "insufficient_balance" });
     return;
   }
 
@@ -329,10 +329,10 @@ route.post('/transfer', async function(req,res) {
   let toBalance = getToDetail.amount + amount;
 
   console.log(toBalance);
-  await Wallet.findOneAndUpdate({coin_id : getFromDetail._id}, {amount: fromBalance});
-  await Wallet.findOneAndUpdate({coin_id : getToDetail._id}, {amount: toBalance});
+  await Wallet.findOneAndUpdate({ coin_id: getFromDetail._id }, { amount: fromBalance });
+  await Wallet.findOneAndUpdate({ coin_id: getToDetail._id }, { amount: toBalance });
 
-  res.json({ status: "success", data: {from: fromBalance, to : toBalance} });  
+  res.json({ status: "success", data: { from: fromBalance, to: toBalance } });
 
 });
 
@@ -443,186 +443,258 @@ route.all("/addCoin", upload.none(), async function (req, res) {
   }
 });
 
-route.post('/getMarginOrders', async function(req, res) {
+route.post('/getMarginOrders', async function (req, res) {
   var api_key_result = req.body.api_key;
   console.log(req.body);
   let result = await authFile.apiKeyChecker(api_key_result);
-  if(result !== true) {
+  if (result !== true) {
     res.json({ status: "fail", message: "Forbidden 403" });
     return;
   }
-  
-  let orders = await MarginOrder.find({user_id : req.body.user_id}).exec();
+
+  let orders = await MarginOrder.find({ user_id: req.body.user_id }).exec();
 
   res.json({ status: "success", data: orders });
 });
-route.post('/closeMarginOrder', async function(req,res) {
+route.post('/closeMarginOrder', async function (req, res) {
   try {
-    
+
     var api_key_result = req.body.api_key;
     let result = await authFile.apiKeyChecker(api_key_result);
-    if(result !== true) {
+    if (result !== true) {
       res.json({ status: "fail", message: "Forbidden 403" });
       return;
     }
-    let orderId  = req.body.order_id ?? null;
-    if(orderId == null) {
+    let orderId = req.body.order_id ?? null;
+    if (orderId == null) {
       res.json({ status: "fail", message: "invalid_order" });
       return;
     }
 
     console.log("Order : ", orderId);
     var urlPair = req.body.pair_name.replace("/", "");
-  let url =
-    'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
+    let url =
+      'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
     result = await axios(url);
-  var price = result.data[0].price;
-    MarginOrder.findOneAndUpdate({_id : new ObjectId(orderId)},{$set : {status: 1, close_time : Date.now(), close_price: price}}, function(err, doc) {
-      if(err) {
+    var price = result.data[0].price;
+    MarginOrder.findOneAndUpdate({ _id: new ObjectId(orderId) }, { $set: { status: 1, close_time: Date.now(), close_price: price } }, function (err, doc) {
+      if (err) {
         res.json({ status: "fail", message: err.message });
         return;
       }
-      res.json({ status: "success", data : doc });
+      res.json({ status: "success", data: doc });
     })
-    
-  } catch(err) {
+
+  } catch (err) {
 
   }
 });
-route.post('/addMarginOrder', async function(req,res) {
+route.post('/addMarginOrder', async function (req, res) {
   try {
     const MarginWalletId = "62ff3c742bebf06a81be98fd";
-  var api_key_result = req.body.api_key;
-  let result = await authFile.apiKeyChecker(api_key_result);
-  if(result !== true) {
-    res.json({ status: "fail", message: "Forbidden 403" });
-    return;
-  }
-  if (req.body.amount <= 0) {
-    res.json({ status: "fail", message: "invalid_amount" });
-    return;
-  }
+    var api_key_result = req.body.api_key;
+    let result = await authFile.apiKeyChecker(api_key_result);
+    if (result !== true) {
+      res.json({ status: "fail", message: "Forbidden 403" });
+      return;
+    }
+    if (req.body.amount <= 0) {
+      res.json({ status: "fail", message: "invalid_amount" });
+      return;
+    }
 
-  let userBalance = await Wallet.findOne({coin_id : MarginWalletId, user_id : req.body.user_id}).exec();
-  if(userBalance.amount <= 0) {
-    res.json({ status: "fail", message: "invalid_balance" });
-    return;
-  }
-  var urlPair = req.body.pair_name.replace("/", "");
-  let url =
-    'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
-  console.log(url);
-  result = await axios(url);
-  var price = result.data[0].price;
-  //let total = price * req.body.amount;
-  let imr = 1 / req.body.leverage;
-  let initialMargin = req.body.amount * price * imr;
-  if(userBalance.amount <= initialMargin) {
-    res.json({ status: "fail", message: "Invalid balance. Required margin : " + initialMargin });
-    return;
-  }
-  let order = new MarginOrder({
-    pair_id: req.body.pair_id,
-    pair_name: req.body.pair_name,
-    type: req.body.type,
-    user_id: req.body.user_id,
-    sl : req.body.sl ?? 0,
-    tp : req.body.tp ?? 0,
-    leverage : req.body.leverage,
-    amount: req.body.amount,
-    open_price: price,
-    
-  });
+    let userBalance = await Wallet.findOne({ coin_id: MarginWalletId, user_id: req.body.user_id }).exec();
+    if (userBalance.amount <= 0) {
+      res.json({ status: "fail", message: "invalid_balance" });
+      return;
+    }
+    var urlPair = req.body.pair_name.replace("/", "");
+    let url =
+      'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
+    console.log(url);
+    result = await axios(url);
+    var price = result.data[0].price;
+    //let total = price * req.body.amount;
+    let imr = 1 / req.body.leverage;
+    let initialMargin = req.body.amount * price * imr;
+    if (userBalance.amount <= initialMargin) {
+      res.json({ status: "fail", message: "Invalid balance. Required margin : " + initialMargin });
+      return;
+    }
+    let order = new MarginOrder({
+      pair_id: req.body.pair_id,
+      pair_name: req.body.pair_name,
+      type: req.body.type,
+      user_id: req.body.user_id,
+      sl: req.body.sl ?? 0,
+      tp: req.body.tp ?? 0,
+      leverage: req.body.leverage,
+      amount: req.body.amount,
+      open_price: price,
 
-  order.save();
+    });
 
-  console.log(order);
-  res.json({ status: "success", data: order});
-} catch(err) {
-  res.json({ status: "fail", message: err.message });
-}
+    order.save();
+
+    console.log(order);
+    res.json({ status: "success", data: order });
+  } catch (err) {
+    res.json({ status: "fail", message: err.message });
+  }
 });
 
 route.all("/addOrders", upload.none(), async function (req, res) {
-  var api_key_result = req.body.api_key;
+  try {
+    var api_key_result = req.body.api_key;
 
-  const orders = new Orders({
-    pair_id: req.body.pair_id,
-    second_pair: "62bc116eb65b02b777c97b3d",
-    pair_name: req.body.pair_name,
-    type: req.body.type,
-    user_id: req.body.user_id,
-    amount: req.body.amount,
-    priceAmount: req.body.priceAmount,
-    method: req.body.method,
-    target_price: req.body.target_price,
-  });
+    let api_result = await authFile.apiKeyChecker(api_key_result);
+    if (api_result === false) {
+      res.json({ status: "fail", message: "Forbidden 403" });
+      return;
+    }
 
-  let result = await authFile.apiKeyChecker(api_key_result);
-  if (req.body.amount <= 0) {
-    res.json({ status: "fail", message: "invalid_amount" });
-  }
-  if (result === true) {
+    let amount = parseFloat(parseFloat(req.body.amount) * 1.0).toFixed(20);
+    
+    var getPair = await Pairs.findOne({ name: req.body.pair_name }).exec();
+    var fromWalelt = await Wallet.findOne({ coin_id: getPair.symbolOneID }).exec();
+    var toWalelt = await Wallet.findOne({ coin_id: getPair.symbolTwoID }).exec();
+    console.log("Amount : ", amount);
+    console.log("From Pair : ", getPair);
+
+
+
+    console.log("From Wallet : ", fromWalelt);
+    console.log("To Wallet : ", toWalelt);
+    if(amount <= 0) {
+      res.json({ status: "fail", message: "invalid_amount" });
+      return; 
+    }
+
+    console.log(toWalelt.amount);
+    if(toWalelt.amount.toFixed(20) <= 0) {
+      res.json({ status: "fail", message: "invalid_balance" });
+      return; 
+    }
+
     var urlPair = req.body.pair_name.replace("/", "");
     let url =
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
     console.log(url);
     let result = await axios(url);
+    var price = parseFloat(result.data[0].price).toFixed(20);
+    let target_price = 0.0;
+    var coins = req.body.pair_name.split('/');
+    
 
-    console.log(result.status);
-    var price = result.data[0].price;
-    let list = await Wallet.findOne(
-      { user_id: req.body.user_id, coin_id: "62bc116eb65b02b777c97b3d" },
-      { amount: 1 }
-    ).exec();
+    
+    if (req.body.method == 'buy') {
+      if (req.body.type == 'limit') {
+        target_price = req.body.target_price;
+        const orders = new Orders({
+          pair_id: getPair.symbolOneID,
+          second_pair: getPair.symbolTwoID,
+          pair_name: getPair.name,
+          user_id: req.body.user_id,
+          amount: parseFloat(amount),
+          open_price: target_price,
+          type: "limit",
+          method: "buy",
+          target_price: req.body.target_price,
+        });
+        
+        let saved = await orders.save();
+        res.json({ status: "success", message: saved });
 
-    if (list != null) {
-      if (req.body.type == "Limit") {
-        if (
-          parseFloat(list.amount) >=
-          parseFloat(req.body.amount * req.body.target_price)
-        ) {
-          orders.save();
-          const filter = {
+      } else if (req.body.type == 'market') {
+        let total = (amount * price).toFixed(20);
+        let balance = (parseFloat(toWalelt.amount) * 1.0).toFixed(20);
+
+        if(balance >= total) {
+          const orders = new Orders({
+            pair_id: getPair.symbolOneID,
+            second_pair: getPair.symbolTwoID,
+            pair_name: getPair.name,
             user_id: req.body.user_id,
-            coin_id: "62bc116eb65b02b777c97b3d",
-          };
-          const update = {
-            amount:
-              parseFloat(list.amount) -
-              parseFloat(req.body.amount * req.body.target_price),
-          };
-
-          await Wallet.findOneAndUpdate(filter, update);
-          res.json({ status: "success", data: "" });
+            amount: parseFloat(amount),
+            open_price: price,
+            type: "market",
+            method: "buy",
+            target_price: req.body.target_price,
+          });
+          
+          let saved = await orders.save();
+          if(saved) {
+            fromWalelt.amount = parseFloat(fromWalelt.amount) + parseFloat(amount);
+            toWalelt.amount = parseFloat(toWalelt.amount) -  parseFloat(amount);
+            await fromWalelt.save();  
+            await toWalelt.save();
+            res.json({ status: "success", message: saved });
+          }
+          
         } else {
           res.json({ status: "fail", message: "not_enougth_balance" });
         }
-      } else {
-        if (parseFloat(list.amount) >= parseFloat(req.body.amount * price)) {
-          console.log("ücret " + req.body.amount * price);
-          console.log("bakiye " + list.amount);
-          orders.save();
-          const filter = {
-            user_id: req.body.user_id,
-            coin_id: "62bc116eb65b02b777c97b3d",
-          };
-          const update = {
-            amount:
-              parseFloat(list.amount) - parseFloat(req.body.amount * price),
-          };
+      }
+    }
 
-          await Wallet.findOneAndUpdate(filter, update);
-          res.json({ status: "success", data: "" });
+
+    if (req.body.method == 'sell') {
+      if (req.body.type == 'limit') {
+        target_price = req.body.target_price;
+        const orders = new Orders({
+          pair_id: getPair.symbolOneID,
+          second_pair: getPair.symbolTwoID,
+          pair_name: getPair.name,
+          user_id: req.body.user_id,
+          amount: parseFloat(amount),
+          open_price: target_price,
+          type: "limit",
+          method: "sell",
+          target_price: req.body.target_price,
+        });
+        
+        let saved = await orders.save();
+        res.json({ status: "success", message: saved });
+
+      } else if (req.body.type == 'market') {
+        let balance = parseFloat(fromWalelt.amount);
+        console.log("Balance : ", balance);
+        if(balance >= amount) {
+          let total = parseFloat(amount) * parseFloat(price);
+          const orders = new Orders({
+            pair_id: getPair.symbolOneID,
+            second_pair: getPair.symbolTwoID,
+            pair_name: getPair.name,
+            user_id: req.body.user_id,
+            amount: parseFloat(amount),
+            open_price: target_price,
+            type: "market",
+            method: "sell",
+            target_price: req.body.target_price,
+          });
+
+          let saved = await orders.save();
+          if(saved) {
+            fromWalelt.amount = parseFloat(fromWalelt.amount) - parseFloat(amount);
+            toWalelt.amount = parseFloat(toWalelt.amount) + parseFloat(total);
+            await fromWalelt.save();  
+            await toWalelt.save();
+            res.json({ status: "success", message: saved });
+          }
         } else {
-          res.json({ status: "fail", message: "not_enough_balance" });
+          res.json({ status: "fail", message: "invalid_balance" });
         }
       }
-    } else {
-      res.json({ status: "fail", message: "second_pair_not_found" });
     }
-  } else {
-    res.json({ status: "fail", message: "Forbidden 403" });
+
+
+    if (req.body.amount <= 0) {
+      res.json({ status: "fail", message: "invalid_amount" });
+    }
+
+  } catch (err) {
+    console.log(err);
+    res.json({ status: "fail", message: "unknow_error" });
   }
 });
 
@@ -732,8 +804,8 @@ route.all("/getUSDTBalance", upload.none(), async function (req, res) {
 });
 
 route.all("/getPairs", upload.none(), async function (req, res) {
-    var list = await Pairs.find({status:1}).exec();
-    res.json({ status: "success", data: list });
+  var list = await Pairs.find({ status: 1 }).exec();
+  res.json({ status: "success", data: list });
 });
 
 route.all("/addPair", upload.none(), async function (req, res) {
@@ -841,7 +913,19 @@ route.all("/getWallet", upload.none(), async function (req, res) {
   var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
-    var wallets = await Wallet.find({ user_id: req.body.user_id }).exec();
+    var _wallets = await Wallet.find({ user_id: req.body.user_id }).exec();
+    var wallets = new Array;
+    for(var i = 0; i < _wallets.length; i++) {
+      let item =  _wallets[i];
+      console.log(item);
+      let pairInfo = await Pairs.findOne({symbolOneID: item.coin_id}).exec();
+      if(pairInfo == null) continue;
+      console.log(pairInfo);
+      wallets.push({'id' : item._id, 'coin_id' : item.coin_id, 'balance' : item.amount, 
+      'address' : item.address, 'symbolName' : pairInfo.name});
+      
+    }
+    console.log(wallets);
     res.json({ status: "success", data: wallets });
   } else {
     res.json({ status: "fail", message: "not_found" });
