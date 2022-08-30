@@ -543,6 +543,60 @@ route.post('/addMarginOrder', async function (req, res) {
   }
 });
 
+route.post('/withdraw',  async function(req,res) {
+  console.log(req.body);
+  var user_id = req.body.user_id;
+  var wallet_id = req.body.wallet_id;
+  var to = req.body.to;
+  var amount = parseFloat(req.body.amount);
+  var api_key_result = req.body.api_key;
+  /*
+  var api_result = await authFile.apiKeyChecker(api_key_result);
+  if (api_result === false) {
+    res.json({ status: "fail", message: "Forbidden 403" });
+    return;
+  }
+  */
+  var fromWalelt = await Wallet.findOne({ _id: wallet_id, user_id : user_id }).exec();
+  console.log(fromWalelt);
+  let balance = parseFloat(fromWalelt.amount);
+  
+  if(amount <= 0) {
+    res.json({ status: "fail", message: "invalid_amount" });
+    return;
+  } 
+  
+  if(balance <= amount) {
+    res.json({ status: "fail", message: "invalid_balance" });
+    return;
+  } 
+
+
+  let data = new Withdraws({
+    user_id : user_id,
+    coin_id : fromWalelt.coin_id,
+    amount: amount,
+    to : to,
+    fee: 0.00,
+     
+  });
+
+  await data.save();
+  fromWalelt.amount = parseFloat(fromWalelt.amount) - parseFloat(amount);
+  await fromWalelt.save();
+  res.json({ status: "success", data: data });
+
+  /*
+    var getPair = await CoinList.findOne({_id: fromWalelt.coin_id }).exec();  
+  switch(getPair.name) {
+    case "BTC" : 
+    let post = await axios.post('htpp://3.15.2.155', {'request' : 'transfer', 'to' : to, 'amount' : amount});
+    console.log(post);
+    break;
+  }
+*/
+});
+
 route.all("/addOrders", upload.none(), async function (req, res) {
   try {
     var api_key_result = req.body.api_key;
@@ -606,9 +660,9 @@ route.all("/addOrders", upload.none(), async function (req, res) {
         res.json({ status: "success", message: saved });
 
       } else if (req.body.type == 'market') {
-        let total = (amount * price).toFixed(20);
-        let balance = (parseFloat(toWalelt.amount) * 1.0).toFixed(20);
-
+        let total = (amount * price);
+        let balance = (parseFloat(toWalelt.amount) * 1.0);
+        console.log("Total : ", total, " balance : ", balance);
         if(balance >= total) {
           const orders = new Orders({
             pair_id: getPair.symbolOneID,
@@ -1105,6 +1159,8 @@ route.all("/addSecurityKey", upload.none(), async function (req, res) {
     }
   }
 });
+
+
 
 route.all("/updateSecurityKey", upload.none(), async function (req, res) {
   var user_id = req.body.user_id;
