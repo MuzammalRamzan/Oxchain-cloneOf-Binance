@@ -625,7 +625,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     }
 
     console.log(toWalelt.amount);
-    if(toWalelt.amount.toFixed(20) <= 0) {
+    if(toWalelt.amount <= 0) {
       res.json({ status: "fail", message: "invalid_balance" });
       return; 
     }
