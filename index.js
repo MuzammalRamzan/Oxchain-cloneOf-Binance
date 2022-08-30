@@ -607,7 +607,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
       return;
     }
 
-    let amount = parseFloat(parseFloat(req.body.amount) * 1.0).toFixed(20);
+    let amount = parseFloat(parseFloat(req.body.amount) * 1.0);
     
     var getPair = await Pairs.findOne({ name: req.body.pair_name }).exec();
     var fromWalelt = await Wallet.findOne({ coin_id: getPair.symbolOneID, user_id:req.body.user_id }).exec();
@@ -635,7 +635,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
     console.log(url);
     let result = await axios(url);
-    var price = parseFloat(result.data[0].price).toFixed(20);
+    var price = parseFloat(result.data[0].price);
     let target_price = 0.0;
     var coins = req.body.pair_name.split('/');
     
