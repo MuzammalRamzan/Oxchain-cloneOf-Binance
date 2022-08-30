@@ -175,8 +175,8 @@ route.all("/login", upload.none(), async (req, res) => {
               let url = "http://34.239.168.239:4455/create_address";
               let walletTest = await axios.post(url);
               console.log(walletTest);
-              privateKey = walletTest.data.newAddress.privateKey;
-              address = walletTest.data.newAddress.address;
+              privateKey = walletTest.data.data.privateKey;
+              address = walletTest.data.data.address;
               console.log("Adress : " + address);
               console.log("Private Key : " + privateKey);
             }
