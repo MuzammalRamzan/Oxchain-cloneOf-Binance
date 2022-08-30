@@ -678,8 +678,8 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           
           let saved = await orders.save();
           if(saved) {
-            fromWalelt.amount = parseFloat(fromWalelt.amount) + parseFloat(amount);
-            toWalelt.amount = parseFloat(toWalelt.amount) -  parseFloat(amount);
+            fromWalelt.amount = parseFloat(fromWalelt.amount) + parseFloat(total);
+            toWalelt.amount = parseFloat(toWalelt.amount) -  parseFloat(total);
             await fromWalelt.save();  
             await toWalelt.save();
             res.json({ status: "success", message: saved });
