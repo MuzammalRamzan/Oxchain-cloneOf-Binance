@@ -610,8 +610,8 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     let amount = parseFloat(parseFloat(req.body.amount) * 1.0).toFixed(20);
     
     var getPair = await Pairs.findOne({ name: req.body.pair_name }).exec();
-    var fromWalelt = await Wallet.findOne({ coin_id: getPair.symbolOneID }).exec();
-    var toWalelt = await Wallet.findOne({ coin_id: getPair.symbolTwoID }).exec();
+    var fromWalelt = await Wallet.findOne({ coin_id: getPair.symbolOneID, user_id:req.body.user_id }).exec();
+    var toWalelt = await Wallet.findOne({ coin_id: getPair.symbolTwoID, user_id:req.body.user_id }).exec();
     console.log("Amount : ", amount);
     console.log("From Pair : ", getPair);
 
