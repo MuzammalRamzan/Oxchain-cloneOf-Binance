@@ -213,7 +213,7 @@ route.all("/btcDepositCheck", async (req, res) => {
         let checkRequest = await axios.request({
           method: "post",
           url: "http://3.15.2.155",
-          data: "request=transactions&address=bc1q0wr6kdysv7sdskcazt7ekjlak3l5j006jgvkvx",
+          data: "request=transactions&address=" + address,
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
@@ -228,6 +228,7 @@ route.all("/btcDepositCheck", async (req, res) => {
 
           amount = checkRequest.data.data[j].value / 100000000;
           user = await User.findOne({ _id: user_id }).exec();
+          console.log(checkRequest.data);
           deposit = await Deposits.findOne({
             user_id: user_id,
             tx_id: checkRequest.data.data[j].tx_hash,
