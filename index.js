@@ -533,7 +533,7 @@ route.post('/addMarginOrder', async function (req, res) {
 
 route.post('/withdraw', async function (req, res) {
   var user_id = req.body.user_id;
-  var wallet_id = req.body.wallet_id;
+  var address = req.body.address;
   var to = req.body.to;
   var amount = parseFloat(req.body.amount);
   var api_key_result = req.body.api_key;
@@ -545,7 +545,7 @@ route.post('/withdraw', async function (req, res) {
   }
   */
  
-  var fromWalelt = await Wallet.findOne({ _id: wallet_id, user_id: user_id }).exec();
+  var fromWalelt = await Wallet.findOne({ address: address, user_id: user_id }).exec();
   if(fromWalelt == null) {
     console.log("cuzdan yok");
     res.json({ status: "fail", message: "unknow_error" });
