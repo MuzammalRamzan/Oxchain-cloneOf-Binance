@@ -577,6 +577,18 @@ route.post('/withdraw',  async function(req,res) {
 */
 });
 
+route.post('/spotHistory', async(req,res) =>{
+  var api_key_result = req.body.api_key;
+
+    let api_result = await authFile.apiKeyChecker(api_key_result);
+    if (api_result === false) {
+      res.json({ status: "fail", message: "Forbidden 403" });
+      return;
+    }
+
+    
+});
+
 route.all("/addOrders", upload.none(), async function (req, res) {
   try {
     var api_key_result = req.body.api_key;
