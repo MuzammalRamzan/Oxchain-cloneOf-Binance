@@ -492,7 +492,13 @@ route.post('/addMarginOrder', async function (req, res) {
       res.json({ status: "fail", message: "invalid_balance" });
       return;
     }
-    var urlPair = req.body.pair_name.replace("/", "");
+
+    let getPair = await Pairs.findOne({_id : req.body.pair_id}).exec();
+    if(getPair == null) {
+      res.json({ status: "fail", message: "invalid_pair" });
+      return;
+    }
+    var urlPair = getPair.name;
     let url =
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
     result = await axios(url);
@@ -525,7 +531,7 @@ route.post('/addMarginOrder', async function (req, res) {
   }
 });
 
-route.post('/withdraw',  async function(req,res) {
+route.post('/withdraw', async function (req, res) {
   var user_id = req.body.user_id;
   var wallet_id = req.body.wallet_id;
   var to = req.body.to;
@@ -538,33 +544,50 @@ route.post('/withdraw',  async function(req,res) {
     return;
   }
   */
-  var fromWalelt = await Wallet.findOne({ _id: wallet_id, user_id : user_id }).exec();
+ 
+  var fromWalelt = await Wallet.findOne({ _id: wallet_id, user_id: user_id }).exec();
+  if(fromWalelt == null) {
+    console.log("cuzdan yok");
+    res.json({ status: "fail", message: "unknow_error" });
+    return;
+  }
   let balance = parseFloat(fromWalelt.amount);
-  
-  if(amount <= 0) {
+  if (amount <= 0) {
     res.json({ status: "fail", message: "invalid_amount" });
     return;
-  } 
-  
-  if(balance <= amount) {
+  }
+
+  if (balance <= amount) {
     res.json({ status: "fail", message: "invalid_balance" });
     return;
-  } 
+  }
 
 
   let data = new Withdraws({
-    user_id : user_id,
-    coin_id : fromWalelt.coin_id,
+    user_id: user_id,
+    coin_id: fromWalelt.coin_id,
     amount: amount,
-    to : to,
+    to: to,
     fee: 0.00,
-     
+
   });
 
   await data.save();
   fromWalelt.amount = parseFloat(fromWalelt.amount) - parseFloat(amount);
   await fromWalelt.save();
-  res.json({ status: "success", data: data });
+  let response = await NotificationTokens.findOne({
+    user_id: user_id,
+  });
+
+  if (response == null) {
+  } else {
+    var token = response["token_id"];
+    var body =
+      "A withdraw order has been given from your account. Please wait for the admin to confirm your order.\n\n";
+    notifications.sendPushNotification(token, body);
+    res.json({ status: "success", data: data });
+  }
+  
 
   /*
     var getPair = await CoinList.findOne({_id: fromWalelt.coin_id }).exec();  
@@ -577,16 +600,16 @@ route.post('/withdraw',  async function(req,res) {
 */
 });
 
-route.post('/spotHistory', async(req,res) =>{
+route.post('/spotHistory', async (req, res) => {
   var api_key_result = req.body.api_key;
 
-    let api_result = await authFile.apiKeyChecker(api_key_result);
-    if (api_result === false) {
-      res.json({ status: "fail", message: "Forbidden 403" });
-      return;
-    }
+  let api_result = await authFile.apiKeyChecker(api_key_result);
+  if (api_result === false) {
+    res.json({ status: "fail", message: "Forbidden 403" });
+    return;
+  }
 
-    
+
 });
 
 route.all("/addOrders", upload.none(), async function (req, res) {
@@ -600,19 +623,19 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     }
 
     let amount = parseFloat(parseFloat(req.body.amount) * 1.0);
-    
-    var getPair = await Pairs.findOne({ name: req.body.pair_name }).exec();
-    var fromWalelt = await Wallet.findOne({ coin_id: getPair.symbolOneID, user_id:req.body.user_id }).exec();
-    var toWalelt = await Wallet.findOne({ coin_id: getPair.symbolTwoID, user_id:req.body.user_id }).exec();
 
-    if(amount <= 0) {
+    var getPair = await Pairs.findOne({ name: req.body.pair_name }).exec();
+    var fromWalelt = await Wallet.findOne({ coin_id: getPair.symbolOneID, user_id: req.body.user_id }).exec();
+    var toWalelt = await Wallet.findOne({ coin_id: getPair.symbolTwoID, user_id: req.body.user_id }).exec();
+
+    if (amount <= 0) {
       res.json({ status: "fail", message: "invalid_amount" });
-      return; 
+      return;
     }
 
-    if(toWalelt.amount <= 0) {
+    if (toWalelt.amount <= 0) {
       res.json({ status: "fail", message: "invalid_balance" });
-      return; 
+      return;
     }
 
     var urlPair = req.body.pair_name.replace("/", "");
@@ -622,9 +645,9 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     var price = parseFloat(result.data[0].price);
     let target_price = 0.0;
     var coins = req.body.pair_name.split('/');
-    
 
-    
+
+
     if (req.body.method == 'buy') {
       if (req.body.type == 'limit') {
         target_price = req.body.target_price;
@@ -639,14 +662,14 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           method: "buy",
           target_price: req.body.target_price,
         });
-        
+
         let saved = await orders.save();
         res.json({ status: "success", message: saved });
 
       } else if (req.body.type == 'market') {
         let total = (amount * price);
         let balance = (parseFloat(toWalelt.amount) * 1.0);
-        if(balance >= total) {
+        if (balance >= total) {
           const orders = new Orders({
             pair_id: getPair.symbolOneID,
             second_pair: getPair.symbolTwoID,
@@ -658,16 +681,16 @@ route.all("/addOrders", upload.none(), async function (req, res) {
             method: "buy",
             target_price: req.body.target_price,
           });
-          
+
           let saved = await orders.save();
-          if(saved) {
+          if (saved) {
             fromWalelt.amount = parseFloat(fromWalelt.amount) + parseFloat(amount);
-            toWalelt.amount = parseFloat(toWalelt.amount) -  parseFloat(total);
-            await fromWalelt.save();  
+            toWalelt.amount = parseFloat(toWalelt.amount) - parseFloat(total);
+            await fromWalelt.save();
             await toWalelt.save();
             res.json({ status: "success", message: saved });
           }
-          
+
         } else {
           res.json({ status: "fail", message: "not_enougth_balance" });
         }
@@ -689,13 +712,13 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           method: "sell",
           target_price: req.body.target_price,
         });
-        
+
         let saved = await orders.save();
         res.json({ status: "success", message: saved });
 
       } else if (req.body.type == 'market') {
         let balance = parseFloat(fromWalelt.amount);
-        if(balance >= amount) {
+        if (balance >= amount) {
           let total = parseFloat(amount) * parseFloat(price);
           const orders = new Orders({
             pair_id: getPair.symbolOneID,
@@ -710,10 +733,10 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           });
 
           let saved = await orders.save();
-          if(saved) {
+          if (saved) {
             fromWalelt.amount = parseFloat(fromWalelt.amount) - parseFloat(amount);
             toWalelt.amount = parseFloat(toWalelt.amount) + parseFloat(total);
-            await fromWalelt.save();  
+            await fromWalelt.save();
             await toWalelt.save();
             res.json({ status: "success", message: saved });
           }
@@ -946,13 +969,15 @@ route.all("/getWallet", upload.none(), async function (req, res) {
   if (result === true) {
     var _wallets = await Wallet.find({ user_id: req.body.user_id }).exec();
     var wallets = new Array;
-    for(var i = 0; i < _wallets.length; i++) {
-      let item =  _wallets[i];
-      let pairInfo = await Pairs.findOne({symbolOneID: item.coin_id}).exec();
-      if(pairInfo == null) continue;
-      wallets.push({'id' : item._id, 'coin_id' : item.coin_id, 'balance' : item.amount, 
-      'address' : item.address, 'symbolName' : pairInfo.name});
-      
+    for (var i = 0; i < _wallets.length; i++) {
+      let item = _wallets[i];
+      let pairInfo = await Pairs.findOne({ symbolOneID: item.coin_id }).exec();
+      if (pairInfo == null) continue;
+      wallets.push({
+        'id': item._id, 'coin_id': item.coin_id, 'balance': item.amount,
+        'address': item.address, 'symbolName': pairInfo.name
+      });
+
     }
     res.json({ status: "success", data: wallets });
   } else {
@@ -1497,19 +1522,24 @@ route.all("/addWithdraw", upload.none(), (req, res) => {
   var api_key_result = req.body.api_key;
   var amount = req.body.amount;
   var currency = req.body.currency;
-  var withdraw_address = req.body.withdraw_address;
+  var withdraw_address = req.body.to;
   var coin_id = req.body.coin_id;
 
   authFile.apiKeyChecker(api_key_result).then((result) => {
     if (result === true) {
       Wallet.findOne({ user_id: user_id, coin_id: coin_id }, { amount: 1 })
         .then((list) => {
+          if (list == null) {
+            console.log("liste yok");
+            res.json({ status: "fail", message: "unknow_error" });
+            return;
+          }
           if (parseFloat(list.amount) >= parseFloat(amount)) {
             const newWithdraw = new Withdraws({
               user_id: user_id,
               coin_id: coin_id,
               amount: amount,
-              withdraw_address: withdraw_address,
+              to: withdraw_address,
               status: 1,
             });
             NotificationTokens.findOne({
