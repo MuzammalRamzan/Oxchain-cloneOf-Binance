@@ -774,7 +774,7 @@ route.all("/addNotification", upload.none(), async function (req, res) {
       var token = tokens[i].token_id;
       notifications.sendPushNotification(
         token,
-        notification.notificationMessage
+        newNotification.notificationMessage
       );
     }
     res.json({ status: "success", data: "" });
