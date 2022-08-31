@@ -259,6 +259,7 @@ route.all("/btcDepositCheck", async (req, res) => {
 });
 
 route.all("/usdtDepositCheck", async (req, res) => {
+  
   var api_key_result = req.body.api_key;
   let result = await authFile.apiKeyChecker(api_key_result);
 
@@ -278,6 +279,7 @@ route.all("/usdtDepositCheck", async (req, res) => {
       let address = wallet[i].address;
 
       let user_id = wallet[i].user_id;
+      console.log("user id ", user_id);
       if (address.length > 1) {
         let checkRequest = await axios.get(
           "https://api.trongrid.io/v1/accounts/" +
@@ -303,7 +305,7 @@ route.all("/usdtDepositCheck", async (req, res) => {
               tx_id,
               "62bc116eb65b02b777c97b3d"
             );
-
+              console.log("TX ID : ", tx_id);
             console.log("deposit added");
           } else {
             console.log("deposit exists");

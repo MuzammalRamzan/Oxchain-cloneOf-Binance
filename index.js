@@ -87,7 +87,6 @@ function parseUsers(ref_user, user_table) {
     let parsedUsers = [];
     for (let i = 0; i < ref_user.length; i++) {
       let a = ref_user[i].toObject();
-      console.log("Test u : " + a.user_id);
       a.name = user_table.filter((amount) => amount._id == a.user_id)["name"];
       a.surname = user_table.filter((amount) => amount._id == a.user_id)[
         "surname"
@@ -165,30 +164,22 @@ route.all("/login", upload.none(), async (req, res) => {
             user_id: user._id,
             coin_id: coins[i]._id,
           }).exec();
-          console.log(coins[i].symbol);
           let privateKey = "";
           let address = "";
-          console.log(coins[i].symbol);
 
           if (walletResult === null) {
             if (coins[i].symbol === "ETH") {
               let url = "http://34.239.168.239:4455/create_address";
               let walletTest = await axios.post(url);
-              console.log(walletTest);
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address;
-              console.log("Adress : " + address);
-              console.log("Private Key : " + privateKey);
             }
 
             if (coins[i].symbol === "BNB") {
               let url = "http://44.203.2.70:4458/create_address";
               let walletTest = await axios.post(url);
-              console.log(walletTest);
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address;
-              console.log("Adress : " + address);
-              console.log("Private Key : " + privateKey);
             }
 
             if (coins[i].symbol === "USDT") {
@@ -196,8 +187,6 @@ route.all("/login", upload.none(), async (req, res) => {
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address.base58;
-              console.log("Adress : " + address);
-              console.log("Private Key : " + privateKey);
             }
 
             if (coins[i].symbol === "Margin") {
@@ -241,7 +230,6 @@ route.all("/login", upload.none(), async (req, res) => {
           if (wallets == null) {
             newWallet.save();
           } else {
-            console.log("wallet already exists");
           }
         }
 
@@ -324,11 +312,9 @@ route.post('/transfer', async function (req, res) {
     return;
   }
 
-  console.log(getToDetail);
   let fromBalance = getFromDetail.amount - amount;
   let toBalance = getToDetail.amount + amount;
 
-  console.log(toBalance);
   await Wallet.findOneAndUpdate({ coin_id: getFromDetail._id }, { amount: fromBalance });
   await Wallet.findOneAndUpdate({ coin_id: getToDetail._id }, { amount: toBalance });
 
@@ -445,7 +431,6 @@ route.all("/addCoin", upload.none(), async function (req, res) {
 
 route.post('/getMarginOrders', async function (req, res) {
   var api_key_result = req.body.api_key;
-  console.log(req.body);
   let result = await authFile.apiKeyChecker(api_key_result);
   if (result !== true) {
     res.json({ status: "fail", message: "Forbidden 403" });
@@ -471,7 +456,6 @@ route.post('/closeMarginOrder', async function (req, res) {
       return;
     }
 
-    console.log("Order : ", orderId);
     var urlPair = req.body.pair_name.replace("/", "");
     let url =
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
@@ -511,7 +495,6 @@ route.post('/addMarginOrder', async function (req, res) {
     var urlPair = req.body.pair_name.replace("/", "");
     let url =
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
-    console.log(url);
     result = await axios(url);
     var price = result.data[0].price;
     //let total = price * req.body.amount;
@@ -536,7 +519,6 @@ route.post('/addMarginOrder', async function (req, res) {
 
     order.save();
 
-    console.log(order);
     res.json({ status: "success", data: order });
   } catch (err) {
     res.json({ status: "fail", message: err.message });
@@ -544,7 +526,6 @@ route.post('/addMarginOrder', async function (req, res) {
 });
 
 route.post('/withdraw',  async function(req,res) {
-  console.log(req.body);
   var user_id = req.body.user_id;
   var wallet_id = req.body.wallet_id;
   var to = req.body.to;
@@ -558,7 +539,6 @@ route.post('/withdraw',  async function(req,res) {
   }
   */
   var fromWalelt = await Wallet.findOne({ _id: wallet_id, user_id : user_id }).exec();
-  console.log(fromWalelt);
   let balance = parseFloat(fromWalelt.amount);
   
   if(amount <= 0) {
@@ -612,19 +592,12 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     var getPair = await Pairs.findOne({ name: req.body.pair_name }).exec();
     var fromWalelt = await Wallet.findOne({ coin_id: getPair.symbolOneID, user_id:req.body.user_id }).exec();
     var toWalelt = await Wallet.findOne({ coin_id: getPair.symbolTwoID, user_id:req.body.user_id }).exec();
-    console.log("Amount : ", amount);
-    console.log("From Pair : ", getPair);
 
-
-
-    console.log("From Wallet : ", fromWalelt);
-    console.log("To Wallet : ", toWalelt);
     if(amount <= 0) {
       res.json({ status: "fail", message: "invalid_amount" });
       return; 
     }
 
-    console.log(toWalelt.amount);
     if(toWalelt.amount <= 0) {
       res.json({ status: "fail", message: "invalid_balance" });
       return; 
@@ -633,7 +606,6 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     var urlPair = req.body.pair_name.replace("/", "");
     let url =
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
-    console.log(url);
     let result = await axios(url);
     var price = parseFloat(result.data[0].price);
     let target_price = 0.0;
@@ -662,7 +634,6 @@ route.all("/addOrders", upload.none(), async function (req, res) {
       } else if (req.body.type == 'market') {
         let total = (amount * price);
         let balance = (parseFloat(toWalelt.amount) * 1.0);
-        console.log("Total : ", total, " balance : ", balance);
         if(balance >= total) {
           const orders = new Orders({
             pair_id: getPair.symbolOneID,
@@ -712,7 +683,6 @@ route.all("/addOrders", upload.none(), async function (req, res) {
 
       } else if (req.body.type == 'market') {
         let balance = parseFloat(fromWalelt.amount);
-        console.log("Balance : ", balance);
         if(balance >= amount) {
           let total = parseFloat(amount) * parseFloat(price);
           const orders = new Orders({
@@ -834,7 +804,6 @@ route.all("/getOrders", upload.none(), async function (req, res) {
     })
       .sort({ createdAt: -1 })
       .exec();
-    console.log(list);
     res.json({ status: "success", data: list });
   } else {
     res.json({ status: "fail", message: "Forbidden 403" });
@@ -850,7 +819,6 @@ route.all("/getUSDTBalance", upload.none(), async function (req, res) {
       user_id: req.body.user_id,
       coin_id: "62bc116eb65b02b777c97b3d",
     }).exec();
-    console.log(list);
     res.json({ status: "success", data: list.amount });
   } else {
     res.json({ status: "fail", message: "Forbidden 403" });
@@ -909,7 +877,6 @@ route.all("/getCoinList", upload.none(), async function (req, res) {
   if (result === true) {
     var coins = await CoinList.find({}).exec();
 
-    console.log(coins.length);
     let amounst = await Wallet.find({ user_id: user_id });
     let result = await parseCoins(coins, amounst);
     res.json({ status: "success", data: result });
@@ -953,8 +920,6 @@ route.all("/getReferral", upload.none(), async function (req, res) {
         });
       }
       var result = await parseUsers(ref_user, user_table);
-
-      console.log(result);
       res.json({ status: "success", data: result });
     } else {
       res.json({ status: "fail", message: "not_found" });
@@ -971,15 +936,12 @@ route.all("/getWallet", upload.none(), async function (req, res) {
     var wallets = new Array;
     for(var i = 0; i < _wallets.length; i++) {
       let item =  _wallets[i];
-      console.log(item);
       let pairInfo = await Pairs.findOne({symbolOneID: item.coin_id}).exec();
       if(pairInfo == null) continue;
-      console.log(pairInfo);
       wallets.push({'id' : item._id, 'coin_id' : item.coin_id, 'balance' : item.amount, 
       'address' : item.address, 'symbolName' : pairInfo.name});
       
     }
-    console.log(wallets);
     res.json({ status: "success", data: wallets });
   } else {
     res.json({ status: "fail", message: "not_found" });
@@ -1232,7 +1194,6 @@ route.all("/updatePhone", upload.none(), async function (req, res) {
   var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
-    console.log("UserID : " + user_id);
     let user = await User.findOne({
       _id: user_id,
       status: 1,
@@ -1361,7 +1322,6 @@ route.all("/get2fa", upload.none(), async function (req, res) {
 route.all("/getUserInfo", upload.none(), async function (req, res) {
   var user_id = req.body.user_id;
   var api_key_result = req.body.api_key;
-  console.log(user_id);
 
   let result = await authFile.apiKeyChecker(api_key_result);
 
@@ -1521,7 +1481,6 @@ route.all("/deleteSecurityKey", upload.none(), (req, res) => {
 });
 
 route.all("/addWithdraw", upload.none(), (req, res) => {
-  console.log("asd");
   var user_id = req.body.user_id;
   var api_key_result = req.body.api_key;
   var amount = req.body.amount;
@@ -1546,11 +1505,9 @@ route.all("/addWithdraw", upload.none(), (req, res) => {
             }).then((response) => {
               if (response == null) {
               } else {
-                console.log(response);
                 var token = response["token_id"];
                 newWithdraw.save(function (err, room) {
                   if (err) {
-                    console.log(token);
                     res.json({ status: "fail", message: err });
                   } else {
                     var body =

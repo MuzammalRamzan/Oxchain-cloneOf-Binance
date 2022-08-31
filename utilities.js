@@ -1,6 +1,8 @@
 const { createHash } = require("crypto");
 const Deposits = require("./models/Deposits");
 const NotificationTokens = require("./models/NotificationTokens");
+const Wallet = require("./models/Wallet");
+
 var notifications = require("./notifications.js");
 
 function hashData(string) {
@@ -19,6 +21,8 @@ function makeId(length) {
 }
 
 async function addDeposit(user_id, coin_name, amount, address, txid, coin_id) {
+
+ 
   const newDeposit = new Deposits({
     user_id: user_id,
     coin_id: coin_id,
@@ -28,11 +32,13 @@ async function addDeposit(user_id, coin_name, amount, address, txid, coin_id) {
     status: 1,
     currency: coin_name,
   });
+  
 
   NotificationTokens.findOne({
     user_id: user_id,
   }).then((response) => {
     if (response == null) {
+      
     } else {
       var token = response["token_id"];
       newDeposit.save(function (err, room) {
