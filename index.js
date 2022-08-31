@@ -775,7 +775,7 @@ route.all("/addNotification", upload.none(), async function (req, res) {
       notificationTitle: req.body.notificationTitle,
       notificationMessage: req.body.notificationMessage,
     });
-    let notifications = await newNotification.save();
+    await newNotification.save();
 
     let tokens = await NotificationTokens.find({}).exec();
     for (var i = 0; i < tokens.length; i++) {
