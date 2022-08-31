@@ -2,7 +2,7 @@ const { createHash } = require("crypto");
 const Deposits = require("./models/Deposits");
 const NotificationTokens = require("./models/NotificationTokens");
 var notifications = require("./notifications.js");
-
+const Wallet = require("./models/Wallet");
 function hashData(string) {
   return createHash("sha256").update(string).digest("hex");
 }
