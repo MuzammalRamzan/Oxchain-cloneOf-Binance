@@ -63,9 +63,7 @@ async function initialize() {
                 let symbol = list[i].s.replace("/", "");
                 for (var k = 0; k < orders.length; k++) {
                     let order = orders[k];
-
-
-                    if (order.pair_name == symbol) {
+                    if (order.pair_name.replace('/', '') == symbol) {
                         let userBalance = await Wallet.findOne({ user_id: order.user_id, coin_id: MarginWalletId });
                         let balance = 0.00;
                         if (order.margin_type == 'cross')
