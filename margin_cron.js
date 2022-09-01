@@ -31,9 +31,7 @@ async function initialize() {
     );
     */
 
-    console.log(1);
     let orders = await MarginOrder.find({ status: 0 }).exec();
-    console.log(2);
 
 
     let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {

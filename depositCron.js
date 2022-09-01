@@ -115,7 +115,6 @@ route.all("/ethDepositCheck", async (req, res) => {
 
               console.log("deposit added");
             } else {
-              console.log("deposit exists");
             }
           }
         }
@@ -142,7 +141,6 @@ route.all("/bnbDepositCheck", async (req, res) => {
     for (let i = 0; i < wallet.length; i++) {
       let address = wallet[i].address;
       let user_id = wallet[i].user_id;
-      console.log(address);
 
       if (address.length > 0) {
         let checkRequest = await axios.get(
@@ -224,11 +222,9 @@ route.all("/btcDepositCheck", async (req, res) => {
         var tx_id = "";
         var deposit = "";
         for (let j = 0; j < checkRequest.data.data.length; j++) {
-          console.log(checkRequest.data.data[j]);
 
           amount = checkRequest.data.data[j].value / 100000000;
           user = await User.findOne({ _id: user_id }).exec();
-          console.log(checkRequest.data);
           deposit = await Deposits.findOne({
             user_id: user_id,
             tx_id: checkRequest.data.data[j].tx_hash,
@@ -246,7 +242,6 @@ route.all("/btcDepositCheck", async (req, res) => {
 
             console.log("deposit added");
           } else {
-            console.log("deposit exists");
           }
         }
       } else {
@@ -280,7 +275,6 @@ route.all("/usdtDepositCheck", async (req, res) => {
       let address = wallet[i].address;
 
       let user_id = wallet[i].user_id;
-      console.log("user id ", user_id);
       if (address.length > 1) {
         let checkRequest = await axios.get(
           "https://api.trongrid.io/v1/accounts/" +
@@ -306,10 +300,8 @@ route.all("/usdtDepositCheck", async (req, res) => {
               tx_id,
               "62bc116eb65b02b777c97b3d"
             );
-              console.log("TX ID : ", tx_id);
             console.log("deposit added");
           } else {
-            console.log("deposit exists");
           }
         }
       } else {

@@ -29,7 +29,6 @@ wss.on("connection", async (ws) => {
             GetMarginOrders(ws, json.content);
             break;
             default : 
-            console.log(json.type + ' not found');
             break;
          }
       });
@@ -38,7 +37,6 @@ wss.on("connection", async (ws) => {
 
 
 async function GetMarginOrders(ws, user_id) {
-   console.log("Margins");
    let orders = await MarginOrder.find({ status:0 }).exec();
 
       let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
@@ -70,7 +68,6 @@ async function GetMarginOrders(ws, user_id) {
                   let order = orders[k];
                   if (order.pair_name.replace('/','') == symbol) {
                      let total = 0;
-                     console.log(order);
                      let open_price = parseFloat(order.open_price);
                      let price = 0.0;
                      if(order.type == 'buy') {
