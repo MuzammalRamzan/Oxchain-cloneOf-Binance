@@ -81,7 +81,7 @@ async function GetMarginOrders(ws, user_id) {
                         if(order.status == 0)
                          pnl = (price - order.open_price) * order.amount;
                          else 
-                         pnl = (price - parseFloat(order.close_price));
+                         pnl = (price - parseFloat(order.close_price ?? 0));
                         exportOrder.push({id : order._id, type:'buy',
                          symbol : order.pair_name, margin_type : order.margin_type,
                          leverage : order.leverage, amount : order.amount,
@@ -94,7 +94,7 @@ async function GetMarginOrders(ws, user_id) {
                         if(order.status == 0)
                          pnl = (order.open_price - price) * order.amount;
                         else 
-                         pnl = (parseFloat(order.close_price) - price);
+                         pnl = (parseFloat(order.close_price ?? 0) - price);
                         exportOrder.push({id : order._id, type: 'sell', 
                         leverage : order.leverage, amount : order.amount,
                         symbol : order.pair_name, margin_type : order.margin_type, open_price : order.open_price,price : price, pnl: pnl, status : order.status});
