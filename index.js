@@ -497,7 +497,7 @@ route.post("/addMarginOrder", async function (req, res) {
       return;
     }
 
-    let getPair = await Pairs.findOne({ name: req.body.symbolName }).exec();
+    let getPair = await Pairs.findOne({ name: req.body.symbol }).exec();
     if (getPair == null) {
       res.json({ status: "fail", message: "invalid_pair" });
       return;
