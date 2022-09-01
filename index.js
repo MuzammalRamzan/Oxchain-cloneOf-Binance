@@ -471,6 +471,7 @@ route.post("/closeMarginOrder", async function (req, res) {
 });
 route.post("/addMarginOrder", async function (req, res) {
   try {
+
     const MarginWalletId = "62ff3c742bebf06a81be98fd";
     var api_key_result = req.body.api_key;
     let result = await authFile.apiKeyChecker(api_key_result);
@@ -487,19 +488,24 @@ route.post("/addMarginOrder", async function (req, res) {
       coin_id: MarginWalletId,
       user_id: req.body.user_id,
     }).exec();
+    if(userBalance == null) {
+      res.json({ status: "fail", message: "invalid_wallet" });
+      return;
+    }
     if (userBalance.amount <= 0) {
       res.json({ status: "fail", message: "invalid_balance" });
       return;
     }
 
-    let getPair = await Pairs.findOne({ _id: req.body.pair_id }).exec();
+    let getPair = await Pairs.findOne({ name: req.body.symbolName }).exec();
     if (getPair == null) {
       res.json({ status: "fail", message: "invalid_pair" });
       return;
-    }
-    var urlPair = getPair.name;
+    }console.log("11"); 
+    var urlPair = getPair.name.replace('/','');
     let url =
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
+      console.log(url);
     result = await axios(url);
     var price = result.data[0].price;
     //let total = price * req.body.amount;
@@ -514,7 +520,7 @@ route.post("/addMarginOrder", async function (req, res) {
     }
     let order = new MarginOrder({
       pair_id: req.body.pair_id,
-      pair_name: req.body.pair_name,
+      pair_name: getPair.name,
       type: req.body.type,
       user_id: req.body.user_id,
       sl: req.body.sl ?? 0,
@@ -972,6 +978,7 @@ route.all("/getWallet", upload.none(), async function (req, res) {
       wallets.push({
         id: item._id,
         coin_id: item.coin_id,
+
         balance: item.amount,
         address: item.address,
         symbolName: pairInfo.name,

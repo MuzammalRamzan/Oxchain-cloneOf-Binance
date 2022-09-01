@@ -2,10 +2,10 @@ const mongoose = require("mongoose");
 var uniqueValidator = require("mongoose-unique-validator");
 
 const UserSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  surname: { type: String, required: true },
+  name: { type: String, required: false },
+  surname: { type: String, required: false },
   email: { type: String, required: true, unique: true },
-  country_code: { type: String, required: true },
+  country_code: { type: String, required: false },
   phone_number: { type: String, required: true, unique: true },
   birthday: { type: String, required: true },
   birth_place: { type: String, required: true },

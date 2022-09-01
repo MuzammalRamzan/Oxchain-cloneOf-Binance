@@ -66,6 +66,7 @@ async function initialize() {
                 for (var k = 0; k < orders.length; k++) {
                     let order = orders[k];
 
+
                     if (order.pair_name == symbol) {
                         let userBalance = await Wallet.findOne({ user_id: order.user_id, coin_id: MarginWalletId });
                         let balance = 0.00;
