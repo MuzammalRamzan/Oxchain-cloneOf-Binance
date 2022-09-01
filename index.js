@@ -338,18 +338,9 @@ route.all("/register", upload.none(), (req, res) => {
     refStatus = "no";
   }
   const newUser = new User({
-    name: req.body.name,
-    surname: req.body.surname,
     email: req.body.email,
     country_code: req.body.country_code,
     phone_number: req.body.phone_number,
-    birthday: req.body.birthday,
-    birth_place: req.body.birth_place,
-    city: req.body.city,
-    country: req.body.country,
-    address: req.body.address,
-    id_type: req.body.id_type,
-    id_number: req.body.id_number,
     password: utilities.hashData(req.body.password),
     api_key_result: req.body.api_key,
   });
