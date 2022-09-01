@@ -82,7 +82,10 @@ async function GetMarginOrders(ws, user_id) {
                          pnl = (price - order.open_price) * order.amount;
                          else 
                          pnl = (price - parseFloat(order.close_price));
-                        exportOrder.push({id : order._id, type:'buy', symbol : order.pair_name, margin_type : order.margin_type, open_price : order.open_price,price : price, pnl: pnl, status : order.status});
+                        exportOrder.push({id : order._id, type:'buy',
+                         symbol : order.pair_name, margin_type : order.margin_type,
+                         leverage : order.leverage, amount : order.amount,
+                         open_price : order.open_price,price : price, pnl: pnl, status : order.status});
                      } else if(order.type = 'sell') {
                         price = parseFloat(list[i].b);
                         let imr = 1 / order.leverage;
@@ -92,7 +95,9 @@ async function GetMarginOrders(ws, user_id) {
                          pnl = (order.open_price - price) * order.amount;
                         else 
                          pnl = (parseFloat(order.close_price) - price);
-                        exportOrder.push({id : order._id, type: 'sell', symbol : order.pair_name, margin_type : order.margin_type, open_price : order.open_price,price : price, pnl: pnl, status : order.status});
+                        exportOrder.push({id : order._id, type: 'sell', 
+                        leverage : order.leverage, amount : order.amount,
+                        symbol : order.pair_name, margin_type : order.margin_type, open_price : order.open_price,price : price, pnl: pnl, status : order.status});
                      }
                   }
                }
