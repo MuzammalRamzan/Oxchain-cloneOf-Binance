@@ -1,3 +1,109 @@
+
+"use strict";
+const WebSocket = require('ws');
+const WebSocketServer = require("ws").Server;
+const wss = new WebSocketServer({ port: 7010 });
+const MarginOrder = require('./models/MarginOrder');
+const Wallet = require('./models/Wallet');
+const mongoose = require("mongoose");
+require("dotenv").config();
+var mongodbPass = process.env.MONGO_DB_PASS;
+
+var connection =
+  "mongodb+srv://volkansaka:" +
+  mongodbPass +
+  "@cluster0.d1oo7iq.mongodb.net/?retryWrites=true&w=majority";
+
+wss.on("connection", async (ws) => {
+   console.info("websocket connection open");
+   await mongoose.connect(connection);
+   if (ws.readyState === ws.OPEN) {
+       ws.send(JSON.stringify({
+           msg1: 'yo, im msg 1'
+       }))
+
+      ws.on('message', (data) => {
+         let json = JSON.parse(data);
+         switch(json.type) {
+            case "margin_orders" : 
+            GetMarginOrders(ws, json.content);
+            break;
+            default : 
+            console.log(json.type + ' not found');
+            break;
+         }
+      });
+   }
+});
+
+
+async function GetMarginOrders(ws, user_id) {
+   console.log("Margins");
+   let orders = await MarginOrder.find({  }).exec();
+
+      let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
+         //orders = data;
+         orders = await MarginOrder.find({  }).exec();
+
+      });
+      let isUpdate = MarginOrder.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
+         orders = await MarginOrder.find({  }).exec();
+      });
+      let isRemove = MarginOrder.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
+         console.log("silindi");
+         orders = await MarginOrder.find({  }).exec();
+      });
+
+      let isDelete = MarginOrder.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
+         console.log("silindi 2");
+         orders = await MarginOrder.find({  }).exec();
+      });
+      
+      const allTickers = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
+      allTickers.onopen = () => {
+         allTickers.onmessage = async (data) => {
+            let list = JSON.parse(data.data);
+            let exportOrder = [];
+            for (var i = 0; i < list.length; i++) {
+               let symbol = list[i].s.replace("/", "");
+               for (var k = 0; k < orders.length; k++) {
+                  let order = orders[k];
+                  if (order.pair_name.replace('/','') == symbol) {
+                     let total = 0;
+                     console.log(order);
+                     let open_price = parseFloat(order.open_price);
+                     let price = 0.0;
+                     if(order.type == 'buy') {
+                        price = parseFloat(list[i].a);
+                        let imr = 1 / order.leverage;
+                        let initialMargin = order.amount * price * imr;
+                        let pnl = 0.00;
+                        if(order.status == 0)
+                         pnl = (price - order.open_price) * order.amount;
+                         else 
+                         pnl = (price - parseFloat(order.close_price));
+                        exportOrder.push({id : order._id, type:'buy', symbol : order.pair_name, margin_type : order.margin_type, open_price : order.open_price,price : price, pnl: pnl, status : order.status});
+                     } else if(order.type = 'sell') {
+                        price = parseFloat(list[i].b);
+                        let imr = 1 / order.leverage;
+                        let initialMargin = order.amount * price * imr;
+                        let pnl = 0.00;
+                        if(order.status == 0)
+                         pnl = (order.open_price - price) * order.amount;
+                        else 
+                         pnl = (parseFloat(order.close_price) - price);
+                        exportOrder.push({id : order._id, type: 'sell', symbol : order.pair_name, margin_type : order.margin_type, open_price : order.open_price,price : price, pnl: pnl, status : order.status});
+                     }
+                  }
+               }
+            }
+            ws.send(JSON.stringify({type: 'orders', content: exportOrder}));
+         }
+      }
+}
+
+
+/*
 const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
@@ -27,7 +133,8 @@ io.on('connection', function (socket) {
       });
    });
 
-   socket.on('pnl', function (user_id) {
+   socket.on('margin_orders', async function (user_id) {
+      console.log("margin orders");
       let orders = await MarginOrder.find({ status: 0 }).exec();
 
       let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
@@ -60,6 +167,7 @@ io.on('connection', function (socket) {
                   let order = orders[k];
                   if (order.pair_name == symbol) {
                      let total = 0;
+                     console.log(symbol);
                   }
                }
             }
@@ -72,3 +180,5 @@ io.on('connection', function (socket) {
 http.listen(7010, function () {
    console.log('listening on *:3000');
 });
+
+*/

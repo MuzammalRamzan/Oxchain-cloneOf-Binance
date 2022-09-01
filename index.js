@@ -450,23 +450,27 @@ route.post("/closeMarginOrder", async function (req, res) {
       res.json({ status: "fail", message: "invalid_order" });
       return;
     }
+    console.log("1");
+    let getOrderDetail = await MarginOrder.findOne({_id : orderId}).exec();
+console.log(getOrderDetail);
 
-    var urlPair = req.body.pair_name.replace("/", "");
+console.log("2");
+    let getPair = await Pairs.findOne({ _id : getOrderDetail.pair_id }).exec();
+    console.log(getPair);
+    var urlPair = getPair.name.replace("/", "");
+    console.log(urlPair);
     let url =
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
+      console.log(url);
     result = await axios(url);
     var price = result.data[0].price;
-    MarginOrder.findOneAndUpdate(
+    console.log(price);
+    let doc = await MarginOrder.findOneAndUpdate(
       { _id: new ObjectId(orderId) },
       { $set: { status: 1, close_time: Date.now(), close_price: price } },
-      function (err, doc) {
-        if (err) {
-          res.json({ status: "fail", message: err.message });
-          return;
-        }
-        res.json({ status: "success", data: doc });
-      }
+      
     );
+    res.json({ status: "success", data: doc });
   } catch (err) {}
 });
 route.post("/addMarginOrder", async function (req, res) {
@@ -508,6 +512,7 @@ route.post("/addMarginOrder", async function (req, res) {
       console.log(url);
     result = await axios(url);
     var price = result.data[0].price;
+    console.log("price : " + price);
     //let total = price * req.body.amount;
     let imr = 1 / req.body.leverage;
     let initialMargin = req.body.amount * price * imr;
@@ -518,8 +523,9 @@ route.post("/addMarginOrder", async function (req, res) {
       });
       return;
     }
+    console.log(getPair);
     let order = new MarginOrder({
-      pair_id: req.body.pair_id,
+      pair_id: getPair._id,
       pair_name: getPair.name,
       type: req.body.type,
       user_id: req.body.user_id,
