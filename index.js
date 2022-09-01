@@ -11,6 +11,7 @@ const LoginLogs = require("./models/LoginLogs");
 const SecurityKey = require("./models/SecurityKey");
 const Notification = require("./models/Notifications");
 const ReadNotification = require("./models/ReadNotifications");
+const CopyLeaderRequest = require("./models/CopyTradeLeaderRequest");
 const axios = require("axios");
 const NotificationTokens = require("./models/NotificationTokens");
 const Withdraws = require("./models/Withdraw");
@@ -425,6 +426,30 @@ route.all("/addCoin", upload.none(), async function (req, res) {
   }
 });
 
+route.all("/CopyLeaderRequest", upload.none(), async function (req, res) {
+  var api_key_result = req.body.api_key;
+  let result = await authFile.apiKeyChecker(api_key_result);
+
+  let checkLeader = await CopyLeaderRequest.findOne({
+    user_id: req.body.user_id,
+  }).exec();
+
+  const newLeaderRequest = new CopyLeaderRequest({
+    user_id: req.body.user_id,
+  });
+
+  if (result === true) {
+    if (checkLeader == null) {
+      newLeaderRequest.save();
+      res.json({ status: "success", data: null });
+    } else {
+      res.json({ status: "fail", message: "already_requested" });
+    }
+  } else {
+    res.json({ status: "fail", message: "Forbidden 403" });
+  }
+});
+
 route.post("/getMarginOrders", async function (req, res) {
   var api_key_result = req.body.api_key;
   let result = await authFile.apiKeyChecker(api_key_result);
@@ -451,31 +476,29 @@ route.post("/closeMarginOrder", async function (req, res) {
       return;
     }
     console.log("1");
-    let getOrderDetail = await MarginOrder.findOne({_id : orderId}).exec();
-console.log(getOrderDetail);
+    let getOrderDetail = await MarginOrder.findOne({ _id: orderId }).exec();
+    console.log(getOrderDetail);
 
-console.log("2");
-    let getPair = await Pairs.findOne({ _id : getOrderDetail.pair_id }).exec();
+    console.log("2");
+    let getPair = await Pairs.findOne({ _id: getOrderDetail.pair_id }).exec();
     console.log(getPair);
     var urlPair = getPair.name.replace("/", "");
     console.log(urlPair);
     let url =
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
-      console.log(url);
+    console.log(url);
     result = await axios(url);
     var price = result.data[0].price;
     console.log(price);
     let doc = await MarginOrder.findOneAndUpdate(
       { _id: new ObjectId(orderId) },
-      { $set: { status: 1, close_time: Date.now(), close_price: price } },
-      
+      { $set: { status: 1, close_time: Date.now(), close_price: price } }
     );
     res.json({ status: "success", data: doc });
   } catch (err) {}
 });
 route.post("/addMarginOrder", async function (req, res) {
   try {
-
     const MarginWalletId = "62ff3c742bebf06a81be98fd";
     var api_key_result = req.body.api_key;
     let result = await authFile.apiKeyChecker(api_key_result);
@@ -492,7 +515,7 @@ route.post("/addMarginOrder", async function (req, res) {
       coin_id: MarginWalletId,
       user_id: req.body.user_id,
     }).exec();
-    if(userBalance == null) {
+    if (userBalance == null) {
       res.json({ status: "fail", message: "invalid_wallet" });
       return;
     }
@@ -505,11 +528,12 @@ route.post("/addMarginOrder", async function (req, res) {
     if (getPair == null) {
       res.json({ status: "fail", message: "invalid_pair" });
       return;
-    }console.log("11"); 
-    var urlPair = getPair.name.replace('/','');
+    }
+    console.log("11");
+    var urlPair = getPair.name.replace("/", "");
     let url =
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
-      console.log(url);
+    console.log(url);
     result = await axios(url);
     var price = result.data[0].price;
     console.log("price : " + price);
