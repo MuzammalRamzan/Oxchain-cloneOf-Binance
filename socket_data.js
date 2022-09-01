@@ -39,24 +39,24 @@ wss.on("connection", async (ws) => {
 
 async function GetMarginOrders(ws, user_id) {
    console.log("Margins");
-   let orders = await MarginOrder.find({  }).exec();
+   let orders = await MarginOrder.find({ status:0 }).exec();
 
       let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
          //orders = data;
-         orders = await MarginOrder.find({  }).exec();
+         orders = await MarginOrder.find({ status:0 }).exec();
 
       });
       let isUpdate = MarginOrder.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
-         orders = await MarginOrder.find({  }).exec();
+         orders = await MarginOrder.find({ status:0 }).exec();
       });
       let isRemove = MarginOrder.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
          console.log("silindi");
-         orders = await MarginOrder.find({  }).exec();
+         orders = await MarginOrder.find({ status:0 }).exec();
       });
 
       let isDelete = MarginOrder.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
          console.log("silindi 2");
-         orders = await MarginOrder.find({  }).exec();
+         orders = await MarginOrder.find({ status:0 }).exec();
       });
       
       const allTickers = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
