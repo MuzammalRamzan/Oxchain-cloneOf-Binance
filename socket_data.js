@@ -167,26 +167,26 @@ async function GetMarginHistories(ws, payload) {
    let user_id = payload['user_id'];
    let status = 1;
    let orders = await MarginOrder.find({ user_id: user_id, status: status }).exec();
-   GetOrderHistry(orders);
+   GetOrderHistry(ws,orders);
    let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
       //orders = data;
       orders = await MarginOrder.find({ user_id: user_id, status: status }).exec();
-      GetOrderHistry(orders);
+      GetOrderHistry(ws,orders);
    });
    let isUpdate = MarginOrder.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
       orders = await MarginOrder.find({ user_id: user_id, status: status }).exec();
-      GetOrderHistry(orders);
+      GetOrderHistry(ws,orders);
    });
    let isRemove = MarginOrder.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
       console.log("silindi");
       orders = await MarginOrder.find({ user_id: user_id, status: status }).exec();
-      GetOrderHistry(orders);
+      GetOrderHistry(ws,orders);
    });
 
    let isDelete = MarginOrder.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
       console.log("silindi 2");
       orders = await MarginOrder.find({ user_id: user_id, status: status }).exec();
-      GetOrderHistry(orders);
+      GetOrderHistry(ws,orders);
    });
 
 
