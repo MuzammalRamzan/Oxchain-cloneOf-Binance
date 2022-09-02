@@ -1,28 +1,37 @@
+const { createHash } = require("crypto");
+const mongoose = require("mongoose");
+const WebSocket = require('ws');
 const Orders = require("./models/Orders");
-
+require("dotenv").config();
 
 async function main() {
-    let orders = await Orders.find({type:'limit'}).exec();
-    let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
+    var mongodbPass = process.env.MONGO_DB_PASS;
+
+    var connection =
+        "mongodb+srv://volkansaka:" +
+        mongodbPass +
+        "@cluster0.d1oo7iq.mongodb.net/?retryWrites=true&w=majority";
+    await mongoose.connect(connection);
+
+
+    let request = { $or: [{ type: "limit" }, { type: "stop_limit" }] };
+    let orders = await Orders.find(request).exec();
+    let isInsert = Orders.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
         //orders = data;
-        orders = await MarginOrder.find({ status: 0 }).exec();
-
+        orders = await Orders.find(request).exec();
     });
-    let isUpdate = MarginOrder.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
-        orders = await MarginOrder.find({ status: 0 }).exec();
+    let isUpdate = Orders.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
+        orders = await Orders.find(request).exec();
     });
-    let isRemove = MarginOrder.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
+    let isRemove = Orders.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
         console.log("silindi");
-        orders = await MarginOrder.find({ status: 0 }).exec();
+        orders = await Orders.find(request).exec();
     });
 
-    let isDelete = MarginOrder.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
+    let isDelete = Orders.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
         console.log("silindi 2");
-        orders = await MarginOrder.find({ status: 0 }).exec();
-
+        orders = await Orders.find(request).exec();
     });
-
-    
 
     const allTickers = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
     allTickers.onopen = () => {
@@ -33,10 +42,38 @@ async function main() {
                 for (var k = 0; k < orders.length; k++) {
                     let order = orders[k];
                     if (order.pair_name.replace('/', '') == symbol) {
-                        
+                        let target_price = parseFloat(order.target_price);
+                        if (order.type == 'limit') {
+                            if (order.method == 'buy') {
+                                let price = parseFloat(list[i].a);
+                                if (price <= target_price) {
+                                    await Orders.updateOne({ _id: order._id }, { $set: { type: 'market', open_price: Date.now, open_price: price } });
+                                }
+                            }
+                            if (order.method == 'sell') {
+                                let price = parseFloat(list[i].b);
+                                if (price >= target_price) {
+                                    await Orders.updateOne({ _id: order._id }, { $set: { type: 'market', open_price: Date.now, open_price: price } });
+                                }
+                            }
+                        } else if(order.type == 'stop_limit') {
+                            if (order.method == 'buy') {
+                                let price = parseFloat(list[i].a);
+                                if (price >= target_price) {
+                                    await Orders.updateOne({ _id: order._id }, { $set: { type: 'market', open_price: Date.now, open_price: price } });
+                                }
+                            }
+                            if (order.method == 'sell') {
+                                let price = parseFloat(list[i].b);
+                                if (price <= target_price) {
+                                    await Orders.updateOne({ _id: order._id }, { $set: { type: 'market', open_price: Date.now, open_price: price } });
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
 }
+main();

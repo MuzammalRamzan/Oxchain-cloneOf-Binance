@@ -6,6 +6,7 @@ const wss = new WebSocketServer({ port: 7010 });
 const MarginOrder = require('./models/MarginOrder');
 const Wallet = require('./models/Wallet');
 const mongoose = require("mongoose");
+const Orders = require('./models/Orders');
 require("dotenv").config();
 var mongodbPass = process.env.MONGO_DB_PASS;
 
@@ -31,6 +32,9 @@ wss.on("connection", async (ws) => {
                case "wallet":
                   GetWallets(ws, json.content);
                   break;
+                  case "spot_orders":
+                  GetOrders(ws, json.content);
+                  break;
                default:
                break;
          }
@@ -45,6 +49,39 @@ async function GetWallets(ws, wallet_id) {
       ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
    });
    ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
+}
+
+async function GetOrders(ws, payload) {
+   let user_id = payload['user_id'];
+   let type = payload['type'] ?? "";
+   let request = { user_id: user_id };
+   if(type != "")
+   request["type"] = type;
+   console.log(request);
+   let orders = await Orders.find(request).exec();
+   ws.send(JSON.stringify({ type: 'orders', content: orders }));
+   let isInsert = Orders.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
+      //orders = data;
+      orders = await Orders.find(request).exec();
+      ws.send(JSON.stringify({ type: 'orders', content: orders }));
+   });
+   let isUpdate = Orders.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
+      orders = await Orders.find(request).exec();
+      ws.send(JSON.stringify({ type: 'orders', content: orders }));
+   });
+   let isRemove = Orders.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
+      console.log("silindi");
+      orders = await Orders.find(request).exec();
+      ws.send(JSON.stringify({ type: 'orders', content: orders }));
+   });
+
+   let isDelete = Orders.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
+      console.log("silindi 2");
+      orders = await Orders.find(request).exec();
+      ws.send(JSON.stringify({ type: 'orders', content: orders }));
+   });
+
+
 }
 
 
