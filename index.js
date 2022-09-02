@@ -588,6 +588,12 @@ route.post("/addMarginOrder", async function (req, res) {
       order.save();
     } else {
       let target_price = parseFloat(req.body.target_price);
+      let getPair = await Pairs.findOne({ name: req.body.symbol }).exec();
+      if (getPair == null) {
+        res.json({ status: "fail", message: "invalid_pair" });
+        return;
+      }
+      var urlPair = getPair.name.replace("/", "");
       var urlPair = getPair.name.replace("/", "");
       let url =
         'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
