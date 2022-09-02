@@ -524,7 +524,7 @@ route.post("/addMarginOrder", async function (req, res) {
       res.json({ status: "fail", message: "invalid_amount" });
       return;
     }
-    if (req.method == 'market') {
+    if (req.body.method == 'market') {
       let userBalance = await Wallet.findOne({
         coin_id: MarginWalletId,
         user_id: req.body.user_id,
@@ -543,6 +543,7 @@ route.post("/addMarginOrder", async function (req, res) {
         res.json({ status: "fail", message: "invalid_pair" });
         return;
       }
+      
       var urlPair = getPair.name.replace("/", "");
       let url =
         'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
@@ -560,12 +561,13 @@ route.post("/addMarginOrder", async function (req, res) {
         });
         return;
       }
-      let reverseOreders = await MarginOrder.find({ user_id: req.body.user_id, coin_id: MarginWalletId, type : (req.body.type == 'buy' ? 'sell' : 'buy'), method: 'market' }).exec();
-      console.log(reverseOreders);
+      
+      let reverseOreders = await MarginOrder.find({ user_id: req.body.user_id, coin_id: getPair._id, type : (req.body.type == 'buy' ? 'sell' : 'buy') }).exec();
+      
       for(var i = 0; i < reverseOreders.length; i++) {
         let _o = reverseOreders[i];
         _o.close_price = price;
-        _o.close_time = Date.now;
+        _o.close_time = Date.now();
         _o.status = 1;
         await _o.save();
       }
@@ -584,9 +586,12 @@ route.post("/addMarginOrder", async function (req, res) {
         leverage: req.body.leverage,
         amount: req.body.amount,
         open_price: price,
+        
       });
 
       order.save();
+      res.json({ status: "success", data: order });
+      return;
     } else {
       let target_price = parseFloat(req.body.target_price);
       let getPair = await Pairs.findOne({ name: req.body.symbol }).exec();
@@ -643,8 +648,10 @@ route.post("/addMarginOrder", async function (req, res) {
       });
 
       order.save();
+      res.json({ status: "success", data: order });
+      return;
     }
-    res.json({ status: "success", data: order });
+    
   } catch (err) {
     res.json({ status: "fail", message: err.message });
   }
