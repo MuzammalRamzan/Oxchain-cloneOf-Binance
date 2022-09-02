@@ -608,12 +608,12 @@ route.post("/addMarginOrder", async function (req, res) {
       var price = result.data[0].price;
       if (req.body.method == 'limit') {
         if (req.body.type == 'buy') {
-          if (price >= target_price) {
+          if (price <= target_price) {
             res.json({ status: "fail", message: "The buy limit cannot be higher than the current price." });
             return;
           }
         } else if (req.body.type == 'sell') {
-          if (price <= target_price) {
+          if (price >= target_price) {
             res.json({ status: "fail", message: "The sell limit cannot be higher than the current price." });
             return;
           }
