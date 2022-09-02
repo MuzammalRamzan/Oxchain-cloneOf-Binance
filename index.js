@@ -458,7 +458,7 @@ route.post("/getMarginOrders", async function (req, res) {
     return;
   }
 
-  let orders = await MarginOrder.find({ user_id: req.body.user_id }).exec();
+  let orders = await MarginOrder.find({ user_id: req.body.user_id , status:1}).exec();
 
   res.json({ status: "success", data: orders });
 });
@@ -866,7 +866,6 @@ route.all("/getOrders", upload.none(), async function (req, res) {
   if (result === true) {
     let list = await Orders.find({
       user_id: req.body.user_id,
-      type: "Limit",
       status: "0",
     })
       .sort({ createdAt: -1 })
