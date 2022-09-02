@@ -10,98 +10,114 @@ require("dotenv").config();
 var mongodbPass = process.env.MONGO_DB_PASS;
 
 var connection =
-  "mongodb+srv://volkansaka:" +
-  mongodbPass +
-  "@cluster0.d1oo7iq.mongodb.net/?retryWrites=true&w=majority";
+   "mongodb+srv://volkansaka:" +
+   mongodbPass +
+   "@cluster0.d1oo7iq.mongodb.net/?retryWrites=true&w=majority";
 
 wss.on("connection", async (ws) => {
    console.info("websocket connection open");
    await mongoose.connect(connection);
    if (ws.readyState === ws.OPEN) {
-       ws.send(JSON.stringify({
-           msg1: 'yo, im msg 1'
-       }))
+      ws.send(JSON.stringify({
+         msg1: 'yo, im msg 1'
+      }))
 
       ws.on('message', (data) => {
          let json = JSON.parse(data);
-         switch(json.type) {
-            case "margin_orders" : 
-            GetMarginOrders(ws, json.content);
-            break;
-            default : 
-            break;
+         switch (json.type) {
+            case "margin_orders":
+               GetMarginOrders(ws, json.content);
+               break;
+               case "wallet":
+                  GetWallets(ws, json.content);
+                  break;
+               default:
+               break;
          }
       });
    }
 });
 
+async function GetWallets(ws, wallet_id) {
+   let wallet = await Wallet.findOne({ _id: wallet_id }).exec();
+   let isUpdate = Wallet.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
+      wallet = await Wallet.find({ _id: wallet_id }).exec();
+      ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
+   });
+   ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
+}
+
 
 async function GetMarginOrders(ws, user_id) {
-   let orders = await MarginOrder.find({ status:0 }).exec();
+   let orders = await MarginOrder.find({ user_id: user_id, status: 0 }).exec();
 
-      let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
-         //orders = data;
-         orders = await MarginOrder.find({ status:0 }).exec();
+   let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
+      //orders = data;
+      orders = await MarginOrder.find({ user_id: user_id, status: 0 }).exec();
 
-      });
-      let isUpdate = MarginOrder.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
-         orders = await MarginOrder.find({ status:0 }).exec();
-      });
-      let isRemove = MarginOrder.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
-         console.log("silindi");
-         orders = await MarginOrder.find({ status:0 }).exec();
-      });
+   });
+   let isUpdate = MarginOrder.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
+      orders = await MarginOrder.find({ user_id: user_id, status: 0 }).exec();
+   });
+   let isRemove = MarginOrder.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
+      console.log("silindi");
+      orders = await MarginOrder.find({ user_id: user_id,status: 0 }).exec();
+   });
 
-      let isDelete = MarginOrder.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
-         console.log("silindi 2");
-         orders = await MarginOrder.find({ status:0 }).exec();
-      });
-      
-      const allTickers = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
-      allTickers.onopen = () => {
-         allTickers.onmessage = async (data) => {
-            let list = JSON.parse(data.data);
-            let exportOrder = [];
-            for (var i = 0; i < list.length; i++) {
-               let symbol = list[i].s.replace("/", "");
-               for (var k = 0; k < orders.length; k++) {
-                  let order = orders[k];
-                  if (order.pair_name.replace('/','') == symbol) {
-                     let total = 0;
-                     let open_price = parseFloat(order.open_price);
-                     let price = 0.0;
-                     if(order.type == 'buy') {
-                        price = parseFloat(list[i].a);
-                        let imr = 1 / order.leverage;
-                        let initialMargin = order.amount * price * imr;
-                        let pnl = 0.00;
-                        if(order.status == 0)
-                         pnl = (price - order.open_price) * order.amount;
-                         else 
-                         pnl = (price - parseFloat(order.close_price ?? 0));
-                        exportOrder.push({id : order._id, type:'buy',
-                         symbol : order.pair_name, margin_type : order.margin_type,
-                         leverage : order.leverage, amount : order.amount,
-                         open_price : order.open_price,price : price, pnl: pnl, status : order.status});
-                     } else if(order.type = 'sell') {
-                        price = parseFloat(list[i].b);
-                        let imr = 1 / order.leverage;
-                        let initialMargin = order.amount * price * imr;
-                        let pnl = 0.00;
-                        if(order.status == 0)
-                         pnl = (order.open_price - price) * order.amount;
-                        else 
-                         pnl = (parseFloat(order.close_price ?? 0) - price);
-                        exportOrder.push({id : order._id, type: 'sell', 
-                        leverage : order.leverage, amount : order.amount,
-                        symbol : order.pair_name, margin_type : order.margin_type, open_price : order.open_price,price : price, pnl: pnl, status : order.status});
-                     }
+   let isDelete = MarginOrder.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
+      console.log("silindi 2");
+      orders = await MarginOrder.find({ user_id: user_id,status: 0 }).exec();
+   });
+
+   const allTickers = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
+   allTickers.onopen = () => {
+      allTickers.onmessage = async (data) => {
+         let list = JSON.parse(data.data);
+         let exportOrder = [];
+         for (var i = 0; i < list.length; i++) {
+            let symbol = list[i].s.replace("/", "");
+            for (var k = 0; k < orders.length; k++) {
+               let order = orders[k];
+               if (order.pair_name.replace('/', '') == symbol) {
+                  let total = 0;
+                  let open_price = parseFloat(order.open_price);
+                  let price = 0.0;
+                  if (order.type == 'buy') {
+                     price = parseFloat(list[i].a);
+                     let imr = 1 / order.leverage;
+                     let initialMargin = order.amount * price * imr;
+                     let pnl = 0.00;
+                     if (order.status == 0)
+                        pnl = (price - order.open_price) * order.amount;
+                     else
+                        pnl = (price - parseFloat(order.close_price ?? 0));
+                     exportOrder.push({
+                        id: order._id, type: 'buy',
+                        symbol: order.pair_name, margin_type: order.margin_type,
+                        leverage: order.leverage, amount: order.amount,
+                        open_price: order.open_price, price: price, pnl: pnl, status: order.status
+                     });
+                  } else if (order.type = 'sell') {
+                     price = parseFloat(list[i].b);
+                     let imr = 1 / order.leverage;
+                     let initialMargin = order.amount * price * imr;
+                     let pnl = 0.00;
+                     if (order.status == 0)
+                        pnl = (order.open_price - price) * order.amount;
+                     else
+                        pnl = (parseFloat(order.close_price ?? 0) - price);
+                     exportOrder.push({
+                        id: order._id, type: 'sell',
+                        leverage: order.leverage, amount: order.amount,
+                        symbol: order.pair_name, margin_type: order.margin_type, open_price: order.open_price, price: price, pnl: pnl, status: order.status
+                     });
                   }
                }
             }
-            ws.send(JSON.stringify({type: 'orders', content: exportOrder}));
          }
+         ws.send(JSON.stringify({ type: 'orders', content: exportOrder }));
       }
+   }
 }
 
 
