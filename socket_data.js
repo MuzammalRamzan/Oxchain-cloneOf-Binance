@@ -191,7 +191,7 @@ async function GetMarginHistories(ws, payload) {
 
 
 }
-async function GetOrderHistry(orders) {
+async function GetOrderHistry(ws, orders) {
    let exportOrder = [];
 
    for (var k = 0; k < orders.length; k++) {
