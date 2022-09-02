@@ -561,6 +561,7 @@ route.post("/addMarginOrder", async function (req, res) {
         return;
       }
       let reverseOreders = await MarginOrder.find({ user_id: req.body.user_id, coin_id: MarginWalletId, type : (req.body.type == 'buy' ? 'sell' : 'buy'), method: 'market' }).exec();
+      console.log(reverseOreders);
       for(var i = 0; i < reverseOreders.length; i++) {
         let _o = reverseOreders[i];
         _o.close_price = price;
