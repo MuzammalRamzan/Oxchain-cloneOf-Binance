@@ -458,7 +458,7 @@ route.post("/getClosedMarginOrders", async function (req, res) {
     return;
   }
 
-  let orders = await MarginOrder.find({ user_id: req.body.user_id , status:1}).exec();
+  let orders = await MarginOrder.find({ user_id: req.body.user_id, status: 1 }).exec();
 
   res.json({ status: "success", data: orders });
 });
@@ -472,7 +472,7 @@ route.post("/getOpenMarginOrders", async function (req, res) {
     return;
   }
 
-  let orders = await MarginOrder.find({ user_id: req.body.user_id , status:0}).exec();
+  let orders = await MarginOrder.find({ user_id: req.body.user_id, status: 0 }).exec();
 
   res.json({ status: "success", data: orders });
 });
@@ -509,7 +509,7 @@ route.post("/closeMarginOrder", async function (req, res) {
       { $set: { status: 1, close_time: Date.now(), close_price: price } }
     );
     res.json({ status: "success", data: doc });
-  } catch (err) {}
+  } catch (err) { }
 });
 route.post("/addMarginOrder", async function (req, res) {
   try {
@@ -524,58 +524,119 @@ route.post("/addMarginOrder", async function (req, res) {
       res.json({ status: "fail", message: "invalid_amount" });
       return;
     }
+    if (req.method == 'market') {
+      let userBalance = await Wallet.findOne({
+        coin_id: MarginWalletId,
+        user_id: req.body.user_id,
+      }).exec();
+      if (userBalance == null) {
+        res.json({ status: "fail", message: "invalid_wallet" });
+        return;
+      }
+      if (userBalance.amount <= 0) {
+        res.json({ status: "fail", message: "invalid_balance" });
+        return;
+      }
 
-    let userBalance = await Wallet.findOne({
-      coin_id: MarginWalletId,
-      user_id: req.body.user_id,
-    }).exec();
-    if (userBalance == null) {
-      res.json({ status: "fail", message: "invalid_wallet" });
-      return;
-    }
-    if (userBalance.amount <= 0) {
-      res.json({ status: "fail", message: "invalid_balance" });
-      return;
-    }
+      let getPair = await Pairs.findOne({ name: req.body.symbol }).exec();
+      if (getPair == null) {
+        res.json({ status: "fail", message: "invalid_pair" });
+        return;
+      }
+      var urlPair = getPair.name.replace("/", "");
+      let url =
+        'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
+      console.log(url);
+      result = await axios(url);
+      var price = result.data[0].price;
+      console.log("price : " + price);
+      //let total = price * req.body.amount;
+      let imr = 1 / req.body.leverage;
+      let initialMargin = req.body.amount * price * imr;
+      if (userBalance.amount <= initialMargin) {
+        res.json({
+          status: "fail",
+          message: "Invalid balance. Required margin : " + initialMargin,
+        });
+        return;
+      }
+      let reverseOreders = await MarginOrder.find({ user_id: req.body.user_id, coin_id: MarginWalletId, type : (req.body.type == 'buy' ? 'sell' : 'buy'), method: 'market' }).exec();
+      for(var i = 0; i < reverseOreders.length; i++) {
+        let _o = reverseOreders[i];
+        _o.close_price = price;
+        _o.close_time = Date.now;
+        _o.status = 1;
+        await _o.save();
+      }
 
-    let getPair = await Pairs.findOne({ name: req.body.symbol }).exec();
-    if (getPair == null) {
-      res.json({ status: "fail", message: "invalid_pair" });
-      return;
-    }
-    console.log("11");
-    var urlPair = getPair.name.replace("/", "");
-    let url =
-      'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
-    console.log(url);
-    result = await axios(url);
-    var price = result.data[0].price;
-    console.log("price : " + price);
-    //let total = price * req.body.amount;
-    let imr = 1 / req.body.leverage;
-    let initialMargin = req.body.amount * price * imr;
-    if (userBalance.amount <= initialMargin) {
-      res.json({
-        status: "fail",
-        message: "Invalid balance. Required margin : " + initialMargin,
+      let order = new MarginOrder({
+        pair_id: getPair._id,
+        pair_name: getPair.name,
+        type: req.body.type,
+        margin_type : req.body.margin_type,
+        method : req.body.method,
+        user_id: req.body.user_id,
+        isolated : req.body.isolated ?? 0.0,
+        sl: req.body.sl ?? 0,
+        tp: req.body.tp ?? 0,
+        target_price : 0.0,
+        leverage: req.body.leverage,
+        amount: req.body.amount,
+        open_price: price,
       });
-      return;
+
+      order.save();
+    } else {
+      let target_price = parseFloat(req.body.target_price);
+      var urlPair = getPair.name.replace("/", "");
+      let url =
+        'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
+      result = await axios(url);
+      var price = result.data[0].price;
+      if (req.body.method == 'limit') {
+        if (req.body.type == 'buy') {
+          if (price >= target_price) {
+            res.json({ status: "fail", message: "The buy limit cannot be higher than the current price." });
+            return;
+          }
+        } else if (req.body.type == 'sell') {
+          if (price <= target_price) {
+            res.json({ status: "fail", message: "The sell limit cannot be higher than the current price." });
+            return;
+          }
+        }
+      }
+      else if (req.body.method == 'stop_limit') {
+        if (req.body.type == 'buy') {
+          if (price <= target_price) {
+            res.json({ status: "fail", message: "The buy stop limit cannot be higher than the current price." });
+            return;
+          }
+        } else if (req.body.type == 'sell') {
+          if (price >= target_price) {
+            res.json({ status: "fail", message: "The sell stop limit cannot be higher than the current price." });
+            return;
+          }
+        }
+      }
+      let order = new MarginOrder({
+        pair_id: getPair._id,
+        pair_name: getPair.name,
+        type: req.body.type,
+        margin_type : req.body.margin_type,
+        method : req.body.method,
+        user_id: req.body.user_id,
+        isolated : req.body.isolated ?? 0.0,
+        sl: req.body.sl ?? 0,
+        tp: req.body.tp ?? 0,
+        target_price : target_price,
+        leverage: req.body.leverage,
+        amount: req.body.amount,
+        open_price: price,
+      });
+
+      order.save();
     }
-    console.log(getPair);
-    let order = new MarginOrder({
-      pair_id: getPair._id,
-      pair_name: getPair.name,
-      type: req.body.type,
-      user_id: req.body.user_id,
-      sl: req.body.sl ?? 0,
-      tp: req.body.tp ?? 0,
-      leverage: req.body.leverage,
-      amount: req.body.amount,
-      open_price: price,
-    });
-
-    order.save();
-
     res.json({ status: "success", data: order });
   } catch (err) {
     res.json({ status: "fail", message: err.message });
@@ -701,9 +762,35 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     let target_price = 0.0;
     var coins = req.body.pair_name.split("/");
 
+
     if (req.body.method == "buy") {
+      if (req.body.type == 'stop_limit') {
+        target_price = parseFloat(req.body.target_price);
+        if (target_price <= price) {
+          res.json({ status: "fail", message: "Buy stop limit order must be above the price" });
+          return;
+        }
+        const orders = new Orders({
+          pair_id: getPair.symbolOneID,
+          second_pair: getPair.symbolTwoID,
+          pair_name: getPair.name,
+          user_id: req.body.user_id,
+          amount: parseFloat(amount),
+          open_price: target_price,
+          type: "stop_limit",
+          method: "buy",
+          target_price: req.body.target_price,
+        });
+
+        let saved = await orders.save();
+        res.json({ status: "success", message: saved });
+      }
       if (req.body.type == "limit") {
-        target_price = req.body.target_price;
+        target_price = parseFloat(req.body.target_price);
+        if (target_price >= price) {
+          res.json({ status: "fail", message: "Buy limit order must be below the price" });
+          return;
+        }
         const orders = new Orders({
           pair_id: getPair.symbolOneID,
           second_pair: getPair.symbolTwoID,
@@ -750,8 +837,33 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     }
 
     if (req.body.method == "sell") {
+      if (req.body.type == 'stop_limit') {
+        target_price = parseFloat(req.body.target_price);
+        if (target_price >= price) {
+          res.json({ status: "fail", message: "Sell stop limit order must be above the price" });
+          return;
+        }
+        const orders = new Orders({
+          pair_id: getPair.symbolOneID,
+          second_pair: getPair.symbolTwoID,
+          pair_name: getPair.name,
+          user_id: req.body.user_id,
+          amount: parseFloat(amount),
+          open_price: target_price,
+          type: "stop_limit",
+          method: "sell",
+          target_price: req.body.target_price,
+        });
+
+        let saved = await orders.save();
+        res.json({ status: "success", message: saved });
+      }
       if (req.body.type == "limit") {
-        target_price = req.body.target_price;
+        target_price = parseFloat(req.body.target_price);
+        if (target_price >= price) {
+          res.json({ status: "fail", message: "Sell limit order must be below the price" });
+          return;
+        }
         const orders = new Orders({
           pair_id: getPair.symbolOneID,
           second_pair: getPair.symbolTwoID,
@@ -879,10 +991,10 @@ route.all("/getOrders", upload.none(), async function (req, res) {
 
   if (result === true) {
     var list = [];
-    if(req.body.filter) {
+    if (req.body.filter) {
       list = await Orders.find({
         user_id: req.body.user_id,
-        type : req.body.filter,
+        type: req.body.filter,
         status: "0",
       })
         .sort({ createdAt: -1 })
@@ -895,7 +1007,7 @@ route.all("/getOrders", upload.none(), async function (req, res) {
         .sort({ createdAt: -1 })
         .exec();
     }
-    
+
     res.json({ status: "success", data: list });
   } else {
     res.json({ status: "fail", message: "Forbidden 403" });
