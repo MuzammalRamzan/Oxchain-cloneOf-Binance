@@ -72,7 +72,7 @@ async function initialize() {
                             balance = order.isolated;
                         let price = parseFloat(list[i].a);
                         let open_price = parseFloat(order.open_price).toFixed(2);
-                        let imr = 1 / ordeqr.leverage;
+                        let imr = 1 / order.leverage;
                         let initialMargin = order.amount * price * imr;
                         //console.log(price + " | " + open_price + " | " + imr + " | " +  initialMargin + " | " + " | " + pnl + " | " + roe + " | " + balance);
 
