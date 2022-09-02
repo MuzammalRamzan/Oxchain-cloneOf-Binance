@@ -167,7 +167,7 @@ async function GetMarginHistories(ws, payload) {
    let user_id = payload['user_id'];
    let status = 1;
    let orders = await MarginOrder.find({ user_id: user_id, status: status }).exec();
-
+   GetOrderHistry(orders);
    let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
       //orders = data;
       orders = await MarginOrder.find({ user_id: user_id, status: status }).exec();
