@@ -64,105 +64,113 @@ async function initialize() {
                 for (var k = 0; k < orders.length; k++) {
                     let order = orders[k];
                     if (order.pair_name.replace('/', '') == symbol) {
-                        let userBalance = await Wallet.findOne({ user_id: order.user_id, coin_id: MarginWalletId });
-                        let balance = 0.00;
-                        if (order.margin_type == 'cross')
-                            balance = (userBalance.amount * 1.0).toFixed(2);
-                        else if (order.margin_type == 'isolated')
-                            balance = order.isolated;
-                        let price = parseFloat(list[i].a);
-                        let open_price = parseFloat(order.open_price).toFixed(2);
-                        let imr = 1 / order.leverage;
-                        let initialMargin = order.amount * price * imr;
-                        //console.log(price + " | " + open_price + " | " + imr + " | " +  initialMargin + " | " + " | " + pnl + " | " + roe + " | " + balance);
-
-                        if (order.type == 'buy') {
-                            let pnl = (price - order.open_price) * order.amount;
-                            let roe = ((pnl / initialMargin) * (1 - order.open_price / price)) / imr;
-
-                            //let pl = (((open_price - price) *  order.amount) * parseInt(order.leverage)).toFixed(2);
-
-                            balance = parseFloat(balance) + parseFloat(pnl) * 1.0;
-                            let tp = order.tp ?? 0.00;
-                            let sl = order.sl ?? 0.00;
-                            if (balance <= 0) {
-                                order.status = 1;
-                                userBalance.amount = 0;
-                                order.close_price = price;
-                                order.close_time = Date.now();
-                                await order.save();
-                                await userBalance.save();
-                            } else {
-                                if (tp != 0) {
-                                    if (price >= tp) {
-                                        userBalance.amount = balance;
-                                        order.close_price = price;
-                                        order.close_time = Date.now();
-                                        order.status = 1;
-                                        await order.save();
-                                        await userBalance.save();
-                                    }
-
-                                }
-                                if (sl != 0) {
-                                    if (price <= sl) {
-                                        userBalance.amount = balance;
-                                        order.close_price = price;
-                                        order.close_time = Date.now();
-                                        order.status = 1;
-                                        await order.save();
-                                        await userBalance.save();
-                                    }
-                                }
-                                console.log("Order : " + order._id + " | Fiyat : " + price + " | Miktar : " + order.amount + " | Leverage : (" + order.leverage + ") " + " | PL : " + pnl + " | Balance : " + balance);
-
-                                userBalance.amount = balance;
-                                await userBalance.save();
-                            }
-
-
-                        } else if (order.type == 'sell') {
-                            let pnl = (order.open_price - price) * order.amount;
-                            balance = parseFloat(balance) + parseFloat(pnl) * 1.0;
-                            let tp = order.tp ?? 0.00;
-                            let sl = order.sl ?? 0.00;
-                            if (balance <= 0) {
-                                order.status = 1;
-                                userBalance.amount = 0;
-                                order.close_price = price;
-                                order.close_time = Date.now();
-                                await order.save();
-                                await userBalance.save();
-                            } else {
-                                if (tp != 0) {
-                                    if (price >= tp) {
-                                        userBalance.amount = balance;
-                                        order.close_price = price;
-                                        order.close_time = Date.now();
-                                        order.status = 1;
-                                        await order.save();
-                                        await userBalance.save();
-                                    }
-
-                                }
-                                if (sl != 0) {
-                                    if (price <= sl) {
-                                        userBalance.amount = balance;
-                                        order.close_price = price;
-                                        order.close_time = Date.now();
-                                        order.status = 1;
-                                        await order.save();
-                                        await userBalance.save();
-                                    }
-                                }
-                                console.log("Order : " + order._id + " | Fiyat : " + price + " | Miktar : " + order.amount + " | Leverage : (" + order.leverage + ") " + " | PL : " + pnl + " | Balance : " + balance);
-
-                                userBalance.amount = balance;
-                                await userBalance.save();
-                            }
+                        if(order.method == 'limit') {
+                            if (order.margin_type == 'cross')
+                                balance = (userBalance.amount * 1.0).toFixed(2);
+                            else if (order.margin_type == 'isolated')
+                                balance = order.isolated;
                         }
-                        //console.log("Price : ", price , " | P/L : ", pl, " | User Balance : ", userBalance.amount);
-                        ;
+                        if (order.method == 'market') {
+                            let userBalance = await Wallet.findOne({ user_id: order.user_id, coin_id: MarginWalletId });
+                            let balance = 0.00;
+                            if (order.margin_type == 'cross')
+                                balance = (userBalance.amount * 1.0).toFixed(2);
+                            else if (order.margin_type == 'isolated')
+                                balance = order.isolated;
+                            let price = parseFloat(list[i].a);
+                            let open_price = parseFloat(order.open_price).toFixed(2);
+                            let imr = 1 / order.leverage;
+                            let initialMargin = order.amount * price * imr;
+                            //console.log(price + " | " + open_price + " | " + imr + " | " +  initialMargin + " | " + " | " + pnl + " | " + roe + " | " + balance);
+
+                            if (order.type == 'buy') {
+                                let pnl = (price - order.open_price) * order.amount;
+                                let roe = ((pnl / initialMargin) * (1 - order.open_price / price)) / imr;
+
+                                //let pl = (((open_price - price) *  order.amount) * parseInt(order.leverage)).toFixed(2);
+
+                                balance = parseFloat(balance) + parseFloat(pnl) * 1.0;
+                                let tp = order.tp ?? 0.00;
+                                let sl = order.sl ?? 0.00;
+                                if (balance <= 0) {
+                                    order.status = 1;
+                                    userBalance.amount = 0;
+                                    order.close_price = price;
+                                    order.close_time = Date.now();
+                                    await order.save();
+                                    await userBalance.save();
+                                } else {
+                                    if (tp != 0) {
+                                        if (price >= tp) {
+                                            userBalance.amount = balance;
+                                            order.close_price = price;
+                                            order.close_time = Date.now();
+                                            order.status = 1;
+                                            await order.save();
+                                            await userBalance.save();
+                                        }
+
+                                    }
+                                    if (sl != 0) {
+                                        if (price <= sl) {
+                                            userBalance.amount = balance;
+                                            order.close_price = price;
+                                            order.close_time = Date.now();
+                                            order.status = 1;
+                                            await order.save();
+                                            await userBalance.save();
+                                        }
+                                    }
+                                    console.log("Order : " + order._id + " | Fiyat : " + price + " | Miktar : " + order.amount + " | Leverage : (" + order.leverage + ") " + " | PL : " + pnl + " | Balance : " + balance);
+
+                                    userBalance.amount = balance;
+                                    await userBalance.save();
+                                }
+
+
+                            } else if (order.type == 'sell') {
+                                let pnl = (order.open_price - price) * order.amount;
+                                balance = parseFloat(balance) + parseFloat(pnl) * 1.0;
+                                let tp = order.tp ?? 0.00;
+                                let sl = order.sl ?? 0.00;
+                                if (balance <= 0) {
+                                    order.status = 1;
+                                    userBalance.amount = 0;
+                                    order.close_price = price;
+                                    order.close_time = Date.now();
+                                    await order.save();
+                                    await userBalance.save();
+                                } else {
+                                    if (tp != 0) {
+                                        if (price >= tp) {
+                                            userBalance.amount = balance;
+                                            order.close_price = price;
+                                            order.close_time = Date.now();
+                                            order.status = 1;
+                                            await order.save();
+                                            await userBalance.save();
+                                        }
+
+                                    }
+                                    if (sl != 0) {
+                                        if (price <= sl) {
+                                            userBalance.amount = balance;
+                                            order.close_price = price;
+                                            order.close_time = Date.now();
+                                            order.status = 1;
+                                            await order.save();
+                                            await userBalance.save();
+                                        }
+                                    }
+                                    console.log("Order : " + order._id + " | Fiyat : " + price + " | Miktar : " + order.amount + " | Leverage : (" + order.leverage + ") " + " | PL : " + pnl + " | Balance : " + balance);
+
+                                    userBalance.amount = balance;
+                                    await userBalance.save();
+                                }
+                            }
+                            //console.log("Price : ", price , " | P/L : ", pl, " | User Balance : ", userBalance.amount);
+                            ;
+                        }
                     }
                 }
             }
