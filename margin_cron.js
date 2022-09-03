@@ -65,10 +65,59 @@ async function initialize() {
                     let order = orders[k];
                     if (order.pair_name.replace('/', '') == symbol) {
                         if(order.method == 'limit') {
+                            let ask = parseFloat(list[i].a);
+                            let bid = parseFloat(list[i].b);
+                            let target_price = parseFloat(order.target_price) ?? 0.0;
                             if (order.margin_type == 'cross')
                                 balance = (userBalance.amount * 1.0).toFixed(2);
                             else if (order.margin_type == 'isolated')
                                 balance = order.isolated;
+
+                                if(order.type == 'buy') {
+                                    if(ask <= target_price) {
+                                        order.method = 'market';
+                                        order.open_time = Date.now();
+                                        order.open_price = ask;
+                                        await order.save();
+                                    }
+                                }
+
+                                if(order.type == 'sell') {
+                                    if(bid >= target_price) {
+                                        order.method = 'market';
+                                        order.open_time = Date.now();
+                                        order.open_price = bid;
+                                        await order.save();
+                                    }
+                                }
+                        }
+
+                        if(order.method == 'stop_limit') {
+                            let ask = parseFloat(list[i].a);
+                            let bid = parseFloat(list[i].b);
+                            let target_price = parseFloat(order.target_price) ?? 0.0;
+                            if (order.margin_type == 'cross')
+                                balance = (userBalance.amount * 1.0).toFixed(2);
+                            else if (order.margin_type == 'isolated')
+                                balance = order.isolated;
+
+                                if(order.type == 'buy') {
+                                    if(ask >= target_price) {
+                                        order.method = 'market';
+                                        order.open_time = Date.now();
+                                        order.open_price = ask;
+                                        await order.save();
+                                    }
+                                }
+
+                                if(order.type == 'sell') {
+                                    if(bid <= target_price) {
+                                        order.method = 'market';
+                                        order.open_time = Date.now();
+                                        order.open_price = bid;
+                                        await order.save();
+                                    }
+                                }
                         }
                         if (order.method == 'market') {
                             let userBalance = await Wallet.findOne({ user_id: order.user_id, coin_id: MarginWalletId });
