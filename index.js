@@ -738,11 +738,52 @@ route.post("/spotHistory", async (req, res) => {
   }
 });
 route.post('/deleteLimit', async function (req, res) {
-  await Orders.findOneAndDelete({ _id: req.body.order_id, user_id: req.body.user_id, type: 'limit' }).exec();
-  await Orders.findOneAndDelete({ _id: req.body.order_id, user_id: req.body.user_id, type: 'stop_limit' }).exec();
+  let order = await Orders.findOne({ _id: req.body.order_id, user_id: req.body.user_id, type: 'limit' }).exec();
+  if (order) {
+    let amount = parseFloat(parseFloat(req.body.amount) * 1.0);
+
+    var getPair = await Pairs.findOne({ name: req.body.pair_name }).exec();
+    var fromWalelt = await Wallet.findOne({
+      coin_id: getPair.symbolOneID,
+      user_id: req.body.user_id,
+    }).exec();
+
+    fromWalelt.amount = parseFloat(fromWalelt.amount) + (parseFloat(order.target_price) * amount);
+    await fromWalelt.save();
+
+
+    await Orders.findOneAndDelete({ _id: req.body.order_id, user_id: req.body.user_id, type: 'limit' }).exec();
+  }
+
+  order = await Orders.findOne({ _id: req.body.order_id, user_id: req.body.user_id, type: 'stop_limit' }).exec();
+  if (order) {
+    let amount = parseFloat(parseFloat(req.body.amount) * 1.0);
+
+    var getPair = await Pairs.findOne({ name: req.body.pair_name }).exec();
+
+    var fromWalelt = await Wallet.findOne({
+      coin_id: getPair.symbolOneID,
+      user_id: req.body.user_id,
+    }).exec();
+
+    fromWalelt.amount = parseFloat(fromWalelt.amount) + (parseFloat(order.target_price) * amount);
+    await fromWalelt.save();
+
+    await Orders.findOneAndDelete({ _id: req.body.order_id, user_id: req.body.user_id, type: 'stop_limit' }).exec();
+  }
+
+
   res.json({ status: "success", message: "removed" });
 
 });
+
+route.post('/deleteMarginLimit', async function (req, res) {
+  await MarginOrder.findOneAndDelete({ _id: req.body.order_id, user_id: req.body.user_id, method: 'limit' }).exec();
+  await MarginOrder.findOneAndDelete({ _id: req.body.order_id, user_id: req.body.user_id, method: 'stop_limit' }).exec();
+  res.json({ status: "success", message: "removed" });
+
+});
+
 route.all("/addOrders", upload.none(), async function (req, res) {
   try {
     var api_key_result = req.body.api_key;

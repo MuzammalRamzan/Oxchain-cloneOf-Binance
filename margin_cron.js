@@ -133,7 +133,7 @@ async function initialize() {
                             //console.log(price + " | " + open_price + " | " + imr + " | " +  initialMargin + " | " + " | " + pnl + " | " + roe + " | " + balance);
 
                             if (order.type == 'buy') {
-                                let pnl = (price - order.open_price) * order.amount;
+                                let pnl = (price - parseFloat(order.open_price)) * parseFloat(order.amount);
                                 let roe = ((pnl / initialMargin) * (1 - order.open_price / price)) / imr;
 
                                 //let pl = (((open_price - price) *  order.amount) * parseInt(order.leverage)).toFixed(2);
