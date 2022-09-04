@@ -981,11 +981,13 @@ route.all("/addOrders", upload.none(), async function (req, res) {
             pair_name: getPair.name,
             user_id: req.body.user_id,
             amount: parseFloat(amount),
-            open_price: target_price,
+            open_price: price,
             type: "market",
             method: "sell",
             target_price: req.body.target_price,
           });
+console.log(fromWalelt);
+console.log(toWalelt);
 
           let saved = await orders.save();
           if (saved) {
