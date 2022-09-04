@@ -912,6 +912,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     }
 
     if (req.body.method == "sell") {
+      console.log(toWalelt);
       let balance = parseFloat(toWalelt.amount) * 1.0;
       let total = amount * price;
       if (balance < total) {
