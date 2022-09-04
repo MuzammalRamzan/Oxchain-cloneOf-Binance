@@ -878,7 +878,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
         if (saved) {
           toWalelt.amount =
             parseFloat(toWalelt.amount) - parseFloat(total);
-          await fromWalelt.save();
+          await toWalelt.save();
           res.json({ status: "success", message: saved });
         }
       } else if (req.body.type == "market") {
@@ -941,7 +941,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
         let saved = await orders.save();
         if (saved) {
           fromWalelt.amount = parseFloat(fromWalelt.amount) - parseFloat(amount);
-          await toWalelt.save();
+          await fromWalelt.save();
           res.json({ status: "success", message: saved });
         }
       }
