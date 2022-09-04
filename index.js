@@ -912,7 +912,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     }
 
     if (req.body.method == "sell") {
-      let balance = parseFloat(fromWalelt.amount) * 1.0;
+      let balance = parseFloat(toWalelt.amount) * 1.0;
       let total = amount * price;
       if (balance < total) {
         res.json({ status: "fail", message: "Invalid  balance" });
@@ -938,9 +938,9 @@ route.all("/addOrders", upload.none(), async function (req, res) {
 
         let saved = await orders.save();
         if (saved) {
-          fromWalelt.amount =
-            parseFloat(fromWalelt.amount) - parseFloat(amount);
-          await fromWalelt.save();
+          toWalelt.amount =
+            parseFloat(toWalelt.amount) - parseFloat(amount);
+          await toWalelt.save();
           res.json({ status: "success", message: saved });
         }
       }
@@ -964,9 +964,9 @@ route.all("/addOrders", upload.none(), async function (req, res) {
 
         let saved = await orders.save();
         if (saved) {
-          fromWalelt.amount =
-            parseFloat(fromWalelt.amount) - parseFloat(amount);
-          await fromWalelt.save();
+          toWalelt.amount =
+            parseFloat(toWalelt.amount) - parseFloat(amount);
+          await toWalelt.save();
           res.json({ status: "success", message: saved });
         }
 
@@ -989,8 +989,8 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           let saved = await orders.save();
           if (saved) {
             fromWalelt.amount =
-              parseFloat(fromWalelt.amount) - parseFloat(amount);
-            toWalelt.amount = parseFloat(toWalelt.amount) + parseFloat(total);
+              parseFloat(fromWalelt.amount) + parseFloat(total);
+            toWalelt.amount = parseFloat(toWalelt.amount) - parseFloat(amount);
             await fromWalelt.save();
             await toWalelt.save();
             res.json({ status: "success", message: saved });
