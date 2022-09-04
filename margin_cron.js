@@ -130,14 +130,14 @@ async function initialize() {
                             let imr = 1 / order.leverage;
                             let initialMargin = order.amount * price * imr;
                             //console.log(price + " | " + open_price + " | " + imr + " | " +  initialMargin + " | " + " | " + pnl + " | " + roe + " | " + balance);
-
+                            let pnl = (price - parseFloat(order.open_price)) * parseFloat(order.amount) * imr ;
+                            
                             if (order.type == 'buy') {
-                                let pnl = (price - parseFloat(order.open_price)) * parseFloat(order.amount);
+                                
                                 let roe = ((pnl / initialMargin) * (1 - order.open_price / price)) / imr;
-
+                                console.log(roe);
                                 //let pl = (((open_price - price) *  order.amount) * parseInt(order.leverage)).toFixed(2);
-
-                                balance = parseFloat(balance) + parseFloat(pnl) * 1.0;
+                                order.pnl = pnl;                                
                                 let tp = order.tp ?? 0.00;
                                 let sl = order.sl ?? 0.00;
                                 if (balance <= 0) {
@@ -145,6 +145,7 @@ async function initialize() {
                                     userBalance.amount = 0;
                                     order.close_price = price;
                                     order.close_time = Date.now();
+                                    order.pnl = pnl;
                                     await order.save();
                                     await userBalance.save();
                                 } else {
@@ -154,6 +155,7 @@ async function initialize() {
                                             order.close_price = price;
                                             order.close_time = Date.now();
                                             order.status = 1;
+                                            order.pnl = pnl;
                                             await order.save();
                                             await userBalance.save();
                                         }
@@ -165,6 +167,7 @@ async function initialize() {
                                             order.close_price = price;
                                             order.close_time = Date.now();
                                             order.status = 1;
+                                            order.pnl = pnl;
                                             await order.save();
                                             await userBalance.save();
                                         }
@@ -177,8 +180,9 @@ async function initialize() {
 
 
                             } else if (order.type == 'sell') {
-                                let pnl = (order.open_price - price) * order.amount;
-                                balance = parseFloat(balance) + parseFloat(pnl) * 1.0;
+                                let roe = ((pnl / initialMargin) * (1 -  price / order.open_price)) / imr;
+                                order.pnl = pnl;
+
                                 let tp = order.tp ?? 0.00;
                                 let sl = order.sl ?? 0.00;
                                 if (balance <= 0) {
@@ -186,15 +190,17 @@ async function initialize() {
                                     userBalance.amount = 0;
                                     order.close_price = price;
                                     order.close_time = Date.now();
+                                    order.pnl = pnl;
                                     await order.save();
                                     await userBalance.save();
                                 } else {
                                     if (tp != 0) {
                                         if (price >= tp) {
-                                            userBalance.amount = balance;
+                                            userBalance.amount = parseFloat(userBalance.amount) + pnl;
                                             order.close_price = price;
                                             order.close_time = Date.now();
                                             order.status = 1;
+                                            order.pnl = pnl;
                                             await order.save();
                                             await userBalance.save();
                                         }
@@ -202,10 +208,11 @@ async function initialize() {
                                     }
                                     if (sl != 0) {
                                         if (price <= sl) {
-                                            userBalance.amount = balance;
+                                            userBalance.amount = parseFloat(user.amount) - pnl;
                                             order.close_price = price;
                                             order.close_time = Date.now();
                                             order.status = 1;
+                                            order.pnl = pnl;
                                             await order.save();
                                             await userBalance.save();
                                         }
@@ -213,7 +220,6 @@ async function initialize() {
                                     console.log("Order : " + order._id + " | Fiyat : " + price + " | Miktar : " + order.amount + " | Leverage : (" + order.leverage + ") " + " | PL : " + pnl + " | Balance : " + balance);
 
                                     userBalance.amount = balance;
-                                    await userBalance.save();
                                 }
                             }
                             //console.log("Price : ", price , " | P/L : ", pl, " | User Balance : ", userBalance.amount);
