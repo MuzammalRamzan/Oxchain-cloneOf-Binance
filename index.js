@@ -901,6 +901,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
             fromWalelt.amount =
               parseFloat(fromWalelt.amount) + parseFloat(amount);
             toWalelt.amount = parseFloat(toWalelt.amount) - parseFloat(total);
+            
             await fromWalelt.save();
             await toWalelt.save();
             res.json({ status: "success", message: saved });
@@ -939,8 +940,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
 
         let saved = await orders.save();
         if (saved) {
-          toWalelt.amount =
-            parseFloat(toWalelt.amount) - parseFloat(amount);
+          fromWalelt.amount = parseFloat(fromWalelt.amount) - parseFloat(amount);
           await toWalelt.save();
           res.json({ status: "success", message: saved });
         }
@@ -965,9 +965,8 @@ route.all("/addOrders", upload.none(), async function (req, res) {
 
         let saved = await orders.save();
         if (saved) {
-          toWalelt.amount =
-            parseFloat(toWalelt.amount) - parseFloat(amount);
-          await toWalelt.save();
+          fromWalelt.amount = parseFloat(fromWalelt.amount) - parseFloat(amount);
+          await fromWalelt.save();
           res.json({ status: "success", message: saved });
         }
 
@@ -986,18 +985,14 @@ route.all("/addOrders", upload.none(), async function (req, res) {
             method: "sell",
             target_price: req.body.target_price,
           });
-console.log(fromWalelt);
-console.log(toWalelt);
 
           let saved = await orders.save();
           if (saved) {
             fromWalelt.amount =
-              parseFloat(fromWalelt.amount) + parseFloat(total);
-            toWalelt.amount = parseFloat(toWalelt.amount) - parseFloat(amount);
+              parseFloat(fromWalelt.amount) - parseFloat(total);
+            toWalelt.amount = parseFloat(toWalelt.amount) + parseFloat(amount);
             await fromWalelt.save();
             await toWalelt.save();
-            console.log(fromWalelt);
-            console.log(toWalelt);
 
             res.json({ status: "success", message: saved });
           }
