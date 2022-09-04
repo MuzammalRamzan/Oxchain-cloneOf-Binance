@@ -825,6 +825,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     if (req.body.method == "buy") {
       let total = amount * price;
       let balance = parseFloat(fromWalelt.amount) * 1.0;
+      console.log("Totala : " , total, " |  balance : ", balance  );
       if (balance < total) {
         res.json({ status: "fail", message: "Invalid  balance" });
         return;
