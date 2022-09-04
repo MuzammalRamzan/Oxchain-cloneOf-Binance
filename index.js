@@ -824,8 +824,8 @@ route.all("/addOrders", upload.none(), async function (req, res) {
 
     if (req.body.method == "buy") {
       let total = amount * price;
-      let balance = parseFloat(fromWalelt.amount) * 1.0;
-      console.log("Totala : " , total, " |  balance : ", balance  );
+      let balance = parseFloat(toWalelt.amount) * 1.0;
+      console.log("Totala : ", total, " |  balance : ", balance);
       if (balance < total) {
         res.json({ status: "fail", message: "Invalid  balance" });
         return;
@@ -850,9 +850,9 @@ route.all("/addOrders", upload.none(), async function (req, res) {
 
         let saved = await orders.save();
         if (saved) {
-          fromWalelt.amount =
-            parseFloat(fromWalelt.amount) - parseFloat(amount);
-          await fromWalelt.save();
+          toWalelt.amount =
+            parseFloat(toWalelt.amount) - parseFloat(total);
+          await toWalelt.save();
           res.json({ status: "success", message: saved });
         }
       }
@@ -876,8 +876,8 @@ route.all("/addOrders", upload.none(), async function (req, res) {
 
         let saved = await orders.save();
         if (saved) {
-          fromWalelt.amount =
-            parseFloat(fromWalelt.amount) - parseFloat(amount);
+          toWalelt.amount =
+            parseFloat(toWalelt.amount) - parseFloat(total);
           await fromWalelt.save();
           res.json({ status: "success", message: saved });
         }
@@ -901,7 +901,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
             fromWalelt.amount =
               parseFloat(fromWalelt.amount) + parseFloat(amount);
             toWalelt.amount = parseFloat(toWalelt.amount) - parseFloat(total);
-            
+
             await fromWalelt.save();
             await toWalelt.save();
             res.json({ status: "success", message: saved });
@@ -915,7 +915,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     if (req.body.method == "sell") {
       console.log(toWalelt);
       let balance = parseFloat(toWalelt.amount) * 1.0;
-      
+
       if (balance < amount) {
         res.json({ status: "fail", message: "Invalid  balance" });
         return;
