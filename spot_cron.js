@@ -16,7 +16,7 @@ async function main() {
     await mongoose.connect(connection);
 
 
-    let request = { $or: [{ type: "limit" }, { type: "stop_limit" }] };
+    let request = { $and: [ {status : 0}, { $or: [{ type: "limit" }, { type: "stop_limit" }]}] };
     let orders = await Orders.find(request).exec();
     let isInsert = Orders.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
         //orders = data;
@@ -34,7 +34,6 @@ async function main() {
         console.log("silindi 2");
         orders = await Orders.find(request).exec();
     });
-
     const allTickers = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
     allTickers.onopen = () => {
         allTickers.onmessage = async (data) => {
@@ -52,14 +51,21 @@ async function main() {
                                 if (price <= target_price) {
                                     await Orders.updateOne({ _id: order._id }, { $set: { type: 'market', open_price: Date.now, open_price: price } });
                                     let getPair = await Pairs.findOne({symbolOneID : order.pair_id}).exec();
-                                    let toWallet = Wallet.findOne({coin_id : getPair.symbolTwoID, user_id:order.user_id}).exec()
+                                    let toWallet = await Wallet.findOne({coin_id : getPair.symbolTwoID, user_id:order.user_id}).exec()
+                                    console.log(toWallet);
                                     toWallet.amount = parseFloat(toWallet.amount) + parseFloat(order.amount);
+                                    await toWallet.save();
                                 }
                             }
                             if (order.method == 'sell') {
                                 let price = parseFloat(list[i].b);
                                 if (price >= target_price) {
                                     await Orders.updateOne({ _id: order._id }, { $set: { type: 'market', open_price: Date.now, open_price: price } });
+                                    let getPair = await Pairs.findOne({symbolOneID : order.pair_id}).exec();
+                                    let toWallet = await Wallet.findOne({coin_id : getPair.symbolTwoID, user_id:order.user_id}).exec()
+                                    console.log(toWallet);
+                                    toWallet.amount = parseFloat(toWallet.amount) + parseFloat(order.amount);
+                                    await toWallet.save();
                                 }
                             }
                         } else if(order.type == 'stop_limit') {
