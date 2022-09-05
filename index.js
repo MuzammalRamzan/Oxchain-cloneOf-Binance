@@ -746,7 +746,7 @@ route.post('/deleteLimit', async function (req, res) {
   if (order) {
     let amount = parseFloat(parseFloat(req.body.amount) * 1.0);
 
-    var getPair = await Pairs.findOne({ name: order.pair_name }).exec();
+    var getPair = await Pairs.findOne({ name: order.pair_id }).exec();
     var fromWalelt = await Wallet.findOne({
       coin_id: getPair.symbolOneID,
       user_id: req.body.user_id,
