@@ -70,7 +70,9 @@ async function GetOrders(ws, payload) {
       ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
    let isUpdate = Orders.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
-      console.log("update order socket");
+      if(data.updateDescription.updatedFields.type == 'market') {
+         ws.send(JSON.stringify({type:"filled_order", content : {order_id : data.documentKey._id}}));
+      }
       orders = await Orders.find(request).exec();
       ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
