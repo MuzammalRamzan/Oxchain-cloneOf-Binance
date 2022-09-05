@@ -581,6 +581,7 @@ route.post("/addMarginOrder", async function (req, res) {
         margin_type: req.body.margin_type,
         method: req.body.method,
         user_id: req.body.user_id,
+        margin : initialMargin,
         isolated: req.body.isolated ?? 0.0,
         sl: req.body.sl ?? 0,
         tp: req.body.tp ?? 0,
@@ -591,7 +592,9 @@ route.post("/addMarginOrder", async function (req, res) {
 
       });
 
-      order.save();
+      await order.save();
+      let getWallet = await Wallet.findOne({user_id : req.body.user_id, coin_id : MarginWalletId}).exec();
+      getWallet.amount = parseFloat(getWallet.amount)
       res.json({ status: "success", data: order });
       return;
     } else {
@@ -640,6 +643,7 @@ route.post("/addMarginOrder", async function (req, res) {
         margin_type: req.body.margin_type,
         method: req.body.method,
         user_id: req.body.user_id,
+        margin : initialMargin,
         isolated: req.body.isolated ?? 0.0,
         sl: req.body.sl ?? 0,
         tp: req.body.tp ?? 0,
@@ -742,7 +746,7 @@ route.post('/deleteLimit', async function (req, res) {
   if (order) {
     let amount = parseFloat(parseFloat(req.body.amount) * 1.0);
 
-    var getPair = await Pairs.findOne({ name: req.body.pair_name }).exec();
+    var getPair = await Pairs.findOne({ name: order.pair_name }).exec();
     var fromWalelt = await Wallet.findOne({
       coin_id: getPair.symbolOneID,
       user_id: req.body.user_id,
