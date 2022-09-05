@@ -65,21 +65,25 @@ async function GetOrders(ws, payload) {
    ws.send(JSON.stringify({ type: 'orders', content: orders }));
    let isInsert = Orders.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
       //orders = data;
+      console.log("insert order socket");
       orders = await Orders.find(request).exec();
       ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
    let isUpdate = Orders.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
+      console.log("update order socket");
       orders = await Orders.find(request).exec();
       ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
    let isRemove = Orders.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
       console.log("silindi");
+      console.log("del order socket");
       orders = await Orders.find(request).exec();
       ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
 
    let isDelete = Orders.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
       console.log("silindi 2");
+      console.log("del order socket");
       orders = await Orders.find(request).exec();
       ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });

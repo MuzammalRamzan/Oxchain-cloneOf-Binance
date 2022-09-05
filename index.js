@@ -745,31 +745,29 @@ route.post('/deleteLimit', async function (req, res) {
   let order = await Orders.findOne({ _id: req.body.order_id, user_id: req.body.user_id, type: 'limit' }).exec();
   if (order) {
     let amount = parseFloat(order.amount) * 1.0;
-    
+    let pair = await Pairs.findOne({symbolOneID : order.pair_id}).exec();
     var fromWalelt = await Wallet.findOne({
       coin_id: order.pair_id,
       user_id: req.body.user_id,
     }).exec();
-    
-    fromWalelt.amount = parseFloat(fromWalelt.amount) + (parseFloat(order.target_price) * amount);
-    await fromWalelt.save();
-
+    var toWallet = await Wallet.findOne({coin_id : pair.symbolTwoID, user_id: order.user_id}).exec();
+    toWallet.amount = parseFloat(toWallet.amount) + (parseFloat(order.target_price) * amount);
+    await toWallet.save();
     await Orders.findOneAndUpdate({ _id: req.body.order_id, user_id: req.body.user_id, type: 'limit' }, {$set : {status : -1}}).exec();
   }
 
   order = await Orders.findOne({ _id: req.body.order_id, user_id: req.body.user_id, type: 'stop_limit' }).exec();
   if (order) { 
     let amount = parseFloat(order.amount) * 1.0;
-    
+    let pair = await Pairs.findOne({symbolOneID : order.pair_id}).exec();
     var fromWalelt = await Wallet.findOne({
       coin_id: order.pair_id,
       user_id: req.body.user_id,
     }).exec();
-    
-    fromWalelt.amount = parseFloat(fromWalelt.amount) + (parseFloat(order.target_price) * amount);
-    await fromWalelt.save();
-
-    await Orders.findOneAndUpdate({ _id: req.body.order_id, user_id: req.body.user_id, type: 'spot_limit' }, {$set : {status : -1}}).exec();
+    var toWallet = await Wallet.findOne({coin_id : pair.symbolTwoID, user_id: order.user_id}).exec();
+    toWallet.amount = parseFloat(toWallet.amount) + (parseFloat(order.target_price) * amount);
+    await toWallet.save();
+    await Orders.findOneAndUpdate({ _id: req.body.order_id, user_id: req.body.user_id, type: 'stop_limit' }, {$set : {status : -1}}).exec();
   }
 
 

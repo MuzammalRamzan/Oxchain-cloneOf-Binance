@@ -2,6 +2,8 @@ const { createHash } = require("crypto");
 const mongoose = require("mongoose");
 const WebSocket = require('ws');
 const Orders = require("./models/Orders");
+const Pairs = require("./models/Pairs");
+const Wallet = require("./models/Wallet");
 require("dotenv").config();
 
 async function main() {
@@ -41,13 +43,17 @@ async function main() {
                 let symbol = list[i].s.replace("/", "");
                 for (var k = 0; k < orders.length; k++) {
                     let order = orders[k];
-                    if (order.pair_name.replace('/', '') == symbol) {
+                    if (order.pair_name.replace('/', '') == symbol.replace('/', '')) {
                         let target_price = parseFloat(order.target_price);
                         if (order.type == 'limit') {
                             if (order.method == 'buy') {
                                 let price = parseFloat(list[i].a);
+                                console.log(order.target_price + "  | "  + price);
                                 if (price <= target_price) {
                                     await Orders.updateOne({ _id: order._id }, { $set: { type: 'market', open_price: Date.now, open_price: price } });
+                                    let getPair = await Pairs.findOne({symbolOneID : order.pair_id}).exec();
+                                    let toWallet = Wallet.findOne({coin_id : getPair.symbolTwoID, user_id:order.user_id}).exec()
+                                    toWallet.amount = parseFloat(toWallet.amount) + parseFloat(order.amount);
                                 }
                             }
                             if (order.method == 'sell') {
