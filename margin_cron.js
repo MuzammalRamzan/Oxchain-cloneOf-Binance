@@ -99,6 +99,8 @@ async function initialize() {
                             let ask = parseFloat(list[i].a);
                             let bid = parseFloat(list[i].b);
                             let target_price = parseFloat(order.target_price) ?? 0.0;
+                            let imr = 1 / order.leverage;
+                            let initialMargin = order.amount * price * imr;
                             if (order.margin_type == 'cross')
                                 balance = (userBalance.amount * 1.0).toFixed(2);
                             else if (order.margin_type == 'isolated')
@@ -109,14 +111,16 @@ async function initialize() {
                                     order.method = 'market';
                                     order.open_time = Date.now();
                                     order.open_price = ask;
+                                    order.margin = initialMargin;
                                     await order.save();
                                 }
                             }
-
+                            
                             if (order.type == 'sell') {
                                 if (bid <= target_price) {
                                     order.method = 'market';
                                     order.open_time = Date.now();
+                                    order.margin = initialMargin;
                                     order.open_price = bid;
                                     await order.save();
                                 }
