@@ -861,6 +861,8 @@ route.all("/addOrders", upload.none(), async function (req, res) {
       user_id: req.body.user_id,
     }).exec();
 
+    console.log(fromWalelt);
+
     if (amount <= 0) {
       res.json({ status: "fail", message: "invalid_amount" });
       return;
@@ -968,8 +970,8 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     }
 
     if (req.body.method == "sell") {
-      console.log(toWalelt);
-      let balance = parseFloat(toWalelt.amount) * 1.0;
+      console.log(fromWalelt);
+      let balance = parseFloat(fromWalelt.amount) * 1.0;
 
       if (balance < amount) {
         res.json({ status: "fail", message: "Invalid  balance" });
@@ -1006,7 +1008,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
       }
       if (req.body.type == "limit") {
         target_price = parseFloat(req.body.target_price);
-        if (target_price >= price) {
+        if (target_price <= price) {
           res.json({
             status: "fail",
             message: "Sell limit order must be below the price",
@@ -1030,7 +1032,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           fromWalelt.amount =
             parseFloat(fromWalelt.amount) - parseFloat(amount);
           await fromWalelt.save();
-          res.json({ status: "success", message: saved });
+          res.json({ status: "success",  message: saved });
         }
       } else if (req.body.type == "market") {
         let balance = parseFloat(toWalelt.amount);

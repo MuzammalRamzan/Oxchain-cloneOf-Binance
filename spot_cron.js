@@ -51,10 +51,11 @@ async function main() {
                                 if (price <= target_price) {
                                     await Orders.updateOne({ _id: order._id }, { $set: { type: 'market', open_price: Date.now, open_price: price } });
                                     let getPair = await Pairs.findOne({symbolOneID : order.pair_id}).exec();
-                                    let toWallet = await Wallet.findOne({coin_id : getPair.symbolTwoID, user_id:order.user_id}).exec()
-                                    console.log(toWallet);
-                                    toWallet.amount = parseFloat(toWallet.amount) + parseFloat(order.amount);
-                                    await toWallet.save();
+                                    let fromWallet = await Wallet.findOne({coin_id : getPair.symbolOneID, user_id:order.user_id}).exec()
+                                    console.log(fromWallet);
+                                    
+                                    fromWallet.amount = parseFloat(fromWallet.amount) + parseFloat(order.amount);
+                                    await fromWallet.save();
                                 }
                             }
                             if (order.method == 'sell') {
@@ -64,7 +65,8 @@ async function main() {
                                     let getPair = await Pairs.findOne({symbolOneID : order.pair_id}).exec();
                                     let toWallet = await Wallet.findOne({coin_id : getPair.symbolTwoID, user_id:order.user_id}).exec()
                                     console.log(toWallet);
-                                    toWallet.amount = parseFloat(toWallet.amount) + parseFloat(order.amount);
+                                    let total = parseFloat(order.amount) * price;
+                                    toWallet.amount = parseFloat(toWallet.amount) + parseFloat(total);
                                     await toWallet.save();
                                 }
                             }
