@@ -9,6 +9,7 @@ const OrdersSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
   target_price: { type: Number, required: false },
   method: { type: String, required: true },
+  stop_limit : {type : Number, required: false, default: 0.0},
   open_price: { type: Number, required: true },
   status: { type: String, required: false, default: 0 },
   createdAt: {
