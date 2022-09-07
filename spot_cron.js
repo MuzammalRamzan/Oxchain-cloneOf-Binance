@@ -16,9 +16,9 @@ async function main() {
     await mongoose.connect(connection);
 
 
-    let request = { $and: [{ status: {$gt : 0}}, { $or: [{ type: "limit" }, { type: "stop_limit" }] }] };
+    let request = { $and: [{ status: { $gt: 0 } }, { $or: [{ type: "limit" }, { type: "stop_limit" }] }] };
     let orders = await Orders.find(request).exec();
-    
+
     let isInsert = Orders.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
         //orders = data;
         orders = await Orders.find(request).exec();
@@ -46,13 +46,13 @@ async function main() {
                     if (order.pair_name.replace('/', '') == symbol.replace('/', '')) {
                         let target_price = parseFloat(order.target_price);
                         if (order.type == 'limit') {
-                            if(order.status == 0) continue;
+                            if (order.status == 0) continue;
                             if (order.method == 'buy') {
                                 let price = parseFloat(list[i].a);
                                 console.log(order.target_price + "  | " + price);
                                 if (price <= target_price) {
-                                    await Orders.updateOne({ _id: order._id }, { $set: { status:0 } });
-                                    
+                                    await Orders.updateOne({ _id: order._id }, { $set: { status: 0 } });
+
                                     console.log("alış gerçekleşiyor");
                                     var getPair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
                                     var fromWalelt = await Wallet.findOne({
@@ -72,7 +72,7 @@ async function main() {
                                         user_id: order.user_id,
                                         amount: parseFloat(order.amount),
                                         open_price: price,
-                                        open_time : Date.now(),
+                                        open_time: Date.now(),
                                         type: "market",
                                         method: "buy",
                                         target_price: 0,
@@ -95,8 +95,8 @@ async function main() {
                             if (order.method == 'sell') {
                                 let price = parseFloat(list[i].b);
                                 if (price >= target_price) {
-                                    await Orders.updateOne({ _id: order._id }, { $set: { status:0} });
-                                    
+                                    await Orders.updateOne({ _id: order._id }, { $set: { status: 0 } });
+
                                     console.log("satış gerçekleşiyor");
                                     var getPair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
                                     var fromWalelt = await Wallet.findOne({
@@ -107,8 +107,8 @@ async function main() {
                                         coin_id: getPair.symbolTwoID,
                                         user_id: order.user_id,
                                     }).exec();
-                                    
-                                    let total =  parseFloat(order.amount) * price;
+
+                                    let total = parseFloat(order.amount) * price;
                                     console.log("total : ", total);
                                     const neworders = new Orders({
                                         pair_id: getPair.symbolOneID,
@@ -117,7 +117,7 @@ async function main() {
                                         user_id: order.user_id,
                                         amount: parseFloat(order.amount),
                                         open_price: price,
-                                        open_time : Date.now(),
+                                        open_time: Date.now(),
                                         type: "market",
                                         method: "sell",
                                         target_price: 0,
@@ -138,7 +138,7 @@ async function main() {
                                 }
                             }
                         } else if (order.type == 'stop_limit') {
-                            if(order.status == 0) continue;
+                            if (order.status == 0) continue;
                             let target_price = parseFloat(order.target_price);
                             let stop_limit = parseFloat(order.stop_limit);
                             let price = parseFloat(list[i].a);
@@ -158,7 +158,7 @@ async function main() {
                                     }).exec();
                                     let before_total = parseFloat(order.amount) * parseFloat(order.target_price);
                                     let after_total = parseFloat(order.amount) * parseFloat(order.stop_limit);
-                                    let total =  after_total - before_total;
+                                    let total = after_total - before_total;
                                     console.log("total : ", total);
                                     const neworders = new Orders({
                                         pair_id: getPair.symbolOneID,
@@ -185,7 +185,7 @@ async function main() {
                                         await fromWalelt.save();
                                     }
                                 }
-                            } else if(order.method == 'sell') {
+                            } else if (order.method == 'sell') {
                                 if (price >= target_price) {
                                     console.log("satış gerçekleşiyor");
                                     var getPair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
@@ -197,8 +197,8 @@ async function main() {
                                         coin_id: getPair.symbolTwoID,
                                         user_id: order.user_id,
                                     }).exec();
-                                    
-                                    let total =  parseFloat(order.amount) * stop_limit;
+
+                                    let total = parseFloat(order.amount) * stop_limit;
                                     console.log("total : ", total);
                                     const neworders = new Orders({
                                         pair_id: getPair.symbolOneID,
@@ -227,7 +227,7 @@ async function main() {
                                 }
                             }
                         }
-                        
+
                     }
                 }
             }
