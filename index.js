@@ -612,7 +612,11 @@ route.post("/addMarginOrder", async function (req, res) {
       getWallet.amount = parseFloat(getWallet.amount);
       res.json({ status: "success", data: order });
       return;
-    } else {
+    } 
+    else if(req.body.method == 'stop_limit') {
+
+    }
+    else if(req.body.method == 'limit') {
       let target_price = parseFloat(req.body.target_price);
       let getPair = await Pairs.findOne({ name: req.body.symbol }).exec();
       if (getPair == null) {
@@ -642,26 +646,6 @@ route.post("/addMarginOrder", async function (req, res) {
               status: "fail",
               message:
                 "The sell limit cannot be higher than the current price.",
-            });
-            return;
-          }
-        }
-      } else if (req.body.method == "stop_limit") {
-        if (req.body.type == "buy") {
-          if (price <= target_price) {
-            res.json({
-              status: "fail",
-              message:
-                "The buy stop limit cannot be higher than the current price.",
-            });
-            return;
-          }
-        } else if (req.body.type == "sell") {
-          if (price >= target_price) {
-            res.json({
-              status: "fail",
-              message:
-                "The sell stop limit cannot be higher than the current price.",
             });
             return;
           }
@@ -948,6 +932,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           type: "limit",
           method: "buy",
           target_price: req.body.target_price,
+          status: 1,
         });
 
         let saved = await orders.save();
@@ -1058,6 +1043,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           type: "limit",
           method: "sell",
           target_price: req.body.target_price,
+          status: 1,
         });
 
         let saved = await orders.save();
