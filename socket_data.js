@@ -107,26 +107,28 @@ async function GetMarginOrders(ws, payload) {
    
    console.log(11111);
    console.log(payload);
-   let orders = await MarginOrder.find(request).exec();
+   let orders = await MarginOrder.find({user_id: payload['user_id']}).exec();
    ws.send(JSON.stringify({ type: 'orders', content: orders }));
    let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
       //orders = data;
-      orders = await MarginOrder.find(request).exec();
+      console.log("inserted");
+      orders = await MarginOrder.find({user_id: payload['user_id']}).exec();
       ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
    let isUpdate = MarginOrder.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
-      orders = await MarginOrder.find(request).exec();
+      console.log("updated");
+      orders = await MarginOrder.find({user_id: payload['user_id']}).exec();
       ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
    let isRemove = MarginOrder.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
       console.log("silindi");
-      orders = await MarginOrder.find(request).exec();
+      orders = await MarginOrder.find({user_id: payload['user_id']}).exec();
       ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
 
    let isDelete = MarginOrder.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
       console.log("silindi 2");
-      orders = await MarginOrder.find(request).exec();
+      orders = await MarginOrder.find({user_id: payload['user_id']}).exec();
       ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
    console.log(orders);
