@@ -95,7 +95,7 @@ async function GetOrders(ws, payload) {
 
 
 async function GetMarginOrders(ws, payload) {
-   let request = { user_id: user_id};
+   let request = { user_id: payload['user_id']};
    if(payload['status'] != '') {
       request['status'] = payload['status'];
    }
