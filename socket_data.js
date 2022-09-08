@@ -62,12 +62,13 @@ async function GetWallets(ws, wallet_id) {
 }
 
 async function GetOrders(ws, payload) {
+   
    let user_id = payload['user_id'];
    let type = payload['type'] ?? "";
    let request = { user_id: user_id };
    if (type != "")
       request["type"] = type;
-   console.log(request);
+   
    let orders = await Orders.find(request).exec();
    ws.send(JSON.stringify({ type: 'orders', content: orders }));
    let isInsert = Orders.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
@@ -102,30 +103,34 @@ async function GetOrders(ws, payload) {
 
 
 async function GetMarginOrders(ws, payload) {
-   let request = { user_id: payload['user_id']};
-   if(payload['status'] != '') {
-      request['status'] = payload['status'];
-   }
+   let request = { user_id: payload['user_id'], status : {$gt : 0}};
+   
+   console.log(11111);
+   console.log(payload);
    let orders = await MarginOrder.find(request).exec();
-
+   ws.send(JSON.stringify({ type: 'orders', content: orders }));
    let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
       //orders = data;
       orders = await MarginOrder.find(request).exec();
-
+      ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
    let isUpdate = MarginOrder.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
       orders = await MarginOrder.find(request).exec();
+      ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
    let isRemove = MarginOrder.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
       console.log("silindi");
       orders = await MarginOrder.find(request).exec();
+      ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
 
    let isDelete = MarginOrder.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
       console.log("silindi 2");
       orders = await MarginOrder.find(request).exec();
+      ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
-
+   console.log(orders);
+   /*
    const allTickers = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
    allTickers.onopen = () => {
       allTickers.onmessage = async (data) => {
@@ -175,6 +180,7 @@ async function GetMarginOrders(ws, payload) {
          ws.send(JSON.stringify({ type: 'orders', content: exportOrder }));
       }
    }
+   */
 }
 
 

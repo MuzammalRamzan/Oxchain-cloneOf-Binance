@@ -174,8 +174,6 @@ async function initialize() {
                             let price = parseFloat(list[i].a);
                             let imr = 1 / order.leverage;
                             let initialMargin = order.amount * price * imr;
-                            //console.log(price + " | " + open_price + " | " + imr + " | " +  initialMargin + " | " + " | " + pnl + " | " + roe + " | " + balance);
-
                             let pnl = (price - parseFloat(order.open_price)) * parseFloat(order.amount) * imr;
 
                             if (order.type == 'buy') {

@@ -595,7 +595,7 @@ route.post("/addMarginOrder", async function (req, res) {
         margin_type: req.body.margin_type,
         method: req.body.method,
         user_id: req.body.user_id,
-        margin: initialMargin,
+        required_margin: initialMargin,
         isolated: req.body.isolated ?? 0.0,
         sl: req.body.sl ?? 0,
         tp: req.body.tp ?? 0,
