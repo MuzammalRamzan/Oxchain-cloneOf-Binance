@@ -95,26 +95,28 @@ async function GetOrders(ws, payload) {
 
 
 async function GetMarginOrders(ws, payload) {
-   let user_id = payload['user_id'];
-   let status = payload['status'];
-   let orders = await MarginOrder.find({ user_id: user_id, status: status }).exec();
+   let request = { user_id: user_id};
+   if(payload['status'] != '') {
+      request['status'] = payload['status'];
+   }
+   let orders = await MarginOrder.find(request).exec();
 
    let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
       //orders = data;
-      orders = await MarginOrder.find({ user_id: user_id, status: status }).exec();
+      orders = await MarginOrder.find(request).exec();
 
    });
    let isUpdate = MarginOrder.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
-      orders = await MarginOrder.find({ user_id: user_id, status: status }).exec();
+      orders = await MarginOrder.find(request).exec();
    });
    let isRemove = MarginOrder.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
       console.log("silindi");
-      orders = await MarginOrder.find({ user_id: user_id, status: status }).exec();
+      orders = await MarginOrder.find(request).exec();
    });
 
    let isDelete = MarginOrder.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
       console.log("silindi 2");
-      orders = await MarginOrder.find({ user_id: user_id, status: status }).exec();
+      orders = await MarginOrder.find(request).exec();
    });
 
    const allTickers = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
