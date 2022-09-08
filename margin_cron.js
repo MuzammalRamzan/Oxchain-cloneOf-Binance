@@ -19,17 +19,6 @@ const MarginWalletId = "62ff3c742bebf06a81be98fd";
 async function initialize() {
     await mongoose.connect(connection);
 
-    //await mongoClient.connect();
-
-
-
-    /*
-  
-    await mongoCollection.createIndex(
-      { createdAt: 1 },
-      { expireAfterSeconds: 3600, background: true }
-    );
-    */
     let request = { status: 0, method: "market" };
     let orders = await MarginOrder.find(request).exec();
 
@@ -40,7 +29,9 @@ async function initialize() {
 
     });
     let isUpdate = MarginOrder.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
+        console.log("margin update");
         orders = await MarginOrder.find(request).exec();
+
     });
     let isRemove = MarginOrder.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
         console.log("silindi");
@@ -54,15 +45,45 @@ async function initialize() {
     });
 
 
-
     const allTickers = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
     allTickers.onopen = () => {
         allTickers.onmessage = async (data) => {
             let list = JSON.parse(data.data);
+            let totalPNL = 0.0;
+
+            let getOpenOrders = await MarginOrder.aggregate(
+                [
+                {
+                    $match: {status: 0, method:'market'},
+                },
+
+                    {
+                        $group : {
+                             _id: "$user_id", total: {$sum:"$pnl"}
+                            }
+                        }
+                ],
+            );
+            for(var n = 0; n < getOpenOrders.length; n++) {
+                let wallet = await Wallet.findOne({user_id : getOpenOrders[n]._id, coin_id: MarginWalletId}).exec();
+                wallet.pnl = getOpenOrders[n].total;
+                await wallet.save();
+            }
+            
+            /*
+            let getOpenOrders = await MarginOrder.find({ method: 'market', status: 0 }).exec();
+            for (var n = 0; n < getOpenOrders.length; n++) {
+                console.log("TOTAL PNL : ", totalPNL);
+                
+                
+                wallet.pnl = 
+                new Promise(function (resolve) {
+                    wallet.save();
+                });
+            }
+            */
             for (var i = 0; i < list.length; i++) {
                 let symbol = list[i].s.replace("/", "");
-                let totalPNL = 0.0;
-
                 for (var k = 0; k < orders.length; k++) {
                     let order = orders[k];
                     let userBalance = await Wallet.findOne({ user_id: order.user_id, coin_id: MarginWalletId });
@@ -165,8 +186,9 @@ async function initialize() {
                                 }
                             }
                         }
-                        if (order.method == 'market') {
 
+                        if (order.method == 'market') {
+                            if (order.status == 1) continue;
                             if (order.margin_type == 'cross')
                                 balance = (userBalance.amount * 1.0).toFixed(2);
                             else if (order.margin_type == 'isolated')
@@ -174,15 +196,14 @@ async function initialize() {
                             let price = parseFloat(list[i].a);
                             let imr = 1 / order.leverage;
                             let initialMargin = order.amount * price * imr;
-                            let pnl = (price - parseFloat(order.open_price)) * parseFloat(order.amount) * imr;
-
+                            let pnl = (price - parseFloat(order.open_price)) * parseFloat(order.amount) * order.leverage;
+                            totalPNL += pnl;
+                            //console.log("Order : " + order._id + " | Fiyat : " + price + " | Miktar : " + order.amount + " | Leverage : (" + order.leverage + ") " + " | PL : " + pnl + " | Balance : " + balance);
                             if (order.type == 'buy') {
-
                                 let roe = ((pnl / initialMargin) * (1 - order.open_price / price)) / imr;
-                                console.log(roe);
                                 //let pl = (((open_price - price) *  order.amount) * parseInt(order.leverage)).toFixed(2);
                                 order.pnl = pnl;
-                                totalPNL += pnl;
+
                                 let tp = order.tp ?? 0.00;
                                 let sl = order.sl ?? 0.00;
                                 if (balance <= 0) {
@@ -191,7 +212,7 @@ async function initialize() {
                                     order.close_price = price;
                                     order.close_time = Date.now();
                                     order.pnl = pnl;
-                                    await order.save();
+                                    orders[k] = order;
                                     await userBalance.save();
                                 } else {
                                     if (tp != 0) {
@@ -201,7 +222,7 @@ async function initialize() {
                                             order.close_time = Date.now();
                                             order.status = 1;
                                             order.pnl = pnl;
-                                            await order.save();
+                                            orders[k] = order;
                                             await userBalance.save();
                                         }
 
@@ -213,20 +234,17 @@ async function initialize() {
                                             order.close_time = Date.now();
                                             order.status = 1;
                                             order.pnl = pnl;
-                                            await order.save();
+                                            orders[k] = order;
                                             await userBalance.save();
                                         }
                                     }
-                                    console.log("Order : " + order._id + " | Fiyat : " + price + " | Miktar : " + order.amount + " | Leverage : (" + order.leverage + ") " + " | PL : " + pnl + " | Balance : " + balance);
-
-
                                 }
-
+                                order.pnl = pnl;
+                                order.save().then(() => { }).catch((err) => { });
 
                             } else if (order.type == 'sell') {
-                                let roe = ((pnl / initialMargin) * (1 - price / order.open_price)) / imr;
+                                
                                 order.pnl = pnl;
-                                totalPNL += pnl;
                                 let tp = order.tp ?? 0.00;
                                 let sl = order.sl ?? 0.00;
                                 if (balance <= 0) {
@@ -235,7 +253,7 @@ async function initialize() {
                                     order.close_price = price;
                                     order.close_time = Date.now();
                                     order.pnl = pnl;
-                                    await order.save();
+                                    orders[k] = order;
                                     await userBalance.save();
                                 } else {
                                     if (tp != 0) {
@@ -245,7 +263,7 @@ async function initialize() {
                                             order.close_time = Date.now();
                                             order.status = 1;
                                             order.pnl = pnl;
-                                            await order.save();
+                                            orders[k] = order;
                                             await userBalance.save();
                                         }
 
@@ -257,28 +275,32 @@ async function initialize() {
                                             order.close_time = Date.now();
                                             order.status = 1;
                                             order.pnl = pnl;
-                                            await order.save();
+                                            orders[k] = order;
                                             await userBalance.save();
                                         }
                                     }
-                                    console.log("Order : " + order._id + " | Fiyat : " + price + " | Miktar : " + order.amount + " | Leverage : (" + order.leverage + ") " + " | PL : " + pnl + " | Balance : " + balance);
 
                                 }
+                                order.pnl = pnl;
+                                order.save().then(() => { }).catch((err) => { });
                             }
                             //console.log("Price : ", price , " | P/L : ", pl, " | User Balance : ", userBalance.amount);
 
                         }
-                    }
-                    userBalance.amount += totalPNL;
-                    await userBalance.save();
-                }
 
+                    }
+
+                }
             }
+
+
+            //FILL WALLET
+
+           
         }
 
     }
 }
-
 
 
 initialize();

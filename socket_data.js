@@ -54,11 +54,27 @@ async function GetWallets(ws, wallet_id) {
       return;
    }
    let wallet = await Wallet.findOne({ _id: wallet_id }).exec();
-   let isUpdate = Wallet.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
+   ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
+
+   let isInsert = Orders.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
+      //orders = data;
+      console.log("insert order socket");
       wallet = await Wallet.find({ _id: wallet_id }).exec();
       ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
    });
-   ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
+   let isUpdate = Orders.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
+      wallet = await Wallet.find({ _id: wallet_id }).exec();
+      ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
+   });
+   let isRemove = Orders.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
+      wallet = await Wallet.find({ _id: wallet_id }).exec();
+      ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
+   });
+
+   let isDelete = Orders.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
+      wallet = await Wallet.find({ _id: wallet_id }).exec();
+      ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
+   });
 }
 
 async function GetOrders(ws, payload) {
@@ -105,8 +121,6 @@ async function GetOrders(ws, payload) {
 async function GetMarginOrders(ws, payload) {
    let request = { user_id: payload['user_id'], status : {$gt : 0}};
    
-   console.log(11111);
-   console.log(payload);
    let orders = await MarginOrder.find({user_id: payload['user_id']}).exec();
    ws.send(JSON.stringify({ type: 'orders', content: orders }));
    let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
@@ -131,7 +145,6 @@ async function GetMarginOrders(ws, payload) {
       orders = await MarginOrder.find({user_id: payload['user_id']}).exec();
       ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
-   console.log(orders);
    /*
    const allTickers = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
    allTickers.onopen = () => {

@@ -26,7 +26,7 @@ require("dotenv").config();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
 //console.log(authenticator.verifyToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse", "260180"));
 //console.log(formattedToken);
-
+const MarginWalletId = "62ff3c742bebf06a81be98fd";
 const express = require("express");
 var route = express();
 const mongoose = require("mongoose");
@@ -515,6 +515,13 @@ route.post("/closeMarginOrder", async function (req, res) {
       { _id: new ObjectId(orderId) },
       { $set: { status: 1, close_time: Date.now(), close_price: price } }
     );
+
+    let marginWallet = await Wallet.findOne({ user_id: doc.user_id, coin_id: MarginWalletId }).exec();
+    marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(doc.pnl);
+    marginWallet.amount = parseFloat(marginWallet.amount) + parseFloat(doc.pnl);
+    await marginWallet.save();
+
+    
     res.json({ status: "success", data: doc });
   } catch (err) { }
 });
@@ -586,6 +593,11 @@ route.post("/addMarginOrder", async function (req, res) {
         _o.close_time = Date.now();
         _o.status = 1;
         await _o.save();
+        let marginWallet = await Wallet.findOne({ user_id: _o.user_id, coin_id: MarginWalletId }).exec();
+        marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(_o.pnl);
+        marginWallet.amount = parseFloat(marginWallet.amount) + parseFloat(_o.pnl);
+        await marginWallet.save();
+    
       }
 
       let order = new MarginOrder({
