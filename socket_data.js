@@ -24,7 +24,8 @@ wss.on("connection", async (ws) => {
       }))
 
       ws.on('message', (data) => {
-         console.log("MSG", data);
+         console.log("MSG");
+         console.log(json.parse(data));
          let json = JSON.parse(data);
          switch (json.type) {
             case "margin_orders":
