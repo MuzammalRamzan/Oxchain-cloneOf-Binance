@@ -814,16 +814,14 @@ route.post("/deleteLimit", async function (req, res) {
 });
 
 route.post("/deleteMarginLimit", async function (req, res) {
-  await MarginOrder.findOneAndDelete({
-    _id: req.body.order_id,
-    user_id: req.body.user_id,
-    method: "limit",
-  }).exec();
-  await MarginOrder.findOneAndDelete({
-    _id: req.body.order_id,
-    user_id: req.body.user_id,
-    method: "stop_limit",
-  }).exec();
+  await MarginOrder.findOneAndUpdate(
+    { _id: req.body.order_id, user_id: req.body.user_id, type: "limit" },
+    { $set: { status: -1 } }
+  ).exec();
+  await MarginOrder.findOneAndUpdate(
+    { _id: req.body.order_id, user_id: req.body.user_id, type: "stop_limit" },
+    { $set: { status: -1 } }
+  ).exec();
   res.json({ status: "success", message: "removed" });
 });
 
