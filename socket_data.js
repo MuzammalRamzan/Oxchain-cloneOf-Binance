@@ -20,10 +20,11 @@ wss.on("connection", async (ws) => {
    await mongoose.connect(connection);
    if (ws.readyState === ws.OPEN) {
       ws.send(JSON.stringify({
-         msg1: 'yo, im msg 1'
+         msg1: 'WELCOME TO OXHAIN'
       }))
 
       ws.on('message', (data) => {
+         console.log("MSG", data);
          let json = JSON.parse(data);
          switch (json.type) {
             case "margin_orders":
@@ -46,6 +47,10 @@ wss.on("connection", async (ws) => {
 });
 
 async function GetWallets(ws, wallet_id) {
+   if(wallet_id == '') {
+      ws.send(JSON.stringify({ type: 'error', content: 'wallet not found' }));
+      return;
+   }
    let wallet = await Wallet.findOne({ _id: wallet_id }).exec();
    let isUpdate = Wallet.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
       wallet = await Wallet.find({ _id: wallet_id }).exec();
