@@ -53,23 +53,23 @@ async function initialize() {
 
             let getOpenOrders = await MarginOrder.aggregate(
                 [
-                {
-                    $match: {status: 0, method:'market'},
-                },
+                    {
+                        $match: { status: 0, method: 'market' },
+                    },
 
                     {
-                        $group : {
-                             _id: "$user_id", total: {$sum:"$pnl"}
-                            }
+                        $group: {
+                            _id: "$user_id", total: { $sum: "$pnl" }
                         }
+                    }
                 ],
             );
-            for(var n = 0; n < getOpenOrders.length; n++) {
-                let wallet = await Wallet.findOne({user_id : getOpenOrders[n]._id, coin_id: MarginWalletId}).exec();
+            for (var n = 0; n < getOpenOrders.length; n++) {
+                let wallet = await Wallet.findOne({ user_id: getOpenOrders[n]._id, coin_id: MarginWalletId }).exec();
                 wallet.pnl = getOpenOrders[n].total;
                 await wallet.save();
             }
-            
+
             /*
             let getOpenOrders = await MarginOrder.find({ method: 'market', status: 0 }).exec();
             for (var n = 0; n < getOpenOrders.length; n++) {
@@ -144,47 +144,81 @@ async function initialize() {
 
                                 }
                             }
-
-                            if (order.type == 'sell') {
-                                if (bid >= target_price) {
-                                    order.method = 'market';
-                                    order.open_time = Date.now();
-                                    order.open_price = bid;
-                                    await order.save();
-                                }
-                            }
+                            /*
+                                                        if (order.type == 'sell') {
+                                                            if (bid >= target_price) {
+                                                                order.method = 'market';
+                                                                order.open_time = Date.now();
+                                                                order.open_price = bid;
+                                                                await order.save();
+                                                            }
+                                                        }
+                                                        */
                         }
 
                         if (order.method == 'stop_limit') {
                             let ask = parseFloat(list[i].a);
                             let bid = parseFloat(list[i].b);
                             let target_price = parseFloat(order.target_price) ?? 0.0;
-                            let imr = 1 / order.leverage;
-                            let initialMargin = order.amount * price * imr;
+                            console.log(target_price + " | " + ask + " | ");
                             if (order.margin_type == 'cross')
                                 balance = (userBalance.amount * 1.0).toFixed(2);
                             else if (order.margin_type == 'isolated')
                                 balance = order.isolated;
 
                             if (order.type == 'buy') {
-                                if (ask >= target_price) {
-                                    order.method = 'market';
-                                    order.open_time = Date.now();
-                                    order.open_price = ask;
-                                    order.margin = initialMargin;
-                                    await order.save();
-                                }
-                            }
+                                if (ask <= target_price) {
+                                    let imr = 1 / order.leverage;
+                                    let initialMargin = order.amount * ask * imr;
+                                    if (balance >= initialMargin) {
+                                        console.log("buy margin start");
+                                        order.initialMargin = initialMargin;
+                                        order.method = 'market';
+                                        userBalance.amount = parseFloat(userBalance.amount) - initialMargin;
+                                        order.open_time = Date.now();
+                                        order.open_price = order.stop_limit;
+                                        order.status = 1;
+                                        await order.save();
+                                        await userBalance.save();
+                                    } else {
+                                        order.close_time = Date.now();
+                                        order.status = -1;
+                                        await order.save();
+                                    }
 
-                            if (order.type == 'sell') {
-                                if (bid <= target_price) {
-                                    order.method = 'market';
-                                    order.open_time = Date.now();
-                                    order.margin = initialMargin;
-                                    order.open_price = bid;
-                                    await order.save();
+                                }
+                            } else if (order.type == 'sell') {
+                                if (bid >= target_price) {
+                                    let imr = 1 / order.leverage;
+                                    let initialMargin = order.amount * ask * imr;
+                                    if (balance >= initialMargin) {
+                                        console.log("sell margin start");
+                                        order.initialMargin = initialMargin;
+                                        order.method = 'market';
+                                        userBalance.amount = parseFloat(userBalance.amount) - initialMargin;
+                                        order.open_time = Date.now();
+                                        order.open_price = order.stop_limit;
+                                        order.status = 1;
+                                        await order.save();
+                                        await userBalance.save();
+                                    } else {
+                                        order.close_time = Date.now();
+                                        order.status = -1;
+                                        await order.save();
+                                    }
+
                                 }
                             }
+                            /*
+                                                        if (order.type == 'sell') {
+                                                            if (bid >= target_price) {
+                                                                order.method = 'market';
+                                                                order.open_time = Date.now();
+                                                                order.open_price = bid;
+                                                                await order.save();
+                                                            }
+                                                        }
+                                                        */
                         }
 
                         if (order.method == 'market') {
@@ -243,7 +277,7 @@ async function initialize() {
                                 order.save().then(() => { }).catch((err) => { });
 
                             } else if (order.type == 'sell') {
-                                
+
                                 order.pnl = pnl;
                                 let tp = order.tp ?? 0.00;
                                 let sl = order.sl ?? 0.00;
@@ -296,7 +330,7 @@ async function initialize() {
 
             //FILL WALLET
 
-           
+
         }
 
     }

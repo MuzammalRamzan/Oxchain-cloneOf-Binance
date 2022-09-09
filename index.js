@@ -521,7 +521,7 @@ route.post("/closeMarginOrder", async function (req, res) {
     marginWallet.amount = parseFloat(marginWallet.amount) + parseFloat(doc.pnl);
     await marginWallet.save();
 
-    
+
     res.json({ status: "success", data: doc });
   } catch (err) { }
 });
@@ -597,7 +597,7 @@ route.post("/addMarginOrder", async function (req, res) {
         marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(_o.pnl);
         marginWallet.amount = parseFloat(marginWallet.amount) + parseFloat(_o.pnl);
         await marginWallet.save();
-    
+
       }
 
       let order = new MarginOrder({
@@ -627,6 +627,85 @@ route.post("/addMarginOrder", async function (req, res) {
       return;
     }
     else if (req.body.method == 'stop_limit') {
+      let getPair = await Pairs.findOne({ name: req.body.symbol }).exec();
+      if (getPair == null) {
+        res.json({ status: "fail", message: "invalid_pair" });
+        return;
+      }
+      var urlPair = getPair.name.replace("/", "");
+      console.log(urlPair);
+      let url =
+        'https://api.binance.com/api/v3/ticker/price?symbols=["' +
+        urlPair +
+        '"]';
+      result = await axios(url);
+      var price = result.data[0].price;
+
+      let target_price = parseFloat(req.body.target_price);
+      let stop_limit = req.body.stop_limit ?? 0.0;
+      if (stop_limit == 0) {
+        res.json({
+          status: "fail",
+          message: "Please enter stop limit",
+        });
+        return;
+      }
+      if (req.body.type == 'buy') {
+        if (target_price > stop_limit) {
+          res.json({
+            status: "fail",
+            message: "The limit price cannot be greather than the stop price Buy limit order must be above the price",
+          });
+          return;
+        }
+        if (target_price >= price) {
+          res.json({
+            status: "fail",
+            message: "Buy limit order must be below the price",
+          });
+          return;
+        }
+      }
+
+      if (req.body.type == 'sell') {
+        if (target_price < stop_limit) {
+          res.json({
+            status: "fail",
+            message: "The limit price cannot be greather than the stop price Sell limit order must be above the price",
+          });
+          return;
+        }
+        if (target_price <= price) {
+          res.json({
+            status: "fail",
+            message: "Sell limit order must be below the price",
+          });
+          return;
+        }
+      }
+
+
+      let order = new MarginOrder({
+        pair_id: getPair._id,
+        pair_name: getPair.name,
+        type: req.body.type,
+        margin_type: req.body.margin_type,
+        method: req.body.method,
+        user_id: req.body.user_id,
+        required_margin: 0.0,
+        sl: req.body.sl ?? 0,
+        tp: req.body.tp ?? 0,
+        stop_limit: 0.0,
+        target_price: target_price,
+        leverage: req.body.leverage,
+        amount: req.body.amount,
+        open_price: price,
+        status: 1,
+      });
+
+      await order.save();
+      res.json({ status: "success", data: order });
+      return;
 
     }
     else if (req.body.method == 'limit') {
@@ -793,6 +872,10 @@ route.post("/deleteLimit", async function (req, res) {
     await toWallet.save();
     await Orders.findOneAndUpdate(
       { _id: req.body.order_id, user_id: req.body.user_id, type: "limit" },
+      { $set: { status: -1 } }
+    ).exec();
+    await Orders.findOneAndUpdate(
+      { _id: req.body.order_id, user_id: req.body.user_id, type: "stop_limit" },
       { $set: { status: -1 } }
     ).exec();
   }
