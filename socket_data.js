@@ -9,7 +9,7 @@ const mongoose = require("mongoose");
 const Orders = require('./models/Orders');
 require("dotenv").config();
 var mongodbPass = process.env.MONGO_DB_PASS;
-
+const MarginWalletId = "62ff3c742bebf06a81be98fd";
 var connection =
    "mongodb+srv://volkansaka:" +
    mongodbPass +
@@ -41,12 +41,42 @@ wss.on("connection", async (ws) => {
             case "margin_history":
                GetMarginHistories(ws, json.content);
                break;
+               case "margin_balance" : 
+               break;
             default:
                break;
          }
       });
    }
 });
+
+async function GetMarginBalance(ws, user_id) {
+   let totalPNL = 0.0;
+            
+   let getOpenOrders = await MarginOrder.aggregate(
+       [
+           {
+               $match: { status: 0, method: 'market', user_id: user_id },
+           },
+
+           {
+               $group: {
+                   _id: "$user_id", total: { $sum: "$pnl" }
+               }
+           }
+       ],
+   );
+   for (var n = 0; n < getOpenOrders.length; n++) {
+       let wallet = await Wallet.findOne({ user_id: getOpenOrders[n]._id, coin_id: MarginWalletId }).exec();
+       wallet.pnl = getOpenOrders[n].total;
+       totalPNL = totalPNL + parseFloat(getOpenOrders[n].total);
+       await wallet.save();
+   }
+   let wallet = await Wallet.findOne({ user_id: getOpenOrders[n]._id, coin_id: MarginWalletId }).exec();
+   let balance = parseFloat(wallet.amount) + totalPNL;
+   ws.send(JSON.stringify({type: "margin_balance", content : balance}));
+   console.log("Balance : ", balance);
+}
 
 async function GetWallets(ws, wallet_id) {
    if(wallet_id == '') {

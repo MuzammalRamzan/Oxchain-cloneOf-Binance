@@ -67,8 +67,10 @@ async function initialize() {
             for (var n = 0; n < getOpenOrders.length; n++) {
                 let wallet = await Wallet.findOne({ user_id: getOpenOrders[n]._id, coin_id: MarginWalletId }).exec();
                 wallet.pnl = getOpenOrders[n].total;
+                totalPNL = totalPNL + parseFloat(getOpenOrders[n].total);
                 await wallet.save();
             }
+
 
             /*
             let getOpenOrders = await MarginOrder.find({ method: 'market', status: 0 }).exec();
@@ -86,21 +88,22 @@ async function initialize() {
                 let symbol = list[i].s.replace("/", "");
                 for (var k = 0; k < orders.length; k++) {
                     let order = orders[k];
-                    let userBalance = await Wallet.findOne({ user_id: order.user_id, coin_id: MarginWalletId });
-
+                    let wallet = await Wallet.findOne({ user_id: order.user_id, coin_id: MarginWalletId }).exec();
+                    let balance = parseFloat(wallet.amount) + totalPNL;
                     if (order.pair_name.replace('/', '') == symbol) {
 
-                        let balance = 0.00;
+
                         if (order.method == 'limit') {
                             let ask = parseFloat(list[i].a);
                             let bid = parseFloat(list[i].b);
                             let target_price = parseFloat(order.target_price) ?? 0.0;
                             console.log(target_price + " | " + ask + " | ");
+                            /*
                             if (order.margin_type == 'cross')
                                 balance = (userBalance.amount * 1.0).toFixed(2);
                             else if (order.margin_type == 'isolated')
                                 balance = order.isolated;
-
+*/
                             if (order.type == 'buy') {
                                 if (ask <= target_price) {
                                     let imr = 1 / order.leverage;
@@ -161,11 +164,12 @@ async function initialize() {
                             let bid = parseFloat(list[i].b);
                             let target_price = parseFloat(order.target_price) ?? 0.0;
                             console.log(target_price + " | " + ask + " | ");
+                            /*
                             if (order.margin_type == 'cross')
                                 balance = (userBalance.amount * 1.0).toFixed(2);
                             else if (order.margin_type == 'isolated')
                                 balance = order.isolated;
-
+*/
                             if (order.type == 'buy') {
                                 if (ask <= target_price) {
                                     let imr = 1 / order.leverage;
@@ -223,10 +227,12 @@ async function initialize() {
 
                         if (order.method == 'market') {
                             if (order.status == 1) continue;
+                            /*
                             if (order.margin_type == 'cross')
                                 balance = (userBalance.amount * 1.0).toFixed(2);
                             else if (order.margin_type == 'isolated')
                                 balance = order.isolated;
+                                */
                             let price = parseFloat(list[i].a);
                             let imr = 1 / order.leverage;
                             let initialMargin = order.amount * price * imr;
