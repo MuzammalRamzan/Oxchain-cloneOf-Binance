@@ -6,6 +6,7 @@ const { MongoClient } = require("mongodb");
 const MarginOrder = require('./models/MarginOrder.js');
 const mongoose = require("mongoose");
 const Wallet = require("./models/Wallet.js");
+const Orders = require("./models/Orders.js");
 var mongodbPass = process.env.MONGO_DB_PASS;
 
 const io = new Server();
@@ -93,6 +94,7 @@ async function initialize() {
                         userBalance.pnl = 0;
                         userBalance.amount = 0;
                         await userBalance.save();
+                        await MarginOrder.updateMany({user_id: order.user_id}, {$set : {status: 1}}).exec()
                         return;
                     }
                     if(balance <= 0) return;
