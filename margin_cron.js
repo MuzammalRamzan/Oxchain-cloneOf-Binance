@@ -29,7 +29,6 @@ async function initialize() {
 
     });
     let isUpdate = MarginOrder.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
-        console.log("margin update");
         orders = await MarginOrder.find(request).exec();
 
     });
@@ -88,9 +87,16 @@ async function initialize() {
                 let symbol = list[i].s.replace("/", "");
                 for (var k = 0; k < orders.length; k++) {
                     let order = orders[k];
-                    let wallet = await Wallet.findOne({ user_id: order.user_id, coin_id: MarginWalletId }).exec();
-                    let balance = parseFloat(wallet.amount) + totalPNL;
-                    if (order.pair_name.replace('/', '') == symbol) {
+                    let userBalance = await Wallet.findOne({ user_id: order.user_id, coin_id: MarginWalletId }).exec();
+                    let balance = parseFloat(userBalance.amount) + totalPNL;
+                    if(balance <= 0 && userBalance.pnl != 0) {
+                        userBalance.pnl = 0;
+                        userBalance.amount = 0;
+                        await userBalance.save();
+                        return;
+                    }
+                    if(balance <= 0) return;
+                     if (order.pair_name.replace('/', '') == symbol) {
 
 
                         if (order.method == 'limit') {
@@ -249,6 +255,7 @@ async function initialize() {
                                 if (balance <= 0) {
                                     order.status = 1;
                                     userBalance.amount = 0;
+                                    userBalance.pnl = 0;
                                     order.close_price = price;
                                     order.close_time = Date.now();
                                     order.pnl = pnl;
@@ -290,6 +297,7 @@ async function initialize() {
                                 if (balance <= 0) {
                                     order.status = 1;
                                     userBalance.amount = 0;
+                                    userBalance.pnl = 0;
                                     order.close_price = price;
                                     order.close_time = Date.now();
                                     order.pnl = pnl;

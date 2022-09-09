@@ -51,7 +51,8 @@ wss.on("connection", async (ws) => {
    }
 });
 
-async function GetMarginBalance(ws, user_id) {
+async function CalculateMarginBalance(user_id) {
+   console.log(11);
    let totalPNL = 0.0;
             
    let getOpenOrders = await MarginOrder.aggregate(
@@ -67,16 +68,23 @@ async function GetMarginBalance(ws, user_id) {
            }
        ],
    );
+   let wallet = await Wallet.findOne({ user_id: user_id, coin_id: MarginWalletId }).exec();
    for (var n = 0; n < getOpenOrders.length; n++) {
-       let wallet = await Wallet.findOne({ user_id: getOpenOrders[n]._id, coin_id: MarginWalletId }).exec();
-       wallet.pnl = getOpenOrders[n].total;
        totalPNL = totalPNL + parseFloat(getOpenOrders[n].total);
-       await wallet.save();
    }
-   let wallet = await Wallet.findOne({ user_id: getOpenOrders[n]._id, coin_id: MarginWalletId }).exec();
+   if(wallet.amount == 0) return 0;
    let balance = parseFloat(wallet.amount) + totalPNL;
+   console.log("Balance : ", balance);   
+   return balance;
+}
+
+async function GetMarginBalance(ws, content) {
+   let balance = await CalculateMarginBalance(content.user_id);
    ws.send(JSON.stringify({type: "margin_balance", content : balance}));
-   console.log("Balance : ", balance);
+   let isUpdate = Wallet.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
+      balance = await CalculateMarginBalance(content.user_id)
+      ws.send(JSON.stringify({type: "margin_balance", content : balance}));
+   });
 }
 
 async function GetWallets(ws, wallet_id) {
@@ -161,7 +169,6 @@ async function GetMarginOrders(ws, payload) {
       ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
    let isUpdate = MarginOrder.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
-      console.log("updated");
       orders = await MarginOrder.find({user_id: payload['user_id']}).exec();
       ws.send(JSON.stringify({ type: 'orders', content: orders }));
    });
