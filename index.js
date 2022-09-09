@@ -585,7 +585,8 @@ route.post("/addMarginOrder", async function (req, res) {
         user_id: req.body.user_id,
         coin_id: getPair._id,
         type: req.body.type == "buy" ? "sell" : "buy",
-        margin_type: req.body.margin_type
+        margin_type: req.body.margin_type,
+        status: 0,
       }).exec();
 
       for (var i = 0; i < reverseOreders.length; i++) {
