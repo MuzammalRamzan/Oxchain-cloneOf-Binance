@@ -57,9 +57,7 @@ wss.on("connection", async (ws) => {
 
 
 async function CalculateMarginBalance(user_id) {
-   console.log(11);
    let totalPNL = 0.0;
-            
    let getOpenOrders = await MarginOrder.aggregate(
        [
            {
@@ -85,7 +83,7 @@ async function CalculateMarginBalance(user_id) {
 
 async function GetMarginBalance(ws, content) {
    let balance = await CalculateMarginBalance(content.user_id);
-   ws.send(JSON.stringify({type: "margin_balance", content : balance}));
+   ws.send(JSON.stringify({type: "margin_balance", content : [{amount : balance}]}));
    let isUpdate = Wallet.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
       balance = await CalculateMarginBalance(content.user_id)
       ws.send(JSON.stringify({type: "margin_balance", content : [{amount : balance}]}));

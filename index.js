@@ -498,28 +498,28 @@ route.post("/closeMarginOrder", async function (req, res) {
     }
     console.log("1");
     let getOrderDetail = await MarginOrder.findOne({ _id: orderId }).exec();
-    console.log(getOrderDetail);
-
-    console.log("2");
     let getPair = await Pairs.findOne({ _id: getOrderDetail.pair_id }).exec();
-    console.log(getPair);
     var urlPair = getPair.name.replace("/", "");
-    console.log(urlPair);
     let url =
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
-    console.log(url);
     result = await axios(url);
     var price = result.data[0].price;
-    console.log(price);
     let doc = await MarginOrder.findOneAndUpdate(
       { _id: new ObjectId(orderId) },
       { $set: { status: 1, close_time: Date.now(), close_price: price } }
     );
-
-    let marginWallet = await Wallet.findOne({ user_id: doc.user_id, coin_id: MarginWalletId }).exec();
-    marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(doc.pnl);
-    marginWallet.amount = parseFloat(marginWallet.amount) + parseFloat(doc.pnl);
-    await marginWallet.save();
+    console.log(doc);
+    if (doc.margin_type == 'isolated') {
+      let marginWallet = await Wallet.findOne({ user_id: doc.user_id, coin_id: MarginWalletId }).exec();
+      marginWallet.amount = parseFloat(marginWallet.amount) + (parseFloat(doc.pnl) + parseFloat(doc.isolated));
+      await marginWallet.save();
+    } else {
+      let marginWallet = await Wallet.findOne({ user_id: doc.user_id, coin_id: MarginWalletId }).exec();
+      marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(doc.pnl);
+      marginWallet.amount = parseFloat(marginWallet.amount) + parseFloat(doc.pnl);
+      await marginWallet.save();
+    }
+    console.log("ok");
 
 
     res.json({ status: "success", data: doc });
@@ -620,7 +620,7 @@ route.post("/addMarginOrder", async function (req, res) {
       });
 
       await order.save();
-      if(req.body.margin_type == 'isolated') {
+      if (req.body.margin_type == 'isolated') {
 
         let getWallet = await Wallet.findOne({
           user_id: req.body.user_id,
@@ -629,7 +629,7 @@ route.post("/addMarginOrder", async function (req, res) {
         getWallet.amount = parseFloat(getWallet.amount) - initialMargin;
         await getWallet.save();
       }
-      
+
       res.json({ status: "success", data: order });
       return;
     }

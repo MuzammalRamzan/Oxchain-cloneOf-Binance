@@ -109,11 +109,13 @@ async function initialize() {
                                 balance = (userBalance.amount * 1.0).toFixed(2);
                             else if (order.margin_type == 'isolated')
                                 balance = order.isolated;
-*/
+*/                  
+                            
                             if (order.type == 'buy') {
                                 if (ask <= target_price) {
                                     let imr = 1 / order.leverage;
                                     let initialMargin = order.amount * ask * imr;
+                                    console.log("initial margin : ", initialMargin);
                                     if (balance >= initialMargin) {
                                         console.log("buy margin start");
                                         order.initialMargin = initialMargin;
