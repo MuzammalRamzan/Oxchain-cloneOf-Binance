@@ -348,6 +348,7 @@ route.all("/register", upload.none(), (req, res) => {
   });
 
   async function uniqueChecker() {
+    /*
     let emailC = await User.findOne({ email: req.body.email }).exec();
     if (emailC != null) {
       emailUnique = "false";
@@ -358,6 +359,7 @@ route.all("/register", upload.none(), (req, res) => {
     if (phoneC != null) {
       phoneUnique = "false";
     }
+    */
   }
 
   async function register() {
