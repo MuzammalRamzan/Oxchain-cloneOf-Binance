@@ -42,6 +42,7 @@ wss.on("connection", async (ws) => {
                GetMarginHistories(ws, json.content);
                break;
                case "margin_balance" : 
+               GetMarginBalance(ws, json.content);
                break;
             default:
                break;
