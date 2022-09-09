@@ -400,7 +400,7 @@ route.all("/register", upload.none(), (req, res) => {
   }
 
   const uniqueCheck = async () => {
-    uniqueChecker();
+    //uniqueChecker();
     await delay(1000); // Delay 2s
     register();
   };
