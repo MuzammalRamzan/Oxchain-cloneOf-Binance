@@ -572,6 +572,7 @@ route.post("/addMarginOrder", async function (req, res) {
       //let total = price * req.body.amount;
       let imr = 1 / req.body.leverage;
       let initialMargin = req.body.amount * price * imr;
+
       if (userBalance.amount <= initialMargin) {
         res.json({
           status: "fail",
@@ -584,6 +585,7 @@ route.post("/addMarginOrder", async function (req, res) {
         user_id: req.body.user_id,
         coin_id: getPair._id,
         type: req.body.type == "buy" ? "sell" : "buy",
+        margin_type: req.body.margin_type
       }).exec();
 
       for (var i = 0; i < reverseOreders.length; i++) {
@@ -597,8 +599,8 @@ route.post("/addMarginOrder", async function (req, res) {
         marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(_o.pnl);
         marginWallet.amount = parseFloat(marginWallet.amount) + parseFloat(_o.pnl);
         await marginWallet.save();
-
       }
+
 
       let order = new MarginOrder({
         pair_id: getPair._id,
@@ -608,7 +610,7 @@ route.post("/addMarginOrder", async function (req, res) {
         method: req.body.method,
         user_id: req.body.user_id,
         required_margin: initialMargin,
-        isolated: req.body.isolated ?? 0.0,
+        isolated: req.body.margin_type == 'isolated' ? initialMargin : 0.0,
         sl: req.body.sl ?? 0,
         tp: req.body.tp ?? 0,
         target_price: 0.0,
@@ -618,11 +620,16 @@ route.post("/addMarginOrder", async function (req, res) {
       });
 
       await order.save();
-      let getWallet = await Wallet.findOne({
-        user_id: req.body.user_id,
-        coin_id: MarginWalletId,
-      }).exec();
-      getWallet.amount = parseFloat(getWallet.amount);
+      if(req.body.margin_type == 'isolated') {
+
+        let getWallet = await Wallet.findOne({
+          user_id: req.body.user_id,
+          coin_id: MarginWalletId,
+        }).exec();
+        getWallet.amount = parseFloat(getWallet.amount) - initialMargin;
+        await getWallet.save();
+      }
+      
       res.json({ status: "success", data: order });
       return;
     }

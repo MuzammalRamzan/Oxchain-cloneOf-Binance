@@ -29,7 +29,10 @@ wss.on("connection", async (ws) => {
          console.log(JSON.parse(data));
          let json = JSON.parse(data);
          switch (json.type) {
-            case "margin_orders":
+            case "usdt_balance":
+               GetMarginOrders(ws, json.content);
+               break;
+               case "margin_orders":
                GetMarginOrders(ws, json.content);
                break;
             case "wallet":
@@ -50,6 +53,8 @@ wss.on("connection", async (ws) => {
       });
    }
 });
+
+
 
 async function CalculateMarginBalance(user_id) {
    console.log(11);

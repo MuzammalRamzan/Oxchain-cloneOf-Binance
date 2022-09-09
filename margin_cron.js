@@ -54,7 +54,7 @@ async function initialize() {
             let getOpenOrders = await MarginOrder.aggregate(
                 [
                     {
-                        $match: { status: 0, method: 'market' },
+                        $match: { status: 0, method: 'market', margin_type : 'cross' },
                     },
 
                     {
@@ -94,13 +94,11 @@ async function initialize() {
                         userBalance.pnl = 0;
                         userBalance.amount = 0;
                         await userBalance.save();
-                        await MarginOrder.updateMany({user_id: order.user_id}, {$set : {status: 1}}).exec()
+                        await MarginOrder.updateMany({user_id: order.user_id, margin_type:'cross'}, {$set : {status: 1}}).exec()
                         return;
                     }
                     if(balance <= 0) return;
                      if (order.pair_name.replace('/', '') == symbol) {
-
-
                         if (order.method == 'limit') {
                             let ask = parseFloat(list[i].a);
                             let bid = parseFloat(list[i].b);
