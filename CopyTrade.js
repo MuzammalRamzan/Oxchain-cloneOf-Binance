@@ -9,11 +9,13 @@ async function test() {
   var user_id = "630dcee419b6e73400cf7006";
   var spotTrade = "1";
   var marginTrade = "1";
+  var traderId = "";
 
   const newOrder = new CopyTrade({
     user_id: user_id,
     spotTradeAuth: spotTrade,
     marginTradeAuth: marginTrade,
+    traderId: traderId,
     status: "1",
   });
 

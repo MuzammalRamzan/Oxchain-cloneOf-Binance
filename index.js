@@ -987,6 +987,9 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     let target_price = 0.0;
     var coins = req.body.pair_name.split("/");
 
+
+
+    
     if (req.body.method == "buy") {
       let total = amount * price;
       let balance = parseFloat(toWalelt.amount) * 1.0;
