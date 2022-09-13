@@ -20,7 +20,7 @@ const MarginWalletId = "62ff3c742bebf06a81be98fd";
 async function initialize() {
     await mongoose.connect(connection);
 
-    let request = { status: 0, method: "market" };
+    let request = { };
     let orders = await MarginOrder.find(request).exec();
 
 
@@ -97,7 +97,6 @@ async function initialize() {
                         await MarginOrder.updateMany({user_id: order.user_id, margin_type:'cross'}, {$set : {status: 1}}).exec()
                         return;
                     }
-                    if(balance <= 0) return;
                      if (order.pair_name.replace('/', '') == symbol) {
                         if (order.method == 'limit') {
                             let ask = parseFloat(list[i].a);

@@ -1995,9 +1995,11 @@ route.all("/deleteSecurityKey", upload.none(), (req, res) => {
 
 route.all("/addCopyTrade", upload.none(), (req, res) => {
   res.json(CopyTrade.test());
-  console.log(CopyTrade.test());
 });
 
+route.all("/updateCopyTrade", upload.none(), (req, res) => {
+  res.json(CopyTrade.updateTrade());
+});
 route.all("/addWithdraw", upload.none(), (req, res) => {
   var user_id = req.body.user_id;
   var api_key_result = req.body.api_key;

@@ -3,11 +3,53 @@ const Deposits = require("./models/Deposits");
 const NotificationTokens = require("./models/NotificationTokens");
 var notifications = require("./notifications.js");
 const Wallet = require("./models/Wallet");
+const CopyTrade = require("./models/CopyTrade");
 
-function test() {
-  return "yes";
+async function test() {
+  var user_id = "630dcee419b6e73400cf7006";
+  var spotTrade = "1";
+  var marginTrade = "1";
+
+  const newOrder = new CopyTrade({
+    user_id: user_id,
+    spotTradeAuth: spotTrade,
+    marginTradeAuth: marginTrade,
+    status: "1",
+  });
+
+  let wallets = await CopyTrade.findOne({
+    user_id: user_id,
+  }).exec();
+
+  if (wallets == null) {
+    newOrder.save();
+    console.log("yes");
+  } else {
+    console.log("no");
+  }
+}
+
+async function updateTrade() {
+  var user_id = "630dcee419b6e73400cf7006";
+  var spotTrade = "0";
+  var marginTrade = "0";
+
+  let wallets = await CopyTrade.findOne({
+    user_id: user_id,
+  }).exec();
+
+  if (wallets == null) {
+    console.log("no");
+  } else {
+    await CopyTrade.findOneAndUpdate(
+      { user_id: user_id },
+      { spotTradeAuth: spotTrade, marginTradeAuth: marginTrade }
+    );
+    console.log("yes");
+  }
 }
 
 module.exports = {
   test: test,
+  updateTrade: updateTrade,
 };
