@@ -149,8 +149,9 @@ route.all("/login", upload.none(), async (req, res) => {
       let userRef = await UserRef.findOne({
         user_id: user._id,
       }).exec();
-
-      refId = userRef["refCode"];
+      if(userRef != null)
+      refId = userRef["refCode"] ?? "";
+      else refId = "";
       var data = {
         response: "success",
         twofa: twofaStatus,
