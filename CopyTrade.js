@@ -6,10 +6,10 @@ const Wallet = require("./models/Wallet");
 const CopyTrade = require("./models/CopyTrade");
 
 async function test() {
-  var user_id = "630dcee419b6e73400cf7006";
+  var user_id = "630dfda89f2fa5aad18a0c43";
   var spotTrade = "1";
   var marginTrade = "1";
-  var traderId = "";
+  var traderId = "630dcee419b6e73400cf7006";
 
   const newOrder = new CopyTrade({
     user_id: user_id,

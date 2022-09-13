@@ -19,6 +19,7 @@ var authFile = require("./auth.js");
 var notifications = require("./notifications.js");
 var utilities = require("./utilities.js");
 var CopyTrade = require("./CopyTrade.js");
+const CopyTradeModel = require("./models/CopyTrade");
 
 require("dotenv").config();
 
@@ -987,9 +988,27 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     let target_price = 0.0;
     var coins = req.body.pair_name.split("/");
 
+    console.log(req.body.user_id);
+    let followerList = await CopyTradeModel.find({
+      traderId: req.body.user_id,
+      status: "1",
+    });
 
+    if (followerList.length > 0) {
+      followerList.forEach(async (follower) => {
+        let followerWallet = await Wallet.findOne({
+          user_id: follower.followerId,
+          coin_id: getPair.symbolOneID,
+        }).exec();
+        if (followerWallet) {
+          //burada kullanıcıya trade işlemi yaptırılacak, bakiye düşecek
+          //trade tablosuna insert yapıcaz
+        }
+      });
+    }
 
-    
+    console.log("Followers:" + followerList);
+
     if (req.body.method == "buy") {
       let total = amount * price;
       let balance = parseFloat(toWalelt.amount) * 1.0;
