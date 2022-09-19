@@ -9,6 +9,7 @@ const mongoose = require("mongoose");
 const Orders = require('./models/Orders');
 require("dotenv").config();
 const Connection = require('./Connection');
+const Pairs = require('./models/Pairs');
 var mongodbPass = process.env.MONGO_DB_PASS;
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 
@@ -23,7 +24,7 @@ wss.on("connection", async (ws) => {
       ws.on('message', (data) => {
          let json = JSON.parse(data);
          GetBinanceData(ws, json.pair);
-         if (data.user_id != null && data.user_id != 'undefined') {
+         if (json.user_id != null && json.user_id != 'undefined') {
             GetWallets(ws, json.user_id);
             GetOrders(ws, json.user_id, json.spot_order_type ?? '');
             GetMarginOrders(ws, json.user_id, json.margin_order_type, json.margin_order_method_type);
@@ -36,7 +37,6 @@ wss.on("connection", async (ws) => {
 
 
 async function GetBinanceData(ws, pair) {
-   console.log("PAIRRRR : ", pair);
    var b_ws = new WebSocket("wss://stream.binance.com/stream");
 
    // BNB_USDT => bnbusdt
@@ -118,6 +118,7 @@ async function SendWallet(ws, _wallets) {
    var wallets = new Array();
    for (var i = 0; i < _wallets.length; i++) {
       let item = _wallets[i];
+      
       let pairInfo = await Pairs.findOne({ symbolOneID: item.coin_id }).exec();
       if (pairInfo == null) continue;
       wallets.push({
@@ -129,14 +130,13 @@ async function SendWallet(ws, _wallets) {
          symbolName: pairInfo.name,
       });
    }
+   
    ws.send(JSON.stringify({ type: 'wallet', content: wallets }));
 }
 
 async function GetWallets(ws, user_id) {
-
    let wallet = await Wallet.find({ user_id: user_id }).exec();
    SendWallet(ws, wallet);
-
    let isInsert = Orders.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
       //orders = data;
       console.log("insert order socket");
