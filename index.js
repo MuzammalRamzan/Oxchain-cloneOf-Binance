@@ -20,7 +20,7 @@ var notifications = require("./notifications.js");
 var utilities = require("./utilities.js");
 var CopyTrade = require("./CopyTrade.js");
 const CopyTradeModel = require("./models/CopyTrade");
-const Connection = require('./Connection');
+const Connection = require("./Connection");
 require("dotenv").config();
 
 //var formattedKey = authenticator.generateKey();
@@ -28,9 +28,7 @@ require("dotenv").config();
 //console.log(authenticator.verifyToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse", "260180"));
 //console.log(formattedToken);
 
-
 Connection.connection();
-
 
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 const express = require("express");
@@ -101,7 +99,7 @@ route.all("/login", upload.none(), async (req, res) => {
   var deviceToken = "null";
   var deviceType = "null";
   var manufacturer = "null";
-  var ip = "null";
+  var ip = req.body.ip;
   var searchType = req.body.searchType;
   var deviceModel = "null";
   var loginType = req.body.loginType;
@@ -141,8 +139,7 @@ route.all("/login", upload.none(), async (req, res) => {
       let userRef = await UserRef.findOne({
         user_id: user._id,
       }).exec();
-      if(userRef != null)
-      refId = userRef["refCode"] ?? "";
+      if (userRef != null) refId = userRef["refCode"] ?? "";
       else refId = "";
       var data = {
         response: "success",
@@ -230,13 +227,16 @@ route.all("/login", upload.none(), async (req, res) => {
           }
         }
 
-        let logs = await LoginLogs.findOne({
+        let logs = await LoginLogs.find({
           user_id: user["_id"],
           ip: ip,
           deviceName: deviceName,
           manufacturer: manufacturer,
           model: deviceModel,
-        }).exec();
+        })
+          .sort({ $natural: -1 })
+          .limit(1)
+          .exec();
 
         const newUserLog = new LoginLogs({
           user_id: user["_id"],
@@ -1277,6 +1277,7 @@ route.all("/getNotification", upload.none(), async function (req, res) {
       var messageTitle = notification[i].notificationTitle;
       var messageMessage = notification[i].notificationMessage;
       var createdAt = notification[i].createdAt;
+      createdAt = createdAt.toISOString().replace(/T/, " ").replace(/\..+/, "");
       var messageDate = notification[i].createdAt;
       let readNotification = await ReadNotification.findOne({
         user_id: user_id,
@@ -1344,9 +1345,8 @@ route.all("/getUSDTBalance", upload.none(), async function (req, res) {
       user_id: req.body.user_id,
       coin_id: "62bc116eb65b02b777c97b3d",
     }).exec();
-    if(list == null)  {
-
-      res.json({ status: "fail", message:"no wallet"  });
+    if (list == null) {
+      res.json({ status: "fail", message: "no wallet" });
       return;
     }
 
@@ -1531,7 +1531,7 @@ route.all("/update2fa", upload.none(), async function (req, res) {
   var api_key_result = req.body.api_key;
 
   var result = await authFile.apiKeyChecker(api_key_result);
-
+  T;
   if (result === true) {
     const filter = { _id: user_id };
     const update = { twofa: twofa };
@@ -1793,11 +1793,45 @@ route.all("/resetPassword", upload.none(), async function (req, res) {
   }
 });
 
+route.all("/getLastLogin", upload.none(), async function (req, res) {
+  var user_id = req.body.user_id;
+  var api_key_result = req.body.api_key;
+
+  var result = await authFile.apiKeyChecker(api_key_result);
+
+  if (result === true) {
+    let user = await LoginLogs.findOne({
+      user_id: user_id,
+      status: 1,
+    }).exec();
+
+    console.log(user);
+    let date = user["createdAt"]
+      .toISOString()
+      .replace(/T/, " ")
+      .replace(/\..+/, "");
+
+    const array = {
+      date: date,
+      ip: user["ip"],
+    };
+
+    if (user != null) {
+      var last_login = user["createdAt"];
+      res.json({ status: "success", data: array });
+    }
+  } else {
+    res.json({ status: "fail", message: "403 Forbidden" });
+  }
+});
+
 route.all("/changePassword", upload.none(), async function (req, res) {
   var user_id = req.body.user_id;
   var twofapin = req.body.twofapin;
   var password = req.body.password;
   var old_password = req.body.old_password;
+
+  console.log(req.body);
 
   var api_key_result = req.body.api_key;
 
@@ -1808,7 +1842,6 @@ route.all("/changePassword", upload.none(), async function (req, res) {
       _id: user_id,
       status: 1,
     }).exec();
-
     if (user != null) {
       var twofa = user["twofa"];
       var db_password = user["password"];
@@ -1820,7 +1853,6 @@ route.all("/changePassword", upload.none(), async function (req, res) {
           const update = { password: utilities.hashData(password) };
           User.findOneAndUpdate(filter, update, (err, doc) => {
             if (err) {
-              console.log(err);
               res.json({ status: "fail", message: err });
             } else {
               res.json({ status: "success", data: "update_success" });
@@ -1878,6 +1910,9 @@ route.all("/getUserInfo", upload.none(), async function (req, res) {
             email: user["email"],
             country_code: user["country_code"],
             phone_number: user["phone_number"],
+            city: user["city"],
+            country: user["country"],
+            address: user["address"],
           },
         });
       }
@@ -1887,6 +1922,63 @@ route.all("/getUserInfo", upload.none(), async function (req, res) {
       }
     } else {
       res.json({ status: "fail", message: "login_failed" });
+    }
+  } else {
+    res.json({ status: "fail", message: "403 Forbidden" });
+  }
+});
+
+route.all("/updateUserInfo", upload.none(), async function (req, res) {
+  var user_id = req.body.user_id;
+  var twofapin = req.body.twofapin;
+  var name = req.body.name;
+  var surname = req.body.surname;
+  var email = req.body.email;
+  var country_code = req.body.country_code;
+  var phone_number = req.body.phone_number;
+  var city = req.body.city;
+  var country = req.body.country;
+  var address = req.body.address;
+
+  var api_key_result = req.body.api_key;
+
+  let result = await authFile.apiKeyChecker(api_key_result);
+
+  if (result === true) {
+    let user = await User.findOne({
+      _id: user_id,
+      status: 1,
+    }).exec();
+
+    if (user != null) {
+      var twofa = user["twofa"];
+      let result2 = await authFile.verifyToken(twofapin, twofa);
+
+      if (result2 === true) {
+        const filter = { _id: user_id, status: 1 };
+        const update = {
+          name: name,
+          surname: surname,
+          email: email,
+          country_code: country_code,
+          phone_number: phone_number,
+          city: city,
+          country: country,
+          address: address,
+        };
+        User.findOneAndUpdate(filter, update, (err, doc) => {
+          if (err) {
+            console.log(err);
+            res.json({ status: "fail", message: err });
+          } else {
+            res.json({ status: "success", data: "update_success" });
+          }
+        });
+      } else {
+        res.json({ status: "fail", message: "2fa_failed" });
+      }
+    } else {
+      res.json({ status: "fail", message: "user_not_found" });
     }
   } else {
     res.json({ status: "fail", message: "403 Forbidden" });
@@ -1923,35 +2015,37 @@ route.all("/getUserId", upload.none(), async function (req, res) {
   });
 });
 
-route.all("/getSecurityKey", upload.none(), (req, res) => {
+route.all("/getSecurityKey", upload.none(), async function (req, res) {
   var user_id = req.body.user_id;
   var api_key_result = req.body.api_key;
+  console.log(user_id);
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      SecurityKey.findOne({
-        user_id: user_id,
-        status: 1,
-      }).then((securityKey) => {
-        if (securityKey != null) {
-          res.json({
-            status: "success",
-            data: {
-              response: "success",
-              createdAt: securityKey["createdAt"],
-              wallet: securityKey["wallet"],
-              trade: securityKey["trade"],
-              deposit: securityKey["deposit"],
-              withdraw: securityKey["withdraw"],
-              id: securityKey["id"],
-            },
-          });
-        } else {
-          res.json({ status: "fail", message: "security_key_not_active" });
-        }
+  let result = await authFile.apiKeyChecker(api_key_result);
+  if (result === true) {
+  
+    let securityKey = await SecurityKey.find({
+      user_id: user_id,
+      status: 1,
+    }).exec();
+
+    console.log(securityKey);
+    if (securityKey.length > 0) {
+      res.json({
+        status: "success",
+        data: {
+          response: "success",
+          createdAt: securityKey["createdAt"],
+          wallet: securityKey["wallet"],
+          trade: securityKey["trade"],
+          deposit: securityKey["deposit"],
+          withdraw: securityKey["withdraw"],
+          id: securityKey["id"],
+        },
       });
+    } else {
+      res.json({ status: "fail", message: "security_key_not_active" });
     }
-  });
+  }
 });
 
 route.all("/checkSecurityKey", upload.none(), (req, res) => {
