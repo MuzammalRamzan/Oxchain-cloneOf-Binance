@@ -11,7 +11,7 @@ async function connection() {
             process.env.DOCUMENT_DB_UID
             + ":" +
             process.env.DOCUMENT_DB_PASS
-            + "@docdb-2022-09-14-11-39-54.cluster-cx5obo2dvutj.us-east-2.docdb.amazonaws.com:27017/?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=true&w=majority", {
+            + "@docdb-2022-09-14-11-39-54.cluster-cx5obo2dvutj.us-east-2.docdb.amazonaws.com:27017/test?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=true&w=majority", {
             ssl: true,
             sslValidate: false,
             sslCA: "./rds-combined-ca-bundle.pem"
