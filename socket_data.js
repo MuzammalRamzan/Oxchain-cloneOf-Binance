@@ -130,13 +130,13 @@ async function SendWallet(ws, _wallets) {
          symbolName: pairInfo.name,
       });
    }
-   
    ws.send(JSON.stringify({ type: 'wallet', content: wallets }));
 }
 
 async function GetWallets(ws, user_id) {
    let wallet = await Wallet.find({ user_id: user_id }).exec();
    SendWallet(ws, wallet);
+   
    let isInsert = Orders.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
       //orders = data;
       console.log("insert order socket");
