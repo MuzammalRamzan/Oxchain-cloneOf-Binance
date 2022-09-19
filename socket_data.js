@@ -23,13 +23,13 @@ wss.on("connection", async (ws) => {
       ws.on('message', (data) => {
          let json = JSON.parse(data);
          GetBinanceData(ws, json.pair);
-         if(data.user_id != null && data.user_id != 'undefined') {
+         if (data.user_id != null && data.user_id != 'undefined') {
             GetWallets(ws, json.user_id);
             GetOrders(ws, json.user_id, json.spot_order_type ?? '');
             GetMarginOrders(ws, json.user_id, json.margin_order_type, json.margin_order_method_type);
             GetMarginBalance(ws, json.user_id);
          }
-      
+
       });
    }
 });
@@ -61,7 +61,7 @@ async function GetBinanceData(ws, pair) {
 
 
    b_ws.onmessage = function (event) {
-      
+
       const data = JSON.parse(event.data).data;
       if (data != null && data != 'undefined') {
          if (data.A && data.a && data.b && data.B && !data.e) {
@@ -113,29 +113,48 @@ async function GetMarginBalance(ws, user_id) {
    });
 }
 
+
+async function SendWallet(ws, _wallets) {
+   var wallets = new Array();
+   for (var i = 0; i < _wallets.length; i++) {
+      let item = _wallets[i];
+      let pairInfo = await Pairs.findOne({ symbolOneID: item.coin_id }).exec();
+      if (pairInfo == null) continue;
+      wallets.push({
+         id: item._id,
+         coin_id: item.coin_id,
+
+         balance: item.amount,
+         address: item.address,
+         symbolName: pairInfo.name,
+      });
+   }
+   ws.send(JSON.stringify({ type: 'wallet', content: wallets }));
+}
+
 async function GetWallets(ws, user_id) {
 
    let wallet = await Wallet.find({ user_id: user_id }).exec();
-   ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
+   SendWallet(ws, wallet);
 
    let isInsert = Orders.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
       //orders = data;
       console.log("insert order socket");
       wallet = await Wallet.find({ user_id: user_id }).exec();
-      ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
+      SendWallet(ws, wallet);
    });
    let isUpdate = Orders.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
       wallet = await Wallet.find({ user_id: user_id }).exec();
-      ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
+      SendWallet(ws, wallet);
    });
    let isRemove = Orders.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
       wallet = await Wallet.find({ user_id: user_id }).exec();
-      ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
+      SendWallet(ws, wallet);
    });
 
    let isDelete = Orders.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
       wallet = await Wallet.find({ user_id: user_id }).exec();
-      ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
+      SendWallet(ws, wallet);
    });
 }
 
