@@ -2,21 +2,24 @@ const mongoose = require("mongoose");
 async function connection() {
 
     var mongodbPass = process.env.MONGO_DB_PASS;
+    if (process.env.NODE_ENV == 'development') {
+        await mongoose.connect("mongodb+srv://volkansaka:" +
+            mongodbPass +
+            "@cluster0.d1oo7iq.mongodb.net/?retryWrites=true&w=majority");
+    } else {
+        await mongoose.connect("mongodb://" +
+            process.env.DOCUMENT_DB_UID
+            + ":" +
+            process.env.DOCUMENT_DB_PASS
+            + "@docdb-2022-09-14-11-39-54.cluster-cx5obo2dvutj.us-east-2.docdb.amazonaws.com:27017/?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false", {
+            ssl: true,
+            sslValidate: false,
+            sslCA: "./rds-combined-ca-bundle.pem"
+        });
+    }
 
-    var connection = process.env.NODE_ENV == 'development' ?
-        "mongodb+srv://volkansaka:" +
-        mongodbPass +
-        "@cluster0.d1oo7iq.mongodb.net/?retryWrites=true&w=majority" :
-        "mongodb://" +
-        process.env.DOCUMENT_DB_UID
-        + ":" +
-        process.env.DOCUMENT_DB_PASS
-        + "@docdb-2022-09-14-11-39-54.cluster-cx5obo2dvutj.us-east-2.docdb.amazonaws.com:27017/sample-database?tls=true&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
-        ;
-
-
-    await mongoose.connect(connection);
+    console.log("Connected");
 
 }
 
-module.exports = {connection:connection};
+module.exports = { connection: connection };
