@@ -1344,8 +1344,11 @@ route.all("/getUSDTBalance", upload.none(), async function (req, res) {
       user_id: req.body.user_id,
       coin_id: "62bc116eb65b02b777c97b3d",
     }).exec();
-    if(list == null) 
-    res.json({ status: "fail", message:"no wallet"  });
+    if(list == null)  {
+
+      res.json({ status: "fail", message:"no wallet"  });
+      return;
+    }
 
     res.json({ status: "success", data: list.amount });
   } else {
