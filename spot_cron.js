@@ -5,15 +5,11 @@ const Orders = require("./models/Orders");
 const Pairs = require("./models/Pairs");
 const Wallet = require("./models/Wallet");
 require("dotenv").config();
-
+const Connection = require('./Connection');
 async function main() {
     var mongodbPass = process.env.MONGO_DB_PASS;
 
-    var connection =
-        "mongodb+srv://volkansaka:" +
-        mongodbPass +
-        "@cluster0.d1oo7iq.mongodb.net/?retryWrites=true&w=majority";
-    await mongoose.connect(connection);
+    Connection.connection();
 
 
     let request = { $and: [{ status: { $gt: 0 } }, { $or: [{ type: "limit" }, { type: "stop_limit" }] }] };

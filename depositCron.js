@@ -18,7 +18,7 @@ const Withdraws = require("./models/Withdraw");
 var authFile = require("./auth.js");
 var notifications = require("./notifications.js");
 var utilities = require("./utilities.js");
-
+const Connection = require('./Connection');
 require("dotenv").config();
 
 //var formattedKey = authenticator.generateKey();
@@ -28,7 +28,7 @@ require("dotenv").config();
 
 const express = require("express");
 var route = express();
-const mongoose = require("mongoose");
+
 const delay = (duration) => {
   return new Promise((resolve) => setTimeout(resolve, duration));
 };
@@ -37,17 +37,7 @@ var mongodbPass = process.env.MONGO_DB_PASS;
 var ethKey = process.env.ETH_API_KEY;
 var bscKey = process.env.BSC_API_KEY;
 
-var connection =
-  "mongodb+srv://volkansaka:" +
-  mongodbPass +
-  "@cluster0.d1oo7iq.mongodb.net/?retryWrites=true&w=majority";
-mongoose.connect(connection, (e) => {
-  if (e) {
-    console.log("test" + e);
-  } else {
-    console.log("connected");
-  }
-});
+Connection.connection();
 
 var cors = require("cors");
 route.use(cors());

@@ -20,34 +20,26 @@ var notifications = require("./notifications.js");
 var utilities = require("./utilities.js");
 var CopyTrade = require("./CopyTrade.js");
 const CopyTradeModel = require("./models/CopyTrade");
-
+const Connection = require('./Connection');
 require("dotenv").config();
 
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
 //console.log(authenticator.verifyToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse", "260180"));
 //console.log(formattedToken);
+
+
+Connection.connection();
+
+
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 const express = require("express");
 var route = express();
-const mongoose = require("mongoose");
+
 const delay = (duration) => {
   return new Promise((resolve) => setTimeout(resolve, duration));
 };
 const { createHash } = require("crypto");
-var mongodbPass = process.env.MONGO_DB_PASS;
-
-var connection =
-  "mongodb+srv://volkansaka:" +
-  mongodbPass +
-  "@cluster0.d1oo7iq.mongodb.net/?retryWrites=true&w=majority";
-mongoose.connect(connection, (e) => {
-  if (e) {
-    console.log("test" + e);
-  } else {
-    console.log("connected");
-  }
-});
 
 var cors = require("cors");
 route.use(cors());

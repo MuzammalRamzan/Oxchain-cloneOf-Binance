@@ -4,18 +4,13 @@ const { Server } = require("socket.io");
 const { createAdapter } = require("@socket.io/mongo-adapter");
 const { MongoClient } = require("mongodb");
 const MarginOrder = require('./models/MarginOrder.js');
-const mongoose = require("mongoose");
+const Connection = require('./Connection');
 const Wallet = require("./models/Wallet.js");
 const Orders = require("./models/Orders.js");
 var mongodbPass = process.env.MONGO_DB_PASS;
 
 const io = new Server();
-var mongodbPass = process.env.MONGO_DB_PASS;
-const ContractSize = 100000000.0;
-var connection =
-    "mongodb+srv://volkansaka:" +
-    mongodbPass +
-    "@cluster0.d1oo7iq.mongodb.net/?retryWrites=true&w=majority";
+Connection.connection();
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 async function initialize() {
     await mongoose.connect(connection);

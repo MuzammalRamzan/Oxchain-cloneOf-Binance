@@ -1,10 +1,11 @@
 var MongoClient = require('mongodb').MongoClient
+const mongoose = require('mongoose');
 
 //Create a MongoDB client, open a connection to DocDB; as a replica set,
 //  and specify the read preference as secondary preferred
 
 var client = MongoClient.connect(
-'mongodb://oxhainadmin:<password>@docdb-2022-09-14-11-39-54.cluster-cx5obo2dvutj.us-east-2.docdb.amazonaws.com:27017/sample-database?tls=true&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false',
+'mongodb://oxhainadmin:fsDFr3dc53zv42a35asc9z1432bs3x87x2@docdb-2022-09-14-11-39-54.cluster-cx5obo2dvutj.us-east-2.docdb.amazonaws.com:27017/sample-database?tls=true&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false',
 {
   tlsCAFile: `rds-combined-ca-bundle.pem` //Specify the DocDB; cert
 },
@@ -30,3 +31,18 @@ function(err, client) {
       });
    });
 });
+
+
+//------------
+
+main().catch(err => console.log(err));
+
+async function main() {
+  await mongoose.connect('mongodb://oxhainadmin:fsDFr3dc53zv42a35asc9z1432bs3x87x2@docdb-2022-09-14-11-39-54.cluster-cx5obo2dvutj.us-east-2.docdb.amazonaws.com:27017/sample-database?tls=true&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false',
+      {
+          useNewUrlParser: true,
+          ssl: true,
+          sslValidate: true,
+          sslCA: `rds-combined-ca-bundle.pem`
+      })
+}
