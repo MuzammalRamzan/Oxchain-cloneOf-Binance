@@ -128,8 +128,6 @@ route.all("/login", upload.none(), async (req, res) => {
   let result = await authFile.apiKeyChecker(api_key_result);
 
   console.log(searchType);
-  let ssss = User.find({}).exec();
-  print(ssss);
   if (result === true) {
     let user = await User.findOne({
       [searchType]: req.body.user,
