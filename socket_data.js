@@ -22,21 +22,53 @@ wss.on("connection", async (ws) => {
       }))
       ws.on('message', (data) => {
          let json = JSON.parse(data);
-         GetWallets(ws, data.user_id);
-         GetOrders(ws, data.user_id, data.spot_order_type ?? '');
-         GetMarginOrders(ws, data.user_id, data.margin_order_type, data.margin_order_method_type);
-         GetMarginBalance(ws, data.user_id);
+         GetBinanceData(ws, json.pair);
+         GetWallets(ws, json.user_id);
+         GetOrders(ws, json.user_id, json.spot_order_type ?? '');
+         GetMarginOrders(ws, json.user_id, json.margin_order_type, json.margin_order_method_type);
+         GetMarginBalance(ws, json.user_id);
       });
    }
 });
 
 
-async function GetPrices(ws) {
-   const allTickers = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
-   allTickers.onopen = () => {
-      allTickers.onmessage = async (data) => {
-         for (var i = 0; i < data.length; i++) {
-            ws.send("Price", {});
+async function GetBinanceData(ws, pair) {
+   var b_ws = new WebSocket("wss://stream.binance.com/stream");
+
+   // BNB_USDT => bnbusdt
+   const noSlashPair = pair.replace('_', '').toLowerCase();
+
+   const initSocketMessage = {
+      method: "SUBSCRIBE",
+      params: [`${noSlashPair}@aggTrade`, `${noSlashPair}@bookTicker`, `${noSlashPair}@trade`, "!miniTicker@arr"],
+      // params: ["!miniTicker@arr"],
+      id: 1,
+   };
+
+   b_ws.onopen = (event) => {
+      b_ws.send(JSON.stringify(initSocketMessage));
+   };
+
+   // Reconnect connection when disconnect connection
+   b_ws.onclose = () => {
+      b_ws.send(JSON.stringify(initSocketMessage));
+   }
+
+
+
+   b_ws.onmessage = function (event) {
+      
+      const data = JSON.parse(event.data).data;
+      if (data != null && data != 'undefined') {
+         if (data.A && data.a && data.b && data.B && !data.e) {
+            ws.send(JSON.stringify({ type: "order_books", content: data }));
+         } else if (data.e === 'aggTrade') {
+            ws.send(JSON.stringify({ type: "prices", content: data }));
+         } else if (data.e === 'trade') {
+            ws.send(JSON.stringify({ type: "trade", content: data }));
+         } else if (data[0].e === '24hrMiniTicker') {
+            // console.log(data);
+            ws.send(JSON.stringify({ type: "market", content: data }));
          }
       }
    }
