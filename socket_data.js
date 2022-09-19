@@ -23,16 +23,20 @@ wss.on("connection", async (ws) => {
       ws.on('message', (data) => {
          let json = JSON.parse(data);
          GetBinanceData(ws, json.pair);
-         GetWallets(ws, json.user_id);
-         GetOrders(ws, json.user_id, json.spot_order_type ?? '');
-         GetMarginOrders(ws, json.user_id, json.margin_order_type, json.margin_order_method_type);
-         GetMarginBalance(ws, json.user_id);
+         if(data.user_id != null && data.user_id != 'undefined') {
+            GetWallets(ws, json.user_id);
+            GetOrders(ws, json.user_id, json.spot_order_type ?? '');
+            GetMarginOrders(ws, json.user_id, json.margin_order_type, json.margin_order_method_type);
+            GetMarginBalance(ws, json.user_id);
+         }
+      
       });
    }
 });
 
 
 async function GetBinanceData(ws, pair) {
+   console.log("PAIRRRR : ", pair);
    var b_ws = new WebSocket("wss://stream.binance.com/stream");
 
    // BNB_USDT => bnbusdt
@@ -111,7 +115,7 @@ async function GetMarginBalance(ws, user_id) {
 
 async function GetWallets(ws, user_id) {
 
-   let wallet = await Wallet.findOne({ user_id: user_id }).exec();
+   let wallet = await Wallet.find({ user_id: user_id }).exec();
    ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
 
    let isInsert = Orders.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
