@@ -25,48 +25,60 @@ wss.on("connection", async (ws) => {
          GetWallets(ws, data.user_id);
          GetOrders(ws, data.user_id, data.spot_order_type ?? '');
          GetMarginOrders(ws, data.user_id, data.margin_order_type, data.margin_order_method_type);
-         GetMarginBalance(ws,data.user_id);
+         GetMarginBalance(ws, data.user_id);
       });
    }
 });
 
 
+async function GetPrices(ws) {
+   const allTickers = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
+   allTickers.onopen = () => {
+      allTickers.onmessage = async (data) => {
+         for (var i = 0; i < data.length; i++) {
+            ws.send("Price", {});
+         }
+      }
+   }
+
+}
+
 
 async function CalculateMarginBalance(user_id) {
    let totalPNL = 0.0;
    let getOpenOrders = await MarginOrder.aggregate(
-       [
-           {
-               $match: { status: 0, method: 'market', user_id: user_id },
-           },
+      [
+         {
+            $match: { status: 0, method: 'market', user_id: user_id },
+         },
 
-           {
-               $group: {
-                   _id: "$user_id", total: { $sum: "$pnl" }
-               }
-           }
-       ],
+         {
+            $group: {
+               _id: "$user_id", total: { $sum: "$pnl" }
+            }
+         }
+      ],
    );
    let wallet = await Wallet.findOne({ user_id: user_id, coin_id: MarginWalletId }).exec();
    for (var n = 0; n < getOpenOrders.length; n++) {
-       totalPNL = totalPNL + parseFloat(getOpenOrders[n].total);
+      totalPNL = totalPNL + parseFloat(getOpenOrders[n].total);
    }
-   if(wallet.amount == 0) return 0;
+   if (wallet.amount == 0) return 0;
    let balance = parseFloat(wallet.amount) + totalPNL;
    return balance;
 }
 
 async function GetMarginBalance(ws, user_id) {
    let balance = await CalculateMarginBalance(user_id);
-   ws.send(JSON.stringify({type: "margin_balance", content : balance}));
+   ws.send(JSON.stringify({ type: "margin_balance", content: balance }));
    let isUpdate = Wallet.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
       balance = await CalculateMarginBalance(user_id)
-      ws.send(JSON.stringify({type: "margin_balance", content : balance}));
+      ws.send(JSON.stringify({ type: "margin_balance", content: balance }));
    });
 }
 
 async function GetWallets(ws, user_id) {
-   
+
    let wallet = await Wallet.findOne({ user_id: user_id }).exec();
    ws.send(JSON.stringify({ type: 'wallet', content: wallet }));
 
@@ -92,11 +104,11 @@ async function GetWallets(ws, user_id) {
 }
 
 async function GetOrders(ws, user_id, type) {
-   
+
    let request = { user_id: user_id };
    if (type != "")
       request["type"] = type;
-   
+
    let orders = await Orders.find(request).exec();
    ws.send(JSON.stringify({ type: 'spot_orders', content: orders }));
    let isInsert = Orders.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
@@ -106,8 +118,8 @@ async function GetOrders(ws, user_id, type) {
       ws.send(JSON.stringify({ type: 'spot_orders', content: orders }));
    });
    let isUpdate = Orders.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
-      if(data.updateDescription.updatedFields.type == 'market') {
-         ws.send(JSON.stringify({type:"filled_spot_order", content : {order_id : data.documentKey._id}}));
+      if (data.updateDescription.updatedFields.type == 'market') {
+         ws.send(JSON.stringify({ type: "filled_spot_order", content: { order_id: data.documentKey._id } }));
       }
       orders = await Orders.find(request).exec();
       ws.send(JSON.stringify({ type: 'spot_orders', content: orders }));
@@ -131,13 +143,13 @@ async function GetOrders(ws, user_id, type) {
 
 
 async function GetMarginOrders(ws, user_id, margin_order_type, margin_order_method_type) {
-   
-   let request = { user_id: user_id, status : {$gt : 0}};
 
-   if(margin_order_type != "") request['margin_type'] = margin_order_type;
-   if(margin_order_method_type != "") request['method'] = margin_order_method_type;
+   let request = { user_id: user_id, status: { $gt: 0 } };
 
-   
+   if (margin_order_type != "") request['margin_type'] = margin_order_type;
+   if (margin_order_method_type != "") request['method'] = margin_order_method_type;
+
+
    let orders = await MarginOrder.find(request).exec();
    ws.send(JSON.stringify({ type: 'margin_orders', content: orders }));
    let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
@@ -161,5 +173,5 @@ async function GetMarginOrders(ws, user_id, margin_order_type, margin_order_meth
       orders = await MarginOrder.find(request).exec();
       ws.send(JSON.stringify({ type: 'margin_orders', content: orders }));
    });
-  
+
 }
