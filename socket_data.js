@@ -14,7 +14,7 @@ var mongodbPass = process.env.MONGO_DB_PASS;
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 
 async function main() {
-
+   console.log("start");
    await Connection.connection();
    console.log("DB Connect");
    wss.on("connection", async (ws) => {
@@ -25,6 +25,7 @@ async function main() {
          }))
          ws.on('message', (data) => {
             let json = JSON.parse(data);
+            console.log(json);
             GetBinanceData(ws, json.pair);
             if (json.user_id != null && json.user_id != 'undefined') {
                GetWallets(ws, json.user_id);
@@ -115,6 +116,7 @@ async function CalculateMarginBalance(user_id) {
 
 async function GetMarginBalance(ws, user_id) {
    let balance = await CalculateMarginBalance(user_id);
+   console.log("balance : ", balance);
    ws.send(JSON.stringify({ type: "margin_balance", content: balance }));
    let isUpdate = Wallet.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
       balance = await CalculateMarginBalance(user_id)
@@ -215,6 +217,7 @@ async function GetMarginOrders(ws, user_id, margin_order_type, margin_order_meth
 
 
    let orders = await MarginOrder.find(request).exec();
+   console.log(orders);
    ws.send(JSON.stringify({ type: 'margin_orders', content: orders }));
    let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
       //orders = data;

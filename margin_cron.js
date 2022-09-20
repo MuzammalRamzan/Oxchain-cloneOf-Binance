@@ -10,10 +10,10 @@ const Orders = require("./models/Orders.js");
 var mongodbPass = process.env.MONGO_DB_PASS;
 
 const io = new Server();
-Connection.connection();
+
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 async function initialize() {
-    await mongoose.connect(connection);
+    await Connection.connection();
 
     let request = { };
     let orders = await MarginOrder.find(request).exec();
