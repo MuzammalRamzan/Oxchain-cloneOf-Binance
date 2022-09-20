@@ -4,6 +4,7 @@ const User = require("./models/Test");
 const Wallet = require("./models/Wallet");
 const CoinList = require("./models/CoinList");
 const Referral = require("./models/Referral");
+const RegisterMail = require("./models/RegisterMail");
 const UserRef = require("./models/UserRef");
 const Pairs = require("./models/Pairs");
 const Orders = require("./models/Orders");
@@ -18,6 +19,8 @@ const Withdraws = require("./models/Withdraw");
 var authFile = require("./auth.js");
 var notifications = require("./notifications.js");
 var utilities = require("./utilities.js");
+var mailer = require("./mailer.js");
+
 var CopyTrade = require("./CopyTrade.js");
 const CopyTradeModel = require("./models/CopyTrade");
 const Connection = require("./Connection");
@@ -37,7 +40,7 @@ var route = express();
 const delay = (duration) => {
   return new Promise((resolve) => setTimeout(resolve, duration));
 };
-const { createHash } = require("crypto");
+const { createHash, randomBytes } = require("crypto");
 
 var cors = require("cors");
 route.use(cors());
@@ -143,6 +146,7 @@ route.all("/login", upload.none(), async (req, res) => {
       else refId = "";
       var data = {
         response: "success",
+        email : user.email,
         twofa: twofaStatus,
         status: user["status"],
         user_id: user["_id"],
@@ -324,9 +328,51 @@ route.post("/transfer", async function (req, res) {
   res.json({ status: "success", data: { from: fromBalance, to: toBalance } });
 });
 
-route.all("/register", upload.none(), (req, res) => {
+route.all("/sendMailPin", async function (req, res) {
+  var api_key_result = req.body.api_key;
+  var email = req.body.email;
+  let result = await authFile.apiKeyChecker(api_key_result);
+
+  console.log(result);
+  if (result === true) {
+    var pin = Math.floor(100000 + Math.random() * 900000);
+
+    const newPin = new RegisterMail({
+      email: email,
+      pin: pin,
+    });
+
+    let mailCheck = await RegisterMail.findOne({ email: email }).exec();
+    if (mailCheck == null) {
+      if (newPin.save()) {
+        mailer.sendMail(email, "Pin Code", "Your pin code is " + pin + ".");
+        res.json({ status: "success", message: "pin_sent" });
+      } else {
+        res.json({ status: "fail", message: "an_error_occured" });
+      }
+    } else {
+      RegisterMail.findOneAndUpdate(
+        { email: email },
+        { pin: pin },
+        function (err, room) {
+          if (err) {
+            console.log(err);
+          } else {
+            mailer.sendMail(email, "Pin Code", "Your pin code is " + pin + ".");
+            res.json({ status: "success", message: "pin_sent" });
+          }
+        }
+      );
+    }
+  } else {
+    res.json({ status: "fail", message: "Forbidden 403" });
+  }
+});
+
+route.all("/register", upload.none(), async (req, res) => {
   var registerType = req.body.registerType;
   var data = req.body.data;
+  var pin = req.body.pin;
 
   var emailUnique = "true";
   var phoneUnique = "true";
@@ -340,8 +386,18 @@ route.all("/register", upload.none(), (req, res) => {
 
   let newUser;
 
-  console.log(registerType);
-  console.log(req.body.data);
+  if (registerType == "email") {
+    let checkEmailPin = await RegisterMail.findOne({
+      email: data,
+      pin: pin,
+    }).exec();
+
+    if (checkEmailPin == null) {
+      res.json({ status: "fail", message: "pin_not_match" });
+      return;
+    }
+  }
+
   async function uniqueChecker() {
     if (registerType == "email") {
       let emailC = await User.findOne({ email: req.body.data }).exec();
@@ -1531,7 +1587,7 @@ route.all("/update2fa", upload.none(), async function (req, res) {
   var api_key_result = req.body.api_key;
 
   var result = await authFile.apiKeyChecker(api_key_result);
-  T;
+
   if (result === true) {
     const filter = { _id: user_id };
     const update = { twofa: twofa };
@@ -1831,8 +1887,6 @@ route.all("/changePassword", upload.none(), async function (req, res) {
   var password = req.body.password;
   var old_password = req.body.old_password;
 
-  console.log(req.body);
-
   var api_key_result = req.body.api_key;
 
   let result = await authFile.apiKeyChecker(api_key_result);
@@ -1842,12 +1896,24 @@ route.all("/changePassword", upload.none(), async function (req, res) {
       _id: user_id,
       status: 1,
     }).exec();
+
     if (user != null) {
       var twofa = user["twofa"];
       var db_password = user["password"];
       const filter = { _id: user_id, status: 1 };
       if (utilities.hashData(old_password) == db_password) {
-        let result2 = await authFile.verifyToken(twofapin, twofa);
+        var result2 = "";
+        if (twofa != null) {
+          result2 = await authFile.verifyToken(twofapin, twofa);
+        } else {
+          var check = await RegisterMail.findOne({
+            email: user["email"],
+            pin: twofapin,
+          }).exec();
+          if (check != null) {
+            result2 = true;
+          }
+        }
 
         if (result2 === true) {
           const update = { password: utilities.hashData(password) };
@@ -1950,9 +2016,22 @@ route.all("/updateUserInfo", upload.none(), async function (req, res) {
       status: 1,
     }).exec();
 
+    var result2 = "";
     if (user != null) {
       var twofa = user["twofa"];
-      let result2 = await authFile.verifyToken(twofapin, twofa);
+      if (twofa != null) {
+        result2 = await authFile.verifyToken(twofapin, twofa);
+      } else {
+        var email = user["email"];
+        let check = await RegisterMail.findOne({
+          email: email,
+          pin: twofapin,
+        }).exec();
+
+        if (check != null) {
+          result2 = true;
+        }
+      }
 
       if (result2 === true) {
         const filter = { _id: user_id, status: 1 };
@@ -1983,6 +2062,21 @@ route.all("/updateUserInfo", upload.none(), async function (req, res) {
   } else {
     res.json({ status: "fail", message: "403 Forbidden" });
   }
+});
+
+route.all("/testMail", upload.none(), async function (req, res) {
+  mailer.sendMail(
+    "volkansaka1@hotmail.com",
+    "Test Mail",
+    "Test Mail Body",
+    function (err, data) {
+      if (err) {
+        console.log("Error " + err);
+      } else {
+        console.log("Email sent successfully");
+      }
+    }
+  );
 });
 
 route.all("/getUserId", upload.none(), async function (req, res) {
@@ -2022,7 +2116,6 @@ route.all("/getSecurityKey", upload.none(), async function (req, res) {
 
   let result = await authFile.apiKeyChecker(api_key_result);
   if (result === true) {
-  
     let securityKey = await SecurityKey.find({
       user_id: user_id,
       status: 1,

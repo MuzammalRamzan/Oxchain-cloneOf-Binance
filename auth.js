@@ -13,6 +13,8 @@ function apiKeyChecker(api_key_data) {
 function verifyToken(pin, twofa) {
   var formattedToken = authenticator.generateToken(twofa);
   return new Promise((resolve) => {
+    console.log("pin: " + pin);
+    console.log(formattedToken);
     if (pin === formattedToken) {
       resolve(true);
     } else {
