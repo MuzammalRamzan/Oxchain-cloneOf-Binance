@@ -16,7 +16,7 @@ const MarginWalletId = "62ff3c742bebf06a81be98fd";
 async function main() {
 
    await Connection.connection();
-
+   console.log("DB Connect");
    wss.on("connection", async (ws) => {
       console.info("websocket connection open");
       if (ws.readyState === ws.OPEN) {
@@ -44,6 +44,7 @@ main();
 
 
 async function GetBinanceData(ws, pair) {
+   if(pair == '' || pair == null || pair == 'undefined') return;
    var b_ws = new WebSocket("wss://stream.binance.com/stream");
 
    // BNB_USDT => bnbusdt
@@ -103,6 +104,7 @@ async function CalculateMarginBalance(user_id) {
       ],
    );
    let wallet = await Wallet.findOne({ user_id: user_id, coin_id: MarginWalletId }).exec();
+   if(wallet == null) return 0;
    for (var n = 0; n < getOpenOrders.length; n++) {
       totalPNL = totalPNL + parseFloat(getOpenOrders[n].total);
    }
