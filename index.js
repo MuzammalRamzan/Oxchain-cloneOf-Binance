@@ -591,16 +591,17 @@ route.post("/closeMarginOrder", async function (req, res) {
       }).exec();
 
       marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(doc.pnl);
-      marginWallet.amount = (parseFloat(marginWallet.amount) + parseFloat(doc.pnl)) + parseFloat(doc.required_margin);
+      marginWallet.amount =
+        parseFloat(marginWallet.amount) +
+        parseFloat(doc.pnl) +
+        parseFloat(doc.required_margin);
       await marginWallet.save();
-
     }
-
 
     console.log("ok");
 
     res.json({ status: "success", data: doc });
-  } catch (err) { }
+  } catch (err) {}
 });
 
 route.post("/addMarginOrder", async function (req, res) {
@@ -627,20 +628,23 @@ route.post("/addMarginOrder", async function (req, res) {
 
     if (percent > 80) {
       switch (req.body.method) {
-        case 'limit':
-          amount = (parseFloat(userBalance.amount) * percent / 100) / target_price;
+        case "limit":
+          amount =
+            (parseFloat(userBalance.amount) * percent) / 100 / target_price;
           break;
-        case 'market':
-          amount = (parseFloat(userBalance.amount) * percent / 100) / price;
+        case "market":
+          amount = (parseFloat(userBalance.amount) * percent) / 100 / price;
           break;
-        case 'stop_limit':
-          amount = (parseFloat(userBalance.amount) * percent / 100) / req.body.stop_limit;
+        case "stop_limit":
+          amount =
+            (parseFloat(userBalance.amount) * percent) /
+            100 /
+            req.body.stop_limit;
           break;
       }
     }
 
     if (req.body.method == "market") {
-
       if (userBalance == null) {
         res.json({ status: "fail", message: "invalid_wallet" });
         return;
@@ -721,9 +725,7 @@ route.post("/addMarginOrder", async function (req, res) {
 
       await order.save();
       if (req.body.margin_type == "isolated") {
-
       }
-
 
       userBalance.amount = parseFloat(userBalance.amount) - initialMargin;
       await userBalance.save();
@@ -928,7 +930,6 @@ route.post("/withdraw", async function (req, res) {
     var body =
       "A withdraw order has been given from your account. Please wait for the admin to confirm your order.\n\n";
     notifications.sendPushNotification(token, body);
-
   }
   res.json({ status: "success", data: data });
   /*
@@ -961,7 +962,7 @@ route.post("/deleteLimit", async function (req, res) {
     let amount = parseFloat(order.amount);
     let pair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
 
-    if (order.method == 'buy') {
+    if (order.method == "buy") {
       var toWallet = await Wallet.findOne({
         coin_id: pair.symbolTwoID,
         user_id: order.user_id,
@@ -974,12 +975,9 @@ route.post("/deleteLimit", async function (req, res) {
         coin_id: pair.symbolOneID,
         user_id: order.user_id,
       }).exec();
-      toWallet.amount =
-        parseFloat(toWallet.amount) + amount;
+      toWallet.amount = parseFloat(toWallet.amount) + amount;
       await toWallet.save();
     }
-
-
   }
 
   order = await Orders.findOne({
@@ -992,8 +990,7 @@ route.post("/deleteLimit", async function (req, res) {
     let amount = order.amount;
     let pair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
 
-
-    if (order.method == 'buy') {
+    if (order.method == "buy") {
       var toWallet = await Wallet.findOne({
         coin_id: pair.symbolTwoID,
         user_id: order.user_id,
@@ -1006,12 +1003,10 @@ route.post("/deleteLimit", async function (req, res) {
         coin_id: pair.symbolOneID,
         user_id: order.user_id,
       }).exec();
-      toWallet.amount =
-        parseFloat(toWallet.amount) + amount;
+      toWallet.amount = parseFloat(toWallet.amount) + amount;
       await toWallet.save();
     }
   }
-
 
   await Orders.findOneAndUpdate(
     { _id: req.body.order_id, user_id: req.body.user_id, type: "limit" },
@@ -1098,18 +1093,18 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     if (req.body.method == "buy") {
       if (percent > 80) {
         switch (req.body.type) {
-          case 'limit':
+          case "limit":
             target_price = req.body.target_price;
-            amount = (toWalelt.amount * percent / 100.0) / target_price;
+            amount = (toWalelt.amount * percent) / 100.0 / target_price;
             break;
-          case 'market':
-            amount = (toWalelt.amount * percent / 100.0) / price;
+          case "market":
+            amount = (toWalelt.amount * percent) / 100.0 / price;
             break;
-          case 'stop_limit':
+          case "stop_limit":
             target_price = req.body.target_price;
             stop_limit = req.body.stop_limit;
 
-            amount = (toWalelt.amount * percent / 100.0) / stop_limit;
+            amount = (toWalelt.amount * percent) / 100.0 / stop_limit;
             break;
         }
       }
@@ -1123,7 +1118,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           res.json({ status: "fail", message: "Invalid  balance" });
           return;
         }
-        
+
         if (stop_limit == 0) {
           res.json({
             status: "fail",
@@ -1242,7 +1237,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
 
     if (req.body.method == "sell") {
       if (percent > 80) {
-        amount = parseFloat(fromWalelt.amount) * percent / 100;
+        amount = (parseFloat(fromWalelt.amount) * percent) / 100;
       }
       let balance = parseFloat(fromWalelt.amount);
       console.log(balance, " | ", amount);
@@ -2190,8 +2185,8 @@ route.all("/getSecurityKey", upload.none(), async function (req, res) {
   let result = await authFile.apiKeyChecker(api_key_result);
   if (result === true) {
     let securityKey = await SecurityKey.find({
-      user_id: "630dfda89f2fa5aad18a0c43",
-      status: "1",
+      user_id: user_id,
+      status: 1,
     }).exec();
 
     if (securityKey.length > 0) {
