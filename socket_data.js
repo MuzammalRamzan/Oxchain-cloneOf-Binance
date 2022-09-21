@@ -209,12 +209,14 @@ async function GetOrders(ws, user_id, type) {
 
 
 async function GetMarginOrders(ws, user_id, margin_order_type, margin_order_method_type) {
+   console.log("Margin orders");
+      console.log(user_id);
+   let request = { user_id: user_id, status: { $gt: -1 } };
 
-   let request = { user_id: user_id, status: { $gt: 0 } };
+   if (margin_order_type != null && margin_order_type != "") request['margin_type'] = margin_order_type;
+   if (margin_order_method_type != null && margin_order_method_type != "") request['method'] = margin_order_method_type;
 
-   if (margin_order_type != "") request['margin_type'] = margin_order_type;
-   if (margin_order_method_type != "") request['method'] = margin_order_method_type;
-
+   console.log("Request : ", request);
 
    let orders = await MarginOrder.find(request).exec();
    console.log(orders);
