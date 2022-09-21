@@ -45,7 +45,6 @@ async function main() {
                             if (order.status == 0) continue;
                             if (order.method == 'buy') {
                                 let price = parseFloat(list[i].a);
-                                console.log(order.target_price + "  | " + price);
                                 if (price <= target_price) {
                                     await Orders.updateOne({ _id: order._id }, { $set: { status: 0 } });
 
@@ -82,8 +81,8 @@ async function main() {
                                         console.log(toWalelt);
                                         console.log(toWalelt.amount);
                                         fromWalelt.amount = parseFloat(fromWalelt.amount) + order.amount;
-                                        toWalelt.amount = parseFloat(toWalelt.amount) - total;
-                                        await toWalelt.save();
+                                        //toWalelt.amount = parseFloat(toWalelt.amount) - total;
+                                        //await toWalelt.save();
                                         await fromWalelt.save();
                                     }
                                 }
@@ -175,10 +174,10 @@ async function main() {
                                     if (saved) {
                                         console.log(toWalelt);
                                         console.log(toWalelt.amount);
-                                        fromWalelt.amount = parseFloat(fromWalelt.amount) + order.amount;
+                                        //fromWalelt.amount = parseFloat(fromWalelt.amount) + order.amount;
                                         toWalelt.amount = parseFloat(toWalelt.amount) - total;
                                         await toWalelt.save();
-                                        await fromWalelt.save();
+                                        //await fromWalelt.save();
                                     }
                                 }
                             } else if (order.method == 'sell') {
