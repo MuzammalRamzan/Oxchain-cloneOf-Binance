@@ -241,10 +241,11 @@ async function initialize() {
                             let price = parseFloat(list[i].a);
                             let imr = 1 / order.leverage;
                             let initialMargin = order.amount * price * imr;
-                            let pnl = (price - parseFloat(order.open_price)) * parseFloat(order.amount) * order.leverage;
-                            totalPNL += pnl;
+                            
                             //console.log("Order : " + order._id + " | Fiyat : " + price + " | Miktar : " + order.amount + " | Leverage : (" + order.leverage + ") " + " | PL : " + pnl + " | Balance : " + balance);
                             if (order.type == 'buy') {
+                                let pnl = (price - parseFloat(order.open_price)) * parseFloat(order.amount) * order.leverage;
+                            totalPNL += pnl;
                                 let roe = ((pnl / initialMargin) * (1 - order.open_price / price)) / imr;
                                 //let pl = (((open_price - price) *  order.amount) * parseInt(order.leverage)).toFixed(2);
                                 order.pnl = pnl;
@@ -289,7 +290,8 @@ async function initialize() {
                                 order.save().then(() => { }).catch((err) => { });
 
                             } else if (order.type == 'sell') {
-
+                                let pnl = (parseFloat(order.open_price) - price) * parseFloat(order.amount) * order.leverage;
+                                totalPNL += pnl;
                                 order.pnl = pnl;
                                 let tp = order.tp ?? 0.00;
                                 let sl = order.sl ?? 0.00;

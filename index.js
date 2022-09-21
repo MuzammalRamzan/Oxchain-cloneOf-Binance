@@ -885,7 +885,7 @@ route.post("/withdraw", async function (req, res) {
     res.json({ status: "fail", message: "invalid_amount" });
     return;
   }
-
+  console.log("Balance : ", balance);
   if (balance <= amount) {
     res.json({ status: "fail", message: "invalid_balance" });
     return;
@@ -912,9 +912,9 @@ route.post("/withdraw", async function (req, res) {
     var body =
       "A withdraw order has been given from your account. Please wait for the admin to confirm your order.\n\n";
     notifications.sendPushNotification(token, body);
-    res.json({ status: "success", data: data });
+    
   }
-
+  res.json({ status: "success", data: data });
   /*
     var getPair = await CoinList.findOne({_id: fromWalelt.coin_id }).exec();  
   switch(getPair.name) {

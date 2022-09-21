@@ -275,6 +275,7 @@ route.all("/usdtDepositCheck", async (req, res) => {
         for (let j = 0; j < checkRequest.data.data.length; j++) {
           tx_id = checkRequest.data.data[j].transaction_id;
           amount = checkRequest.data.data[j].value / 1000000;
+          amount = checkRequest.data.data[j].value;
 
           deposit = await Deposits.findOne({
             user_id: user_id,
