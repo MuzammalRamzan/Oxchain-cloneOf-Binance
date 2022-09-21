@@ -589,9 +589,9 @@ route.post("/closeMarginOrder", async function (req, res) {
         user_id: doc.user_id,
         coin_id: MarginWalletId,
       }).exec();
-      marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(doc.pnl);
+      marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(doc.pnl) ;
       marginWallet.amount =
-        parseFloat(marginWallet.amount) + parseFloat(doc.pnl);
+        parseFloat(marginWallet.amount) + parseFloat(doc.pnl)+ parseFloat(doc.initialMargin);
       await marginWallet.save();
     }
     console.log("ok");
@@ -699,13 +699,15 @@ route.post("/addMarginOrder", async function (req, res) {
 
       await order.save();
       if (req.body.margin_type == "isolated") {
-        let getWallet = await Wallet.findOne({
-          user_id: req.body.user_id,
-          coin_id: MarginWalletId,
-        }).exec();
-        getWallet.amount = parseFloat(getWallet.amount) - initialMargin;
-        await getWallet.save();
+        
       }
+
+      let getWallet = await Wallet.findOne({
+        user_id: req.body.user_id,
+        coin_id: MarginWalletId,
+      }).exec();
+      getWallet.amount = parseFloat(getWallet.amount) - initialMargin;
+      await getWallet.save();
 
       res.json({ status: "success", data: order });
       return;
