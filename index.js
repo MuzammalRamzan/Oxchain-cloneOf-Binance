@@ -146,7 +146,7 @@ route.all("/login", upload.none(), async (req, res) => {
       else refId = "";
       var data = {
         response: "success",
-        email : user.email,
+        email: user.email,
         twofa: twofaStatus,
         status: user["status"],
         user_id: user["_id"],
@@ -2117,22 +2117,22 @@ route.all("/getSecurityKey", upload.none(), async function (req, res) {
   let result = await authFile.apiKeyChecker(api_key_result);
   if (result === true) {
     let securityKey = await SecurityKey.find({
-      user_id: user_id,
+      user_id: "630dfda89f2fa5aad18a0c43",
       status: "1",
     }).exec();
 
-    console.log(securityKey);
     if (securityKey.length > 0) {
+      console.log(securityKey);
       res.json({
         status: "success",
         data: {
           response: "success",
-          createdAt: securityKey["createdAt"],
-          wallet: securityKey["wallet"],
-          trade: securityKey["trade"],
-          deposit: securityKey["deposit"],
-          withdraw: securityKey["withdraw"],
-          id: securityKey["id"],
+          createdAt: securityKey[0]["createdAt"],
+          wallet: securityKey[0]["wallet"],
+          trade: securityKey[0]["trade"],
+          deposit: securityKey[0]["deposit"],
+          withdraw: securityKey[0]["withdraw"],
+          id: securityKey[0]["id"],
         },
       });
     } else {
