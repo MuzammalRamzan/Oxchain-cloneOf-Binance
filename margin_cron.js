@@ -120,12 +120,12 @@ async function initialize() {
                                         userBalance.amount = parseFloat(userBalance.amount) - initialMargin;
                                         order.open_time = Date.now();
                                         order.open_price = ask;
-                                        order.status = 1;
+                                        order.status = 0;
                                         await order.save();
                                         await userBalance.save();
                                     } else {
                                         order.close_time = Date.now();
-                                        order.status = -1;
+                                        order.status = -3;
                                         await order.save();
                                     }
 
@@ -141,12 +141,12 @@ async function initialize() {
                                         userBalance.amount = parseFloat(userBalance.amount) - initialMargin;
                                         order.open_time = Date.now();
                                         order.open_price = ask;
-                                        order.status = 1;
+                                        order.status = 0;
                                         await order.save();
                                         await userBalance.save();
                                     } else {
                                         order.close_time = Date.now();
-                                        order.status = -1;
+                                        order.status = -3;
                                         await order.save();
                                     }
 
@@ -231,7 +231,7 @@ async function initialize() {
                         }
 
                         if (order.method == 'market') {
-                            if (order.status == 1) continue;
+                            if (order.status != 0) continue;
                             /*
                             if (order.margin_type == 'cross')
                                 balance = (userBalance.amount * 1.0).toFixed(2);
@@ -253,7 +253,7 @@ async function initialize() {
                                 let tp = order.tp ?? 0.00;
                                 let sl = order.sl ?? 0.00;
                                 if (balance <= 0) {
-                                    order.status = 1;
+                                    order.status = -2;
                                     userBalance.amount = 0;
                                     userBalance.pnl = 0;
                                     order.close_price = price;
@@ -296,7 +296,7 @@ async function initialize() {
                                 let tp = order.tp ?? 0.00;
                                 let sl = order.sl ?? 0.00;
                                 if (balance <= 0) {
-                                    order.status = 1;
+                                    order.status = -2;
                                     userBalance.amount = 0;
                                     userBalance.pnl = 0;
                                     order.close_price = price;
