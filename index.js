@@ -804,6 +804,7 @@ route.post("/addMarginOrder", async function (req, res) {
         tp: req.body.tp ?? 0,
         stop_limit: 0.0,
         target_price: target_price,
+        stop_limit : req.body.stop_limit,
         leverage: req.body.leverage,
         amount: amount,
         open_price: price,
