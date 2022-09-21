@@ -585,19 +585,22 @@ route.post("/closeMarginOrder", async function (req, res) {
         (parseFloat(doc.pnl) + parseFloat(doc.isolated));
       await marginWallet.save();
     } else {
-      let marginWallet = await Wallet.findOne({
-        user_id: doc.user_id,
-        coin_id: MarginWalletId,
-      }).exec();
-      marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(doc.pnl) ;
-      marginWallet.amount =
-        parseFloat(marginWallet.amount) + parseFloat(doc.pnl)+ parseFloat(doc.initialMargin);
-      await marginWallet.save();
+
     }
+
+    let marginWallet = await Wallet.findOne({
+      user_id: doc.user_id,
+      coin_id: MarginWalletId,
+    }).exec();
+    marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(doc.pnl);
+    marginWallet.amount = (parseFloat(marginWallet.amount) + parseFloat(doc.pnl)) + parseFloat(doc.initialMargin);
+    await marginWallet.save();
+
+
     console.log("ok");
 
     res.json({ status: "success", data: doc });
-  } catch (err) {}
+  } catch (err) { }
 });
 
 route.post("/addMarginOrder", async function (req, res) {
@@ -699,7 +702,7 @@ route.post("/addMarginOrder", async function (req, res) {
 
       await order.save();
       if (req.body.margin_type == "isolated") {
-        
+
       }
 
       let getWallet = await Wallet.findOne({
