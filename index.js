@@ -2118,7 +2118,7 @@ route.all("/getSecurityKey", upload.none(), async function (req, res) {
   if (result === true) {
     let securityKey = await SecurityKey.find({
       user_id: user_id,
-      status: 1,
+      status: "1",
     }).exec();
 
     console.log(securityKey);
