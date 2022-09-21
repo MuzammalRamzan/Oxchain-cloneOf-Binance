@@ -1028,8 +1028,8 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     if (api_result === false) {
       res.json({ status: "fail", message: "Forbidden 403" });
       return;
-    }
-
+    } 
+    let percent = req.body.percent; 
     let amount = parseFloat(parseFloat(req.body.amount) * 1.0);
 
     var getPair = await Pairs.findOne({ name: req.body.pair_name }).exec();
@@ -1077,8 +1077,11 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     }
 
     console.log("Followers:" + followerList);
-
+    
     if (req.body.method == "buy") {
+      if(percent > 80) {
+        amount = parseFloat(toWalelt.amount) * percent / 100;
+      }
       let total = amount * price;
       let balance = parseFloat(toWalelt.amount) * 1.0;
       console.log("Totala : ", total, " |  balance : ", balance);
@@ -1194,7 +1197,9 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     }
 
     if (req.body.method == "sell") {
-      console.log(fromWalelt);
+      if(percent > 80) {
+        amount = parseFloat(fromWalelt.amount) * percent / 100;
+      }
       let balance = parseFloat(fromWalelt.amount) * 1.0;
 
       if (balance < amount) {
