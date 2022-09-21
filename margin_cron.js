@@ -64,7 +64,10 @@ async function initialize() {
                 wallet.pnl = getOpenOrders[n].total;
                 totalPNL = totalPNL + parseFloat(getOpenOrders[n].total);
                 await wallet.save();
+
             }
+
+            
 
 
             /*
