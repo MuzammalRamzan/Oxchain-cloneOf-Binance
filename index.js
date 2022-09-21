@@ -596,7 +596,7 @@ route.post("/closeMarginOrder", async function (req, res) {
     console.log("Before wallet");
     console.log(marginWallet);
     marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(doc.pnl);
-    marginWallet.amount = (parseFloat(marginWallet.amount) + parseFloat(doc.pnl)) + parseFloat(doc.initialMargin);
+    marginWallet.amount = (parseFloat(marginWallet.amount) + parseFloat(doc.pnl)) + parseFloat(doc.required_margin);
     await marginWallet.save();
     console.log("after wallet");
     console.log(marginWallet);
