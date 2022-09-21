@@ -589,14 +589,14 @@ route.post("/closeMarginOrder", async function (req, res) {
         user_id: doc.user_id,
         coin_id: MarginWalletId,
       }).exec();
-  
+
       marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(doc.pnl);
       marginWallet.amount = (parseFloat(marginWallet.amount) + parseFloat(doc.pnl)) + parseFloat(doc.required_margin);
       await marginWallet.save();
-  
+
     }
 
-    
+
     console.log("ok");
 
     res.json({ status: "success", data: doc });
@@ -944,25 +944,26 @@ route.post("/deleteLimit", async function (req, res) {
   if (order) {
     let amount = parseFloat(order.amount) * 1.0;
     let pair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
-    var fromWalelt = await Wallet.findOne({
-      coin_id: order.pair_id,
-      user_id: req.body.user_id,
-    }).exec();
-    var toWallet = await Wallet.findOne({
-      coin_id: pair.symbolTwoID,
-      user_id: order.user_id,
-    }).exec();
-    toWallet.amount =
-      parseFloat(toWallet.amount) + parseFloat(order.target_price) * amount;
-    await toWallet.save();
-    await Orders.findOneAndUpdate(
-      { _id: req.body.order_id, user_id: req.body.user_id, type: "limit" },
-      { $set: { status: -1 } }
-    ).exec();
-    await Orders.findOneAndUpdate(
-      { _id: req.body.order_id, user_id: req.body.user_id, type: "stop_limit" },
-      { $set: { status: -1 } }
-    ).exec();
+    
+    if (order.method == 'buy') {
+      var toWallet = await Wallet.findOne({
+        coin_id: pair.symbolTwoID,
+        user_id: order.user_id,
+      }).exec();
+      toWallet.amount =
+        parseFloat(toWallet.amount) + parseFloat(order.target_price) * amount;
+      await toWallet.save();
+    } else {
+      var toWallet = await Wallet.findOne({
+        coin_id: pair.symbolOneID,
+        user_id: order.user_id,
+      }).exec();
+      toWallet.amount =
+        parseFloat(toWallet.amount) + amount;
+      await toWallet.save();
+    }
+
+    
   }
 
   order = await Orders.findOne({
@@ -970,26 +971,40 @@ route.post("/deleteLimit", async function (req, res) {
     user_id: req.body.user_id,
     type: "stop_limit",
   }).exec();
+
   if (order) {
     let amount = parseFloat(order.amount) * 1.0;
     let pair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
-    var fromWalelt = await Wallet.findOne({
-      coin_id: order.pair_id,
-      user_id: req.body.user_id,
-    }).exec();
-    var toWallet = await Wallet.findOne({
-      coin_id: pair.symbolTwoID,
-      user_id: order.user_id,
-    }).exec();
-    toWallet.amount =
-      parseFloat(toWallet.amount) + parseFloat(order.target_price) * amount;
-    await toWallet.save();
-    await Orders.findOneAndUpdate(
-      { _id: req.body.order_id, user_id: req.body.user_id, type: "stop_limit" },
-      { $set: { status: -1 } }
-    ).exec();
+    
+      
+    if (order.method == 'buy') {
+      var toWallet = await Wallet.findOne({
+        coin_id: pair.symbolTwoID,
+        user_id: order.user_id,
+      }).exec();
+      toWallet.amount =
+        parseFloat(toWallet.amount) + parseFloat(order.target_price) * amount;
+      await toWallet.save();
+    } else {
+      var toWallet = await Wallet.findOne({
+        coin_id: pair.symbolOneID,
+        user_id: order.user_id,
+      }).exec();
+      toWallet.amount =
+        parseFloat(toWallet.amount) + amount;
+      await toWallet.save();
+    }
   }
 
+
+  await Orders.findOneAndUpdate(
+    { _id: req.body.order_id, user_id: req.body.user_id, type: "limit" },
+    { $set: { status: -1 } }
+  ).exec();
+  await Orders.findOneAndUpdate(
+    { _id: req.body.order_id, user_id: req.body.user_id, type: "stop_limit" },
+    { $set: { status: -1 } }
+  ).exec();
   res.json({ status: "success", message: "removed" });
 });
 
@@ -1096,6 +1111,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           });
           return;
         }
+        total = amount * target_price;
         const orders = new Orders({
           pair_id: getPair.symbolOneID,
           second_pair: getPair.symbolTwoID,
@@ -1111,6 +1127,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
         });
 
         let saved = await orders.save();
+        console.log(saved);
         if (saved) {
           toWalelt.amount = parseFloat(toWalelt.amount) - parseFloat(total);
           await toWalelt.save();
@@ -1126,6 +1143,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           });
           return;
         }
+        total = amount * target_price;
         const orders = new Orders({
           pair_id: getPair.symbolOneID,
           second_pair: getPair.symbolTwoID,
