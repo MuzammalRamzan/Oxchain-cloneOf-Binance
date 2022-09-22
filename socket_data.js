@@ -91,19 +91,19 @@ async function GetBinanceData(ws, pair) {
 
 async function CalculateMarginBalance(user_id) {
    let totalPNL = 0.0;
-   let getOpenOrders = await MarginOrder.aggregate(
-      [
-         {
-            $match: { status: 0, method: 'market', user_id: user_id },
-         },
+     let getOpenOrders = await MarginOrder.aggregate([
+        {
+          $match: { status: 0, method: "market", margin_type: "cross" },
+        },
 
-         {
-            $group: {
-               _id: "$user_id", total: { $sum: "$pnl" }
-            }
-         }
-      ],
-   );
+        {
+          $group: {
+            _id: "$user_id",
+            total: { $sum: "$pnl" },
+            usedUSDT: { $sum: "$usedUSDT" },
+          },
+        },
+      ]);
    let wallet = await Wallet.findOne({ user_id: user_id, coin_id: MarginWalletId }).exec();
    if(wallet == null) return 0;
    for (var n = 0; n < getOpenOrders.length; n++) {

@@ -582,7 +582,7 @@ route.post("/closeMarginOrder", async function (req, res) {
       }).exec();
       marginWallet.amount =
         parseFloat(marginWallet.amount) +
-        (parseFloat(doc.pnl) + parseFloat(doc.isolated));
+        (parseFloat(doc.pnl) + parseFloat(doc.usedUSDT));
       await marginWallet.save();
     } else {
       let marginWallet = await Wallet.findOne({
@@ -601,7 +601,7 @@ route.post("/closeMarginOrder", async function (req, res) {
     console.log("ok");
 
     res.json({ status: "success", data: doc });
-  } catch (err) {}
+  } catch (err) { }
 });
 
 route.post("/addMarginOrder", async function (req, res) {
@@ -612,7 +612,8 @@ route.post("/addMarginOrder", async function (req, res) {
     let percent = req.body.percent;
     let amount = req.body.amount;
     let result = await authFile.apiKeyChecker(api_key_result);
-
+    let target_price = req.body.target_price ?? 0.0;
+    let stop_limit = req.body.stop_limit ?? 0.0;
     if (result !== true) {
       res.json({ status: "fail", message: "Forbidden 403" });
       return;
@@ -684,9 +685,14 @@ route.post("/addMarginOrder", async function (req, res) {
       let imr = 1 / req.body.leverage;
       let initialMargin = amount * price;
       let usedUSDT;
-      if (req.body.amount_type == "total") {
-        usedUSDT = amount * price;
+      if (req.body.type == 'buy') {
+        if (req.body.amount_type == "total") {
+          usedUSDT = amount * price;
+        } else {
+          usedUSDT = (amount * price) / req.body.leverage;
+        }
       } else {
+        //sell ise
         usedUSDT = (amount * price) / req.body.leverage;
       }
 
@@ -810,6 +816,18 @@ route.post("/addMarginOrder", async function (req, res) {
         }
       }
 
+      let usedUSDT;
+      if (req.body.type == 'buy') {
+        if (req.body.amount_type == "total") {
+          usedUSDT = amount * stop_limit;
+        } else {
+          usedUSDT = (amount * stop_limit) / req.body.leverage;
+        }
+      } else {
+        //sell ise
+        usedUSDT = (amount * stop_limit) / req.body.leverage;
+      }
+
       let order = new MarginOrder({
         pair_id: getPair._id,
         pair_name: getPair.name,
@@ -818,6 +836,7 @@ route.post("/addMarginOrder", async function (req, res) {
         method: req.body.method,
         user_id: req.body.user_id,
         required_margin: 0.0,
+        usedUSDT : usedUSDT,
         sl: req.body.sl ?? 0,
         tp: req.body.tp ?? 0,
         stop_limit: 0.0,
@@ -867,6 +886,17 @@ route.post("/addMarginOrder", async function (req, res) {
           return;
         }
       }
+      let usedUSDT;
+      if (req.body.type == 'buy') {
+        if (req.body.amount_type == "total") {
+          usedUSDT = amount * target_price;
+        } else {
+          usedUSDT = (amount * target_price) / req.body.leverage;
+        }
+      } else {
+        //sell ise
+        usedUSDT = (amount * target_price) / req.body.leverage;
+      }
       let order = new MarginOrder({
         pair_id: getPair._id,
         pair_name: getPair.name,
@@ -874,6 +904,7 @@ route.post("/addMarginOrder", async function (req, res) {
         margin_type: req.body.margin_type,
         method: req.body.method,
         user_id: req.body.user_id,
+        usedUSDT: usedUSDT,
         required_margin: 0.0,
         sl: req.body.sl ?? 0,
         tp: req.body.tp ?? 0,
