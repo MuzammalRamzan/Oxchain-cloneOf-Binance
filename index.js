@@ -627,28 +627,25 @@ route.post("/addMarginOrder", async function (req, res) {
     }).exec();
 
     let getPair = await Pairs.findOne({ name: req.body.symbol }).exec();
-      if (getPair == null) {
-        res.json({ status: "fail", message: "invalid_pair" });
-        return;
-      }
+    if (getPair == null) {
+      res.json({ status: "fail", message: "invalid_pair" });
+      return;
+    }
 
     var urlPair = getPair.name.replace("/", "");
-      console.log(urlPair);
-      let url =
-        'https://api.binance.com/api/v3/ticker/price?symbols=["' +
-        urlPair +
-        '"]';
-      result = await axios(url);
-      var price = result.data[0].price;
-    if (req.body.type == 'buy' &&  req.body.amount_type == 'total') {
+    console.log(urlPair);
+    let url =
+      'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
+    result = await axios(url);
+    var price = result.data[0].price;
+    if (req.body.type == "buy" && req.body.amount_type == "total") {
       switch (req.body.method) {
         case "limit":
           amount =
             (parseFloat(userBalance.amount) * percent) / 100 / target_price;
           break;
         case "market":
-          
-          amount = (parseFloat(userBalance.amount) * percent ) / 100 / price;
+          amount = (parseFloat(userBalance.amount) * percent) / 100 / price;
           console.log(amount);
           break;
         case "stop_limit":
@@ -659,7 +656,15 @@ route.post("/addMarginOrder", async function (req, res) {
           break;
       }
     }
-    console.log(percent, " | ", userBalance.amount, " | ", price, " | ", amount);
+    console.log(
+      percent,
+      " | ",
+      userBalance.amount,
+      " | ",
+      price,
+      " | ",
+      amount
+    );
     if (req.body.method == "market") {
       if (userBalance == null) {
         res.json({ status: "fail", message: "invalid_wallet" });
@@ -670,13 +675,17 @@ route.post("/addMarginOrder", async function (req, res) {
         return;
       }
 
-      
-
       //let total = price * req.body.amount;
       let imr = 1 / req.body.leverage;
       let initialMargin = amount * price;
 
       if (userBalance.amount <= initialMargin) {
+        console.log(
+          "User balance: ",
+          userBalance.amount,
+          " | initial margin: ",
+          initialMargin
+        );
         res.json({
           status: "fail",
           message: "Invalid balance. Required margin : " + initialMargin,
@@ -743,7 +752,6 @@ route.post("/addMarginOrder", async function (req, res) {
         res.json({ status: "fail", message: "invalid_pair" });
         return;
       }
-      
 
       let target_price = parseFloat(req.body.target_price);
       let stop_limit = req.body.stop_limit ?? 0.0;
@@ -802,7 +810,7 @@ route.post("/addMarginOrder", async function (req, res) {
         tp: req.body.tp ?? 0,
         stop_limit: 0.0,
         target_price: target_price,
-        stop_limit : req.body.stop_limit,
+        stop_limit: req.body.stop_limit,
         leverage: req.body.leverage,
         amount: amount,
         open_price: price,
