@@ -111,7 +111,7 @@ async function initialize() {
                             if (order.type == 'buy') {
                                 if (ask <= target_price) {
                                     let imr = 1 / order.leverage;
-                                    let initialMargin = order.amount * ask * imr;
+                                    let initialMargin = order.amount * ask;
                                     console.log("initial margin : ", initialMargin);
                                     if (balance >= initialMargin) {
                                         console.log("buy margin start");
@@ -133,7 +133,7 @@ async function initialize() {
                             } else if (order.type == 'sell') {
                                 if (bid >= target_price) {
                                     let imr = 1 / order.leverage;
-                                    let initialMargin = order.amount * ask * imr;
+                                    let initialMargin = order.amount * ask ;
                                     if (balance >= initialMargin) {
                                         console.log("sell margin start");
                                         order.initialMargin = initialMargin;
@@ -178,7 +178,7 @@ async function initialize() {
                             if (order.type == 'buy') {
                                 if (ask <= target_price) {
                                     let imr = 1 / order.leverage;
-                                    let initialMargin = order.amount * ask * imr;
+                                    let initialMargin = order.amount * ask;
                                     if (balance >= initialMargin) {
                                         console.log("buy margin start");
                                         order.initialMargin = initialMargin;
@@ -199,7 +199,7 @@ async function initialize() {
                             } else if (order.type == 'sell') {
                                 if (bid >= target_price) {
                                     let imr = 1 / order.leverage;
-                                    let initialMargin = order.amount * ask * imr;
+                                    let initialMargin = order.amount * ask ;
                                     if (balance >= initialMargin) {
                                         console.log("sell margin start");
                                         order.initialMargin = initialMargin;
@@ -240,11 +240,11 @@ async function initialize() {
                                 */
                             let price = parseFloat(list[i].a);
                             let imr = 1 / order.leverage;
-                            let initialMargin = order.amount * price * imr;
+                            let initialMargin = order.amount * price;
                             
                             //console.log("Order : " + order._id + " | Fiyat : " + price + " | Miktar : " + order.amount + " | Leverage : (" + order.leverage + ") " + " | PL : " + pnl + " | Balance : " + balance);
                             if (order.type == 'buy') {
-                                let pnl = (price - parseFloat(order.open_price)) * parseFloat(order.amount) * order.leverage;
+                                let pnl = (price - parseFloat(order.open_price)) * parseFloat(order.amount);
                             totalPNL += pnl;
                                 let roe = ((pnl / initialMargin) * (1 - order.open_price / price)) / imr;
                                 //let pl = (((open_price - price) *  order.amount) * parseInt(order.leverage)).toFixed(2);
@@ -290,7 +290,7 @@ async function initialize() {
                                 order.save().then(() => { }).catch((err) => { });
 
                             } else if (order.type == 'sell') {
-                                let pnl = (parseFloat(order.open_price) - price) * parseFloat(order.amount) * order.leverage;
+                                let pnl = (parseFloat(order.open_price) - price) * parseFloat(order.amount);
                                 totalPNL += pnl;
                                 order.pnl = pnl;
                                 let tp = order.tp ?? 0.00;
