@@ -594,7 +594,7 @@ route.post("/closeMarginOrder", async function (req, res) {
       marginWallet.amount =
         parseFloat(marginWallet.amount) +
         parseFloat(doc.pnl) +
-        parseFloat(doc.required_margin);
+        parseFloat(doc.usedUSDT);
       await marginWallet.save();
     }
 
@@ -683,7 +683,12 @@ route.post("/addMarginOrder", async function (req, res) {
       //let total = price * req.body.amount;
       let imr = 1 / req.body.leverage;
       let initialMargin = amount * price;
-      let usedUSDT = (amount * price) / req.body.leverage;
+      let usedUSDT;
+      if (req.body.amount_type == "total") {
+        usedUSDT = amount * price;
+      } else {
+        usedUSDT = (amount * price) / req.body.leverage;
+      }
 
       console.log(
         "User balance: ",
@@ -692,7 +697,14 @@ route.post("/addMarginOrder", async function (req, res) {
         initialMargin
       );
 
-      amount = amount * req.body.leverage;
+      console.log(
+        "Amount ",
+        amount,
+        " | Price ",
+        price,
+        " | Leverage ",
+        req.body.leverage
+      );
 
       let reverseOreders = await MarginOrder.find({
         user_id: req.body.user_id,
@@ -726,7 +738,7 @@ route.post("/addMarginOrder", async function (req, res) {
         margin_type: req.body.margin_type,
         method: req.body.method,
         user_id: req.body.user_id,
-        usedUSDT : usedUSDT,
+        usedUSDT: usedUSDT,
         required_margin: initialMargin,
         isolated: req.body.margin_type == "isolated" ? initialMargin : 0.0,
         sl: req.body.sl ?? 0,
@@ -741,7 +753,7 @@ route.post("/addMarginOrder", async function (req, res) {
       if (req.body.margin_type == "isolated") {
       }
 
-      userBalance.amount = parseFloat(userBalance.amount) - initialMargin;
+      userBalance.amount = parseFloat(userBalance.amount) - usedUSDT;
       await userBalance.save();
 
       res.json({ status: "success", data: order });
