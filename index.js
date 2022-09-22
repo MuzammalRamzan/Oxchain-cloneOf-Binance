@@ -675,23 +675,22 @@ route.post("/addMarginOrder", async function (req, res) {
         return;
       }
 
+      if (userBalance.amount < amount) {
+        res.json({ status: "fail", message: "invalid_balance" });
+        return;
+      }
+
       //let total = price * req.body.amount;
       let imr = 1 / req.body.leverage;
       let initialMargin = amount * price;
+      let usedUSDT = (amount * price) / req.body.leverage;
 
-      if (userBalance.amount <= initialMargin) {
-        console.log(
-          "User balance: ",
-          userBalance.amount,
-          " | initial margin: ",
-          initialMargin
-        );
-        res.json({
-          status: "fail",
-          message: "Invalid balance. Required margin : " + initialMargin,
-        });
-        return;
-      }
+      console.log(
+        "User balance: ",
+        userBalance.amount,
+        " | initial margin: ",
+        initialMargin
+      );
 
       amount = amount * req.body.leverage;
 
@@ -727,6 +726,7 @@ route.post("/addMarginOrder", async function (req, res) {
         margin_type: req.body.margin_type,
         method: req.body.method,
         user_id: req.body.user_id,
+        usedUSDT : usedUSDT,
         required_margin: initialMargin,
         isolated: req.body.margin_type == "isolated" ? initialMargin : 0.0,
         sl: req.body.sl ?? 0,
