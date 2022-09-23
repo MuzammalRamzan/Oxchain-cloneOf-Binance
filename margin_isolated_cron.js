@@ -172,7 +172,7 @@ async function initialize() {
                     let order = orders[n];
 
                     if (order.pair_name.replace("/", "") == list[t].s) {
-                        let price = parseFloat(list[t].a);
+                        let price = (list[t].a);
                         if (order.type == "buy") {
                             pnl = (price - order.open_price) * order.amount;
                         } else {

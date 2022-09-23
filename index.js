@@ -581,8 +581,8 @@ route.post("/closeMarginOrder", async function (req, res) {
         coin_id: MarginWalletId,
       }).exec();
       marginWallet.amount =
-        parseFloat(marginWallet.amount) +
-        (parseFloat(doc.pnl) + parseFloat(doc.usedUSDT));
+        (marginWallet.amount) +
+        ((doc.pnl) + (doc.usedUSDT));
       await marginWallet.save();
     } else {
       let marginWallet = await Wallet.findOne({
@@ -590,11 +590,11 @@ route.post("/closeMarginOrder", async function (req, res) {
         coin_id: MarginWalletId,
       }).exec();
 
-      marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(doc.pnl);
+      marginWallet.pnl = (marginWallet.pnl) - (doc.pnl);
       marginWallet.amount =
-        parseFloat(marginWallet.amount) +
-        parseFloat(doc.pnl) +
-        parseFloat(doc.usedUSDT);
+        (marginWallet.amount) +
+        (doc.pnl) +
+        (doc.usedUSDT);
       await marginWallet.save();
     }
 
@@ -643,19 +643,22 @@ route.post("/addMarginOrder", async function (req, res) {
       switch (req.body.method) {
         case "limit":
           amount =
-            (parseFloat(userBalance.amount) * percent) / 100 / target_price;
+            ((userBalance.amount) * percent) / 100 / target_price;
           break;
         case "market":
-          amount = (parseFloat(userBalance.amount) * percent) / 100 / price;
+          amount = (((userBalance.amount) * percent) / 100 / price) * req.body.leverage;
           console.log(amount);
           break;
         case "stop_limit":
           amount =
-            (parseFloat(userBalance.amount) * percent) /
+            ((userBalance.amount) * percent) /
             100 /
             req.body.stop_limit;
           break;
       }
+    } else {
+      amount = (((userBalance.amount) * percent) / 100 / price) * req.body.leverage;
+        console.log("AMOUNT : ", amount);
     }
     console.log(
       percent,
@@ -687,7 +690,7 @@ route.post("/addMarginOrder", async function (req, res) {
       let usedUSDT;
       if (req.body.type == 'buy') {
         if (req.body.amount_type == "total") {
-          usedUSDT = amount * price;
+          usedUSDT = amount * price / req.body.leverage;
         } else {
           usedUSDT = (amount * price) / req.body.leverage;
         }
@@ -736,7 +739,7 @@ route.post("/addMarginOrder", async function (req, res) {
           _o.status = 1;
           await _o.save();
 
-          marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(_o.pnl);
+          marginWallet.pnl = (marginWallet.pnl) - (_o.pnl);
           console.log(marginWallet.amount, " | ", _o.pnl, " | ", _o.usedUSDT);
           marginWallet.amount = marginWallet.amount + _o.pnl + _o.usedUSDT;
         }
@@ -769,7 +772,7 @@ route.post("/addMarginOrder", async function (req, res) {
         coin_id: MarginWalletId,
       }).exec();
 
-      userBalance.amount = parseFloat(userBalance.amount) - usedUSDT;
+      userBalance.amount = (userBalance.amount) - usedUSDT;
       await userBalance.save();
 
       res.json({ status: "success", data: order });
@@ -781,7 +784,7 @@ route.post("/addMarginOrder", async function (req, res) {
         return;
       }
 
-      let target_price = parseFloat(req.body.target_price);
+      let target_price = (req.body.target_price);
       let stop_limit = req.body.stop_limit ?? 0.0;
       if (stop_limit == 0) {
         res.json({
@@ -862,7 +865,7 @@ route.post("/addMarginOrder", async function (req, res) {
       res.json({ status: "success", data: order });
       return;
     } else if (req.body.method == "limit") {
-      let target_price = parseFloat(req.body.target_price);
+      let target_price = (req.body.target_price);
       let getPair = await Pairs.findOne({ name: req.body.symbol }).exec();
       if (getPair == null) {
         res.json({ status: "fail", message: "invalid_pair" });
@@ -939,7 +942,7 @@ route.post("/withdraw", async function (req, res) {
   var user_id = req.body.user_id;
   var address = req.body.address;
   var to = req.body.to;
-  var amount = parseFloat(req.body.amount);
+  var amount = (req.body.amount);
   var api_key_result = req.body.api_key;
   /*
   var api_result = await authFile.apiKeyChecker(api_key_result);
@@ -958,7 +961,7 @@ route.post("/withdraw", async function (req, res) {
     res.json({ status: "fail", message: "unknow_error" });
     return;
   }
-  let balance = parseFloat(fromWalelt.amount);
+  let balance = (fromWalelt.amount);
   if (amount <= 0) {
     res.json({ status: "fail", message: "invalid_amount" });
     return;
@@ -978,7 +981,7 @@ route.post("/withdraw", async function (req, res) {
   });
 
   await data.save();
-  fromWalelt.amount = parseFloat(fromWalelt.amount) - parseFloat(amount);
+  fromWalelt.amount = (fromWalelt.amount) - (amount);
   await fromWalelt.save();
   let response = await NotificationTokens.findOne({
     user_id: user_id,
@@ -1019,7 +1022,7 @@ route.post("/deleteLimit", async function (req, res) {
     type: "limit",
   }).exec();
   if (order) {
-    let amount = parseFloat(order.amount);
+    let amount = (order.amount);
     let pair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
 
     if (order.method == "buy") {
@@ -1028,14 +1031,14 @@ route.post("/deleteLimit", async function (req, res) {
         user_id: order.user_id,
       }).exec();
       toWallet.amount =
-        parseFloat(toWallet.amount) + parseFloat(order.target_price) * amount;
+        (toWallet.amount) + (order.target_price) * amount;
       await toWallet.save();
     } else {
       var toWallet = await Wallet.findOne({
         coin_id: pair.symbolOneID,
         user_id: order.user_id,
       }).exec();
-      toWallet.amount = parseFloat(toWallet.amount) + amount;
+      toWallet.amount = (toWallet.amount) + amount;
       await toWallet.save();
     }
   }
@@ -1056,14 +1059,14 @@ route.post("/deleteLimit", async function (req, res) {
         user_id: order.user_id,
       }).exec();
       toWallet.amount =
-        parseFloat(toWallet.amount) + parseFloat(order.target_price) * amount;
+        (toWallet.amount) + (order.target_price) * amount;
       await toWallet.save();
     } else {
       var toWallet = await Wallet.findOne({
         coin_id: pair.symbolOneID,
         user_id: order.user_id,
       }).exec();
-      toWallet.amount = parseFloat(toWallet.amount) + amount;
+      toWallet.amount = (toWallet.amount) + amount;
       await toWallet.save();
     }
   }
@@ -1124,7 +1127,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     let url =
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
     let result = await axios(url);
-    var price = parseFloat(result.data[0].price);
+    var price = (result.data[0].price);
     let target_price = req.body.target_price ?? 0.0;
     let stop_limit = req.body.stop_limit ?? 0.0;
     var coins = req.body.pair_name.split("/");
@@ -1193,7 +1196,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           second_pair: getPair.symbolTwoID,
           pair_name: getPair.name,
           user_id: req.body.user_id,
-          amount: parseFloat(amount),
+          amount: (amount),
           open_price: target_price,
           stop_limit: stop_limit,
           type: "stop_limit",
@@ -1205,7 +1208,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
         let saved = await orders.save();
         console.log(saved);
         if (saved) {
-          toWalelt.amount = parseFloat(toWalelt.amount) - parseFloat(total);
+          toWalelt.amount = (toWalelt.amount) - (total);
           await toWalelt.save();
           res.json({ status: "success", message: saved });
         }
@@ -1231,7 +1234,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           second_pair: getPair.symbolTwoID,
           pair_name: getPair.name,
           user_id: req.body.user_id,
-          amount: parseFloat(amount),
+          amount: (amount),
           open_price: target_price,
           type: "limit",
           method: "buy",
@@ -1241,7 +1244,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
 
         let saved = await orders.save();
         if (saved) {
-          toWalelt.amount = parseFloat(toWalelt.amount) - parseFloat(total);
+          toWalelt.amount = (toWalelt.amount) - (total);
           await toWalelt.save();
           res.json({ status: "success", message: saved });
         }
@@ -1259,7 +1262,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
             second_pair: getPair.symbolTwoID,
             pair_name: getPair.name,
             user_id: req.body.user_id,
-            amount: parseFloat(amount),
+            amount: (amount),
             open_price: price,
             type: "market",
             method: "buy",
@@ -1292,7 +1295,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
         return;
       }
       if (req.body.type == "stop_limit") {
-        target_price = parseFloat(req.body.target_price);
+        target_price = (req.body.target_price);
         let stop_limit = req.body.stop_limit ?? 0.0;
         if (stop_limit == 0) {
           res.json({
@@ -1321,7 +1324,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           second_pair: getPair.symbolTwoID,
           pair_name: getPair.name,
           user_id: req.body.user_id,
-          amount: parseFloat(amount),
+          amount: (amount),
           open_price: target_price,
           stop_limit: stop_limit,
           type: "stop_limit",
@@ -1333,13 +1336,13 @@ route.all("/addOrders", upload.none(), async function (req, res) {
         let saved = await orders.save();
         if (saved) {
           fromWalelt.amount =
-            parseFloat(fromWalelt.amount) - parseFloat(amount);
+            (fromWalelt.amount) - (amount);
           await fromWalelt.save();
           res.json({ status: "success", message: saved });
         }
       }
       if (req.body.type == "limit") {
-        target_price = parseFloat(req.body.target_price);
+        target_price = (req.body.target_price);
         if (target_price <= price) {
           res.json({
             status: "fail",
@@ -1352,7 +1355,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           second_pair: getPair.symbolTwoID,
           pair_name: getPair.name,
           user_id: req.body.user_id,
-          amount: parseFloat(amount),
+          amount: (amount),
           open_price: target_price,
           type: "limit",
           method: "sell",
@@ -1363,7 +1366,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
         let saved = await orders.save();
         if (saved) {
           fromWalelt.amount =
-            parseFloat(fromWalelt.amount) - parseFloat(amount);
+            (fromWalelt.amount) - (amount);
           await fromWalelt.save();
           res.json({ status: "success", message: saved });
         }
@@ -1371,13 +1374,13 @@ route.all("/addOrders", upload.none(), async function (req, res) {
         let balance = fromWalelt.amount;
         
         if (balance >= amount) {
-          let total = parseFloat(amount) * parseFloat(price);
+          let total = (amount) * (price);
           const orders = new Orders({
             pair_id: getPair.symbolOneID,
             second_pair: getPair.symbolTwoID,
             pair_name: getPair.name,
             user_id: req.body.user_id,
-            amount: parseFloat(amount),
+            amount: (amount),
             open_price: price,
             type: "market",
             method: "sell",
@@ -1387,8 +1390,8 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           let saved = await orders.save();
           if (saved) {
             fromWalelt.amount =
-              parseFloat(fromWalelt.amount) - parseFloat(amount);
-            toWalelt.amount = parseFloat(toWalelt.amount) + parseFloat(total);
+              (fromWalelt.amount) - (amount);
+            toWalelt.amount = (toWalelt.amount) + (total);
             await fromWalelt.save();
             await toWalelt.save();
 
@@ -1754,7 +1757,7 @@ route.all("/cancelOrder", upload.none(), async function (req, res) {
 
         if (order != null) {
           var priceAmount = order.priceAmount;
-          var newBalance = parseFloat(balance) + parseFloat(priceAmount);
+          var newBalance = (balance) + (priceAmount);
           var update2 = { amount: newBalance };
           Wallet.findOneAndUpdate(
             { user_id: user_id, coin_id: symbolTwoID },
@@ -2339,7 +2342,7 @@ route.all("/addWithdraw", upload.none(), (req, res) => {
             res.json({ status: "fail", message: "unknow_error" });
             return;
           }
-          if (parseFloat(list.amount) >= parseFloat(amount)) {
+          if ((list.amount) >= (amount)) {
             const newWithdraw = new Withdraws({
               user_id: user_id,
               coin_id: coin_id,

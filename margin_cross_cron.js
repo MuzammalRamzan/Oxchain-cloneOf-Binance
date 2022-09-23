@@ -187,7 +187,7 @@ async function initialize() {
         wallet.pnl = getOpenOrders[n].total;
         await wallet.save();
 
-        totalPNL = parseFloat(getOpenOrders[n].total);
+        totalPNL = (getOpenOrders[n].total);
 
 
         let totalWallet =
@@ -195,7 +195,7 @@ async function initialize() {
 
         if (totalWallet <= 0) {
           wallet.pnl = 0;
-          console.log("test 11");
+          wallet.amount = 0;
           await MarginOrder.updateMany({ user_id: getOpenOrders[n]._id, margin_type: 'cross', status: 0 }, { $set: { status: 1 } }).exec()
           await MarginOrder.updateMany({ user_id: getOpenOrders[n]._id, margin_type: 'cross', method: 'limit' }, { $set: { status: -3 } }).exec()
           await MarginOrder.updateMany({ user_id: getOpenOrders[n]._id, margin_type: 'cross', method: 'stop_limit' }, { $set: { status: -3 } }).exec()
@@ -218,7 +218,7 @@ async function initialize() {
             let order = orders[i];
 
             if (order.pair_name.replace("/", "") == list[t].s) {
-              let price = parseFloat(list[t].a);
+              let price = (list[t].a);
               if (order.type == "buy") {
                 pnl = (price - order.open_price) * order.amount;
               } else {

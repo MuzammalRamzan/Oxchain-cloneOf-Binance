@@ -107,10 +107,10 @@ async function CalculateMarginBalance(user_id) {
    if(wallet == null) return 0;
    let totalUSDT = 0.0;
    for (var n = 0; n < getOpenOrders.length; n++) {
-      totalPNL = totalPNL + parseFloat(getOpenOrders[n].total);
+      totalPNL = totalPNL + (getOpenOrders[n].total);
       totalUSDT = getOpenOrders[n].usedUSDT;
    }
-   let balance = parseFloat(wallet.amount);
+   let balance = (wallet.amount);
    console.log("B : ", balance);
    return balance;
 }
