@@ -195,6 +195,7 @@ async function initialize() {
 
         if (totalWallet <= 0) {
           wallet.pnl = 0;
+          console.log("test 11");
           await MarginOrder.updateMany({ user_id: getOpenOrders[n]._id, margin_type: 'cross', status: 0 }, { $set: { status: 1 } }).exec()
           await MarginOrder.updateMany({ user_id: getOpenOrders[n]._id, margin_type: 'cross', method: 'limit' }, { $set: { status: -3 } }).exec()
           await MarginOrder.updateMany({ user_id: getOpenOrders[n]._id, margin_type: 'cross', method: 'stop_limit' }, { $set: { status: -3 } }).exec()

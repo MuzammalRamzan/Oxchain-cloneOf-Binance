@@ -720,23 +720,29 @@ route.post("/addMarginOrder", async function (req, res) {
         status: 0,
       }).exec();
 
-      for (var i = 0; i < reverseOreders.length; i++) {
-        if (reverseOreders[i].pair_name.replace("/", "") != urlPair) continue;
-        let _o = reverseOreders[i];
-        _o.close_price = price;
-        _o.close_time = Date.now();
-        _o.status = 1;
-        await _o.save();
-        let marginWallet = await Wallet.findOne({
-          user_id: _o.user_id,
-          coin_id: MarginWalletId,
-        }).exec();
-        marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(_o.pnl);
-        marginWallet.amount =
-          parseFloat(marginWallet.amount) + parseFloat(_o.pnl);
+      let marginWallet = await Wallet.findOne({
+        user_id: req.body.user_id,
+        coin_id: MarginWalletId,
+      }).exec();
+
+      console.log("Başlangıç : ", marginWallet.amount);
+      if (reverseOreders.length > 0) {
+        let cancelOrderBalance = 0.0;
+        for (var i = 0; i < reverseOreders.length; i++) {
+          if (reverseOreders[i].pair_name.replace("/", "") != urlPair) continue;
+          let _o = reverseOreders[i];
+          _o.close_price = price;
+          _o.close_time = Date.now();
+          _o.status = 1;
+          await _o.save();
+
+          marginWallet.pnl = parseFloat(marginWallet.pnl) - parseFloat(_o.pnl);
+          console.log(marginWallet.amount, " | ", _o.pnl, " | ", _o.usedUSDT);
+          marginWallet.amount = marginWallet.amount + _o.pnl + _o.usedUSDT;
+        }
+        console.log("Bitiş : ", marginWallet.amount, " | ", cancelOrderBalance);
         await marginWallet.save();
       }
-
       let order = new MarginOrder({
         pair_id: getPair._id,
         pair_name: getPair.name,
@@ -758,6 +764,10 @@ route.post("/addMarginOrder", async function (req, res) {
       await order.save();
       if (req.body.margin_type == "isolated") {
       }
+      userBalance = await Wallet.findOne({
+        user_id: req.body.user_id,
+        coin_id: MarginWalletId,
+      }).exec();
 
       userBalance.amount = parseFloat(userBalance.amount) - usedUSDT;
       await userBalance.save();
@@ -781,11 +791,11 @@ route.post("/addMarginOrder", async function (req, res) {
         return;
       }
       if (req.body.type == "buy") {
-        if (target_price > stop_limit) {
+        if (target_price < stop_limit) {
           res.json({
             status: "fail",
             message:
-              "The limit price cannot be greather than the stop price Buy limit order must be above the price",
+              "The limit price cannot be less than the stop price Buy limit order must be above the price",
           });
           return;
         }
@@ -799,7 +809,7 @@ route.post("/addMarginOrder", async function (req, res) {
       }
 
       if (req.body.type == "sell") {
-        if (target_price < stop_limit) {
+        if (target_price > stop_limit) {
           res.json({
             status: "fail",
             message:
@@ -836,7 +846,7 @@ route.post("/addMarginOrder", async function (req, res) {
         method: req.body.method,
         user_id: req.body.user_id,
         required_margin: 0.0,
-        usedUSDT : usedUSDT,
+        usedUSDT: usedUSDT,
         sl: req.body.sl ?? 0,
         tp: req.body.tp ?? 0,
         stop_limit: 0.0,
@@ -1115,8 +1125,8 @@ route.all("/addOrders", upload.none(), async function (req, res) {
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
     let result = await axios(url);
     var price = parseFloat(result.data[0].price);
-    let target_price = 0.0;
-    let stop_limit = 0.0;
+    let target_price = req.body.target_price ?? 0.0;
+    let stop_limit = req.body.stop_limit ?? 0.0;
     var coins = req.body.pair_name.split("/");
 
     console.log(req.body.user_id);
@@ -1141,28 +1151,13 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     console.log("Followers:" + followerList);
 
     if (req.body.method == "buy") {
-      if (percent > 80) {
-        switch (req.body.type) {
-          case "limit":
-            target_price = req.body.target_price;
-            amount = (toWalelt.amount * percent) / 100.0 / target_price;
-            break;
-          case "market":
-            amount = (toWalelt.amount * percent) / 100.0 / price;
-            break;
-          case "stop_limit":
-            target_price = req.body.target_price;
-            stop_limit = req.body.stop_limit;
-
-            amount = (toWalelt.amount * percent) / 100.0 / stop_limit;
-            break;
-        }
-      }
-      console.log("percent : ", percent, " | ", amount);
-
       if (req.body.type == "stop_limit") {
+        console.log("Stop limit : ", stop_limit);
         let total = amount * stop_limit;
-        let balance = parseFloat(toWalelt.amount);
+        let balance = toWalelt.amount;
+
+        
+
         console.log(balance, " | ", total);
         if (balance < total) {
           res.json({ status: "fail", message: "Invalid  balance" });
@@ -1176,11 +1171,12 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           });
           return;
         }
-        if (target_price > stop_limit) {
+        console.log(target_price, " | ", stop_limit);
+        if (target_price < stop_limit) {
           res.json({
             status: "fail",
             message:
-              "The limit price cannot be less than the stop priceBuy limit order must be below the price",
+              "The limit price cannot be more than the stop price Buy limit order must be below the price",
           });
           return;
         }
@@ -1216,12 +1212,12 @@ route.all("/addOrders", upload.none(), async function (req, res) {
       }
       if (req.body.type == "limit") {
         let total = amount * target_price;
-        let balance = parseFloat(toWalelt.amount);
+        let balance = toWalelt.amount;
         if (balance < total) {
           res.json({ status: "fail", message: "Invalid  balance" });
           return;
         }
-        target_price = parseFloat(req.body.target_price);
+        target_price = req.body.target_price;
         if (target_price >= price) {
           res.json({
             status: "fail",
@@ -1251,7 +1247,8 @@ route.all("/addOrders", upload.none(), async function (req, res) {
         }
       } else if (req.body.type == "market") {
         let total = amount * price;
-        let balance = parseFloat(toWalelt.amount);
+        let balance = toWalelt.amount;
+
         if (balance < total) {
           res.json({ status: "fail", message: "Invalid  balance" });
           return;
@@ -1286,10 +1283,9 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     }
 
     if (req.body.method == "sell") {
-      if (percent > 80) {
-        amount = (parseFloat(fromWalelt.amount) * percent) / 100;
-      }
-      let balance = parseFloat(fromWalelt.amount);
+      
+      let balance = fromWalelt.amount;
+      amount = fromWalelt.amount * percent / 100;
       console.log(balance, " | ", amount);
       if (balance < amount) {
         res.json({ status: "fail", message: "Invalid  balance" });
@@ -1305,11 +1301,11 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           });
           return;
         }
-        if (target_price < stop_limit) {
+        if (target_price > stop_limit) {
           res.json({
             status: "fail",
             message:
-              "The limit price cannot be greather than the stop price Sell limit order must be below the price",
+              "The limit price cannot be less than the stop price Sell limit order must be below the price",
           });
           return;
         }
@@ -1372,8 +1368,8 @@ route.all("/addOrders", upload.none(), async function (req, res) {
           res.json({ status: "success", message: saved });
         }
       } else if (req.body.type == "market") {
-        let balance = parseFloat(fromWalelt.amount);
-
+        let balance = fromWalelt.amount;
+        
         if (balance >= amount) {
           let total = parseFloat(amount) * parseFloat(price);
           const orders = new Orders({

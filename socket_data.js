@@ -25,7 +25,6 @@ async function main() {
          }))
          ws.on('message', (data) => {
             let json = JSON.parse(data);
-            console.log(json);
             GetBinanceData(ws, json.pair);
             if (json.user_id != null && json.user_id != 'undefined') {
                GetWallets(ws, json.user_id);
@@ -106,11 +105,13 @@ async function CalculateMarginBalance(user_id) {
       ]);
    let wallet = await Wallet.findOne({ user_id: user_id, coin_id: MarginWalletId }).exec();
    if(wallet == null) return 0;
+   let totalUSDT = 0.0;
    for (var n = 0; n < getOpenOrders.length; n++) {
       totalPNL = totalPNL + parseFloat(getOpenOrders[n].total);
+      totalUSDT = getOpenOrders[n].usedUSDT;
    }
-   if (wallet.amount == 0) return 0;
-   let balance = parseFloat(wallet.amount) + totalPNL;
+   let balance = parseFloat(wallet.amount);
+   console.log("B : ", balance);
    return balance;
 }
 
@@ -155,7 +156,6 @@ async function GetWallets(ws, user_id) {
       SendWallet(ws, wallet);
    });
    let isUpdate = Wallet.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
-      console.log("wallet update : ", data);
       wallet = await Wallet.find({ user_id: user_id }).exec();
       SendWallet(ws, wallet);
    });
@@ -217,10 +217,8 @@ async function GetMarginOrders(ws, user_id, margin_order_type, margin_order_meth
    if (margin_order_type != null && margin_order_type != "") request['margin_type'] = margin_order_type;
    if (margin_order_method_type != null && margin_order_method_type != "") request['method'] = margin_order_method_type;
 
-   console.log("Request : ", request);
 
    let orders = await MarginOrder.find(request).exec();
-   console.log(orders);
    ws.send(JSON.stringify({ type: 'margin_orders', content: orders }));
    let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
       //orders = data;
