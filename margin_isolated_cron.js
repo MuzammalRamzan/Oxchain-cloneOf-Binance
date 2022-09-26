@@ -84,8 +84,10 @@ async function initialize() {
                                     coin_id: MarginWalletId,
                                 }).exec();
                                 if (wallet.amount <= order.usedUSDT) {
+                                    /*
                                     order.status = -2;
                                     order.close_time = Date.now();
+                                    */
                                 } else {
                                     wallet.amount = wallet.amount - order.usedUSDT;
                                     await wallet.save();
@@ -102,8 +104,10 @@ async function initialize() {
                                     coin_id: MarginWalletId,
                                 }).exec();
                                 if (wallet.amount <= order.usedUSDT) {
+                                    /*
                                     order.status = -2;
                                     order.close_time = Date.now();
+                                    */
                                 } else {
                                     wallet.amount = wallet.amount - order.usedUSDT;
                                     await wallet.save();
@@ -127,8 +131,10 @@ async function initialize() {
                                     coin_id: MarginWalletId,
                                 }).exec();
                                 if (wallet.amount <= order.usedUSDT) {
+                                    /*
                                     order.status = -2;
                                     order.close_time = Date.now();
+                                    */
                                 } else {
                                     wallet.amount = wallet.amount - order.usedUSDT;
                                     await wallet.save();
@@ -145,8 +151,10 @@ async function initialize() {
                                     coin_id: MarginWalletId,
                                 }).exec();
                                 if (wallet.amount <= order.usedUSDT) {
+                                    /*
                                     order.status = -2;
                                     order.close_time = Date.now();
+                                    */
                                 } else {
                                     wallet.amount = wallet.amount - order.usedUSDT;
                                     await wallet.save();
@@ -179,8 +187,10 @@ async function initialize() {
                             pnl = (order.open_price - price) * order.amount;
                         }
                         if ((order.usedUSDT + pnl) <= 0) {
+                            /*
                             order.status = -2;
                             await order.save();
+                            */
                         } else {
                             order.pnl = pnl;
                             await order.save();

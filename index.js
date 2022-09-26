@@ -606,19 +606,25 @@ route.post("/closeMarginOrder", async function (req, res) {
 
 route.post("/addMarginOrder", async function (req, res) {
   try {
-    console.log(req.body);
-    const MarginWalletId = "62ff3c742bebf06a81be98fd";
     var api_key_result = req.body.api_key;
-    let percent = req.body.percent;
-    let amount = req.body.amount;
     let result = await authFile.apiKeyChecker(api_key_result);
-    let target_price = req.body.target_price ?? 0.0;
-    let stop_limit = req.body.stop_limit ?? 0.0;
     if (result !== true) {
       res.json({ status: "fail", message: "Forbidden 403" });
       return;
     }
-    if (req.body.amount <= 0) {
+
+    const MarginWalletId = "62ff3c742bebf06a81be98fd";
+    let margin_type = req.body.margin_type;
+    let user_id = req.body.user_id;
+    let symbol = req.body.symbol;
+    let percent = req.body.percent;
+    let amount = req.body.amount;
+    let type = req.body.type;
+    let method = req.body.method;
+    let target_price = req.body.target_price ?? 0.0;
+    let stop_limit = req.body.stop_limit ?? 0.0;
+    let leverage = req.body.leverage ?? 0.0;
+    if (amount <= 0) {
       res.json({ status: "fail", message: "invalid_amount" });
       return;
     }
@@ -639,302 +645,147 @@ route.post("/addMarginOrder", async function (req, res) {
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
     result = await axios(url);
     var price = result.data[0].price;
-    if (req.body.type == "buy" && req.body.amount_type == "total") {
-      switch (req.body.method) {
-        case "limit":
-          amount =
-            ((userBalance.amount) * percent) / 100 / target_price;
-          break;
-        case "market":
-          amount = (((userBalance.amount) * percent) / 100 / price) * req.body.leverage;
-          console.log(amount);
-          break;
-        case "stop_limit":
-          amount =
-            ((userBalance.amount) * percent) /
-            100 /
-            req.body.stop_limit;
-          break;
-      }
-    } else {
-      amount = (((userBalance.amount) * percent) / 100 / price) * req.body.leverage;
-        console.log("AMOUNT : ", amount);
-    }
-    console.log(
-      percent,
-      " | ",
-      userBalance.amount,
-      " | ",
-      price,
-      " | ",
-      amount
-    );
-    if (req.body.method == "market") {
-      if (userBalance == null) {
-        res.json({ status: "fail", message: "invalid_wallet" });
-        return;
-      }
-      if (userBalance.amount <= 0) {
-        res.json({ status: "fail", message: "invalid_balance" });
-        return;
-      }
+    if (margin_type == 'isolated') {
 
-      if (userBalance.amount < amount) {
-        res.json({ status: "fail", message: "invalid_balance" });
-        return;
-      }
+      if (req.body.method == 'market') {
+        amount = (((userBalance.amount) * percent) / 100 / price) * req.body.leverage;
+        let usedUSDT = (amount * price) / req.body.leverage;
 
-      //let total = price * req.body.amount;
-      let imr = 1 / req.body.leverage;
-      let initialMargin = amount * price;
-      let usedUSDT;
-      if (req.body.type == 'buy') {
-        if (req.body.amount_type == "total") {
-          usedUSDT = amount * price / req.body.leverage;
+        
+
+        let reverseOreders = await MarginOrder.findOne({
+          user_id: req.body.user_id,
+          coin_id: getPair._id,
+          margin_type: margin_type,
+          status: 0,
+        }).exec();
+
+        if (reverseOreders) {
+          if (reverseOreders.leverage > leverage) {
+            res.json({ status: "fail", message: "Leverage cannot be smaller" });
+            return;
+          }
+          if (reverseOreders.type == type) {
+            let oldAmount = reverseOreders.amount;
+            let oldUsedUSDT = reverseOreders.usedUSDT;
+            let oldPNL = reverseOreders.pnl;
+            let oldLeverage = reverseOreders.leverage;
+            let newUsedUSDT = oldUsedUSDT + usedUSDT + oldPNL;
+            console.log(oldUsedUSDT, " | ", usedUSDT, " | ", oldPNL);
+            console.log(newUsedUSDT);
+            reverseOreders.usedUSDT = newUsedUSDT;
+            reverseOreders.open_price = price;
+            reverseOreders.pnl = 0;
+            reverseOreders.leverage = leverage;
+            reverseOreders.open_time = Date.now();
+            reverseOreders.amount = (newUsedUSDT * leverage) / price;
+
+            userBalance = await Wallet.findOne({
+              coin_id: MarginWalletId,
+              user_id: req.body.user_id,
+            }).exec();
+            userBalance.amount = userBalance.amount - usedUSDT;
+            await userBalance.save();
+
+            await reverseOreders.save();
+            res.json({ status: "success", data: reverseOreders });
+            return;
+          } else {
+            //Tersine ise
+            let checkusdt = (reverseOreders.usedUSDT + reverseOreders.pnl) * reverseOreders.leverage;
+            if (checkusdt == (usedUSDT * leverage)) {
+              reverseOreders.status = 1;
+              userBalance = await Wallet.findOne({
+                coin_id: MarginWalletId,
+                user_id: req.body.user_id,
+              }).exec();
+              userBalance.amount = userBalance.amount + reverseOreders.pnl + reverseOreders.usedUSDT;
+              await userBalance.save();
+              await reverseOreders.save();
+              res.json({ status: "success", data: reverseOreders });
+              return;
+            }
+
+            if (checkusdt > (usedUSDT * leverage)) {
+              let writeUsedUSDT = (reverseOreders.usedUSDT + reverseOreders.pnl) - usedUSDT;
+              if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
+              reverseOreders.usedUSDT = writeUsedUSDT;
+              reverseOreders.amount = ((writeUsedUSDT) * reverseOreders.leverage) / price;
+              userBalance = await Wallet.findOne({
+                coin_id: MarginWalletId,
+                user_id: req.body.user_id,
+              }).exec();
+              userBalance.amount = userBalance.amount + usedUSDT;
+              await userBalance.save();
+              await reverseOreders.save();
+              res.json({ status: "success", data: reverseOreders });
+              return;
+            } else {
+              
+              /*
+                20 lik işlem var
+                50 luk ters işlem açıyor
+                toplam da 10 luk pozisyon olacak
+
+
+              */
+
+                let ilkIslem = reverseOreders.usedUSDT;
+                let tersIslem = usedUSDT;
+                let data = (ilkIslem - tersIslem) ;
+                console.log("DATASSS : ", data);
+                userBalance = await Wallet.findOne({
+                  coin_id: MarginWalletId,
+                  user_id: req.body.user_id,
+                }).exec();
+                userBalance.amount = userBalance.amount + data;
+                await userBalance.save();
+
+
+              reverseOreders.type = type;
+              reverseOreders.leverage = leverage;
+              let writeUsedUSDT = ((reverseOreders.usedUSDT + reverseOreders.pnl) - usedUSDT);
+              if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
+              reverseOreders.usedUSDT = writeUsedUSDT;
+              //reverseOreders.amount = ((((reverseOreders.usedUSDT + reverseOreders.pnl) * leverage) - (usedUSDT * leverage)) / price);
+              reverseOreders.amount = ((writeUsedUSDT) * leverage) / price;
+              await reverseOreders.save();
+
+
+              
+
+              res.json({ status: "success", data: reverseOreders });
+              return;
+            }
+          }
         } else {
-          usedUSDT = (amount * price) / req.body.leverage;
-        }
-      } else {
-        //sell ise
-        usedUSDT = (amount * price) / req.body.leverage;
-      }
-
-      console.log(
-        "User balance: ",
-        userBalance.amount,
-        " | initial margin: ",
-        initialMargin
-      );
-
-      console.log(
-        "Amount ",
-        amount,
-        " | Price ",
-        price,
-        " | Leverage ",
-        req.body.leverage
-      );
-
-      let reverseOreders = await MarginOrder.find({
-        user_id: req.body.user_id,
-        coin_id: getPair._id,
-        type: req.body.type == "buy" ? "sell" : "buy",
-        margin_type: req.body.margin_type,
-        status: 0,
-      }).exec();
-
-      let marginWallet = await Wallet.findOne({
-        user_id: req.body.user_id,
-        coin_id: MarginWalletId,
-      }).exec();
-
-      console.log("Başlangıç : ", marginWallet.amount);
-      if (reverseOreders.length > 0) {
-        let cancelOrderBalance = 0.0;
-        for (var i = 0; i < reverseOreders.length; i++) {
-          if (reverseOreders[i].pair_name.replace("/", "") != urlPair) continue;
-          let _o = reverseOreders[i];
-          _o.close_price = price;
-          _o.close_time = Date.now();
-          _o.status = 1;
-          await _o.save();
-
-          marginWallet.pnl = (marginWallet.pnl) - (_o.pnl);
-          console.log(marginWallet.amount, " | ", _o.pnl, " | ", _o.usedUSDT);
-          marginWallet.amount = marginWallet.amount + _o.pnl + _o.usedUSDT;
-        }
-        console.log("Bitiş : ", marginWallet.amount, " | ", cancelOrderBalance);
-        await marginWallet.save();
-      }
-      let order = new MarginOrder({
-        pair_id: getPair._id,
-        pair_name: getPair.name,
-        type: req.body.type,
-        margin_type: req.body.margin_type,
-        method: req.body.method,
-        user_id: req.body.user_id,
-        usedUSDT: usedUSDT,
-        required_margin: initialMargin,
-        isolated: req.body.margin_type == "isolated" ? initialMargin : 0.0,
-        sl: req.body.sl ?? 0,
-        tp: req.body.tp ?? 0,
-        target_price: 0.0,
-        leverage: req.body.leverage,
-        amount: amount,
-        open_price: price,
-      });
-
-      await order.save();
-      if (req.body.margin_type == "isolated") {
-      }
-      userBalance = await Wallet.findOne({
-        user_id: req.body.user_id,
-        coin_id: MarginWalletId,
-      }).exec();
-
-      userBalance.amount = (userBalance.amount) - usedUSDT;
-      await userBalance.save();
-
-      res.json({ status: "success", data: order });
-      return;
-    } else if (req.body.method == "stop_limit") {
-      let getPair = await Pairs.findOne({ name: req.body.symbol }).exec();
-      if (getPair == null) {
-        res.json({ status: "fail", message: "invalid_pair" });
-        return;
-      }
-
-      let target_price = (req.body.target_price);
-      let stop_limit = req.body.stop_limit ?? 0.0;
-      if (stop_limit == 0) {
-        res.json({
-          status: "fail",
-          message: "Please enter stop limit",
-        });
-        return;
-      }
-      if (req.body.type == "buy") {
-        if (target_price < stop_limit) {
-          res.json({
-            status: "fail",
-            message:
-              "The limit price cannot be less than the stop price Buy limit order must be above the price",
+          let order = new MarginOrder({
+            pair_id: getPair._id,
+            pair_name: getPair.name,
+            type: type,
+            margin_type: margin_type,
+            method: method,
+            user_id: user_id,
+            usedUSDT: usedUSDT,
+            required_margin: usedUSDT,
+            isolated: usedUSDT,
+            sl: req.body.sl ?? 0,
+            tp: req.body.tp ?? 0,
+            target_price: 0.0,
+            leverage: leverage,
+            amount: amount,
+            open_price: price,
           });
-          return;
-        }
-        if (target_price >= price) {
-          res.json({
-            status: "fail",
-            message: "Buy limit order must be below the price",
-          });
+          await order.save();
+          res.json({ status: "success", data: order });
           return;
         }
       }
 
-      if (req.body.type == "sell") {
-        if (target_price > stop_limit) {
-          res.json({
-            status: "fail",
-            message:
-              "The limit price cannot be greather than the stop price Sell limit order must be above the price",
-          });
-          return;
-        }
-        if (target_price <= price) {
-          res.json({
-            status: "fail",
-            message: "Sell limit order must be below the price",
-          });
-          return;
-        }
-      }
 
-      let usedUSDT;
-      if (req.body.type == 'buy') {
-        if (req.body.amount_type == "total") {
-          usedUSDT = amount * stop_limit;
-        } else {
-          usedUSDT = (amount * stop_limit) / req.body.leverage;
-        }
-      } else {
-        //sell ise
-        usedUSDT = (amount * stop_limit) / req.body.leverage;
-      }
-
-      let order = new MarginOrder({
-        pair_id: getPair._id,
-        pair_name: getPair.name,
-        type: req.body.type,
-        margin_type: req.body.margin_type,
-        method: req.body.method,
-        user_id: req.body.user_id,
-        required_margin: 0.0,
-        usedUSDT: usedUSDT,
-        sl: req.body.sl ?? 0,
-        tp: req.body.tp ?? 0,
-        stop_limit: 0.0,
-        target_price: target_price,
-        stop_limit: req.body.stop_limit,
-        leverage: req.body.leverage,
-        amount: amount,
-        open_price: price,
-        status: 1,
-      });
-
-      await order.save();
-      res.json({ status: "success", data: order });
-      return;
-    } else if (req.body.method == "limit") {
-      let target_price = (req.body.target_price);
-      let getPair = await Pairs.findOne({ name: req.body.symbol }).exec();
-      if (getPair == null) {
-        res.json({ status: "fail", message: "invalid_pair" });
-        return;
-      }
-      var urlPair = getPair.name.replace("/", "");
-      console.log(urlPair);
-      let url =
-        'https://api.binance.com/api/v3/ticker/price?symbols=["' +
-        urlPair +
-        '"]';
-      result = await axios(url);
-      var price = result.data[0].price;
-      console.log(price);
-      if (req.body.type == "buy") {
-        if (target_price >= price) {
-          res.json({
-            status: "fail",
-            message: "The buy limit order must be below the market price.",
-          });
-          return;
-        }
-      }
-
-      if (req.body.type == "sell") {
-        if (target_price <= price) {
-          res.json({
-            status: "fail",
-            message: "The sell limit order must be above the market price.",
-          });
-          return;
-        }
-      }
-      let usedUSDT;
-      if (req.body.type == 'buy') {
-        if (req.body.amount_type == "total") {
-          usedUSDT = amount * target_price;
-        } else {
-          usedUSDT = (amount * target_price) / req.body.leverage;
-        }
-      } else {
-        //sell ise
-        usedUSDT = (amount * target_price) / req.body.leverage;
-      }
-      let order = new MarginOrder({
-        pair_id: getPair._id,
-        pair_name: getPair.name,
-        type: req.body.type,
-        margin_type: req.body.margin_type,
-        method: req.body.method,
-        user_id: req.body.user_id,
-        usedUSDT: usedUSDT,
-        required_margin: 0.0,
-        sl: req.body.sl ?? 0,
-        tp: req.body.tp ?? 0,
-        stop_limit: 0.0,
-        target_price: target_price,
-        leverage: req.body.leverage,
-        amount: amount,
-        open_price: price,
-        status: 1,
-      });
-
-      await order.save();
-      res.json({ status: "success", data: order });
-      return;
     }
   } catch (err) {
-    res.json({ status: "fail", message: err.message });
+    throw err;
   }
 });
 
@@ -1159,7 +1010,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
         let total = amount * stop_limit;
         let balance = toWalelt.amount;
 
-        
+
 
         console.log(balance, " | ", total);
         if (balance < total) {
@@ -1286,7 +1137,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     }
 
     if (req.body.method == "sell") {
-      
+
       let balance = fromWalelt.amount;
       amount = fromWalelt.amount * percent / 100;
       console.log(balance, " | ", amount);
@@ -1372,7 +1223,7 @@ route.all("/addOrders", upload.none(), async function (req, res) {
         }
       } else if (req.body.type == "market") {
         let balance = fromWalelt.amount;
-        
+
         if (balance >= amount) {
           let total = (amount) * (price);
           const orders = new Orders({
