@@ -575,6 +575,10 @@ route.post("/closeMarginOrder", async function (req, res) {
       { $set: { status: 1, close_time: Date.now(), close_price: price } }
     );
     console.log(doc);
+    if(doc.status == 1) {
+      res.json({ status: "fail", message: "Order is closed" });
+      return;
+    }
     if (doc.margin_type == "isolated") {
       let marginWallet = await Wallet.findOne({
         user_id: doc.user_id,
@@ -596,7 +600,7 @@ route.post("/closeMarginOrder", async function (req, res) {
     console.log("ok");
 
     res.json({ status: "success", data: doc });
-  } catch (err) {}
+  } catch (err) { }
 });
 
 route.post("/addMarginOrder", async function (req, res) {
@@ -639,9 +643,61 @@ route.post("/addMarginOrder", async function (req, res) {
     let url =
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
     result = await axios(url);
-    var price = result.data[0].price;
+    var price = parseFloat(result.data[0].price);
     if (margin_type == "isolated") {
-      if (req.body.method == "market") {
+      if (method == "limit") {
+        target_price = parseFloat(target_price);
+
+        if (target_price <= 0) {
+          res.json({ status: "fail", message: "Please enter a greather zero" });
+          return;
+        }
+
+        if (req.body.type == 'buy') {
+          console.log(target_price, " | ", price);
+          if (target_price >= price) {
+            console.log(target_price, " | ", price);
+            res.json({ status: "fail", message: "Please enter a smaller price then open price" });
+            return;
+          }
+        }
+        if (req.body.type == 'sell') {
+          if (target_price <= price) {
+            res.json({ status: "fail", message: "Please enter a greater price then open price" });
+            return;
+          }
+        }
+
+        amount =
+          ((userBalance.amount * percent) / 100 / target_price) * req.body.leverage;
+        let usedUSDT = (amount * target_price) / req.body.leverage;
+
+        userBalance.amount = userBalance.amount - usedUSDT;
+        await userBalance.save();
+        let order = new MarginOrder({
+          pair_id: getPair._id,
+          pair_name: getPair.name,
+          type: type,
+          margin_type: margin_type,
+          method: method,
+          user_id: user_id,
+          usedUSDT: usedUSDT,
+          required_margin: usedUSDT,
+          isolated: usedUSDT,
+          sl: req.body.sl ?? 0,
+          tp: req.body.tp ?? 0,
+          target_price: target_price,
+          leverage: leverage,
+          amount: amount,
+          open_price: target_price,
+          status: 1,
+        });
+        await order.save();
+        res.json({ status: "success", data: order });
+        return;
+
+      }
+      else if (req.body.method == "market") {
         amount =
           ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
         let usedUSDT = (amount * price) / req.body.leverage;
@@ -655,7 +711,7 @@ route.post("/addMarginOrder", async function (req, res) {
         }).exec();
 
 
-  
+
         if (reverseOreders) {
           console.log("reverse order find");
           if (reverseOreders.leverage > leverage) {
@@ -759,6 +815,12 @@ route.post("/addMarginOrder", async function (req, res) {
             }
           }
         } else {
+          userBalance = await Wallet.findOne({
+            coin_id: MarginWalletId,
+            user_id: req.body.user_id,
+          }).exec();
+          userBalance.amount = userBalance.amount - usedUSDT;
+          await userBalance.save();
           let order = new MarginOrder({
             pair_id: getPair._id,
             pair_name: getPair.name,
@@ -930,14 +992,35 @@ route.post("/deleteLimit", async function (req, res) {
 });
 
 route.post("/deleteMarginLimit", async function (req, res) {
-  await MarginOrder.findOneAndUpdate(
-    { _id: req.body.order_id, user_id: req.body.user_id, method: "limit" },
+  
+  let doc = await MarginOrder.findOneAndUpdate(
+    { _id: req.body.order_id, user_id: req.body.user_id, method: "limit", status: 1 },
     { $set: { status: -1 } }
   ).exec();
-  await MarginOrder.findOneAndUpdate(
-    { _id: req.body.order_id, user_id: req.body.user_id, method: "stop_limit" },
+  if(doc) {
+    let userBalance = await Wallet.findOne({
+      coin_id: MarginWalletId,
+      user_id: doc.user_id,
+    }).exec();
+
+    userBalance.amount = userBalance.amount + doc.usedUSDT;
+    await userBalance.save();
+  }
+  doc = await MarginOrder.findOneAndUpdate(
+    { _id: req.body.order_id, user_id: req.body.user_id, method: "stop_limit", status: 1 },
     { $set: { status: -1 } }
   ).exec();
+  if(doc) {
+    let userBalance = await Wallet.findOne({
+      coin_id: MarginWalletId,
+      user_id: doc.user_id,
+    }).exec();
+
+    userBalance.amount = userBalance.amount + doc.usedUSDT;
+    await userBalance.save();
+  }
+
+
   res.json({ status: "success", message: "removed" });
 });
 

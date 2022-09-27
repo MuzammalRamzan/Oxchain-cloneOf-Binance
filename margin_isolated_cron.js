@@ -79,42 +79,15 @@ async function initialize() {
                         let price = item.a;
                         if (order.type == 'buy') {
                             if (price <= order.target_price) {
-                                let wallet = await Wallet.findOne({
-                                    user_id: order.user_id,
-                                    coin_id: MarginWalletId,
-                                }).exec();
-                                if (wallet.amount <= order.usedUSDT) {
-                                    /*
-                                    order.status = -2;
-                                    order.close_time = Date.now();
-                                    */
-                                } else {
-                                    wallet.amount = wallet.amount - order.usedUSDT;
-                                    await wallet.save();
-                                    order.method = 'market';
-                                    order.status = 0;
-                                    order.open_price = price;
-                                }
+                                order.method = 'market';
+                                order.status = 0;
                                 await order.save();
                             }
                         } else if (order.type == 'sell') {
                             if (price >= order.target_price) {
-                                let wallet = await Wallet.findOne({
-                                    user_id: order.user_id,
-                                    coin_id: MarginWalletId,
-                                }).exec();
-                                if (wallet.amount <= order.usedUSDT) {
-                                    /*
-                                    order.status = -2;
-                                    order.close_time = Date.now();
-                                    */
-                                } else {
-                                    wallet.amount = wallet.amount - order.usedUSDT;
-                                    await wallet.save();
-                                    order.method = 'market';
+                                
+                                order.method = 'market';
                                     order.status = 0;
-                                    order.open_price = price;
-                                }
                                 await order.save();
                             }
                         }
