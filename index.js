@@ -429,6 +429,7 @@ route.all("/register", upload.none(), async (req, res) => {
           phone_number: req.body.data,
           password: utilities.hashData(req.body.password),
           api_key_result: req.body.api_key,
+          status: 1,
         });
       }
 
@@ -575,7 +576,7 @@ route.post("/closeMarginOrder", async function (req, res) {
       { $set: { status: 1, close_time: Date.now(), close_price: price } }
     );
     console.log(doc);
-    if(doc.status == 1) {
+    if (doc.status == 1) {
       res.json({ status: "fail", message: "Order is closed" });
       return;
     }
@@ -600,7 +601,7 @@ route.post("/closeMarginOrder", async function (req, res) {
     console.log("ok");
 
     res.json({ status: "success", data: doc });
-  } catch (err) { }
+  } catch (err) {}
 });
 
 route.post("/addMarginOrder", async function (req, res) {
@@ -653,23 +654,30 @@ route.post("/addMarginOrder", async function (req, res) {
           return;
         }
 
-        if (req.body.type == 'buy') {
+        if (req.body.type == "buy") {
           console.log(target_price, " | ", price);
           if (target_price >= price) {
             console.log(target_price, " | ", price);
-            res.json({ status: "fail", message: "Please enter a smaller price then open price" });
+            res.json({
+              status: "fail",
+              message: "Please enter a smaller price then open price",
+            });
             return;
           }
         }
-        if (req.body.type == 'sell') {
+        if (req.body.type == "sell") {
           if (target_price <= price) {
-            res.json({ status: "fail", message: "Please enter a greater price then open price" });
+            res.json({
+              status: "fail",
+              message: "Please enter a greater price then open price",
+            });
             return;
           }
         }
 
         amount =
-          ((userBalance.amount * percent) / 100 / target_price) * req.body.leverage;
+          ((userBalance.amount * percent) / 100 / target_price) *
+          req.body.leverage;
         let usedUSDT = (amount * target_price) / req.body.leverage;
 
         userBalance.amount = userBalance.amount - usedUSDT;
@@ -695,13 +703,10 @@ route.post("/addMarginOrder", async function (req, res) {
         await order.save();
         res.json({ status: "success", data: order });
         return;
-
-      }
-      else if (req.body.method == "market") {
+      } else if (req.body.method == "market") {
         amount =
           ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
         let usedUSDT = (amount * price) / req.body.leverage;
-
 
         let reverseOreders = await MarginOrder.findOne({
           user_id: req.body.user_id,
@@ -709,8 +714,6 @@ route.post("/addMarginOrder", async function (req, res) {
           margin_type: margin_type,
           status: 0,
         }).exec();
-
-
 
         if (reverseOreders) {
           console.log("reverse order find");
@@ -992,12 +995,16 @@ route.post("/deleteLimit", async function (req, res) {
 });
 
 route.post("/deleteMarginLimit", async function (req, res) {
-  
   let doc = await MarginOrder.findOneAndUpdate(
-    { _id: req.body.order_id, user_id: req.body.user_id, method: "limit", status: 1 },
+    {
+      _id: req.body.order_id,
+      user_id: req.body.user_id,
+      method: "limit",
+      status: 1,
+    },
     { $set: { status: -1 } }
   ).exec();
-  if(doc) {
+  if (doc) {
     let userBalance = await Wallet.findOne({
       coin_id: MarginWalletId,
       user_id: doc.user_id,
@@ -1007,10 +1014,15 @@ route.post("/deleteMarginLimit", async function (req, res) {
     await userBalance.save();
   }
   doc = await MarginOrder.findOneAndUpdate(
-    { _id: req.body.order_id, user_id: req.body.user_id, method: "stop_limit", status: 1 },
+    {
+      _id: req.body.order_id,
+      user_id: req.body.user_id,
+      method: "stop_limit",
+      status: 1,
+    },
     { $set: { status: -1 } }
   ).exec();
-  if(doc) {
+  if (doc) {
     let userBalance = await Wallet.findOne({
       coin_id: MarginWalletId,
       user_id: doc.user_id,
@@ -1019,7 +1031,6 @@ route.post("/deleteMarginLimit", async function (req, res) {
     userBalance.amount = userBalance.amount + doc.usedUSDT;
     await userBalance.save();
   }
-
 
   res.json({ status: "success", message: "removed" });
 });
