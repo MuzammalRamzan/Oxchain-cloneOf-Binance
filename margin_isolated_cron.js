@@ -77,18 +77,36 @@ async function initialize() {
                     let item = list.find(x => x.s == order.pair_name.replace('/', ''));
                     if (item != null && item != '') {
                         let price = item.a;
-                        if (order.type == 'buy') {
-                            if (price <= order.target_price) {
-                                order.method = 'market';
-                                order.status = 0;
-                                await order.save();
-                            }
-                        } else if (order.type == 'sell') {
-                            if (price >= order.target_price) {
-                                
-                                order.method = 'market';
+                        console.log(order.stop_limit);
+                        if (order.stop_limit != 0) {
+                            if (order.type == 'buy') {
+                                if (price >= order.target_price) {
+                                    order.method = 'market';
                                     order.status = 0;
-                                await order.save();
+                                    await order.save();
+                                }
+                            } else if (order.type == 'sell') {
+                                if (price <= order.target_price) {
+
+                                    order.method = 'market';
+                                    order.status = 0;
+                                    await order.save();
+                                }
+                            }
+                        } else {
+                            if (order.type == 'buy') {
+                                if (price <= order.target_price) {
+                                    order.method = 'market';
+                                    order.status = 0;
+                                    await order.save();
+                                }
+                            } else if (order.type == 'sell') {
+                                if (price >= order.target_price) {
+
+                                    order.method = 'market';
+                                    order.status = 0;
+                                    await order.save();
+                                }
                             }
                         }
                     }
@@ -98,43 +116,13 @@ async function initialize() {
                     if (item != null && item != '') {
                         let price = item.a;
                         if (order.type == 'buy') {
-                            if (price <= order.target_price) {
-                                let wallet = await Wallet.findOne({
-                                    user_id: order.user_id,
-                                    coin_id: MarginWalletId,
-                                }).exec();
-                                if (wallet.amount <= order.usedUSDT) {
-                                    /*
-                                    order.status = -2;
-                                    order.close_time = Date.now();
-                                    */
-                                } else {
-                                    wallet.amount = wallet.amount - order.usedUSDT;
-                                    await wallet.save();
-                                    order.method = 'market';
-                                    order.status = 0;
-                                    order.open_price = price;
-                                }
+                            if (price >= order.stop_limit) {
+                                order.method = 'limit';
                                 await order.save();
                             }
                         } else if (order.type == 'sell') {
-                            if (price >= order.target_price) {
-                                let wallet = await Wallet.findOne({
-                                    user_id: order.user_id,
-                                    coin_id: MarginWalletId,
-                                }).exec();
-                                if (wallet.amount <= order.usedUSDT) {
-                                    /*
-                                    order.status = -2;
-                                    order.close_time = Date.now();
-                                    */
-                                } else {
-                                    wallet.amount = wallet.amount - order.usedUSDT;
-                                    await wallet.save();
-                                    order.method = 'market';
-                                    order.status = 0;
-                                    order.open_price = price;
-                                }
+                            if (price <= order.stop_limit) {
+                                order.method = 'limit';
                                 await order.save();
                             }
                         }

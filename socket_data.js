@@ -31,6 +31,7 @@ async function main() {
                GetOrders(ws, json.user_id, json.spot_order_type ?? '');
                GetMarginOrders(ws, json.user_id, json.margin_order_type, json.margin_order_method_type);
                GetMarginBalance(ws, json.user_id);
+
             }
 
          });
@@ -44,7 +45,7 @@ main();
 
 
 async function GetBinanceData(ws, pair) {
-   if(pair == '' || pair == null || pair == 'undefined') return;
+   if (pair == '' || pair == null || pair == 'undefined') return;
    var b_ws = new WebSocket("wss://stream.binance.com/stream");
 
    // BNB_USDT => bnbusdt
@@ -90,40 +91,55 @@ async function GetBinanceData(ws, pair) {
 
 async function CalculateMarginBalance(user_id) {
    let totalPNL = 0.0;
-     let getOpenOrders = await MarginOrder.aggregate([
-        {
-          $match: { status: 0, method: "market", margin_type: "cross" },
-        },
+   let getOpenOrders = await MarginOrder.aggregate([
+      {
+         $match: { user_id: user_id, status: 0, method: "market", margin_type: "cross" },
+      },
 
-        {
-          $group: {
+      {
+         $group: {
             _id: "$user_id",
             total: { $sum: "$pnl" },
             usedUSDT: { $sum: "$usedUSDT" },
-          },
-        },
-      ]);
+         },
+      },
+   ]);
    let wallet = await Wallet.findOne({ user_id: user_id, coin_id: MarginWalletId }).exec();
-   if(wallet == null) return 0;
+   if (getOpenOrders.length == 0) return wallet.amount;
+   if (wallet == null) return 0;
+   let balance = (wallet.amount + getOpenOrders[0].total);
+   if (balance < 0) return 0;
+   return balance;
+   /*
    let totalUSDT = 0.0;
    for (var n = 0; n < getOpenOrders.length; n++) {
       totalPNL = totalPNL + (getOpenOrders[n].total);
       totalUSDT = getOpenOrders[n].usedUSDT;
    }
-   let balance = (wallet.amount);
-   console.log("B : ", balance);
-   return balance;
+   */
+
 }
+
 
 async function GetMarginBalance(ws, user_id) {
    let balance = await CalculateMarginBalance(user_id);
-   console.log("balance : ", balance);
-   ws.send(JSON.stringify({ type: "margin_balance", content: balance }));
+   if (balance <= 0) {
+      ws.send(JSON.stringify({ type: "margin_balance", content: 0.0 }));
+   } else {
+      ws.send(JSON.stringify({ type: "margin_balance", content: balance }));
+   }
    let isUpdate = Wallet.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
       balance = await CalculateMarginBalance(user_id)
-      ws.send(JSON.stringify({ type: "margin_balance", content: balance }));
+      if (balance <= 0) {
+         ws.send(JSON.stringify({ type: "margin_balance", content: 0.0 }));
+
+      } else {
+
+         ws.send(JSON.stringify({ type: "margin_balance", content: balance }));
+      }
    });
 }
+
 
 
 async function SendWallet(ws, _wallets) {
@@ -211,7 +227,7 @@ async function GetOrders(ws, user_id, type) {
 
 async function GetMarginOrders(ws, user_id, margin_order_type, margin_order_method_type) {
    console.log("Margin orders");
-      console.log(user_id);
+   console.log(user_id);
    let request = { user_id: user_id, status: { $gt: -1 } };
 
    if (margin_order_type != null && margin_order_type != "") request['margin_type'] = margin_order_type;
@@ -219,27 +235,111 @@ async function GetMarginOrders(ws, user_id, margin_order_type, margin_order_meth
 
 
    let orders = await MarginOrder.find(request).exec();
-   ws.send(JSON.stringify({ type: 'margin_orders', content: orders }));
+
+   ws.send(JSON.stringify({ type: 'margin_orders', content: await GetLiqPrice(orders) }));
    let isInsert = MarginOrder.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
       //orders = data;
       console.log("inserted");
       orders = await MarginOrder.find(request).exec();
-      ws.send(JSON.stringify({ type: 'margin_orders', content: orders }));
+      ws.send(JSON.stringify({ type: 'margin_orders', content: await GetLiqPrice(orders) }));
    });
    let isUpdate = MarginOrder.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
       orders = await MarginOrder.find(request).exec();
-      ws.send(JSON.stringify({ type: 'margin_orders', content: orders }));
+      ws.send(JSON.stringify({ type: 'margin_orders', content: await GetLiqPrice(orders) }));
    });
    let isRemove = MarginOrder.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
       console.log("silindi");
       orders = await MarginOrder.find(request).exec();
-      ws.send(JSON.stringify({ type: 'margin_orders', content: orders }));
+      ws.send(JSON.stringify({ type: 'margin_orders', content: await GetLiqPrice(orders) }));
    });
 
    let isDelete = MarginOrder.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
       console.log("silindi 2");
       orders = await MarginOrder.find(request).exec();
-      ws.send(JSON.stringify({ type: 'margin_orders', content: orders }));
+      ws.send(JSON.stringify({ type: 'margin_orders', content: await öGetLiqPrice(orders) }));
    });
+
+}
+
+
+async function GetCrossLiqPrice(order) {
+   let getOpenOrders = await MarginOrder.aggregate([
+      {
+         $match: { user_id: order.user_id, status: 0, method: "market", margin_type: "cross" },
+      },
+
+      {
+         $group: {
+            _id: "$user_id",
+            total: { $sum: "$pnl" },
+            usedUSDT: { $sum: "$usedUSDT" },
+         },
+      },
+   ]);
+
+   let wallet = await Wallet.findOne({ user_id: order.user_id, coin_id: MarginWalletId }).exec();
+   /*
+   
+   Giriş Fiyatı - ( (kasa/ used USDT) x (giriş fiyatı / kaldıraç) )
+   
+   
+   
+   cross için kasa hesaplanırken tüm pozisyonların pnl i + usedUSDT si + marginWalletAmount
+   */
+   let totalWallet = wallet.amount;
+
+   if (totalWallet < 0) {
+      totalWallet = 0;
+   }
+   /*
+   console.log("Wallet amount : ", wallet.amount);
+   console.log("\n---\n");
+   console.log("Total Wallet Birinci : ", totalWallet);
+   console.log("Order Data : ");
+   console.log(order.pair_name + " | ", order.method, " | ", order.margin_type, " | ", order.status, " | ", order.leverage, " | ", order.open_price);
+   console.log("\n---\n");
+   console.log("Total Wallet : ", totalWallet);
+   console.log("\n---\n");
+   console.log("PNL : ", (order.pnl));
+   console.log("TOTAL : ", (getOpenOrders[0].total));
+   */
+
+   let order_total = 0;
+   let order_usedUSDT = 0;
+   if (getOpenOrders.length > 0) {
+      order_total = getOpenOrders[0].total
+      order_usedUSDT = getOpenOrders[0].usedUSDT;
+   }
+   let kasa = (totalWallet + (order_total - order.pnl) + order_usedUSDT);
+   let liqPrice = 0.0;
+   if (order.type == 'buy')
+      liqPrice = order.open_price - (kasa / order_usedUSDT) * (order.open_price / order.leverage);
+   else
+      liqPrice = order.open_price + (kasa / order_usedUSDT) * (order.open_price / order.leverage);
+   order.liqPrice = liqPrice;
+   return order;
+}
+
+async function GetLiqPrice(orders) {
+
+   for (var i = 0; i < orders.length; i++) {
+      let order = orders[i];
+      if (order.status == 1) continue;
+      if (order.method == 'market') {
+         if (order.margin_type == 'isolated') {
+            if (order.type == 'buy') {
+               order.liqPrice = (order.open_price - (order.open_price / order.leverage));
+               orders[i] = order;
+            } else {
+               order.liqPrice = (order.open_price + (order.open_price / order.leverage));
+               orders[i] = order;
+            }
+         }
+         else if (order.margin_type == 'cross') {
+            orders[i] = await GetCrossLiqPrice(order);
+         }
+      }
+   }
+   return orders;
 
 }

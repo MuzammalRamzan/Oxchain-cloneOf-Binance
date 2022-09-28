@@ -9,6 +9,7 @@ const Wallet = require("./models/Wallet.js");
 const Orders = require("./models/Orders.js");
 const UserRef = require("./models/UserRef.js");
 const User = require("./models/Test.js");
+const Pairs = require("./models/Pairs.js");
 var mongodbPass = process.env.MONGO_DB_PASS;
 
 const io = new Server();
@@ -48,10 +49,11 @@ async function initialize() {
   const allTickers = new WebSocket(
     "wss://stream.binance.com:9443/ws/!ticker@arr"
   );
+
+
   allTickers.onopen = () => {
     allTickers.onmessage = async (data) => {
       let list = JSON.parse(data.data);
-
       let limitOrders = await MarginOrder.find(
         {
           $and: [
@@ -71,47 +73,45 @@ async function initialize() {
         }
       );
 
+      
       for (var i = 0; i < limitOrders.length; i++) {
         let order = limitOrders[i];
+        
         if (order.method == 'limit') {
           let item = list.find(x => x.s == order.pair_name.replace('/', ''));
           if (item != null && item != '') {
             let price = item.a;
-            if (order.type == 'buy') {
-              if (price <= order.target_price) {
-                let wallet = await Wallet.findOne({
-                  user_id: order.user_id,
-                  coin_id: MarginWalletId,
-                }).exec();
-                if (wallet.amount <= order.usedUSDT) {
-                  order.status = -2;
-                  order.close_time = Date.now();
-                } else {
-                  wallet.amount = wallet.amount - order.usedUSDT;
-                  await wallet.save();
+            console.log(price);
+            console.log(order.stop_limit);
+            if (order.stop_limit != 0) {
+              if (order.type == 'buy') {
+                if (price >= order.target_price) {
                   order.method = 'market';
                   order.status = 0;
-                  order.open_price = price;
+                  await order.save();
                 }
-                await order.save();
+              } else if (order.type == 'sell') {
+                if (price <= order.target_price) {
+
+                  order.method = 'market';
+                  order.status = 0;
+                  await order.save();
+                }
               }
-            } else if (order.type == 'sell') {
-              if (price >= order.target_price) {
-                let wallet = await Wallet.findOne({
-                  user_id: order.user_id,
-                  coin_id: MarginWalletId,
-                }).exec();
-                if (wallet.amount <= order.usedUSDT) {
-                  order.status = -2;
-                  order.close_time = Date.now();
-                } else {
-                  wallet.amount = wallet.amount - order.usedUSDT;
-                  await wallet.save();
+            } else {
+              if (order.type == 'buy') {
+                if (price <= order.target_price) {
                   order.method = 'market';
                   order.status = 0;
-                  order.open_price = price;
+                  await order.save();
                 }
-                await order.save();
+              } else if (order.type == 'sell') {
+                if (price >= order.target_price) {
+
+                  order.method = 'market';
+                  order.status = 0;
+                  await order.save();
+                }
               }
             }
           }
@@ -121,39 +121,13 @@ async function initialize() {
           if (item != null && item != '') {
             let price = item.a;
             if (order.type == 'buy') {
-              if (price <= order.target_price) {
-                let wallet = await Wallet.findOne({
-                  user_id: order.user_id,
-                  coin_id: MarginWalletId,
-                }).exec();
-                if(wallet.amount <= order.usedUSDT) {
-                  order.status = -2;
-                  order.close_time = Date.now();
-                } else {
-                  wallet.amount = wallet.amount - order.usedUSDT;
-                  await wallet.save();
-                  order.method = 'market';
-                  order.status = 0;
-                  order.open_price = price;
-                }
+              if (price >= order.stop_limit) {
+                order.method = 'limit';
                 await order.save();
               }
             } else if (order.type == 'sell') {
-              if (price >= order.target_price) {
-                let wallet = await Wallet.findOne({
-                  user_id: order.user_id,
-                  coin_id: MarginWalletId,
-                }).exec();
-                if(wallet.amount <= order.usedUSDT) {
-                  order.status = -2;
-                  order.close_time = Date.now();
-                } else {
-                  wallet.amount = wallet.amount - order.usedUSDT;
-                  await wallet.save();
-                  order.method = 'market';
-                  order.status = 0;
-                  order.open_price = price;
-                }
+              if (price <= order.stop_limit) {
+                order.method = 'limit';
                 await order.save();
               }
             }
@@ -161,7 +135,6 @@ async function initialize() {
         }
       }
 
-      let totalPNL = 0.0;
       let getOpenOrders = await MarginOrder.aggregate([
         {
           $match: { status: 0, method: "market", margin_type: "cross" },
@@ -175,78 +148,62 @@ async function initialize() {
           },
         },
       ]);
+      let totalPNL = 0.0;
+      for (var i = 0; i < getOpenOrders.length; i++) {
+        let data = getOpenOrders[i];
+        let total = parseFloat(data.total) + parseFloat(data.usedUSDT);
 
-      for (var n = 0; n < getOpenOrders.length; n++) {
         let wallet = await Wallet.findOne({
-          user_id: getOpenOrders[n]._id,
+          user_id: data._id,
           coin_id: MarginWalletId,
         }).exec();
         let marginWalletAmount = wallet.amount;
 
         //buraya isoleden gelen aktif emirlerin ana yatırma bakiyesini eklemeliyiz çünkü bütün margin wallet bakiyesini değiştiriyor bu fonksiyon
-        wallet.pnl = getOpenOrders[n].total;
+        wallet.pnl = data.total;
         await wallet.save();
 
-        totalPNL = (getOpenOrders[n].total);
-
-
         let totalWallet =
-          marginWalletAmount + (totalPNL + getOpenOrders[n].usedUSDT);
+          marginWalletAmount + (data.total + data.usedUSDT);
+
+          console.log(data.total + " | " + data.usedUSDT);
+          console.log(totalWallet);
 
         if (totalWallet <= 0) {
           wallet.pnl = 0;
           wallet.amount = 0;
-          await MarginOrder.updateMany({ user_id: getOpenOrders[n]._id, margin_type: 'cross', status: 0 }, { $set: { status: 1 } }).exec()
-          await MarginOrder.updateMany({ user_id: getOpenOrders[n]._id, margin_type: 'cross', method: 'limit' }, { $set: { status: -3 } }).exec()
-          await MarginOrder.updateMany({ user_id: getOpenOrders[n]._id, margin_type: 'cross', method: 'stop_limit' }, { $set: { status: -3 } }).exec()
+          await MarginOrder.updateMany({ user_id: data._id, margin_type: 'cross', status: 0 }, { $set: { status: 1 } }).exec()
+          await MarginOrder.updateMany({ user_id: data._id, margin_type: 'cross', method: 'limit' }, { $set: { status: -3 } }).exec()
+          await MarginOrder.updateMany({ user_id: data._id, margin_type: 'cross', method: 'stop_limit' }, { $set: { status: -3 } }).exec()
 
         } else {
-          wallet.pnl = getOpenOrders[n].total;
+          wallet.pnl = data.total;
         }
         //
         await wallet.save();
-        let orders = await MarginOrder.find({
-          user_id: getOpenOrders[n]._id,
-          status: 0,
-          method: "market",
-          margin_type: "cross",
-        }).exec();
 
-        let pnl = 0;
-        for (var t = 0; t < list.length; t++) {
-          for (var i = 0; i < orders.length; i++) {
-            let order = orders[i];
-
-            if (order.pair_name.replace("/", "") == list[t].s) {
-              let price = (list[t].a);
-              if (order.type == "buy") {
-                pnl = (price - order.open_price) * order.amount;
-              } else {
-                pnl = (order.open_price - price) * order.amount;
-              }
-
-              console.log(
-                "Total Wallet : ",
-                totalWallet,
-                "Type :",
-                order.type,
-                "Price : ",
-                price,
-                " Order Price : ",
-                order.open_price,
-                " PNL : ",
-                pnl,
-                " Amount : ",
-                order.amount
-              );
-
+        let userOrders = await MarginOrder.find({ user_id: data._id, method: 'market', margin_type: 'cross' }).exec();
+        for (var k = 0; k < userOrders.length; k++) {
+          let order = userOrders[k];
+          if (order.status == 1) continue;
+          let findBinanceItem = list.filter(x => x.s == order.pair_name.replace('/', ''));
+          if (findBinanceItem != null) {
+            let item = findBinanceItem[0];
+            if (order.type == 'buy') {
+              let price = item.a;
+              console.log(price);
+              let pnl = (price - order.open_price) * order.amount;
+              order.pnl = pnl;
+              await order.save();
+            } else {
+              let price = item.a;
+              let pnl = (order.open_price - price) * order.amount;
               order.pnl = pnl;
               await order.save();
             }
           }
+
         }
-
-
       }
 
 

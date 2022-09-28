@@ -21,6 +21,7 @@ const MarginOrderSchema = new mongoose.Schema({
   usedUSDT: { type: Number, required: false, default: null },
   close_price: { type: Number, required: false },
   close_time: { type: Date },
+  liqPrice : {type: Number, required:false, default: 0.0},
   pnl: { type: Number, default: 0.0, required: false },
   status: { type: Number, required: false, default: 0 },
   createdAt: {
