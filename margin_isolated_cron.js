@@ -145,7 +145,11 @@ async function initialize() {
                         if (order.type == "buy") {
                             let liqPrice = (order.open_price - (order.open_price / order.leverage));
                             pnl = (price - order.open_price) * order.amount;
+                            let reverseUsedUSDT = order.usedUSDT * -1;
                             if (order.open_price <= liqPrice) {
+                                order.status = 1;
+                            }
+                            if(pnl <= reverseUsedUSDT) {
                                 order.status = 1;
                             }
                         } else {
@@ -154,6 +158,10 @@ async function initialize() {
                             if (order.open_price >= liqPrice) {
                                 order.status = 1;
                             }
+                            if(pnl <= reverseUsedUSDT) {
+                                order.status = 1;
+                            }
+
                         }
                         order.pnl = pnl;
                         await order.save();
