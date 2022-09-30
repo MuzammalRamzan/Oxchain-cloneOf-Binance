@@ -153,12 +153,13 @@ async function initialize() {
         let data = getOpenOrders[i];
         let total = parseFloat(data.total) + parseFloat(data.usedUSDT);
 
+
         let wallet = await Wallet.findOne({
           user_id: data._id,
           coin_id: MarginWalletId,
         }).exec();
         let marginWalletAmount = wallet.amount;
-
+        
         //buraya isoleden gelen aktif emirlerin ana yatırma bakiyesini eklemeliyiz çünkü bütün margin wallet bakiyesini değiştiriyor bu fonksiyon
         wallet.pnl = data.total;
         await wallet.save();

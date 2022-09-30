@@ -143,19 +143,20 @@ async function initialize() {
                     if (order.pair_name.replace("/", "") == list[t].s) {
                         let price = (list[t].a);
                         if (order.type == "buy") {
+                            let liqPrice = (order.open_price - (order.open_price / order.leverage));
                             pnl = (price - order.open_price) * order.amount;
+                            if (order.open_price <= liqPrice) {
+                                order.status = 1;
+                            }
                         } else {
                             pnl = (order.open_price - price) * order.amount;
+                            let liqPrice = (order.open_price + (order.open_price / order.leverage));
+                            if (order.open_price >= liqPrice) {
+                                order.status = 1;
+                            }
                         }
-                        if ((order.usedUSDT + pnl) <= 0) {
-                            /*
-                            order.status = -2;
-                            await order.save();
-                            */
-                        } else {
-                            order.pnl = pnl;
-                            await order.save();
-                        }
+                        order.pnl = pnl;
+                        await order.save();
 
                         console.log(
 

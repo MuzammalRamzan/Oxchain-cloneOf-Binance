@@ -96,6 +96,7 @@ function parseUsers(ref_user, user_table) {
 }
 
 route.all("/login", upload.none(), async (req, res) => {
+  console.log("Loginstart");
   let newRegisteredId;
   var api_key_result = req.body.api_key;
   var deviceName = "null";
@@ -167,6 +168,7 @@ route.all("/login", upload.none(), async (req, res) => {
 
           if (walletResult === null) {
             if (coins[i].symbol === "ETH") {
+              console.log("Start ETH");
               let url = "http://34.239.168.239:4455/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
@@ -174,6 +176,7 @@ route.all("/login", upload.none(), async (req, res) => {
             }
 
             if (coins[i].symbol === "BNB") {
+              console.log("Start BNB");
               let url = "http://44.203.2.70:4458/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
@@ -181,6 +184,7 @@ route.all("/login", upload.none(), async (req, res) => {
             }
 
             if (coins[i].symbol === "USDT") {
+              console.log("Start USDT");
               let url = "http://54.172.40.148:4456/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
@@ -188,6 +192,7 @@ route.all("/login", upload.none(), async (req, res) => {
             }
 
             if (coins[i].symbol === "Margin") {
+              console.log("Start Margin");
               let getUsdtWalelt = await Wallet.find({ symbol: "USDT" }).exec();
 
               privateKey = getUsdtWalelt.privateKey;
@@ -195,6 +200,7 @@ route.all("/login", upload.none(), async (req, res) => {
             }
 
             if (coins[i].symbol === "BTC") {
+              console.log("Start BTC");
               let createBTC = await axios.request({
                 method: "post",
                 url: "http://3.15.2.155",
@@ -207,6 +213,8 @@ route.all("/login", upload.none(), async (req, res) => {
               address = createBTC.data.message;
             }
           }
+
+          console.log("Cüzdan var");
 
           const newWallet = new Wallet({
             name: coins[i]["name"],
@@ -279,7 +287,7 @@ route.all("/login", upload.none(), async (req, res) => {
             });
             newNotificationToken.save(function (err, room) {
               if (err) {
-                console.log(err);
+                throw err;
               } else {
                 res.json({ status: "success", data: data });
               }
@@ -370,6 +378,7 @@ route.all("/sendMailPin", async function (req, res) {
 });
 
 route.all("/register", upload.none(), async (req, res) => {
+  
   var registerType = req.body.registerType;
   var data = req.body.data;
   var pin = req.body.pin;
@@ -422,6 +431,7 @@ route.all("/register", upload.none(), async (req, res) => {
           email: data,
           password: utilities.hashData(req.body.password),
           api_key_result: req.body.api_key,
+          status:1
         });
       } else {
         newUser = new User({
