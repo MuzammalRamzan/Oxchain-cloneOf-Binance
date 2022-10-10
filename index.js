@@ -16,6 +16,7 @@ const CopyLeaderRequest = require("./models/CopyTradeLeaderRequest");
 const axios = require("axios");
 const NotificationTokens = require("./models/NotificationTokens");
 const Withdraws = require("./models/Withdraw");
+const RegisteredAddress = require("./models/RegisteredAddress");
 var authFile = require("./auth.js");
 var notifications = require("./notifications.js");
 var utilities = require("./utilities.js");
@@ -378,7 +379,6 @@ route.all("/sendMailPin", async function (req, res) {
 });
 
 route.all("/register", upload.none(), async (req, res) => {
-  
   var registerType = req.body.registerType;
   var data = req.body.data;
   var pin = req.body.pin;
@@ -431,7 +431,7 @@ route.all("/register", upload.none(), async (req, res) => {
           email: data,
           password: utilities.hashData(req.body.password),
           api_key_result: req.body.api_key,
-          status:1
+          status: 1,
         });
       } else {
         newUser = new User({
@@ -611,7 +611,7 @@ route.post("/closeMarginOrder", async function (req, res) {
     console.log("ok");
 
     res.json({ status: "success", data: doc });
-  } catch (err) { }
+  } catch (err) {}
 });
 
 route.post("/addMarginOrder", async function (req, res) {
@@ -680,7 +680,7 @@ route.post("/addMarginOrder", async function (req, res) {
           user_id: user_id,
           usedUSDT: usedUSDT,
           required_margin: usedUSDT,
-          isolated: 0.00,
+          isolated: 0.0,
           sl: req.body.sl ?? 0,
           tp: req.body.tp ?? 0,
           target_price: target_price,
@@ -692,45 +692,59 @@ route.post("/addMarginOrder", async function (req, res) {
         await order.save();
         res.json({ status: "success", data: order });
         return;
-      }
-      else if (method == "stop_limit") {
+      } else if (method == "stop_limit") {
         target_price = parseFloat(target_price);
 
         if (target_price <= 0) {
-          res.json({ status: "fail", message: "Limit price must be greater than 0." });
+          res.json({
+            status: "fail",
+            message: "Limit price must be greater than 0.",
+          });
           return;
         }
 
         if (stop_limit <= 0) {
-          res.json({ status: "fail", message: "Stop limit must be greater than 0." });
+          res.json({
+            status: "fail",
+            message: "Stop limit must be greater than 0.",
+          });
           return;
         }
 
-
-        if (type == 'buy') {
+        if (type == "buy") {
           if (stop_limit > target_price) {
-            res.json({ status: "fail", message: "Stop limit price can't be greater then target price" });
+            res.json({
+              status: "fail",
+              message: "Stop limit price can't be greater then target price",
+            });
             return;
           }
 
           if (price > stop_limit) {
-            res.json({ status: "fail", message: "Price can't be greater than stop price" });
+            res.json({
+              status: "fail",
+              message: "Price can't be greater than stop price",
+            });
             return;
           }
         }
 
-        if (type == 'sell') {
+        if (type == "sell") {
           if (stop_limit < target_price) {
-            res.json({ status: "fail", message: "Stop limit price can't be smaller then target price" });
+            res.json({
+              status: "fail",
+              message: "Stop limit price can't be smaller then target price",
+            });
             return;
           }
           if (price < stop_limit) {
-            res.json({ status: "fail", message: "Price can't be smaller than stop price" });
+            res.json({
+              status: "fail",
+              message: "Price can't be smaller than stop price",
+            });
             return;
           }
         }
-
-
 
         amount =
           ((userBalance.amount * percent) / 100 / target_price) *
@@ -748,7 +762,7 @@ route.post("/addMarginOrder", async function (req, res) {
           user_id: user_id,
           usedUSDT: usedUSDT,
           required_margin: usedUSDT,
-          isolated: 0.00,
+          isolated: 0.0,
           sl: req.body.sl ?? 0,
           tp: req.body.tp ?? 0,
           target_price: target_price,
@@ -761,8 +775,7 @@ route.post("/addMarginOrder", async function (req, res) {
         await order.save();
         res.json({ status: "success", data: order });
         return;
-      }
-      else if (req.body.method == "market") {
+      } else if (req.body.method == "market") {
         amount =
           ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
         let usedUSDT = (amount * price) / req.body.leverage;
@@ -905,10 +918,7 @@ route.post("/addMarginOrder", async function (req, res) {
           return;
         }
       }
-    }
-
-
-    else if (margin_type == "cross") {
+    } else if (margin_type == "cross") {
       if (method == "limit") {
         target_price = parseFloat(target_price);
 
@@ -933,7 +943,7 @@ route.post("/addMarginOrder", async function (req, res) {
           user_id: user_id,
           usedUSDT: usedUSDT,
           required_margin: usedUSDT,
-          isolated: 0.00,
+          isolated: 0.0,
           sl: req.body.sl ?? 0,
           tp: req.body.tp ?? 0,
           target_price: target_price,
@@ -945,45 +955,59 @@ route.post("/addMarginOrder", async function (req, res) {
         await order.save();
         res.json({ status: "success", data: order });
         return;
-      }
-      else if (method == "stop_limit") {
+      } else if (method == "stop_limit") {
         target_price = parseFloat(target_price);
 
         if (target_price <= 0) {
-          res.json({ status: "fail", message: "Limit price must be greater than 0." });
+          res.json({
+            status: "fail",
+            message: "Limit price must be greater than 0.",
+          });
           return;
         }
 
         if (stop_limit <= 0) {
-          res.json({ status: "fail", message: "Stop limit must be greater than 0." });
+          res.json({
+            status: "fail",
+            message: "Stop limit must be greater than 0.",
+          });
           return;
         }
 
-
-        if (type == 'buy') {
+        if (type == "buy") {
           if (stop_limit > target_price) {
-            res.json({ status: "fail", message: "Stop limit price can't be greater then target price" });
+            res.json({
+              status: "fail",
+              message: "Stop limit price can't be greater then target price",
+            });
             return;
           }
 
           if (price > stop_limit) {
-            res.json({ status: "fail", message: "Price can't be greater than stop price" });
+            res.json({
+              status: "fail",
+              message: "Price can't be greater than stop price",
+            });
             return;
           }
         }
 
-        if (type == 'sell') {
+        if (type == "sell") {
           if (stop_limit < target_price) {
-            res.json({ status: "fail", message: "Stop limit price can't be smaller then target price" });
+            res.json({
+              status: "fail",
+              message: "Stop limit price can't be smaller then target price",
+            });
             return;
           }
           if (price < stop_limit) {
-            res.json({ status: "fail", message: "Price can't be smaller than stop price" });
+            res.json({
+              status: "fail",
+              message: "Price can't be smaller than stop price",
+            });
             return;
           }
         }
-
-
 
         amount =
           ((userBalance.amount * percent) / 100 / target_price) *
@@ -1001,7 +1025,7 @@ route.post("/addMarginOrder", async function (req, res) {
           user_id: user_id,
           usedUSDT: usedUSDT,
           required_margin: usedUSDT,
-          isolated: 0.00,
+          isolated: 0.0,
           sl: req.body.sl ?? 0,
           tp: req.body.tp ?? 0,
           target_price: target_price,
@@ -1014,8 +1038,7 @@ route.post("/addMarginOrder", async function (req, res) {
         await order.save();
         res.json({ status: "success", data: order });
         return;
-      }
-      else if (req.body.method == "market") {
+      } else if (req.body.method == "market") {
         amount =
           ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
         let usedUSDT = (amount * price) / req.body.leverage;
@@ -1658,6 +1681,74 @@ route.all("/addOrders", upload.none(), async function (req, res) {
     res.json({ status: "fail", message: "unknow_error" });
   }
 });
+
+route.all("/disableAccount", upload.none(), async function (req, res) {
+  var api_key_result = req.body.api_key;
+
+  let result = await authFile.apiKeyChecker(api_key_result);
+
+  if (result === true) {
+    let user = await User.findOne({ _id: req.body.user_id });
+
+    if (user) {
+      user.status = 0;
+      await user.save();
+      res.json({ status: "success", message: "Account disabled" });
+    } else {
+      res.json({ status: "fail", message: "Invalid user" });
+    }
+  } else {
+    res.json({ status: "fail", message: "invalid_api_key" });
+    return;
+  }
+});
+
+route.all("/addNewRegisteredAddress", upload.none(), async function (req, res) {
+  var api_key_result = req.body.api_key;
+
+  let result = await authFile.apiKeyChecker(api_key_result);
+
+  if (result === true) {
+    let user = await User.findOne({ _id: req.body.user_id });
+
+    if (user) {
+      let newAddress = new RegisteredAddress({
+        user_id: req.body.user_id,
+        address: req.body.address,
+        coin_id: req.body.coin_id,
+        tag: req.body.tag,
+      });
+
+      let saved = await newAddress.save();
+      if (saved) {
+        res.json({ status: "success", message: saved });
+      }
+    } else {
+      res.json({ status: "fail", message: "Invalid user" });
+    }
+  } else {
+    res.json({ status: "fail", message: "invalid_api_key" });
+    return;
+  }
+});
+
+route.all(
+  "/getRegisteredAddressList",
+  upload.none(),
+  async function (req, res) {
+    var api_key_result = req.body.api_key;
+  }
+);
+
+route.all(
+  "/enableWithdrawalWhiteList",
+  upload.none(),
+  async function (req, res) {
+
+
+    
+  }
+);
 
 route.all("/addNotification", upload.none(), async function (req, res) {
   var api_key_result = req.body.api_key;
