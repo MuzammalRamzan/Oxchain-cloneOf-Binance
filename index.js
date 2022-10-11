@@ -5,6 +5,7 @@ const Wallet = require("./models/Wallet");
 const CoinList = require("./models/CoinList");
 const Referral = require("./models/Referral");
 const RegisterMail = require("./models/RegisterMail");
+const RegisterSMS = require("./models/RegisterSMS");
 const UserRef = require("./models/UserRef");
 const Pairs = require("./models/Pairs");
 const Orders = require("./models/Orders");
@@ -378,6 +379,47 @@ route.all("/sendMailPin", async function (req, res) {
   }
 });
 
+route.all("/sendSMSPin", async function (req, res) {
+  var api_key_result = req.body.api_key;
+  var phone = req.body.phone;
+  let result = await authFile.apiKeyChecker(api_key_result);
+
+  if (result === true) {
+    var pin = Math.floor(100000 + Math.random() * 900000);
+
+    const newPin = new RegisterSMS({
+      phone: phone,
+      pin: pin,
+    });
+
+    let smsCheck = await RegisterSMS.findOne({ phone: phone }).exec();
+    if (smsCheck == null) {
+      if (newPin.save()) {
+        mailer.sendSMS(phone, "Your pin code is " + pin + ".");
+        res.json({ status: "success", message: "pin_sent" });
+      } else {
+        res.json({ status: "fail", message: "an_error_occured" });
+      }
+    } else {
+      RegisterSMS.findOneAndUpdate(
+        { phone: phone },
+        { phone: phone },
+        { pin: pin },
+        function (err, room) {
+          if (err) {
+            console.log(err);
+          } else {
+            mailer.sendSMS(phone, "Your pin code is " + pin + ".");
+            res.json({ status: "success", message: "pin_sent" });
+          }
+        }
+      );
+    }
+  } else {
+    res.json({ status: "fail", message: "Forbidden 403" });
+  }
+});
+
 route.all("/register", upload.none(), async (req, res) => {
   var registerType = req.body.registerType;
   var data = req.body.data;
@@ -402,6 +444,18 @@ route.all("/register", upload.none(), async (req, res) => {
     }).exec();
 
     if (checkEmailPin == null) {
+      res.json({ status: "fail", message: "pin_not_match" });
+      return;
+    }
+  }
+
+  if (registerType == "phone") {
+    let checkPhonePin = await RegisterSMS.findOne({
+      phone: data,
+      pin: pin,
+    }).exec();
+
+    if (checkPhonePin == null) {
       res.json({ status: "fail", message: "pin_not_match" });
       return;
     }
@@ -1743,11 +1797,7 @@ route.all(
 route.all(
   "/enableWithdrawalWhiteList",
   upload.none(),
-  async function (req, res) {
-
-
-    
-  }
+  async function (req, res) {}
 );
 
 route.all("/addNotification", upload.none(), async function (req, res) {
@@ -2390,6 +2440,68 @@ route.all("/changePassword", upload.none(), async function (req, res) {
     }
   } else {
     res.json({ status: "fail", message: "403 Forbidden" });
+  }
+});
+
+route.all("/changeEmail", upload.none(), async function (req, res) {
+  var user_id = req.body.user_id;
+  var twofapin = req.body.twofapin;
+  var newEmail = req.body.new_email;
+
+  var api_key_result = req.body.api_key;
+
+  var result = await authFile.apiKeyChecker(api_key_result);
+
+  if (result === true) {
+    let user = await User.findOne({
+      _id: user_id,
+      status: 1,
+    }).exec();
+
+    if (user != null) {
+      var twofa = user["twofa"];
+      const filter = { _id: user_id, status: 1 };
+      let result2 = await authFile.verifyToken(twofapin, twofa);
+      if (result2 === true) {
+        const update = { email: newEmail };
+        let doc = await User.findOneAndUpdate(filter, update).exec();
+
+        res.json({ status: "success", data: "update_success" });
+      } else {
+        res.json({ status: "fail", message: "2fa_failed" });
+      }
+    }
+  }
+});
+
+route.all("/changePhone", upload.none(), async function (req, res) {
+  var user_id = req.body.user_id;
+  var twofapin = req.body.twofapin;
+  var country_code = req.body.country_code;
+  var phone = req.body.phone;
+
+  var api_key_result = req.body.api_key;
+
+  var result = await authFile.apiKeyChecker(api_key_result);
+
+  if (result === true) {
+    let user = await User.findOne({
+      _id: user_id,
+      status: 1,
+    }).exec();
+
+    if (user != null) {
+      var twofa = user["twofa"];
+      const filter = { _id: user_id, status: 1 };
+      let result2 = await authFile.verifyToken(twofapin, twofa);
+      if (result2 === true) {
+        const update = { phone: phone, country_code: country_code };
+        let doc = await User.findOneAndUpdate(filter, update).exec();
+        res.json({ status: "success", data: "update_success" });
+      } else {
+        res.json({ status: "fail", message: "2fa_failed" });
+      }
+    }
   }
 });
 
