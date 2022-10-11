@@ -24,6 +24,11 @@ async function sendNewMail(email, title, body) {
     }
   });
 }
+
+async function sendNewSMS(phone, body) {
+  return "true";
+}
 module.exports = {
   sendMail: sendNewMail,
+  sendSMS: sendNewSMS,
 };
