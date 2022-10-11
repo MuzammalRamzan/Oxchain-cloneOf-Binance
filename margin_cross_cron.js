@@ -73,10 +73,10 @@ async function initialize() {
         }
       );
 
-      
+
       for (var i = 0; i < limitOrders.length; i++) {
-        let order = limitOrders[i];
-        
+        var order = limitOrders[i];
+
         if (order.method == 'limit') {
           let item = list.find(x => x.s == order.pair_name.replace('/', ''));
           if (item != null && item != '') {
@@ -100,18 +100,131 @@ async function initialize() {
               }
             } else {
               if (order.type == 'buy') {
-                if (price <= order.target_price) {
-                  order.method = 'market';
-                  order.status = 0;
-                  await order.save();
+                if (price >= order.target_price) {
+                  continue;
                 }
               } else if (order.type == 'sell') {
-                if (price >= order.target_price) {
-
-                  order.method = 'market';
-                  order.status = 0;
-                  await order.save();
+                if (price <= order.target_price) {
+                  continue;
                 }
+              }
+
+              let reverseOreders = await MarginOrder.findOne({
+                user_id: order.user_id,
+                pair_id: order.pair_id,
+                margin_type: order.margin_type,
+                status: 0,
+              }).exec();
+
+              if (reverseOreders) {
+                console.log("reverse order find");
+
+                if (reverseOreders.type == order.type) {
+                  let oldAmount = reverseOreders.amount;
+                  let oldUsedUSDT = reverseOreders.usedUSDT;
+                  let oldPNL = reverseOreders.pnl;
+                  let oldLeverage = reverseOreders.leverage;
+                  let newUsedUSDT = oldUsedUSDT + order.usedUSDT + oldPNL;
+                  console.log(oldUsedUSDT, " | ", order.usedUSDT, " | ", oldPNL);
+                  console.log(newUsedUSDT);
+                  reverseOreders.usedUSDT = newUsedUSDT;
+                  reverseOreders.open_price = price;
+                  reverseOreders.pnl = 0;
+                  reverseOreders.leverage = order.leverage;
+                  reverseOreders.open_time = Date.now();
+                  reverseOreders.amount = (newUsedUSDT * order.leverage) / price;
+
+                  await reverseOreders.save();
+                  await order.remove();
+
+                } else {
+                  //Tersine ise
+                  let checkusdt = (reverseOreders.usedUSDT + reverseOreders.pnl) * reverseOreders.leverage;
+                  if (checkusdt == order.usedUSDT * order.leverage) {
+                    reverseOreders.status = 1;
+                    let userBalance = await Wallet.findOne({
+                      coin_id: MarginWalletId,
+                      user_id: req.body.user_id,
+                    }).exec();
+                    userBalance.amount =
+                      userBalance.amount +
+                      reverseOreders.pnl +
+                      reverseOreders.usedUSDT;
+                    await userBalance.save();
+                    await reverseOreders.save();
+                    await order.remove();
+                  }
+
+                  else if (checkusdt > order.usedUSDT * order.leverage) {
+                    console.log("Bura 1");
+                    let writeUsedUSDT =
+                      reverseOreders.usedUSDT + reverseOreders.pnl - order.usedUSDT;
+                    if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
+                    reverseOreders.usedUSDT = writeUsedUSDT;
+                    reverseOreders.amount =
+                      (writeUsedUSDT * reverseOreders.leverage) / price;
+                    let userBalance = await Wallet.findOne({
+                      coin_id: MarginWalletId,
+                      user_id: order.user_id,
+                    }).exec();
+                    userBalance.amount = userBalance.amount + reverseOreders.usedUSDT;
+                    await userBalance.save();
+                    await reverseOreders.save();
+                    await order.remove();
+                  } else {
+                    console.log("Bura 2");
+                    let ilkIslem = reverseOreders.usedUSDT;
+                    let tersIslem = order.usedUSDT;
+                    let data = ilkIslem - tersIslem;
+                    console.log("DATASSS : ", data);
+                    userBalance = await Wallet.findOne({
+                      coin_id: MarginWalletId,
+                      user_id: order.user_id,
+                    }).exec();
+                    userBalance.amount = userBalance.amount + data;
+                    await userBalance.save();
+
+                    reverseOreders.type = order.type;
+                    reverseOreders.leverage = order.leverage;
+                    let writeUsedUSDT =
+                      reverseOreders.usedUSDT + reverseOreders.pnl - order.usedUSDT;
+                    if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
+                    reverseOreders.usedUSDT = writeUsedUSDT;
+                    //reverseOreders.amount = ((((reverseOreders.usedUSDT + reverseOreders.pnl) * leverage) - (usedUSDT * leverage)) / price);
+                    reverseOreders.amount = (writeUsedUSDT * order.leverage) / price;
+                    await reverseOreders.save();
+                    await order.remove();
+                  }
+                }
+              } else {
+                console.log(order);
+                userBalance = await Wallet.findOne({
+                  coin_id: MarginWalletId,
+                  user_id: order.user_id,
+                }).exec();
+                /*
+                let n_order = new MarginOrder({
+                  pair_id: getPair._id,
+                  pair_name: getPair.name,
+                  type: type,
+                  margin_type: margin_type,
+                  method: method,
+                  user_id: user_id,
+                  usedUSDT: usedUSDT,
+                  required_margin: usedUSDT,
+                  isolated: usedUSDT,
+                  sl: req.body.sl ?? 0,
+                  tp: req.body.tp ?? 0,
+                  target_price: 0.0,
+                  leverage: leverage,
+                  amount: amount,
+                  open_price: price,
+                });
+                */
+                order.open_price = order.target_price;
+                order.method = 'market';
+                order.status = 0;
+                await order.save();
               }
             }
           }
@@ -159,7 +272,7 @@ async function initialize() {
           coin_id: MarginWalletId,
         }).exec();
         let marginWalletAmount = wallet.amount;
-        
+
         //buraya isoleden gelen aktif emirlerin ana yatırma bakiyesini eklemeliyiz çünkü bütün margin wallet bakiyesini değiştiriyor bu fonksiyon
         wallet.pnl = data.total;
         await wallet.save();
@@ -167,8 +280,8 @@ async function initialize() {
         let totalWallet =
           marginWalletAmount + (data.total + data.usedUSDT);
 
-          console.log(data.total + " | " + data.usedUSDT);
-          console.log(totalWallet);
+        console.log(data.total + " | " + data.usedUSDT);
+        console.log(totalWallet);
 
         if (totalWallet <= 0) {
           wallet.pnl = 0;

@@ -442,9 +442,9 @@ route.all("/register", upload.none(), async (req, res) => {
           status: 1,
         });
       }
-
+      console.log("Bura 1");
       let usr = await newUser.save();
-
+      console.log("Bura 2");
       if (refStatus == "yes") {
         let user = await UserRef.findOne({ refCode: reffer }).exec();
 

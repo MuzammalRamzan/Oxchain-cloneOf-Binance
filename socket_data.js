@@ -249,14 +249,16 @@ async function GetMarginOrders(ws, user_id, margin_order_type, margin_order_meth
    });
    let isRemove = MarginOrder.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
       console.log("silindi");
+      console.log(data);
       orders = await MarginOrder.find(request).exec();
       ws.send(JSON.stringify({ type: 'margin_orders', content: await GetLiqPrice(orders) }));
    });
 
    let isDelete = MarginOrder.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
       console.log("silindi 2");
+      console.log(data);
       orders = await MarginOrder.find(request).exec();
-      ws.send(JSON.stringify({ type: 'margin_orders', content: await öGetLiqPrice(orders) }));
+      ws.send(JSON.stringify({ type: 'margin_orders', content: await GetLiqPrice(orders) }));
    });
 
 }
