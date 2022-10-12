@@ -665,7 +665,7 @@ route.post("/closeMarginOrder", async function (req, res) {
     console.log("ok");
 
     res.json({ status: "success", data: doc });
-  } catch (err) {}
+  } catch (err) { }
 });
 
 route.post("/addMarginOrder", async function (req, res) {
@@ -838,11 +838,14 @@ route.post("/addMarginOrder", async function (req, res) {
           user_id: req.body.user_id,
           pair_id: getPair._id,
           margin_type: margin_type,
+          method: 'market',
           status: 0,
-        }).exec();
-
+        });
+          
         if (reverseOreders) {
           console.log("reverse order find");
+          console.log(reverseOreders);
+          console.log("222");
           if (reverseOreders.leverage > leverage) {
             res.json({ status: "fail", message: "Leverage cannot be smaller" });
             return;
@@ -1101,6 +1104,7 @@ route.post("/addMarginOrder", async function (req, res) {
           user_id: req.body.user_id,
           pair_id: getPair._id,
           margin_type: margin_type,
+          method: 'market',
           status: 0,
         }).exec();
 
@@ -1797,7 +1801,7 @@ route.all(
 route.all(
   "/enableWithdrawalWhiteList",
   upload.none(),
-  async function (req, res) {}
+  async function (req, res) { }
 );
 
 route.all("/addNotification", upload.none(), async function (req, res) {
@@ -2113,6 +2117,66 @@ route.all("/update2fa", upload.none(), async function (req, res) {
     }
   } else {
     res.json({ status: "fail", message: "403 Forbidden" });
+  }
+});
+
+route.post('/cancelAllLimit', async function (req, res) {
+  var user_id = req.body.user_id;
+  let orders = await Orders.findAll({
+    _id: req.body.order_id,
+    user_id: req.body.user_id,
+    type: "limit",
+  }).exec();
+  for (var i = 0; i < orders.length; i++) {
+    let order = orders[i];
+    let amount = order.amount;
+    let pair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
+
+    if (order.method == "buy") {
+      var toWallet = await Wallet.findOne({
+        coin_id: pair.symbolTwoID,
+        user_id: order.user_id,
+      }).exec();
+      toWallet.amount = toWallet.amount + order.target_price * amount;
+      await toWallet.save();
+    } else {
+      var toWallet = await Wallet.findOne({
+        coin_id: pair.symbolOneID,
+        user_id: order.user_id,
+      }).exec();
+      toWallet.amount = toWallet.amount + amount;
+      await toWallet.save();
+    }
+  }
+});
+
+route.post('/cancelAllStopLimit', async function (req, res) {
+  var user_id = req.body.user_id;
+  let orders = await Orders.findAll({
+    _id: req.body.order_id,
+    user_id: req.body.user_id,
+    type: "stop_limit",
+  }).exec();
+  for (var i = 0; i < orders.length; i++) {
+    let order = orders[i];
+    let amount = order.amount;
+    let pair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
+
+    if (order.method == "buy") {
+      var toWallet = await Wallet.findOne({
+        coin_id: pair.symbolTwoID,
+        user_id: order.user_id,
+      }).exec();
+      toWallet.amount = toWallet.amount + order.target_price * amount;
+      await toWallet.save();
+    } else {
+      var toWallet = await Wallet.findOne({
+        coin_id: pair.symbolOneID,
+        user_id: order.user_id,
+      }).exec();
+      toWallet.amount = toWallet.amount + amount;
+      await toWallet.save();
+    }
   }
 });
 
