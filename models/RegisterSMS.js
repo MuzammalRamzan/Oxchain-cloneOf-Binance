@@ -8,6 +8,7 @@ const RegisterSMSSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  status: { type: String, required: false, default: "0" },
 });
 
 module.exports = mongoose.model("RegisterSMS", RegisterSMSSchema);

@@ -13,6 +13,8 @@ const LoginLogs = require("./models/LoginLogs");
 const SecurityKey = require("./models/SecurityKey");
 const Notification = require("./models/Notifications");
 const ReadNotification = require("./models/ReadNotifications");
+const SMSVerification = require("./models/SMSVerification");
+const MailVerification = require("./models/MailVerification");
 const CopyLeaderRequest = require("./models/CopyTradeLeaderRequest");
 const axios = require("axios");
 const NotificationTokens = require("./models/NotificationTokens");
@@ -53,7 +55,6 @@ var bodyParser = require("body-parser");
 const multer = require("multer");
 const { Console } = require("console");
 const { exit } = require("process");
-const { isFloat32Array } = require("util/types");
 const auth = require("./auth.js");
 const MarginOrder = require("./models/MarginOrder");
 const MarginWallet = require("./models/MarginWallet");
@@ -139,6 +140,31 @@ route.all("/login", upload.none(), async (req, res) => {
     }).exec();
 
     if (user != null) {
+      let emailVerifyCheck = await RegisterMail.findOne({
+        email: user.email,
+        status: "1",
+      });
+
+      let smsVerifyCheck = await RegisterSMS.findOne({
+        phone_number: user.phone_number,
+        status: "1",
+      });
+
+      let emailVerifyExist = "";
+      let smsVerifyExist = "";
+
+      if (emailVerifyCheck != null) {
+        emailVerifyExist = "yes";
+      } else {
+        emailVerifyExist = "no";
+      }
+
+      if (smsVerifyCheck != null) {
+        smsVerifyExist = "yes";
+      } else {
+        smsVerifyExist = "no";
+      }
+
       var twofaStatus = user["twofa"];
       var results = [];
       var refId = "";
@@ -151,6 +177,8 @@ route.all("/login", upload.none(), async (req, res) => {
         response: "success",
         email: user.email,
         twofa: twofaStatus,
+        emailVerify: emailVerifyExist,
+        smsVerify: smsVerifyExist,
         status: user["status"],
         user_id: user["_id"],
         ref_id: refId,
@@ -214,9 +242,9 @@ route.all("/login", upload.none(), async (req, res) => {
 
               address = createBTC.data.message;
             }
+          } else {
+            console.log("Cüzdan var");
           }
-
-          console.log("Cüzdan var");
 
           const newWallet = new Wallet({
             name: coins[i]["name"],
@@ -388,7 +416,7 @@ route.all("/sendSMSPin", async function (req, res) {
     var pin = Math.floor(100000 + Math.random() * 900000);
 
     const newPin = new RegisterSMS({
-      phone: phone,
+      phone_number: phone,
       pin: pin,
     });
 
@@ -402,8 +430,8 @@ route.all("/sendSMSPin", async function (req, res) {
       }
     } else {
       RegisterSMS.findOneAndUpdate(
-        { phone: phone },
-        { phone: phone },
+        { phone_number: phone },
+        { phone_number: phone },
         { pin: pin },
         function (err, room) {
           if (err) {
@@ -446,6 +474,18 @@ route.all("/register", upload.none(), async (req, res) => {
     if (checkEmailPin == null) {
       res.json({ status: "fail", message: "pin_not_match" });
       return;
+    } else {
+      RegisterMail.findOneAndUpdate(
+        { email: data },
+        { status: "1" },
+        function (err, room) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("pin status updated");
+          }
+        }
+      );
     }
   }
 
@@ -458,6 +498,18 @@ route.all("/register", upload.none(), async (req, res) => {
     if (checkPhonePin == null) {
       res.json({ status: "fail", message: "pin_not_match" });
       return;
+    } else {
+      RegisterSMS.findOneAndUpdate(
+        { phone: data },
+        { status: "1" },
+        function (err, room) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("pin status updated");
+          }
+        }
+      );
     }
   }
 
@@ -665,7 +717,7 @@ route.post("/closeMarginOrder", async function (req, res) {
     console.log("ok");
 
     res.json({ status: "success", data: doc });
-  } catch (err) { }
+  } catch (err) {}
 });
 
 route.post("/addMarginOrder", async function (req, res) {
@@ -838,10 +890,10 @@ route.post("/addMarginOrder", async function (req, res) {
           user_id: req.body.user_id,
           pair_id: getPair._id,
           margin_type: margin_type,
-          method: 'market',
+          method: "market",
           status: 0,
         });
-          
+
         if (reverseOreders) {
           console.log("reverse order find");
           console.log(reverseOreders);
@@ -1104,7 +1156,7 @@ route.post("/addMarginOrder", async function (req, res) {
           user_id: req.body.user_id,
           pair_id: getPair._id,
           margin_type: margin_type,
-          method: 'market',
+          method: "market",
           status: 0,
         }).exec();
 
@@ -1801,7 +1853,7 @@ route.all(
 route.all(
   "/enableWithdrawalWhiteList",
   upload.none(),
-  async function (req, res) { }
+  async function (req, res) {}
 );
 
 route.all("/addNotification", upload.none(), async function (req, res) {
@@ -2120,7 +2172,7 @@ route.all("/update2fa", upload.none(), async function (req, res) {
   }
 });
 
-route.post('/cancelAllLimit', async function (req, res) {
+route.post("/cancelAllLimit", async function (req, res) {
   var user_id = req.body.user_id;
   let orders = await Orders.findAll({
     _id: req.body.order_id,
@@ -2150,7 +2202,7 @@ route.post('/cancelAllLimit', async function (req, res) {
   }
 });
 
-route.post('/cancelAllStopLimit', async function (req, res) {
+route.post("/cancelAllStopLimit", async function (req, res) {
   var user_id = req.body.user_id;
   let orders = await Orders.findAll({
     _id: req.body.order_id,
@@ -2466,39 +2518,180 @@ route.all("/changePassword", upload.none(), async function (req, res) {
       status: 1,
     }).exec();
 
+    let pinVerified = false;
     if (user != null) {
       var twofa = user["twofa"];
       var db_password = user["password"];
-      const filter = { _id: user_id, status: 1 };
-      if (utilities.hashData(old_password) == db_password) {
-        var result2 = "";
-        if (twofa != null) {
-          result2 = await authFile.verifyToken(twofapin, twofa);
-        } else {
-          var check = await RegisterMail.findOne({
-            email: user["email"],
-            pin: twofapin,
-          }).exec();
-          if (check != null) {
-            result2 = true;
-          }
-        }
 
-        if (result2 === true) {
-          const update = { password: utilities.hashData(password) };
-          User.findOneAndUpdate(filter, update, (err, doc) => {
-            if (err) {
-              res.json({ status: "fail", message: err });
-            } else {
-              res.json({ status: "success", data: "update_success" });
-            }
-          });
-        } else {
-          res.json({ status: "fail", message: "2fa_failed" });
+      let emailVerifiedCheck = await RegisterMail.findOne({
+        user_id: user_id,
+        status: 1,
+      }).exec();
+
+      let smsVerifiedCheck = await RegisterSMS.findOne({
+        user_id: user_id,
+        status: 1,
+      }).exec();
+
+      if (emailVerifiedCheck != null) {
+        let pinCheck = await MailVerification.findOne({
+          user_id: user_id,
+          pin: req.body.pin,
+          reason: "change_password",
+        }).exec();
+
+        if (pinCheck != null) {
+          pinVerified = true;
         }
       } else {
-        res.json({ status: "fail", message: "wrong_old_password" });
+        if (smsVerifiedCheck != null) {
+          let pinCheck = await MailVerification.findOne({
+            user_id: user_id,
+            pin: req.body.pin,
+            reason: "change_password",
+          }).exec();
+
+          if (pinCheck != null) {
+            pinVerified = true;
+          }
+        }
       }
+      const filter = { _id: user_id, status: 1 };
+      if (pinVerified === true) {
+        if (utilities.hashData(old_password) == db_password) {
+          var result2 = "";
+          if (twofa != null) {
+            result2 = await authFile.verifyToken(twofapin, twofa);
+          } else {
+            var check = await RegisterMail.findOne({
+              email: user["email"],
+              pin: twofapin,
+            }).exec();
+            if (check != null) {
+              result2 = true;
+            }
+          }
+
+          if (result2 === true) {
+            const update = { password: utilities.hashData(password) };
+            User.findOneAndUpdate(filter, update, (err, doc) => {
+              if (err) {
+                res.json({ status: "fail", message: err });
+              } else {
+                res.json({ status: "success", data: "update_success" });
+              }
+            });
+          } else {
+            res.json({ status: "fail", message: "2fa_failed" });
+          }
+        } else {
+          res.json({ status: "fail", message: "wrong_old_password" });
+        }
+      } else {
+        res.json({ status: "fail", message: "pin_failed" });
+      }
+    } else {
+      res.json({ status: "fail", message: "user_not_found" });
+    }
+  } else {
+    res.json({ status: "fail", message: "403 Forbidden" });
+  }
+});
+
+route.all("/sendMail", upload.none(), async function (req, res) {
+  var user_id = req.body.user_id;
+  var api_key_result = req.body.api_key;
+  var reason = req.body.reason;
+
+  var result = await authFile.apiKeyChecker(api_key_result);
+
+  if (result === true) {
+    let user = await User.findOne({
+      _id: user_id,
+      status: 1,
+    }).exec();
+
+    if (user != null) {
+      var pin = Math.floor(100000 + Math.random() * 900000);
+
+      mailer.sendMail(
+        user["email"],
+        "Oxhain verification",
+        "Pin : " + pin,
+        function (err, data) {
+          if (err) {
+            console.log("Error " + err);
+          } else {
+            console.log("Email sent");
+          }
+        }
+      );
+
+      const newPin = new MailVerification({
+        email: user["email"],
+        pin: pin,
+        reason: reason,
+        status: 0,
+      });
+
+      newPin.save(function (err) {
+        if (err) {
+          res.json({ status: "fail", message: err });
+        } else {
+          res.json({ status: "success", data: "mail_sent" });
+        }
+      });
+    } else {
+      res.json({ status: "fail", message: "user_not_found" });
+    }
+  } else {
+    res.json({ status: "fail", message: "403 Forbidden" });
+  }
+});
+
+route.all("/sendSMS", upload.none(), async function (req, res) {
+  var user_id = req.body.user_id;
+  var api_key_result = req.body.api_key;
+  var reason = req.body.reason;
+
+  var result = await authFile.apiKeyChecker(api_key_result);
+
+  if (result === true) {
+    let user = await User.findOne({
+      _id: user_id,
+      status: 1,
+    }).exec();
+
+    if (user != null) {
+      var pin = Math.floor(100000 + Math.random() * 900000);
+
+      mailer.sendSMS(
+        user["phone_number"],
+        "Oxhain verification",
+        "Pin : " + pin,
+        function (err, data) {
+          if (err) {
+            console.log("Error " + err);
+          } else {
+            console.log("sms sent");
+          }
+        }
+      );
+
+      const newPin = new SMSVerification({
+        phone_number: user["phone_number"],
+        pin: pin,
+        reason: reason,
+        status: 0,
+      });
+
+      newPin.save(function (err) {
+        if (err) {
+          res.json({ status: "fail", message: err });
+        } else {
+          res.json({ status: "success", data: "sms_sent" });
+        }
+      });
     } else {
       res.json({ status: "fail", message: "user_not_found" });
     }
