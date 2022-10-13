@@ -366,6 +366,7 @@ route.post("/transfer", async function (req, res) {
   res.json({ status: "success", data: { from: fromBalance, to: toBalance } });
 });
 
+//register
 route.all("/sendMailPin", async function (req, res) {
   var api_key_result = req.body.api_key;
   var email = req.body.email;
@@ -407,6 +408,7 @@ route.all("/sendMailPin", async function (req, res) {
   }
 });
 
+//register
 route.all("/sendSMSPin", async function (req, res) {
   var api_key_result = req.body.api_key;
   var phone = req.body.phone;
