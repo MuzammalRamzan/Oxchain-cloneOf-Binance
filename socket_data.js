@@ -293,18 +293,8 @@ async function GetCrossLiqPrice(order) {
    if (totalWallet < 0) {
       totalWallet = 0;
    }
-   /*
-   console.log("Wallet amount : ", wallet.amount);
-   console.log("\n---\n");
-   console.log("Total Wallet Birinci : ", totalWallet);
-   console.log("Order Data : ");
-   console.log(order.pair_name + " | ", order.method, " | ", order.margin_type, " | ", order.status, " | ", order.leverage, " | ", order.open_price);
-   console.log("\n---\n");
-   console.log("Total Wallet : ", totalWallet);
-   console.log("\n---\n");
-   console.log("PNL : ", (order.pnl));
-   console.log("TOTAL : ", (getOpenOrders[0].total));
-   */
+   
+   
 
    let order_total = 0;
    let order_usedUSDT = 0;
@@ -312,12 +302,16 @@ async function GetCrossLiqPrice(order) {
       order_total = getOpenOrders[0].total
       order_usedUSDT = getOpenOrders[0].usedUSDT;
    }
+
+ 
    let kasa = (totalWallet + (order_total - order.pnl) + order_usedUSDT);
+   console.log(kasa, " | ", order_usedUSDT);
    let liqPrice = 0.0;
    if (order.type == 'buy')
-      liqPrice = order.open_price - (kasa / order_usedUSDT) * (order.open_price / order.leverage);
+      liqPrice = order.open_price - ((kasa / order_usedUSDT) * (order.open_price / order.leverage));
+      
    else
-      liqPrice = order.open_price + (kasa / order_usedUSDT) * (order.open_price / order.leverage);
+      liqPrice = order.open_price + ((kasa / order_usedUSDT) * (order.open_price / order.leverage));
    order.liqPrice = liqPrice;
    return order;
 }
