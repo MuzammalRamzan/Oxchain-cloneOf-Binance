@@ -407,10 +407,10 @@ async function GetLiqPrice(orders) {
          if (order.margin_type == 'isolated') {
             if (order.type == 'buy') {
 
-               order.liqPrice = (order.open_price - (order.open_price / order.leverage));
+               order.liqPrice = (order.open_price - (order.open_price / (order.leverage * 1.0)));
                orders[i] = order;
             } else {
-               order.liqPrice = (order.open_price + (order.open_price / order.leverage));
+               order.liqPrice = (order.open_price + (order.open_price / (order.leverage * 1.0)));
                orders[i] = order;
             }
          }

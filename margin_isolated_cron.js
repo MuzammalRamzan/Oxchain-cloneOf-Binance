@@ -143,7 +143,7 @@ async function initialize() {
                     if (order.pair_name.replace("/", "") == list[t].s) {
                         let price = (list[t].a);
                         if (order.type == "buy") {
-                            let liqPrice = (order.open_price - (order.open_price / order.leverage));
+                            let liqPrice = (order.open_price - (order.open_price / (order.leverage * 1.0)));
                             pnl = (price - order.open_price) * order.amount;
                             let reverseUsedUSDT = order.usedUSDT * -1;
                             if (order.open_price <= liqPrice) {
@@ -154,7 +154,7 @@ async function initialize() {
                             }
                         } else {
                             pnl = (order.open_price - price) * order.amount;
-                            let liqPrice = (order.open_price + (order.open_price / order.leverage));
+                            let liqPrice = (order.open_price + (order.open_price / (order.leverage * 1.0)));
                             if (order.open_price >= liqPrice) {
                                 order.status = 1;
                             }
