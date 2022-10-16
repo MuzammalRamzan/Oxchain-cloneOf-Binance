@@ -390,10 +390,10 @@ async function GetCrossLiqPrice(order) {
 
    let liqPrice = 0.0;
    if (order.type == 'buy')
-      liqPrice = order.open_price - ((kasa / order_usedUSDT) * (order.open_price / order.leverage));
+      liqPrice = order.open_price - ((kasa / order_usedUSDT) * (order.open_price / (order.leverage * 1.0)));
 
    else
-      liqPrice = order.open_price + ((kasa / order_usedUSDT) * (order.open_price / order.leverage));
+      liqPrice = order.open_price + ((kasa / order_usedUSDT) * (order.open_price /(order.leverage * 1.0)));
    order.liqPrice = liqPrice;
    return order;
 }
