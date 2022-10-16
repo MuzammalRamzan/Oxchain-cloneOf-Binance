@@ -54,7 +54,7 @@ async function main() {
                let wallet = await Wallet.find({ user_id: json.user_id });
                let totalBtcValue = 0.0;
                let totalUsdValue = 0.0;
-               
+
                let btcPrice = 0.0;
                var b_ws = new WebSocket("wss://stream.binance.com/stream");
 
@@ -77,9 +77,9 @@ async function main() {
                wallet.forEach(async (key, value) => {
                   let getCoinInfo = coinList.filter(x => x._id == key.coin_id)[0];
                   walletData[getCoinInfo.symbol] = { "symbol": getCoinInfo.symbol, "name": getCoinInfo.name, "network": getCoinInfo.network, "icon": getCoinInfo.image_url, "balance": 0.0, "amount": key.amount };
-                  
+
                });
-               
+
 
                b_ws.onmessage = function (event) {
 
@@ -87,7 +87,7 @@ async function main() {
                   if (data != null && data != 'undefined') {
                      for (var value in walletData) {
                         let getBtc = data.filter(x => x.s == "BTCUSDT");
-                        if(getBtc.length>0) {
+                        if (getBtc.length > 0) {
                            btcPrice = getBtc[0].a;
                         }
                         console.log(value);
@@ -393,7 +393,10 @@ async function GetCrossLiqPrice(order) {
       liqPrice = order.open_price - ((kasa / order_usedUSDT) * (order.open_price / (order.leverage * 1.0)));
 
    else
-      liqPrice = order.open_price + ((kasa / order_usedUSDT) * (order.open_price /(order.leverage * 1.0)));
+      liqPrice = order.open_price + ((kasa / order_usedUSDT) * (order.open_price / (order.leverage * 1.0)));
+   if (liqPrice < 0) {
+      liqPrice *= -1;
+   }
    order.liqPrice = liqPrice;
    return order;
 }
