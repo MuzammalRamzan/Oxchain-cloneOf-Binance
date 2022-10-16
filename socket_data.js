@@ -386,8 +386,12 @@ async function GetCrossLiqPrice(order) {
    }
 
 
-   let kasa = (totalWallet + (order_total - order.pnl));
-   
+   let kasa = (totalWallet + (order_total - order.pnl) + order_usedUSDT);
+   console.log("-------");
+   console.log(kasa);
+   console.log(order_usedUSDT);
+   console.log(totalWallet);
+   console.log("-------");
    let liqPrice = 0.0;
    if (order.type == 'buy')
       liqPrice = order.open_price - ((kasa / order_usedUSDT) * (order.open_price / (order.leverage * 1.0)));
