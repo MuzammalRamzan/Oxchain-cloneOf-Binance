@@ -127,6 +127,8 @@ route.all("/login", upload.none(), async (req, res) => {
   }
   if (req.body.ip != undefined) {
     ip = req.body.ip;
+  } else {
+    ip = "null";
   }
 
   var notificationToken = req.body.notificationToken;
@@ -134,10 +136,14 @@ route.all("/login", upload.none(), async (req, res) => {
 
   console.log(searchType);
   if (result === true) {
+    console.log(req.body.user);
+    console.log(utilities.hashData(req.body.password));
     let user = await User.findOne({
       [searchType]: req.body.user,
       password: utilities.hashData(req.body.password),
     }).exec();
+
+    console.log(user);
 
     if (user != null) {
       let emailVerifyCheck = await RegisterMail.findOne({
