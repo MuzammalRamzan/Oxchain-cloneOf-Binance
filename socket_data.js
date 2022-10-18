@@ -83,6 +83,8 @@ async function main() {
 
                   const data = JSON.parse(event.data).data;
                   if (data != null && data != 'undefined') {
+                     totalUsdValue = 0.0;
+                     totalBtcValue = 0.0;
                      for (var value in walletData) {
                         let getBtc = data.filter(x => x.s == "BTCUSDT");
                         if (getBtc.length > 0) {
@@ -103,6 +105,7 @@ async function main() {
                            }
                         }
                      }
+                     totalBtcValue = totalUsdValue / btcPrice;
                      ws.send(JSON.stringify({ type: "balances", content: { "wallets": walletData, "totalUSD": totalUsdValue, "totalBTC": totalBtcValue } }));
                      console.log(walletData);
                   }
