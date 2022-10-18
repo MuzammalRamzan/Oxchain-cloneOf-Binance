@@ -59,6 +59,7 @@ const auth = require("./auth.js");
 const MarginOrder = require("./models/MarginOrder");
 const MarginWallet = require("./models/MarginWallet");
 const { ObjectId } = require("mongodb");
+const Subscription = require("./models/Subscription");
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
@@ -97,6 +98,20 @@ function parseUsers(ref_user, user_table) {
     resolve(parsedUsers);
   });
 }
+
+route.post('/subscription', async (req, res) => {
+  try {
+    if (req.body.email == null || req.body.email == 'undefined' || req.body.email == '') {
+      res.json({ 'status': 'fail', 'code' : 1 });
+    }
+    let item = new Subscription();
+    item.email = req.body.email;
+    await item.save();
+    res.json({ 'status': 'success' });
+  } catch (err) {
+    res.json({ 'status': 'fail', 'code' : 2 });
+  }
+});
 
 route.all("/login", upload.none(), async (req, res) => {
   console.log("Loginstart");
@@ -767,7 +782,7 @@ route.post("/closeMarginOrder", async function (req, res) {
     console.log("ok");
 
     res.json({ status: "success", data: doc });
-  } catch (err) {}
+  } catch (err) { }
 });
 
 route.post("/addMarginOrder", async function (req, res) {
@@ -1903,7 +1918,7 @@ route.all(
 route.all(
   "/enableWithdrawalWhiteList",
   upload.none(),
-  async function (req, res) {}
+  async function (req, res) { }
 );
 
 route.all("/addNotification", upload.none(), async function (req, res) {

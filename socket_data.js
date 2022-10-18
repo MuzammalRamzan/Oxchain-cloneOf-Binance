@@ -46,9 +46,7 @@ async function main() {
                   GetMarginBalance(ws, json.user_id);
                }
             }
-            else if (json.page == 'spot_assets') {
-
-            }
+            
             else if (json.page == 'spot_assets') {
                let coinList = await CoinList.find({});
                let wallet = await Wallet.find({ user_id: json.user_id });
