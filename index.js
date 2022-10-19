@@ -2439,7 +2439,7 @@ route.all("/updateSecurityKey", upload.none(), async function (req, res) {
     }).exec();
 
     if (securityKey != null) {
-      const filter = { id: req.body.id, status: 1 };
+      const filter = { id: req.body.id };
       const update = {
         wallet: wallet,
         deposit: deposit,
