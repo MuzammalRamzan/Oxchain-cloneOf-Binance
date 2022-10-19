@@ -99,17 +99,21 @@ function parseUsers(ref_user, user_table) {
   });
 }
 
-route.post('/subscription', async (req, res) => {
+route.post("/subscription", async (req, res) => {
   try {
-    if (req.body.email == null || req.body.email == 'undefined' || req.body.email == '') {
-      res.json({ 'status': 'fail', 'code' : 1 });
+    if (
+      req.body.email == null ||
+      req.body.email == "undefined" ||
+      req.body.email == ""
+    ) {
+      res.json({ status: "fail", code: 1 });
     }
     let item = new Subscription();
     item.email = req.body.email;
     await item.save();
-    res.json({ 'status': 'success' });
+    res.json({ status: "success" });
   } catch (err) {
-    res.json({ 'status': 'fail', 'code' : 2 });
+    res.json({ status: "fail", code: 2 });
   }
 });
 
@@ -782,7 +786,7 @@ route.post("/closeMarginOrder", async function (req, res) {
     console.log("ok");
 
     res.json({ status: "success", data: doc });
-  } catch (err) { }
+  } catch (err) {}
 });
 
 route.post("/addMarginOrder", async function (req, res) {
@@ -1918,7 +1922,7 @@ route.all(
 route.all(
   "/enableWithdrawalWhiteList",
   upload.none(),
-  async function (req, res) { }
+  async function (req, res) {}
 );
 
 route.all("/addNotification", upload.none(), async function (req, res) {
@@ -2367,6 +2371,7 @@ route.all("/addSecurityKey", upload.none(), async function (req, res) {
   var wallet = req.body.wallet;
   var deposit = req.body.deposit;
   var withdraw = req.body.withdraw;
+  var emailPin = req.body.emailPin;
 
   var result = await authFile.apiKeyChecker(api_key_result);
 
@@ -2377,25 +2382,39 @@ route.all("/addSecurityKey", upload.none(), async function (req, res) {
     }).exec();
 
     if (securityKey != null) {
-      res.json({ status: "success", data: "secury_key_active" });
+      res.json({ status: "fail", data: "secury_key_active" });
     } else {
-      var newSecurityKey = new SecurityKey({
-        user_id: user_id,
-        key: security_key,
-        status: 1,
-        trade: trade,
-        wallet: wallet,
-        deposit: deposit,
-        withdraw: withdraw,
-      });
-      newSecurityKey.save((err, doc) => {
-        if (err) {
-          console.log(err);
-          res.json({ status: "fail", message: err });
+      let user = await User.findOne({ _id: user_id }).exec();
+      if (user != null) {
+        let mailChecker = await MailVerification.findOne({
+          email: user.email,
+          pin: emailPin,
+        }).exec();
+
+        if (mailChecker != null) {
+          var newSecurityKey = new SecurityKey({
+            user_id: user_id,
+            key: security_key,
+            status: 1,
+            trade: trade,
+            wallet: wallet,
+            deposit: deposit,
+            withdraw: withdraw,
+          });
+          newSecurityKey.save((err, doc) => {
+            if (err) {
+              console.log(err);
+              res.json({ status: "fail", message: err });
+            } else {
+              res.json({ status: "success", data: "" });
+            }
+          });
         } else {
-          res.json({ status: "success", data: "" });
+          res.json({ status: "fail", data: "email_pin_not_match" });
         }
-      });
+      } else {
+        res.json({ status: "fail", message: "user_not_found" });
+      }
     }
   }
 });
@@ -2692,20 +2711,37 @@ route.all("/sendMail", upload.none(), async function (req, res) {
         }
       );
 
-      const newPin = new MailVerification({
-        email: user["email"],
-        pin: pin,
+      let mailCheck = await MailVerification.findOne({
+        email: email,
         reason: reason,
-        status: 0,
-      });
+      }).exec();
 
-      newPin.save(function (err) {
-        if (err) {
-          res.json({ status: "fail", message: err });
-        } else {
-          res.json({ status: "success", data: "mail_sent" });
-        }
-      });
+      if (mailCheck != null) {
+        const filter = { email: email, reason: reason };
+        const update = { pin: pin };
+        MailVerification.findOneAndUpdate(filter, update, (err, doc) => {
+          if (err) {
+            res.json({ status: "fail", message: err });
+          } else {
+            res.json({ status: "success", data: "update_success" });
+          }
+        });
+      } else {
+        const newPin = new MailVerification({
+          email: user["email"],
+          pin: pin,
+          reason: reason,
+          status: 0,
+        });
+
+        newPin.save(function (err) {
+          if (err) {
+            res.json({ status: "fail", message: err });
+          } else {
+            res.json({ status: "success", data: "mail_sent" });
+          }
+        });
+      }
     } else {
       res.json({ status: "fail", message: "user_not_found" });
     }
