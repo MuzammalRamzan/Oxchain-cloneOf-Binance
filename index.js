@@ -2389,6 +2389,7 @@ route.all("/addSecurityKey", upload.none(), async function (req, res) {
         let mailChecker = await MailVerification.findOne({
           email: user.email,
           pin: emailPin,
+          reason: "addSecurityKey",
         }).exec();
 
         if (mailChecker != null) {
@@ -2406,11 +2407,11 @@ route.all("/addSecurityKey", upload.none(), async function (req, res) {
               console.log(err);
               res.json({ status: "fail", message: err });
             } else {
-              res.json({ status: "success", data: "" });
+              res.json({ status: "success", data: "security_key_added" });
             }
           });
         } else {
-          res.json({ status: "fail", data: "email_pin_not_match" });
+          res.json({ status: "fail", data: "wrong_email_pin" });
         }
       } else {
         res.json({ status: "fail", message: "user_not_found" });
@@ -2698,6 +2699,7 @@ route.all("/sendMail", upload.none(), async function (req, res) {
     if (user != null) {
       var pin = Math.floor(100000 + Math.random() * 900000);
 
+      let email = user["email"];
       mailer.sendMail(
         user["email"],
         "Oxhain verification",
