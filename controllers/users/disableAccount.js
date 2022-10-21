@@ -37,6 +37,7 @@ const { createHash, randomBytes } = require("crypto");
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 
 const disableAccount = async function (req, res) {
+  
   var api_key_result = req.body.api_key;
 
   let result = await authFile.apiKeyChecker(api_key_result);

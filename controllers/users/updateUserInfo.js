@@ -3,6 +3,7 @@ const RegisterMail = require("../../models/RegisterMail");
 var authFile = require("../../auth.js");
 
 const updateUserInfo = async function (req, res) {
+  
   var user_id = req.body.user_id;
   var twofapin = req.body.twofapin;
   var name = req.body.name;

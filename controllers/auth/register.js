@@ -5,6 +5,7 @@ const RegisterSMS = require("../../models/RegisterSMS");
 const UserRef = require("../../models/UserRef");
 
 const registerController = async (req, res) => {
+  
   var registerType = req.body.registerType;
   var data = req.body.data;
   var pin = req.body.pin;

@@ -10,6 +10,7 @@ const addSecurityKey = async function (req, res) {
   var wallet = req.body.wallet;
   var deposit = req.body.deposit;
   var withdraw = req.body.withdraw;
+  var emailPin = req.body.emailPin;
 
   var result = await authFile.apiKeyChecker(api_key_result);
 
@@ -20,25 +21,40 @@ const addSecurityKey = async function (req, res) {
     }).exec();
 
     if (securityKey != null) {
-      res.json({ status: "success", data: "secury_key_active" });
+      res.json({ status: "fail", data: "secury_key_active" });
     } else {
-      var newSecurityKey = new SecurityKey({
-        user_id: user_id,
-        key: security_key,
-        status: 1,
-        trade: trade,
-        wallet: wallet,
-        deposit: deposit,
-        withdraw: withdraw,
-      });
-      newSecurityKey.save((err, doc) => {
-        if (err) {
-          console.log(err);
-          res.json({ status: "fail", message: err });
+      let user = await User.findOne({ _id: user_id }).exec();
+      if (user != null) {
+        let mailChecker = await MailVerification.findOne({
+          email: user.email,
+          pin: emailPin,
+          reason: "addSecurityKey",
+        }).exec();
+
+        if (mailChecker != null) {
+          var newSecurityKey = new SecurityKey({
+            user_id: user_id,
+            key: security_key,
+            status: 1,
+            trade: trade,
+            wallet: wallet,
+            deposit: deposit,
+            withdraw: withdraw,
+          });
+          newSecurityKey.save((err, doc) => {
+            if (err) {
+              console.log(err);
+              res.json({ status: "fail", message: err });
+            } else {
+              res.json({ status: "success", data: "security_key_added" });
+            }
+          });
         } else {
-          res.json({ status: "success", data: "" });
+          res.json({ status: "fail", data: "wrong_email_pin" });
         }
-      });
+      } else {
+        res.json({ status: "fail", message: "user_not_found" });
+      }
     }
   }
 };

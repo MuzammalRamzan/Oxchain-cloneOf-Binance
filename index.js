@@ -37,7 +37,6 @@ const addPair = require("./controllers/pair/addPair");
 const getDigits = require("./controllers/pair/getDigits");
 const getCoinList = require("./controllers/coin/getCoinList");
 const getCoinInfo = require("./controllers/coin/getCoinInfo");
-const getReferral = require("./controllers/getReferral");
 const getWallet = require("./controllers/wallet/getWallet");
 const twoFactor = require("./controllers/auth/twoFactor");
 const update2fa = require("./controllers/auth/update2fa");
@@ -79,6 +78,8 @@ route.use(cors());
 var port = process.env.PORT;
 
 const Subscription = require("./models/Subscription");
+const topReferrals = require("./controllers/referrals/topReferrals.js");
+const getReferral = require("./controllers/referrals/getReferral.js");
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
@@ -88,31 +89,47 @@ route.get("/", (req, res) => {
 });
 
 route.post('/subscription', async (req, res) => {
-    try {
-      if (req.body.email == null || req.body.email == 'undefined' || req.body.email == '') {
-        res.json({ 'status': 'fail', 'code' : 1 });
-      }
-      let item = new Subscription();
-      item.email = req.body.email;
-      await item.save();
-      res.json({ 'status': 'success' });
-    } catch (err) {
-      res.json({ 'status': 'fail', 'code' : 2 });
+  try {
+    if (
+      req.body.email == null ||
+      req.body.email == "undefined" ||
+      req.body.email == ""
+    ) {
+      res.json({ status: "fail", code: 1 });
     }
-  });
+    let item = new Subscription();
+    item.email = req.body.email;
+    await item.save();
+    res.json({ status: "success" });
+  } catch (err) {
+    res.json({ status: "fail", code: 2 });
+  }
+});
 
+//AUTH
 route.all("/login", upload.none(), login);
-route.post("/transfer", transfer);
 route.all("/sendMailPin", sendMailPin);
 route.all("/sendSMSPin", sendSMSPin);
 route.all("/register", upload.none(), register);
+route.all("/disableAccount", upload.none(), disableAccount);
+route.all("/2fa", upload.none(), twoFactor);
+route.all("/update2fa", upload.none(), update2fa);
+
+
+//Wallet Modules
+route.post("/transfer", transfer);
+route.post("/withdraw", withdraw);
+route.all("/getUSDTBalance", upload.none(), getUSDTBalance);
+
 route.all("/addCoin", upload.none(), addCoin);
 route.all("/CopyLeaderRequest", upload.none(), copyLeaderRequest);
+
+//Trade Modules
+route.all("/getOrders", upload.none(), getOrders);
 route.post("/getClosedMarginOrders", getClosedMarginOrders);
 route.post("/getOpenMarginOrders", getOpenMarginOrders);
 route.post("/closeMarginOrder", closeMarginOrder);
 route.post("/addMarginOrder", addMarginOrder);
-route.post("/withdraw", withdraw);
 route.post("/spotHistory", async (req, res) => {
   var api_key_result = req.body.api_key;
 
@@ -125,7 +142,8 @@ route.post("/spotHistory", async (req, res) => {
 route.post("/deleteLimit", deleteLimit);
 route.post("/deleteMarginLimit", deleteMarginLimit);
 route.all("/addOrders", upload.none(), addOrders);
-route.all("/disableAccount", upload.none(), disableAccount);
+
+
 route.all("/addNewRegisteredAddress", upload.none(), addNewRegisteredAddress);
 route.all(
   "/getRegisteredAddressList",
@@ -137,21 +155,24 @@ route.all(
 route.all(
   "/enableWithdrawalWhiteList",
   upload.none(),
-  async function (req, res) {}
+  async function (req, res) { }
 );
 route.all("/addNotification", upload.none(), addNotification);
 route.all("/getNotification", upload.none(), getNotification);
-route.all("/getOrders", upload.none(), getOrders);
-route.all("/getUSDTBalance", upload.none(), getUSDTBalance);
+
 route.all("/getPairs", upload.none(), getPairs);
 route.all("/addPair", upload.none(), addPair);
 route.all("/getDigits", upload.none(), getDigits);
 route.all("/getCoinList", upload.none(), getCoinList);
 route.all("/getCoinInfo", upload.none(), getCoinInfo);
+
+//Referral Modules
 route.all("/getReferral", upload.none(), getReferral);
+route.all("/topReferrals", upload.none(), topReferrals);
+
+
 route.all("/getWallet", upload.none(), getWallet);
-route.all("/2fa", upload.none(), twoFactor);
-route.all("/update2fa", upload.none(), update2fa);
+
 route.post("/cancelAllLimit", cancelAllLimit);
 route.post("/cancelAllStopLimit", cancelAllStopLimit);
 route.all("/cancelOrder", upload.none(), cancelOrder);

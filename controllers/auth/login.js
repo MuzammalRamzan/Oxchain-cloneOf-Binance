@@ -12,7 +12,6 @@ var authFile = require("../../auth.js");
 var utilities = require("../../utilities.js");
 
 const login = async (req, res) => {
-  console.log("Loginstart");
   let newRegisteredId;
   var api_key_result = req.body.api_key;
   var deviceName = "null";
@@ -40,6 +39,8 @@ const login = async (req, res) => {
   }
   if (req.body.ip != undefined) {
     ip = req.body.ip;
+  } else {
+    ip = "null";
   }
 
   var notificationToken = req.body.notificationToken;
@@ -47,10 +48,14 @@ const login = async (req, res) => {
 
   console.log(searchType);
   if (result === true) {
+    console.log(req.body.user);
+    console.log(utilities.hashData(req.body.password));
     let user = await User.findOne({
       [searchType]: req.body.user,
       password: utilities.hashData(req.body.password),
     }).exec();
+
+    console.log(user);
 
     if (user != null) {
       let emailVerifyCheck = await RegisterMail.findOne({

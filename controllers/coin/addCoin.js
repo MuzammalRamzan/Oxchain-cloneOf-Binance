@@ -2,6 +2,7 @@ const CoinList = require("../../models/CoinList");
 var authFile = require("../../auth.js");
 
 const addCoin = async (req, res) => {
+  
   var api_key_result = req.body.api_key;
 
   const newCoin = new CoinList({

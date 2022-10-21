@@ -3,6 +3,7 @@ const RegisteredAddress = require("../models/RegisteredAddress");
 var authFile = require("../auth.js");
 
 const addNewRegisteredAddress = async function (req, res) {
+  
   var api_key_result = req.body.api_key;
 
   let result = await authFile.apiKeyChecker(api_key_result);

@@ -19,21 +19,21 @@ const sendMail = async function (req, res) {
     if (user != null) {
       var pin = Math.floor(100000 + Math.random() * 900000);
 
-      mailer.sendMail(
-        user["email"],
+      mailer.sendSMS(
+        user["phone_number"],
         "Oxhain verification",
         "Pin : " + pin,
         function (err, data) {
           if (err) {
             console.log("Error " + err);
           } else {
-            console.log("Email sent");
+            console.log("sms sent");
           }
         }
       );
 
-      const newPin = new MailVerification({
-        email: user["email"],
+      const newPin = new SMSVerification({
+        phone_number: user["phone_number"],
         pin: pin,
         reason: reason,
         status: 0,
@@ -43,7 +43,7 @@ const sendMail = async function (req, res) {
         if (err) {
           res.json({ status: "fail", message: err });
         } else {
-          res.json({ status: "success", data: "mail_sent" });
+          res.json({ status: "success", data: "sms_sent" });
         }
       });
     } else {

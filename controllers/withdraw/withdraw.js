@@ -10,12 +10,12 @@ const withdraw = async (req, res) => {
   var amount = req.body.amount;
   var api_key_result = req.body.api_key;
   /*
-    var api_result = await authFile.apiKeyChecker(api_key_result);
-    if (api_result === false) {
-      res.json({ status: "fail", message: "Forbidden 403" });
-      return;
-    }
-    */
+  var api_result = await authFile.apiKeyChecker(api_key_result);
+  if (api_result === false) {
+    res.json({ status: "fail", message: "Forbidden 403" });
+    return;
+  }
+  */
 
   var fromWalelt = await Wallet.findOne({
     address: address,
@@ -60,15 +60,7 @@ const withdraw = async (req, res) => {
     notifications.sendPushNotification(token, body);
   }
   res.json({ status: "success", data: data });
-  /*
-      var getPair = await CoinList.findOne({_id: fromWalelt.coin_id }).exec();  
-    switch(getPair.name) {
-      case "BTC" : 
-      let post = await axios.post('htpp://3.15.2.155', {'request' : 'transfer', 'to' : to, 'amount' : amount});
-      console.log(post);
-      break;
-    }
-  */
+  
 };
 
 module.exports = withdraw;

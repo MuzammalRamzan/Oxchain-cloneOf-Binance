@@ -249,12 +249,12 @@ const addMarginOrder = async (req, res) => {
               return;
             } else {
               /*
-                  20 lik işlem var
-                  50 luk ters işlem açıyor
-                  toplam da 10 luk pozisyon olacak
-  
-  
-                */
+                20 lik işlem var
+                50 luk ters işlem açıyor
+                toplam da 10 luk pozisyon olacak
+
+
+              */
 
               let ilkIslem = reverseOreders.usedUSDT;
               let tersIslem = usedUSDT;
@@ -513,12 +513,12 @@ const addMarginOrder = async (req, res) => {
               return;
             } else {
               /*
-                  20 lik işlem var
-                  50 luk ters işlem açıyor
-                  toplam da 10 luk pozisyon olacak
-  
-  
-                */
+                20 lik işlem var
+                50 luk ters işlem açıyor
+                toplam da 10 luk pozisyon olacak
+
+
+              */
 
               let ilkIslem = reverseOreders.usedUSDT;
               let tersIslem = usedUSDT;

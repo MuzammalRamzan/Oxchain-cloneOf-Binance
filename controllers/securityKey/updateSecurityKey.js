@@ -19,8 +19,11 @@ const updateSecurityKey = async function (req, res) {
       id: req.body.id,
     }).exec();
 
+    console.log(user_id)
+    console.log(securityKey);
+
     if (securityKey != null) {
-      const filter = { _id: req.body.id, status: 1 };
+      const filter = { _id: req.body.id };
       const update = {
         wallet: wallet,
         deposit: deposit,
