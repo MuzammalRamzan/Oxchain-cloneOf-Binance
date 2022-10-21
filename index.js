@@ -2371,53 +2371,51 @@ route.all("/addSecurityKey", upload.none(), async function (req, res) {
   var wallet = req.body.wallet;
   var deposit = req.body.deposit;
   var withdraw = req.body.withdraw;
-  var emailPin = req.body.emailPin;
+  var twofapin = req.body.twofapin;
 
-  var result = await authFile.apiKeyChecker(api_key_result);
+  const result = await authFile.apiKeyChecker(api_key_result);
+  if (!result) return res.json({ status: "fail", message: "403 Forbidden" });
 
-  if (result === true) {
-    var securityKey = await SecurityKey.findOne({
-      user_id: user_id,
-      status: 1,
-    }).exec();
+  const securityKey = await SecurityKey.findOne({
+    user_id: user_id,
+    status: 1,
+  }).lean();
 
-    if (securityKey != null) {
-      res.json({ status: "fail", data: "secury_key_active" });
-    } else {
-      let user = await User.findOne({ _id: user_id }).exec();
-      if (user != null) {
-        let mailChecker = await MailVerification.findOne({
-          email: user.email,
-          pin: emailPin,
-          reason: "addSecurityKey",
-        }).exec();
+  if (securityKey)
+    return res.json({ status: "success", data: "secury_key_active" });
 
-        if (mailChecker != null) {
-          var newSecurityKey = new SecurityKey({
-            user_id: user_id,
-            key: security_key,
-            status: 1,
-            trade: trade,
-            wallet: wallet,
-            deposit: deposit,
-            withdraw: withdraw,
-          });
-          newSecurityKey.save((err, doc) => {
-            if (err) {
-              console.log(err);
-              res.json({ status: "fail", message: err });
-            } else {
-              res.json({ status: "success", data: "security_key_added" });
-            }
-          });
-        } else {
-          res.json({ status: "fail", data: "wrong_email_pin" });
-        }
-      } else {
-        res.json({ status: "fail", message: "user_not_found" });
-      }
-    }
+  const user = await User.findOne({ _id: user_id }).lean();
+  let twofaCheck;
+
+  if (user && user.twofa) {
+    twofaCheck = await authFile.verifyToken(twofapin, twofa);
+  } else {
+    twofaCheck = await RegisterMail.findOne({
+      email: user.email,
+      pin: twofapin,
+      status: "1",
+    }).lean();
+    if (!twofaCheck)
+      twofaCheck = await RegisterSMS.findOne({
+        phone_number: user.phone_number,
+        pin: twofapin,
+        status: "1",
+      }).lean();
   }
+  if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed" });
+
+  const newSecurityKey = new SecurityKey({
+    user_id: user_id,
+    key: security_key,
+    status: 1,
+    trade: trade,
+    wallet: wallet,
+    deposit: deposit,
+    withdraw: withdraw,
+  });
+  await newSecurityKey.save();
+
+  return res.json({ status: "success", data: "" });
 });
 
 route.all("/updateSecurityKey", upload.none(), async function (req, res) {
@@ -2429,38 +2427,50 @@ route.all("/updateSecurityKey", upload.none(), async function (req, res) {
   var deposit = req.body.deposit;
   var withdraw = req.body.withdraw;
 
-  var result = await authFile.apiKeyChecker(api_key_result);
+  var twofapin = req.body.twofapin;
 
-  if (result === true) {
-    var securityKey = await SecurityKey.findOne({
-      user_id: user_id,
-      status: 1,
-      id: req.body.id,
-    }).exec();
+  const result = await authFile.apiKeyChecker(api_key_result);
+  if (!result) return res.json({ status: "fail", message: "403 Forbidden" });
 
-    console.log(user_id)
-    console.log(securityKey);
+  const user = await User.findOne({ _id: user_id }).lean();
+  let twofaCheck;
 
-    if (securityKey != null) {
-      const filter = { _id: req.body.id };
-      const update = {
-        wallet: wallet,
-        deposit: deposit,
-        withdraw: withdraw,
-        trade: trade,
-      };
-      SecurityKey.findOneAndUpdate(filter, update, (err, doc) => {
-        if (err) {
-          console.log(err);
-          res.json({ status: "fail", message: err });
-        } else {
-          res.json({ status: "success", data: "update_success" });
-        }
-      });
-    } else {
-      res.json({ status: "fail", message: "security_key_not_found" });
-    }
+  if (user && user.twofa) {
+    twofaCheck = await authFile.verifyToken(twofapin, twofa);
+  } else {
+    twofaCheck = await RegisterMail.findOne({
+      email: user.email,
+      pin: twofapin,
+      status: "1",
+    }).lean();
+    if (!twofaCheck)
+      twofaCheck = await RegisterSMS.findOne({
+        phone_number: user.phone_number,
+        pin: twofapin,
+        status: "1",
+      }).lean();
   }
+  if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed" });
+
+  const securityKey = await SecurityKey.findOne({
+    user_id: user_id,
+    status: "1",
+    _id: req.body.id,
+  }).lean();
+
+  if (!securityKey)
+    return res.json({ status: "fail", message: "security_key_not_found" });
+
+  const filter = { _id: req.body.id, status: "1" };
+  const update = {
+    wallet: wallet,
+    deposit: deposit,
+    withdraw: withdraw,
+    trade: trade,
+  };
+  await SecurityKey.findOneAndUpdate(filter, update);
+
+  return res.json({ status: "success", data: "update_success" });
 });
 
 route.all("/lastActivities", upload.none(), async function (req, res) {
@@ -3092,43 +3102,38 @@ route.all("/checkSecurityKey", upload.none(), (req, res) => {
   });
 });
 
-route.all("/deleteSecurityKey", upload.none(), (req, res) => {
+route.all("/deleteSecurityKey", upload.none(), async (req, res) => {
   var user_id = req.body.user_id;
   var api_key_result = req.body.api_key;
   var twofapin = req.body.twofapin;
 
-  authFile.apiKeyChecker(api_key_result).then((result) => {
-    if (result === true) {
-      User.findOne({
-        _id: user_id,
-      }).then((user) => {
-        if (user != null) {
-          var twofa = user["twofa"];
+  const result = await authFile.apiKeyChecker(api_key_result);
+  if (!result) return res.json({ status: "fail", message: "403 Forbidden" });
 
-          authFile.verifyToken(twofapin, twofa).then((result2) => {
-            if (result2 === true) {
-              SecurityKey.findOneAndUpdate(
-                { user_id: user_id, id: req.body.key_id },
-                { status: 0 },
-                (err, doc) => {
-                  if (err) {
-                    console.log(err);
-                    res.json({ status: "fail", message: err });
-                  } else {
-                    res.json({ status: "success", data: "" });
-                  }
-                }
-              );
-            } else {
-              res.json({ status: "fail", message: "2fa_failed" });
-            }
-          });
-        }
-      });
-    } else {
-      res.json({ status: "fail", message: "403 Forbidden" });
-    }
-  });
+  const user = await User.findOne({ _id: user_id }).lean();
+  let twofaCheck;
+
+  if (user && user.twofa) {
+    twofaCheck = await authFile.verifyToken(twofapin, twofa);
+  } else {
+    twofaCheck = await RegisterMail.findOne({
+      email: user.email,
+      pin: twofapin,
+    }).lean();
+    if (!twofaCheck)
+      twofaCheck = await RegisterSMS.findOne({
+        phone_number: user.phone_number,
+        pin: twofapin,
+      }).lean();
+  }
+  if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed" });
+
+  await SecurityKey.findOneAndUpdate(
+    { user_id: user_id, _id: req.body.key_id },
+    { status: 0 }
+  );
+
+  return res.json({ status: "success", data: "" });
 });
 
 route.all("/addCopyTrade", upload.none(), (req, res) => {
