@@ -1,5 +1,8 @@
 const SecurityKey = require("../../models/SecurityKey");
 var authFile = require("../../auth.js");
+const User = require("../../models/Test");
+const RegisterMail = require("../../models/RegisterMail");
+const RegisterSMS = require("../../models/RegisterSMS");
 
 const updateSecurityKey = async function (req, res) {
   var user_id = req.body.user_id;
@@ -10,38 +13,50 @@ const updateSecurityKey = async function (req, res) {
   var deposit = req.body.deposit;
   var withdraw = req.body.withdraw;
 
-  var result = await authFile.apiKeyChecker(api_key_result);
+  var twofapin = req.body.twofapin;
 
-  if (result === true) {
-    var securityKey = await SecurityKey.findOne({
-      user_id: user_id,
-      status: 1,
-      id: req.body.id,
-    }).exec();
+  const result = await authFile.apiKeyChecker(api_key_result);
+  if (!result) return res.json({ status: "fail", message: "403 Forbidden" });
 
-    console.log(user_id)
-    console.log(securityKey);
+  const user = await User.findOne({ _id: user_id }).lean();
+  let twofaCheck;
 
-    if (securityKey != null) {
-      const filter = { _id: req.body.id };
-      const update = {
-        wallet: wallet,
-        deposit: deposit,
-        withdraw: withdraw,
-        trade: trade,
-      };
-      SecurityKey.findOneAndUpdate(filter, update, (err, doc) => {
-        if (err) {
-          console.log(err);
-          res.json({ status: "fail", message: err });
-        } else {
-          res.json({ status: "success", data: "update_success" });
-        }
-      });
-    } else {
-      res.json({ status: "fail", message: "security_key_not_found" });
-    }
+  if (user && user.twofa) {
+    twofaCheck = await authFile.verifyToken(twofapin, twofa);
+  } else {
+    twofaCheck = await RegisterMail.findOne({
+      email: user.email,
+      pin: twofapin,
+      status: "1",
+    }).lean();
+    if (!twofaCheck)
+      twofaCheck = await RegisterSMS.findOne({
+        phone_number: user.phone_number,
+        pin: twofapin,
+        status: "1",
+      }).lean();
   }
+  if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed" });
+
+  const securityKey = await SecurityKey.findOne({
+    user_id: user_id,
+    status: "1",
+    _id: req.body.id,
+  }).lean();
+
+  if (!securityKey)
+    return res.json({ status: "fail", message: "security_key_not_found" });
+
+  const filter = { _id: req.body.id, status: "1" };
+  const update = {
+    wallet: wallet,
+    deposit: deposit,
+    withdraw: withdraw,
+    trade: trade,
+  };
+  await SecurityKey.findOneAndUpdate(filter, update);
+
+  return res.json({ status: "success", data: "update_success" });
 };
 
 module.exports = updateSecurityKey;

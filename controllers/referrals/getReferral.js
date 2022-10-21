@@ -1,6 +1,6 @@
-const User = require("../models/Test");
-const Referral = require("../models/Referral");
-var authFile = require("../auth.js");
+const User = require("../../models/Test");
+const Referral = require("../../models/Referral");
+var authFile = require("../../auth.js");
 
 function parseUsers(ref_user, user_table) {
   console.log(user_table);

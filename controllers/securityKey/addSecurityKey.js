@@ -1,6 +1,9 @@
 const SecurityKey = require("../../models/SecurityKey");
 var authFile = require("../../auth.js");
 var utilities = require("../../utilities.js");
+const User = require("../../models/Test");
+const RegisterMail = require("../../models/RegisterMail");
+const RegisterSMS = require("../../models/RegisterSMS");
 
 const addSecurityKey = async function (req, res) {
   var user_id = req.body.user_id;
@@ -10,53 +13,51 @@ const addSecurityKey = async function (req, res) {
   var wallet = req.body.wallet;
   var deposit = req.body.deposit;
   var withdraw = req.body.withdraw;
-  var emailPin = req.body.emailPin;
+  var twofapin = req.body.twofapin;
 
-  var result = await authFile.apiKeyChecker(api_key_result);
+  const result = await authFile.apiKeyChecker(api_key_result);
+  if (!result) return res.json({ status: "fail", message: "403 Forbidden" });
 
-  if (result === true) {
-    var securityKey = await SecurityKey.findOne({
-      user_id: user_id,
-      status: 1,
-    }).exec();
+  const securityKey = await SecurityKey.findOne({
+    user_id: user_id,
+    status: 1,
+  }).lean();
 
-    if (securityKey != null) {
-      res.json({ status: "fail", data: "secury_key_active" });
-    } else {
-      let user = await User.findOne({ _id: user_id }).exec();
-      if (user != null) {
-        let mailChecker = await MailVerification.findOne({
-          email: user.email,
-          pin: emailPin,
-          reason: "addSecurityKey",
-        }).exec();
+  if (securityKey)
+    return res.json({ status: "success", data: "secury_key_active" });
 
-        if (mailChecker != null) {
-          var newSecurityKey = new SecurityKey({
-            user_id: user_id,
-            key: security_key,
-            status: 1,
-            trade: trade,
-            wallet: wallet,
-            deposit: deposit,
-            withdraw: withdraw,
-          });
-          newSecurityKey.save((err, doc) => {
-            if (err) {
-              console.log(err);
-              res.json({ status: "fail", message: err });
-            } else {
-              res.json({ status: "success", data: "security_key_added" });
-            }
-          });
-        } else {
-          res.json({ status: "fail", data: "wrong_email_pin" });
-        }
-      } else {
-        res.json({ status: "fail", message: "user_not_found" });
-      }
-    }
+  const user = await User.findOne({ _id: user_id }).lean();
+  let twofaCheck;
+
+  if (user && user.twofa) {
+    twofaCheck = await authFile.verifyToken(twofapin, twofa);
+  } else {
+    twofaCheck = await RegisterMail.findOne({
+      email: user.email,
+      pin: twofapin,
+      status: "1",
+    }).lean();
+    if (!twofaCheck)
+      twofaCheck = await RegisterSMS.findOne({
+        phone_number: user.phone_number,
+        pin: twofapin,
+        status: "1",
+      }).lean();
   }
+  if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed" });
+
+  const newSecurityKey = new SecurityKey({
+    user_id: user_id,
+    key: security_key,
+    status: 1,
+    trade: trade,
+    wallet: wallet,
+    deposit: deposit,
+    withdraw: withdraw,
+  });
+  await newSecurityKey.save();
+
+  return res.json({ status: "success", data: "" });
 };
 
 module.exports = addSecurityKey;
