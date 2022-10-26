@@ -1,5 +1,7 @@
 const User = require("../../models/Test");
 const Wallet = require("../../models/Wallet");
+const WalletAddress = require("../../models/WalletAddress");
+const Network = require("../../models/Network");
 const CoinList = require("../../models/CoinList");
 const Referral = require("../../models/Referral");
 const RegisterMail = require("../../models/RegisterMail");
@@ -106,49 +108,50 @@ const login = async (req, res) => {
       if (status == 1) {
         let coins = await CoinList.find({ status: 1 }).exec();
 
-        for (let i = 0; i < coins.length; i++) {
-          let walletResult = await Wallet.findOne({
-            user_id: user._id,
-            coin_id: coins[i]._id,
-          }).exec();
-          let privateKey = "";
-          let address = "";
+        let networks = await Network.find({ status: 1 }).exec();
 
-          if (walletResult === null) {
-            if (coins[i].symbol === "ETH") {
-              console.log("Start ETH");
+        for (let x = 0; x < networks.length; x++) {
+          let walletAddressCheck = await WalletAddress.findOne({
+            user_id: user._id,
+            network_id: networks[x]._id,
+          }).exec();
+
+          console.log(user._id);
+          console.log(networks[x]._id);
+          console.log(walletAddressCheck);
+
+          if (walletAddressCheck == null) {
+            let privateKey = "";
+            let address = "";
+
+            if (networks[x].symbol === "ERC") {
+              console.log("Start ERC");
               let url = "http://34.239.168.239:4455/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address;
             }
 
-            if (coins[i].symbol === "BNB") {
-              console.log("Start BNB");
+            if (networks[x].symbol === "BSC") {
+              console.log("Start BSC");
               let url = "http://44.203.2.70:4458/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address;
             }
 
-            if (coins[i].symbol === "USDT") {
-              console.log("Start USDT");
+            if (networks[x].symbol === "TRC") {
+              console.log("Start TRC");
               let url = "http://54.172.40.148:4456/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
+              console.log(walletTest.data);
               address = walletTest.data.data.address.base58;
+              console.log(privateKey);
             }
 
-            if (coins[i].symbol === "Margin") {
-              console.log("Start Margin");
-              let getUsdtWalelt = await Wallet.find({ symbol: "USDT" }).exec();
-
-              privateKey = getUsdtWalelt.privateKey;
-              address = getUsdtWalelt.address;
-            }
-
-            if (coins[i].symbol === "BTC") {
-              console.log("Start BTC");
+            if (networks[x].symbol === "BTC") {
+              console.log("Start BTCNetwork");
               let createBTC = await axios.request({
                 method: "post",
                 url: "http://3.15.2.155",
@@ -160,6 +163,25 @@ const login = async (req, res) => {
 
               address = createBTC.data.message;
             }
+
+            let walletAddress = new WalletAddress({
+              user_id: user._id,
+              network_id: networks[x]._id,
+              address: address,
+              private_key: privateKey,
+              wallet_address: address,
+            });
+
+            await walletAddress.save();
+          }
+        }
+        for (let i = 0; i < coins.length; i++) {
+          let walletResult = await WalletAddress.findOne({
+            user_id: user._id,
+            coin_id: coins[i]._id,
+          }).exec();
+
+          if (walletResult === null) {
           } else {
             console.log("Cüzdan var");
           }
@@ -171,8 +193,6 @@ const login = async (req, res) => {
             amount: 0,
             coin_id: coins[i]["id"],
             type: "spot",
-            privateKey: privateKey,
-            address: address,
             status: 1,
           });
 

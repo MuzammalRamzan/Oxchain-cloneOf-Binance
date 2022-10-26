@@ -63,7 +63,12 @@ const sendSMS = require("./controllers/sendMail");
 const sendMail = require("./controllers/sendMail");
 const changePhone = require("./controllers/users/changePhone");
 const getDepositsUSDT = require("./controllers/coin/getDepositsUSDT");
-
+const depositCoinList = require("./controllers/deposit/getCoinList");
+const depositCoinNetworkOptions = require("./controllers/deposit/getCoinNetworkOption");
+const addCoinNetworkOption = require("./controllers/deposit/addCoinNetworkOption");
+const addNetwork = require("./controllers/deposit/addNetwork");
+const depositNetworkList = require("./controllers/deposit/getNetworkList");
+const depositWalletAddress = require("./controllers/deposit/getWalletAddress");
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
 //console.log(authenticator.verifyToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse", "260180"));
@@ -88,7 +93,7 @@ route.get("/", (req, res) => {
   res.send("success");
 });
 
-route.post('/subscription', async (req, res) => {
+route.post("/subscription", async (req, res) => {
   try {
     if (
       req.body.email == null ||
@@ -106,6 +111,8 @@ route.post('/subscription', async (req, res) => {
   }
 });
 
+//DEPOSIT
+
 //AUTH
 route.all("/login", upload.none(), login);
 route.all("/sendMailPin", sendMailPin);
@@ -115,14 +122,24 @@ route.all("/disableAccount", upload.none(), disableAccount);
 route.all("/2fa", upload.none(), twoFactor);
 route.all("/update2fa", upload.none(), update2fa);
 
-
 //Wallet Modules
 route.post("/transfer", transfer);
 route.post("/withdraw", withdraw);
+
+route.post("/depositCoinList", depositCoinList);
+route.post("/depositCoinNetworkOptions", depositCoinNetworkOptions);
+route.post("/depositWalletAddress", depositWalletAddress);
+
+
+route.all("/addCoinNetworkOption", addCoinNetworkOption);
+route.all("/addNetwork", addNetwork);
+route.all("/depositNetworkList", depositNetworkList);
+route.all("/addCoin", upload.none(), addCoin);
+
+
+route.all("/CopyLeaderRequest", upload.none(), copyLeaderRequest);
 route.all("/getUSDTBalance", upload.none(), getUSDTBalance);
 
-route.all("/addCoin", upload.none(), addCoin);
-route.all("/CopyLeaderRequest", upload.none(), copyLeaderRequest);
 
 //Trade Modules
 route.all("/getOrders", upload.none(), getOrders);
@@ -143,7 +160,6 @@ route.post("/deleteLimit", deleteLimit);
 route.post("/deleteMarginLimit", deleteMarginLimit);
 route.all("/addOrders", upload.none(), addOrders);
 
-
 route.all("/addNewRegisteredAddress", upload.none(), addNewRegisteredAddress);
 route.all(
   "/getRegisteredAddressList",
@@ -155,7 +171,7 @@ route.all(
 route.all(
   "/enableWithdrawalWhiteList",
   upload.none(),
-  async function (req, res) { }
+  async function (req, res) {}
 );
 route.all("/addNotification", upload.none(), addNotification);
 route.all("/getNotification", upload.none(), getNotification);
@@ -169,7 +185,6 @@ route.all("/getCoinInfo", upload.none(), getCoinInfo);
 //Referral Modules
 route.all("/getReferral", upload.none(), getReferral);
 route.all("/topReferrals", upload.none(), topReferrals);
-
 
 route.all("/getWallet", upload.none(), getWallet);
 
