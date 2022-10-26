@@ -9,6 +9,7 @@ const WalletSchema = new mongoose.Schema({
   address: { type: String, required: false, default: null },
   privateKey: { type: String, required: false, default: null },
   pnl : {type : Number, required: false, default:0.0 },
+  totalBonus : {type : Number, required : false, default : 0.0},
   status: { type: String, required: false, default: 0 },
   createdAt: {
     type: Date,
