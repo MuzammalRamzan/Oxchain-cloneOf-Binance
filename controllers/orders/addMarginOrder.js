@@ -2,6 +2,7 @@ const Wallet = require("../../models/Wallet");
 const Pairs = require("../../models/Pairs");
 const axios = require("axios");
 var authFile = require("../../auth.js");
+const MarginOrder = require("../../models/MarginOrder");
 
 const addMarginOrder = async (req, res) => {
   try {

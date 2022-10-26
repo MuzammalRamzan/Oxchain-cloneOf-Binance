@@ -1,4 +1,5 @@
 var authFile = require("../../auth.js");
+const MarginOrder = require("../../models/MarginOrder");
 
 const getOpenMarginOrders = async (req, res) => {
   var api_key_result = req.body.api_key;

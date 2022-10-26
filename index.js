@@ -69,6 +69,8 @@ const addCoinNetworkOption = require("./controllers/deposit/addCoinNetworkOption
 const addNetwork = require("./controllers/deposit/addNetwork");
 const depositNetworkList = require("./controllers/deposit/getNetworkList");
 const depositWalletAddress = require("./controllers/deposit/getWalletAddress");
+const getMarginOrders = require("./controllers/orders/getMarginOrders");
+
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
 //console.log(authenticator.verifyToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse", "260180"));
@@ -147,6 +149,7 @@ route.post("/getClosedMarginOrders", getClosedMarginOrders);
 route.post("/getOpenMarginOrders", getOpenMarginOrders);
 route.post("/closeMarginOrder", closeMarginOrder);
 route.post("/addMarginOrder", addMarginOrder);
+route.get("/getMarginOrders", getMarginOrders);
 route.post("/spotHistory", async (req, res) => {
   var api_key_result = req.body.api_key;
 
