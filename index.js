@@ -87,6 +87,9 @@ var port = process.env.PORT;
 const Subscription = require("./models/Subscription");
 const topReferrals = require("./controllers/referrals/topReferrals.js");
 const getReferral = require("./controllers/referrals/getReferral.js");
+const addBonus = require("./controllers/bonus/addBonus.js");
+const addBonusType = require("./controllers/bonusTypes/addBonusType.js");
+const getBonusHistory = require("./controllers/bonus/getBonusHistory.js");
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
@@ -114,6 +117,12 @@ route.post("/subscription", async (req, res) => {
 });
 
 //DEPOSIT
+
+
+//BONUS & CREDIT
+route.post('/addBonusType', addBonusType);
+route.post('/addBonus', addBonus);
+route.post('/getBonusHistory', getBonusHistory);
 
 //AUTH
 route.all("/login", upload.none(), login);
