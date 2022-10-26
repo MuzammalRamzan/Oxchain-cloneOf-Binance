@@ -1,4 +1,4 @@
-const User = require("../../models/Test");
+const User = require("../../models/User");
 const Referral = require("../../models/Referral");
 var authFile = require("../../auth.js");
 

@@ -1,4 +1,4 @@
-const User = require("../../models/Test");
+const User = require("../../models/User");
 const Referral = require("../../models/Referral");
 const RegisterMail = require("../../models/RegisterMail");
 const RegisterSMS = require("../../models/RegisterSMS");

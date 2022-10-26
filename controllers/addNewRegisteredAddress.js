@@ -1,4 +1,4 @@
-const User = require("../models/Test");
+const User = require("../models/User");
 const RegisteredAddress = require("../models/RegisteredAddress");
 var authFile = require("../auth.js");
 

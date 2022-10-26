@@ -1,4 +1,4 @@
-const User = require("../models/Test");
+const User = require("../models/User");
 const MailVerification = require("../models/MailVerification");
 var authFile = require("../auth.js");
 var mailer = require("../mailer.js");

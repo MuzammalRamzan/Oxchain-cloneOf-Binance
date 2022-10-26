@@ -1,4 +1,4 @@
-const User = require("../../models/Test");
+const User = require("../../models/User");
 const LoginLogs = require("../../models/LoginLogs");
 var authFile = require("../../auth.js");
 

@@ -1,6 +1,6 @@
 const SecurityKey = require("../../models/SecurityKey");
 var authFile = require("../../auth.js");
-const User = require("../../models/Test");
+const User = require("../../models/User");
 const RegisterMail = require("../../models/RegisterMail");
 const RegisterSMS = require("../../models/RegisterSMS");
 

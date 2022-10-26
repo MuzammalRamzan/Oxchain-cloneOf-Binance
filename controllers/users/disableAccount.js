@@ -1,5 +1,5 @@
 var authenticator = require("authenticator");
-const User = require("../../models/Test");
+const User = require("../../models/User");
 const Wallet = require("../../models/Wallet");
 const CoinList = require("../../models/CoinList");
 const Referral = require("../../models/Referral");

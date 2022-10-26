@@ -1,4 +1,4 @@
-const User = require("../../models/Test");
+const User = require("../../models/User");
 const Wallet = require("../../models/Wallet");
 const WalletAddress = require("../../models/WalletAddress");
 const Network = require("../../models/Network");

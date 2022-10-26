@@ -1,4 +1,4 @@
-const User = require("../../models/Test");
+const User = require("../../models/User");
 var authFile = require("../../auth.js");
 
 const getUserInfo = async function (req, res) {
