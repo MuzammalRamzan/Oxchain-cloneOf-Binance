@@ -8,6 +8,7 @@ const RegisterMail = require("../../models/RegisterMail");
 const RegisterSMS = require("../../models/RegisterSMS");
 const UserRef = require("../../models/UserRef");
 const LoginLogs = require("../../models/LoginLogs");
+const SecurityKey = require("../../models/SecurityKey")
 const axios = require("axios");
 const NotificationTokens = require("../../models/NotificationTokens");
 var authFile = require("../../auth.js");
@@ -59,6 +60,8 @@ const login = async (req, res) => {
 
     console.log(user);
 
+    let securityLevel = 0;
+
     if (user != null) {
       let emailVerifyCheck = await RegisterMail.findOne({
         email: user.email,
@@ -84,13 +87,23 @@ const login = async (req, res) => {
       } else {
         smsVerifyExist = "no";
       }
+      if (emailVerifyCheck && smsVerifyCheck) securityLevel = securityLevel + 1;
 
       var twofaStatus = user["twofa"];
+      if (twofaStatus) securityLevel = securityLevel + 1
+      
       var results = [];
       var refId = "";
       let userRef = await UserRef.findOne({
         user_id: user._id,
       }).exec();
+
+      const securityKey = await SecurityKey.find({
+        user_id: user_id,
+        status: 1,
+      }).lean();
+      if (securityKey) securityLevel = securityLevel + 1;
+      
       if (userRef != null) refId = userRef["refCode"] ?? "";
       else refId = "";
       var data = {
@@ -102,6 +115,7 @@ const login = async (req, res) => {
         status: user["status"],
         user_id: user["_id"],
         ref_id: refId,
+        securityLevel
       };
 
       var status = user["status"];
