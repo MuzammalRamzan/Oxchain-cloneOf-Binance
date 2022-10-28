@@ -18,6 +18,7 @@ const Withdraws = require("./models/Withdraw");
 var authFile = require("./auth.js");
 var notifications = require("./notifications.js");
 var utilities = require("./utilities.js");
+const WalletAddress = require("./models/WalletAddress");
 const Connection = require('./Connection');
 require("dotenv").config();
 
@@ -65,11 +66,11 @@ route.all("/ethDepositCheck", async (req, res) => {
   if (result === true) {
     let wallet = await Wallet.find({
       status: 1,
-      coin_id: "62b0324644fd00083973866b",
+      network_id: "6358f354733321c968f40f6b",
     }).exec();
 
     for (let i = 0; i < wallet.length; i++) {
-      let address = wallet[i].address;
+      let address = wallet[i].wallet_address;
       let user_id = wallet[i].user_id;
       if (address.length > 0) {
         let checkRequest = await axios.get(
@@ -125,11 +126,11 @@ route.all("/bnbDepositCheck", async (req, res) => {
   if (result === true) {
     let wallet = await Wallet.find({
       status: 1,
-      coin_id: "62fb45483f8c1ffba43e4813",
+      network_id: "6359169ee5f78e20c0bb809a",
     }).exec();
 
     for (let i = 0; i < wallet.length; i++) {
-      let address = wallet[i].address;
+      let address = wallet[i].wallet_address;
       let user_id = wallet[i].user_id;
 
       if (address.length > 0) {
@@ -191,11 +192,11 @@ route.all("/btcDepositCheck", async (req, res) => {
   if (result === true) {
     let wallet = await Wallet.find({
       status: 1,
-      coin_id: "62aaf66c419ff12e16168c8e",
+      network_id: "635916ade5f78e20c0bb809c",
     }).exec();
 
     for (let i = 0; i < wallet.length; i++) {
-      let address = wallet[i].address;
+      let address = wallet[i].wallet_address;
       let user_id = wallet[i].user_id;
       if (address.length > 0) {
         let checkRequest = await axios.request({
@@ -250,9 +251,9 @@ route.all("/usdtDepositCheck", async (req, res) => {
   let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
-    let wallet = await Wallet.find({
+    let wallet = await WalletAddress.find({
       status: 1,
-      coin_id: "62bc116eb65b02b777c97b3d",
+      network_id: "6358f17cbc20445270757291",
     }).exec();
 
     let tx_id = "";
@@ -262,7 +263,7 @@ route.all("/usdtDepositCheck", async (req, res) => {
     let deposit = "";
 
     for (let i = 0; i < wallet.length; i++) {
-      let address = wallet[i].address;
+      let address = wallet[i].wallet_address;
 
       let user_id = wallet[i].user_id;
       if (address.length > 1) {
