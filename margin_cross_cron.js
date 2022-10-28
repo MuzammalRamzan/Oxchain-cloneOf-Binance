@@ -8,7 +8,7 @@ const Connection = require("./Connection");
 const Wallet = require("./models/Wallet.js");
 const Orders = require("./models/Orders.js");
 const UserRef = require("./models/UserRef.js");
-const User = require("./models/Test.js");
+const User = require("./models/User.js");
 const Pairs = require("./models/Pairs.js");
 var mongodbPass = process.env.MONGO_DB_PASS;
 
