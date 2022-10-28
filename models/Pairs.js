@@ -10,6 +10,9 @@ const PairsSchema = new mongoose.Schema({
   type: { type: String, required: true },
   digits: { type: Number, required: true, default : 2 },
   status: { type: Number, required: false, default: 0 },
+  tradeFee : {type: Number, required: false, default: 0 },
+  depositFee : {type: Number, required: false, default: 0 },
+  withdrawFee : {type: Number, required: false, default: 0 },
   createdAt: {
     type: Date,
     default: Date.now,
