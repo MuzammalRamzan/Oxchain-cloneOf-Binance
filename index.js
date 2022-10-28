@@ -57,6 +57,8 @@ const getLastLogin = require("./controllers/getLastLogin");
 const checkSecurityKey = require("./controllers/securityKey/checkSecurityKey");
 const getSecurityKey = require("./controllers/securityKey/getSecurityKey");
 const deleteSecurityKey = require("./controllers/securityKey/deleteSecurityKey");
+const changeAvatar = require("./controllers/users/changeAvatar");
+const changeNickname = require("./controllers/users/changeNickname");
 const addWithdraw = require("./controllers/withdraw/addWithdraw");
 const get2fa = require("./controllers/auth/get2fa");
 const sendSMS = require("./controllers/sendMail");
@@ -118,11 +120,10 @@ route.post("/subscription", async (req, res) => {
 
 //DEPOSIT
 
-
 //BONUS & CREDIT
-route.post('/addBonusType', addBonusType);
-route.post('/addBonus', addBonus);
-route.post('/getBonusHistory', getBonusHistory);
+route.post("/addBonusType", addBonusType);
+route.post("/addBonus", addBonus);
+route.post("/getBonusHistory", getBonusHistory);
 
 //AUTH
 route.all("/login", upload.none(), login);
@@ -141,16 +142,13 @@ route.post("/depositCoinList", depositCoinList);
 route.post("/depositCoinNetworkOptions", depositCoinNetworkOptions);
 route.post("/depositWalletAddress", depositWalletAddress);
 
-
 route.all("/addCoinNetworkOption", addCoinNetworkOption);
 route.all("/addNetwork", addNetwork);
 route.all("/depositNetworkList", depositNetworkList);
 route.all("/addCoin", upload.none(), addCoin);
 
-
 route.all("/CopyLeaderRequest", upload.none(), copyLeaderRequest);
 route.all("/getUSDTBalance", upload.none(), getUSDTBalance);
-
 
 //Trade Modules
 route.all("/getOrders", upload.none(), getOrders);
@@ -236,6 +234,10 @@ route.all("/getUserId", upload.none(), getUserId);
 route.all("/getSecurityKey", upload.none(), getSecurityKey);
 route.all("/checkSecurityKey", upload.none(), checkSecurityKey);
 route.all("/deleteSecurityKey", upload.none(), deleteSecurityKey);
+
+route.all("/changeAvatar", upload.none(), changeAvatar);
+route.all("/changeNickName", upload.none(), changeNickname);
+
 route.all("/addCopyTrade", upload.none(), (req, res) => {
   res.json(CopyTrade.test());
 });

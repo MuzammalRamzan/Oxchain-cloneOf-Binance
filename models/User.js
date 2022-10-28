@@ -16,6 +16,8 @@ const UserSchema = new mongoose.Schema({
   id_type: { type: String, required: false, default: null },
   password: { type: String, required: false, default: null },
   twofa: { type: String, required: false, default: null, maxLength: 50 },
+  nickname: { type: String, required: false, default: null },
+  avatar: { type: String, required: false, default: null },
   status: { type: String, required: false, default: 0 },
   createdAt: {
     type: Date,
