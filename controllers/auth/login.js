@@ -27,7 +27,7 @@ const login = async (req, res) => {
   var deviceModel = "null";
   var user_id = req.body.user_id;
   var loginType = req.body.loginType;
-  var city = "";
+  var city = "test";
   if (req.body.deviceName != undefined) {
     deviceName = req.body.deviceName;
   }
