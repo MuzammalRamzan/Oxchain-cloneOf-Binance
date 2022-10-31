@@ -35,6 +35,8 @@ const addOrders = async function (req, res) {
       return;
     }
 
+    const fee = (amount * getPair.tradeFee) / 100;
+
     var urlPair = req.body.pair_name.replace("/", "");
     let url =
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
@@ -182,7 +184,7 @@ const addOrders = async function (req, res) {
           let saved = await orders.save();
           if (saved) {
             fromWalelt.amount =
-              parseFloat(fromWalelt.amount) + parseFloat(amount);
+              parseFloat(fromWalelt.amount) + parseFloat(amount) - parseFloat(fee);
             toWalelt.amount = parseFloat(toWalelt.amount) - parseFloat(total);
 
             await fromWalelt.save();
@@ -297,7 +299,7 @@ const addOrders = async function (req, res) {
           let saved = await orders.save();
           if (saved) {
             fromWalelt.amount = fromWalelt.amount - amount;
-            toWalelt.amount = toWalelt.amount + total;
+            toWalelt.amount = toWalelt.amount + total - parseFloat(fee);
             await fromWalelt.save();
             await toWalelt.save();
 
@@ -312,14 +314,14 @@ const addOrders = async function (req, res) {
     if (req.body.amount <= 0) {
       res.json({ status: "fail", message: "invalid_amount" });
     }
-    const fee = new FeeModel({
+    const feeModel = new FeeModel({
       feeType: req.body.type,
-      amount: (amount * getPair.tradeFee) / 100,
+      amount: fee,
       user_id: req.body.user_id,
       pair_id: getPair.symbolOneID,
       status: 1,
     });
-    await fee.save();
+    await feeModel.save();
   } catch (err) {
     console.log(err);
     res.json({ status: "fail", message: "unknow_error" });
