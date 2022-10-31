@@ -72,6 +72,8 @@ const addNetwork = require("./controllers/deposit/addNetwork");
 const depositNetworkList = require("./controllers/deposit/getNetworkList");
 const depositWalletAddress = require("./controllers/deposit/getWalletAddress");
 const getMarginOrders = require("./controllers/orders/getMarginOrders");
+const getActiveDevice = require("./controllers/auth/getActiveDevice");
+const deleteActiveDevice = require("./controllers/auth/deleteActiveDevice");
 
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
@@ -133,7 +135,8 @@ route.all("/register", upload.none(), register);
 route.all("/disableAccount", upload.none(), disableAccount);
 route.all("/2fa", upload.none(), twoFactor);
 route.all("/update2fa", upload.none(), update2fa);
-
+route.all("/getActiveDevice", upload.none(), getActiveDevice);
+route.all("/deleteActiveDevice", upload.none(), deleteActiveDevice);
 //Wallet Modules
 route.post("/transfer", transfer);
 route.post("/withdraw", withdraw);
