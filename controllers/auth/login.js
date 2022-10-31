@@ -27,6 +27,7 @@ const login = async (req, res) => {
   var deviceModel = "null";
   var user_id = req.body.user_id;
   var loginType = req.body.loginType;
+  var city = "";
   if (req.body.deviceName != undefined) {
     deviceName = req.body.deviceName;
   }
@@ -91,12 +92,16 @@ const login = async (req, res) => {
       }
       if (emailVerifyCheck && smsVerifyCheck) securityLevel = securityLevel + 1;
 
+      if (req.body.city != undefined) {
+        city = req.body.city;
+      }
+
       let device = new Device({
         user_id: user._id,
         deviceName: deviceName,
         deviceType: deviceType,
         ip: ip,
-        city: req.body.city,
+        city: city,
       });
       await device.save();
 
