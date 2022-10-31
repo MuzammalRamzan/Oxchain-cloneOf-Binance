@@ -1,4 +1,4 @@
-const User = require("../models/Test");
+const User = require("../models/User");
 const SMSVerification = require("../models/SMSVerification");
 var authFile = require("../auth.js");
 var mailer = require("../mailer.js");
@@ -31,21 +31,40 @@ const sendSMS = async function (req, res) {
           }
         }
       );
-
-      const newPin = new SMSVerification({
-        phone_number: user["phone_number"],
-        pin: pin,
+      let check = await SMSVerification.findOne({
+        user_id: user_id,
         reason: reason,
         status: 0,
-      });
+      }).exec();
 
-      newPin.save(function (err) {
-        if (err) {
-          res.json({ status: "fail", message: err });
-        } else {
-          res.json({ status: "success", data: "sms_sent" });
-        }
-      });
+      if (check != null) {
+        SMSVerification.updateOne(
+          { user_id: user["_id"], reason: reason, status: 0 },
+          { $set: { pin: pin } },
+          function (err, result) {
+            if (err) {
+              res.json({ status: "fail", message: err });
+            } else {
+              res.json({ status: "success", data: "sms_sent" });
+            }
+          }
+        );
+      } else {
+        const newPin = new SMSVerification({
+          user_id: user["_id"],
+          pin: pin,
+          reason: reason,
+          status: 0,
+        });
+        console.log("asd");
+        newPin.save(function (err) {
+          if (err) {
+            res.json({ status: "fail", message: err });
+          } else {
+            res.json({ status: "success", data: "sms_sent" });
+          }
+        });
+      }
     } else {
       res.json({ status: "fail", message: "user_not_found" });
     }

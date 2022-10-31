@@ -61,7 +61,7 @@ const changeAvatar = require("./controllers/users/changeAvatar");
 const changeNickname = require("./controllers/users/changeNickname");
 const addWithdraw = require("./controllers/withdraw/addWithdraw");
 const get2fa = require("./controllers/auth/get2fa");
-const sendSMS = require("./controllers/sendMail");
+const sendSMS = require("./controllers/sendSMS");
 const sendMail = require("./controllers/sendMail");
 const changePhone = require("./controllers/users/changePhone");
 const getDepositsUSDT = require("./controllers/coin/getDepositsUSDT");
@@ -74,6 +74,7 @@ const depositWalletAddress = require("./controllers/deposit/getWalletAddress");
 const getMarginOrders = require("./controllers/orders/getMarginOrders");
 const getActiveDevice = require("./controllers/auth/getActiveDevice");
 const deleteActiveDevice = require("./controllers/auth/deleteActiveDevice");
+const getVerificationMethod = require("./controllers/auth/getVerificationMethod");
 
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
@@ -137,6 +138,9 @@ route.all("/2fa", upload.none(), twoFactor);
 route.all("/update2fa", upload.none(), update2fa);
 route.all("/getActiveDevice", upload.none(), getActiveDevice);
 route.all("/deleteActiveDevice", upload.none(), deleteActiveDevice);
+route.all("/getVerificationMethod", upload.none(), getVerificationMethod);
+
+
 //Wallet Modules
 route.post("/transfer", transfer);
 route.post("/withdraw", withdraw);
