@@ -11,10 +11,11 @@ const setFeeCredit = async function (user_id, pair_id, amount) {
     }
 
     let getUserRefCode = await UserRef.findOne({ user_id: user_id });
-    let parentReferralCounter = 1;
+    let parentReferralCounter = 0;
     let percentAmount = 20;
     let searchUserId = user_id;
     while (parentReferralCounter < 4) {
+        
         let getParentReferral = await Referral.findOne({ user_id: searchUserId });
         if (getParentReferral == null) {
             console.log(searchUserId, " bulunamadı");
@@ -22,26 +23,34 @@ const setFeeCredit = async function (user_id, pair_id, amount) {
         }
         let parentRefCode = getParentReferral.reffer;
         let getRefferUser = await UserRef.findOne({ refCode: parentRefCode });
-        console.log(getRefferUser);
 
         let insertAmount = amount * percentAmount / 100.0;
+        console.log(parentReferralCounter, " | ", percentAmount, " | ", insertAmount);
         let getWallet = await Wallet.findOne({ user_id: getRefferUser.user_id, coin_id: pair_id });
-        console.log(getWallet);
-        getWallet.amount = parseFloat(getWallet.amount) + insertAmount;
+
+        getWallet.totalBonus = parseFloat(getWallet.totalBonus) + insertAmount;
         await getWallet.save();
         let insertFeeTable = new FeeModel({
             feeType: "trade",
-            amount: writeAmount,
+            amount: insertAmount,
             from_user_id: searchUserId,
-            to_from_user_id: getRefferUser.user_id,
+            to_user_id: getRefferUser.user_id,
             pair_id: pair_id,
             status: 1
         })
         await insertFeeTable.save();
         searchUserId = getRefferUser.user_id;
-        percentAmount = percentAmount / 2;
-        return;
+        switch (parentReferralCounter) {
+            case 0: percentAmount = 10; break;
+            default:
+                percentAmount = 5;
+                break;
+        }
+        
+        parentReferralCounter++;
     }
+    console.log("Success");
+    return ;
     let getSubReferrals = await Referral.find({ reffer: getUserRefCode.refCode }).sort({ createdAt: -1 });
     let counter = 1;
     let writeAmount = 0.0;
