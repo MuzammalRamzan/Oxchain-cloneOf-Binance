@@ -19,8 +19,8 @@ const sendMail = async function (req, res) {
     if (user != null) {
       var pin = Math.floor(100000 + Math.random() * 900000);
 
-      mailer.sendSMS(
-        user["phone_number"],
+      mailer.sendMail(
+        user["email"],
         "Oxhain verification",
         "Pin : " + pin,
         function (err, data) {
