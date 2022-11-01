@@ -18,7 +18,15 @@ function makeId(length) {
   return result;
 }
 
-async function addDeposit(user_id, coin_name, amount, address, txid, coin_id) {
+async function addDeposit(
+  user_id,
+  coin_name,
+  amount,
+  address,
+  txid,
+  coin_id,
+  networkId
+) {
   const newDeposit = new Deposits({
     user_id: user_id,
     coin_id: coin_id,
@@ -38,7 +46,7 @@ async function addDeposit(user_id, coin_name, amount, address, txid, coin_id) {
           console.log(err);
         } else {
           Wallet.findOneAndUpdate(
-            { user_id: user_id, address: address },
+            { user_id: user_id, coin_id: coin_id },
             { $inc: { amount: amount } },
             (err, doc) => {
               if (err) {

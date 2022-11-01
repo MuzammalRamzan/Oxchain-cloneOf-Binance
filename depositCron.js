@@ -1,6 +1,6 @@
 "use strict";
 var authenticator = require("authenticator");
-const User = require("./models/Test");
+const User = require("./models/User");
 const Wallet = require("./models/Wallet");
 const CoinList = require("./models/CoinList");
 const Referral = require("./models/Referral");
@@ -19,7 +19,7 @@ var authFile = require("./auth.js");
 var notifications = require("./notifications.js");
 var utilities = require("./utilities.js");
 const WalletAddress = require("./models/WalletAddress");
-const Connection = require('./Connection');
+const Connection = require("./Connection");
 require("dotenv").config();
 
 //var formattedKey = authenticator.generateKey();
@@ -49,7 +49,7 @@ var bodyParser = require("body-parser");
 const multer = require("multer");
 const { Console } = require("console");
 const { exit } = require("process");
-const { isFloat32Array } = require("util/types");
+
 const auth = require("./auth.js");
 const upload = multer();
 route.use(bodyParser.json());
@@ -63,6 +63,7 @@ route.all("/ethDepositCheck", async (req, res) => {
   var api_key_result = req.body.api_key;
   let result = await authFile.apiKeyChecker(api_key_result);
 
+  let networkId = "6358f354733321c968f40f6b";
   if (result === true) {
     let wallet = await Wallet.find({
       status: 1,
@@ -123,6 +124,7 @@ route.all("/bnbDepositCheck", async (req, res) => {
   var api_key_result = req.body.api_key;
   let result = await authFile.apiKeyChecker(api_key_result);
 
+  let networkId = "6359169ee5f78e20c0bb809a";
   if (result === true) {
     let wallet = await Wallet.find({
       status: 1,
@@ -162,7 +164,8 @@ route.all("/bnbDepositCheck", async (req, res) => {
                 amount,
                 address,
                 checkRequest.data.result[0].hash,
-                "62fb45483f8c1ffba43e4813"
+                "62fb45483f8c1ffba43e4813",
+                networkId
               );
 
               console.log("deposit added");
@@ -189,6 +192,7 @@ route.all("/btcDepositCheck", async (req, res) => {
   var api_key_result = req.body.api_key;
   let result = await authFile.apiKeyChecker(api_key_result);
 
+  let networkId = "635916ade5f78e20c0bb809c";
   if (result === true) {
     let wallet = await Wallet.find({
       status: 1,
@@ -213,7 +217,6 @@ route.all("/btcDepositCheck", async (req, res) => {
         var tx_id = "";
         var deposit = "";
         for (let j = 0; j < checkRequest.data.data.length; j++) {
-
           amount = checkRequest.data.data[j].value / 100000000;
           user = await User.findOne({ _id: user_id }).exec();
           deposit = await Deposits.findOne({
@@ -228,7 +231,8 @@ route.all("/btcDepositCheck", async (req, res) => {
               amount,
               address,
               checkRequest.data.data[j].tx_hash,
-              "62aaf66c419ff12e16168c8e"
+              "62aaf66c419ff12e16168c8e",
+              networkId
             );
 
             console.log("deposit added");
@@ -246,10 +250,10 @@ route.all("/btcDepositCheck", async (req, res) => {
 });
 
 route.all("/usdtDepositCheck", async (req, res) => {
-  
   var api_key_result = req.body.api_key;
   let result = await authFile.apiKeyChecker(api_key_result);
 
+  let networkId = "6358f17cbc20445270757291";
   if (result === true) {
     let wallet = await WalletAddress.find({
       status: 1,
@@ -276,7 +280,6 @@ route.all("/usdtDepositCheck", async (req, res) => {
         for (let j = 0; j < checkRequest.data.data.length; j++) {
           tx_id = checkRequest.data.data[j].transaction_id;
           amount = checkRequest.data.data[j].value / 1000000;
-          amount = checkRequest.data.data[j].value;
 
           deposit = await Deposits.findOne({
             user_id: user_id,
@@ -290,7 +293,8 @@ route.all("/usdtDepositCheck", async (req, res) => {
               amount,
               address,
               tx_id,
-              "62bc116eb65b02b777c97b3d"
+              "62bc116eb65b02b777c97b3d",
+              networkId
             );
             console.log("deposit added");
           } else {
