@@ -5,6 +5,7 @@ const MailVerificationSchema = new mongoose.Schema({
   pin: { type: String, required: false },
   reason: { type: String, required: false },
   status: { type: String, required: false, default: "0" },
+  user_id: { type: String, required: false, default: "null" },
   createdAt: {
     type: Date,
     default: Date.now,

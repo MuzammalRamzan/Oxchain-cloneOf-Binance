@@ -32,20 +32,40 @@ const sendMail = async function (req, res) {
         }
       );
 
-      const newPin = new SMSVerification({
-        phone_number: user["phone_number"],
-        pin: pin,
+      let check = await MailVerification.findOne({
+        user_id: user_id,
         reason: reason,
         status: 0,
-      });
+      }).exec();
 
-      newPin.save(function (err) {
-        if (err) {
-          res.json({ status: "fail", message: err });
-        } else {
-          res.json({ status: "success", data: "sms_sent" });
-        }
-      });
+      if (check != null) {
+        MailVerification.updateOne(
+          { user_id: user["_id"], reason: reason, status: 0 },
+          { $set: { pin: pin } },
+          function (err, result) {
+            if (err) {
+              res.json({ status: "fail", message: err });
+            } else {
+              res.json({ status: "success", data: "mail_send" });
+            }
+          }
+        );
+      } else {
+        const newPin = new MailVerification({
+          user_id: user["_id"],
+          pin: pin,
+          reason: reason,
+          status: 0,
+        });
+
+        newPin.save(function (err) {
+          if (err) {
+            res.json({ status: "fail", message: err });
+          } else {
+            res.json({ status: "success", data: "mail_send" });
+          }
+        });
+      }
     } else {
       res.json({ status: "fail", message: "user_not_found" });
     }
