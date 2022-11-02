@@ -6,6 +6,8 @@ const MarginOrder = require("../../models/MarginOrder");
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 
 const deleteLimit = async (req, res) => {
+  console.log(req.body.user_id);
+  console.log(req.body.order_id);
   
   let doc = await MarginOrder.findOneAndUpdate(
     {
@@ -16,6 +18,7 @@ const deleteLimit = async (req, res) => {
     },
     { $set: { status: -1 } }
   ).exec();
+  console.log(doc);
   if (doc) {
     let userBalance = await Wallet.findOne({
       coin_id: MarginWalletId,
@@ -34,6 +37,7 @@ const deleteLimit = async (req, res) => {
     },
     { $set: { status: -1 } }
   ).exec();
+  console.log(doc);
   if (doc) {
     let userBalance = await Wallet.findOne({
       coin_id: MarginWalletId,
