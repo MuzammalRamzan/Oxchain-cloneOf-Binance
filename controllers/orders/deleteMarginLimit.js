@@ -3,7 +3,6 @@ const Wallet = require("../../models/Wallet");
 
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 const deleteMarginLimit = async function (req, res) {
-  
   let doc = await MarginOrder.findOneAndUpdate(
     {
       _id: req.body.order_id,
