@@ -113,6 +113,10 @@ async function main() {
                }
 
             }
+             
+            else if(json.page == 'global') {
+               
+            }
 
          });
       }
