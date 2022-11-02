@@ -314,6 +314,7 @@ const addOrders = async function (req, res) {
     if (req.body.amount <= 0) {
       res.json({ status: "fail", message: "invalid_amount" });
     }
+    /*
     const feeModel = new FeeModel({
       feeType: req.body.type,
       amount: fee,
@@ -322,6 +323,7 @@ const addOrders = async function (req, res) {
       status: 1,
     });
     await feeModel.save();
+    */
   } catch (err) {
     console.log(err);
     res.json({ status: "fail", message: "unknow_error" });

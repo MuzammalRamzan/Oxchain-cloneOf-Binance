@@ -81,6 +81,7 @@ const addMarginOrder = async (req, res) => {
           status: 1,
         });
         await order.save();
+        /*
         const fee = (amount * getPair.tradeFee) / 100;
         const feeModel = new FeeModel({
           feeType: margin_type,
@@ -90,6 +91,7 @@ const addMarginOrder = async (req, res) => {
           status: 1,
         });
         await feeModel.save();
+        */
         res.json({ status: "success", data: order });
         return;
       } else if (method == "stop_limit") {
