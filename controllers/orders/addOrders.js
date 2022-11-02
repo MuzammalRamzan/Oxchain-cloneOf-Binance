@@ -4,7 +4,6 @@ const Orders = require("../../models/Orders");
 const axios = require("axios");
 var authFile = require("../../auth.js");
 const CopyTradeModel = require("../../models/CopyTrade");
-const FeeModel = require("../../models/FeeModel");
 
 const addOrders = async function (req, res) {
   try {
@@ -314,16 +313,8 @@ const addOrders = async function (req, res) {
     if (req.body.amount <= 0) {
       res.json({ status: "fail", message: "invalid_amount" });
     }
-    /*
-    const feeModel = new FeeModel({
-      feeType: req.body.type,
-      amount: fee,
-      user_id: req.body.user_id,
-      pair_id: getPair.symbolOneID,
-      status: 1,
-    });
-    await feeModel.save();
-    */
+
+    await setFeeCredit(user_id, getPair._id, fee);
   } catch (err) {
     console.log(err);
     res.json({ status: "fail", message: "unknow_error" });

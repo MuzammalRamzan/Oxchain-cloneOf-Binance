@@ -1,7 +1,7 @@
-const Wallet = require("../../models/Wallet");
-const Pairs = require("../../models/Pairs");
-const Orders = require("../../models/Orders");
 const MarginOrder = require("../../models/MarginOrder");
+const Orders = require("../../models/Orders");
+const Pairs = require("../../models/Pairs");
+const Wallet = require("../../models/Wallet");
 
 const cancelAllStopLimit = async function (req, res) {
   

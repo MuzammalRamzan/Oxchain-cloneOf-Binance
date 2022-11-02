@@ -1,7 +1,9 @@
-const Orders = require("../../models/Orders");
+
 var authFile = require("../../auth.js");
+const Orders = require("../../models/Orders.js");
 
 const getOrders = async function (req, res) {
+  
   const api_key_result = req.body.api_key;
   const { pair, direction, type, fromDate, toDate, status } = req.query;
 

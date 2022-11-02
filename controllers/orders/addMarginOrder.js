@@ -3,9 +3,9 @@ const Pairs = require("../../models/Pairs");
 const axios = require("axios");
 var authFile = require("../../auth.js");
 const MarginOrder = require("../../models/MarginOrder");
-const FeeModel = require("../../models/FeeModel");
-
+const setFeeCredit = require('../bonus/setFeeCredit');
 const addMarginOrder = async (req, res) => {
+  
   try {
     var api_key_result = req.body.api_key;
     let result = await authFile.apiKeyChecker(api_key_result);
@@ -81,17 +81,9 @@ const addMarginOrder = async (req, res) => {
           status: 1,
         });
         await order.save();
-        /* 
         const fee = (amount * getPair.tradeFee) / 100;
-        const feeModel = new FeeModel({
-          feeType: margin_type,
-          amount: fee,
-          user_id: user_id,
-          pair_id: getPair._id,
-          status: 1,
-        });
-        await feeModel.save();
-        */
+        await setFeeCredit(user_id, getPair._id, fee);
+        
         res.json({ status: "success", data: order });
         return;
       } else if (method == "stop_limit") {
@@ -175,17 +167,8 @@ const addMarginOrder = async (req, res) => {
           status: 1,
         });
         await order.save();
-        /*
         const fee = (amount * getPair.tradeFee) / 100;
-        const feeModel = new FeeModel({
-          feeType: margin_type,
-          amount: fee,
-          user_id: user_id,
-          pair_id: getPair._id,
-          status: 1,
-        });
-        await feeModel.save();
-        */
+        await setFeeCredit(user_id, getPair._id, fee);
         res.json({ status: "success", data: order });
         return;
       } else if (req.body.method == "market") {
@@ -330,18 +313,8 @@ const addMarginOrder = async (req, res) => {
             open_price: price,
           });
           await order.save();
-          /*
           const fee = (amount * getPair.tradeFee) / 100;
-          const feeModel = new FeeModel({
-            feeType: margin_type,
-            amount: fee,
-            user_id: user_id,
-            pair_id: getPair._id,
-            status: 1,
-          });
-          await feeModel.save();
-          */
-
+        await setFeeCredit(user_id, getPair._id, fee);
           res.json({ status: "success", data: order });
           return;
         }
@@ -381,17 +354,8 @@ const addMarginOrder = async (req, res) => {
           status: 1,
         });
         await order.save();
-        /*
         const fee = (amount * getPair.tradeFee) / 100;
-        const feeModel = new FeeModel({
-          feeType: margin_type,
-          amount: fee,
-          user_id: user_id,
-          pair_id: getPair._id,
-          status: 1,
-        });
-        await feeModel.save();
-        */
+        await setFeeCredit(user_id, getPair._id, fee);
         res.json({ status: "success", data: order });
         return;
       } else if (method == "stop_limit") {
@@ -475,17 +439,8 @@ const addMarginOrder = async (req, res) => {
           status: 1,
         });
         await order.save();
-        /*
         const fee = (amount * getPair.tradeFee) / 100;
-        const feeModel = new FeeModel({
-          feeType: margin_type,
-          amount: fee,
-          user_id: user_id,
-          pair_id: getPair._id,
-          status: 1,
-        });
-        await feeModel.save();
-        */
+        await setFeeCredit(user_id, getPair._id, fee);
         res.json({ status: "success", data: order });
         return;
       } else if (req.body.method == "market") {
@@ -628,18 +583,8 @@ const addMarginOrder = async (req, res) => {
             open_price: price,
           });
           await order.save();
-          /*
           const fee = (amount * getPair.tradeFee) / 100;
-
-          const feeModel = new FeeModel({
-            feeType: margin_type,
-            amount: fee,
-            user_id: user_id,
-            pair_id: getPair._id,
-            status: 1,
-          });
-          await feeModel.save();
-          */
+        await setFeeCredit(user_id, getPair._id, fee);
           res.json({ status: "success", data: order });
           return;
         }
