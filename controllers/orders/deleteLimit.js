@@ -11,7 +11,7 @@ const deleteLimit = async (req, res) => {
     {
       _id: req.body.order_id,
       user_id: req.body.user_id,
-      method: "limit",
+      type: "limit",
       status: 1,
     },
     { $set: { status: -1 } }
@@ -29,7 +29,7 @@ const deleteLimit = async (req, res) => {
     {
       _id: req.body.order_id,
       user_id: req.body.user_id,
-      method: "stop_limit",
+      type: "stop_limit",
       status: 1,
     },
     { $set: { status: -1 } }
