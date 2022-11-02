@@ -4,9 +4,11 @@ const Orders = require("../../models/Orders");
 const axios = require("axios");
 var authFile = require("../../auth.js");
 const CopyTradeModel = require("../../models/CopyTrade");
+const setFeeCredit = require("../bonus/setFeeCredit");
 
 const addOrders = async function (req, res) {
   try {
+    
     var api_key_result = req.body.api_key;
 
     let api_result = await authFile.apiKeyChecker(api_key_result);
