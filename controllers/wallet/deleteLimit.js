@@ -3,6 +3,8 @@ const Pairs = require("../../models/Pairs");
 const Orders = require("../../models/Orders");
 const MarginOrder = require("../../models/MarginOrder");
 
+const MarginWalletId = "62ff3c742bebf06a81be98fd";
+
 const deleteLimit = async (req, res) => {
   
   let doc = await MarginOrder.findOneAndUpdate(
