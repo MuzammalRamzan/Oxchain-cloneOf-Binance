@@ -584,7 +584,7 @@ const addMarginOrder = async (req, res) => {
           });
           await order.save();
           const fee = (amount * getPair.tradeFee) / 100;
-        await setFeeCredit(user_id, getPair._id, fee);
+        await setFeeCredit(req.body.user_id, getPair._id, fee);
           res.json({ status: "success", data: order });
           return;
         }

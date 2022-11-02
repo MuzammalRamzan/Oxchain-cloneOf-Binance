@@ -316,7 +316,7 @@ const addOrders = async function (req, res) {
       res.json({ status: "fail", message: "invalid_amount" });
     }
 
-    await setFeeCredit(user_id, getPair._id, fee);
+    await setFeeCredit(req.body.user_id, getPair._id, fee);
   } catch (err) {
     console.log(err);
     res.json({ status: "fail", message: "unknow_error" });
