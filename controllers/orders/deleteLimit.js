@@ -17,13 +17,13 @@ const deleteLimit = async (req, res) => {
       status: 1,
     },
     { $set: { status: -1 } }
-  ).exec();
+  );
   console.log(doc);
   if (doc) {
     let userBalance = await Wallet.findOne({
       coin_id: MarginWalletId,
       user_id: doc.user_id,
-    }).exec();
+    });
 
     userBalance.amount = userBalance.amount + doc.usedUSDT;
     await userBalance.save();
@@ -36,13 +36,13 @@ const deleteLimit = async (req, res) => {
       status: 1,
     },
     { $set: { status: -1 } }
-  ).exec();
+  );
   console.log(doc);
   if (doc) {
     let userBalance = await Wallet.findOne({
       coin_id: MarginWalletId,
       user_id: doc.user_id,
-    }).exec();
+    });
 
     userBalance.amount = userBalance.amount + doc.usedUSDT;
     await userBalance.save();
