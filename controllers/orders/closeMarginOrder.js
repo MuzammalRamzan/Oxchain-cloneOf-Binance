@@ -4,6 +4,8 @@ const axios = require("axios");
 var authFile = require("../../auth.js");
 const MarginOrder = require("../../models/MarginOrder");
 
+const MarginWalletId = "62ff3c742bebf06a81be98fd";
+
 const closeMarginOrder = async (req, res) => {
   try {
     var api_key_result = req.body.api_key;
@@ -26,7 +28,7 @@ const closeMarginOrder = async (req, res) => {
     result = await axios(url);
     var price = result.data[0].price;
     let doc = await MarginOrder.findOneAndUpdate(
-      { _id: new ObjectId(orderId) },
+      { _id: orderId },
       { $set: { status: 1, close_time: Date.now(), close_price: price } }
     );
     console.log(doc);
