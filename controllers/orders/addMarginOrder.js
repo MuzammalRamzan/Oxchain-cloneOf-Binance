@@ -81,7 +81,7 @@ const addMarginOrder = async (req, res) => {
           status: 1,
         });
         await order.save();
-        /*
+        /* 
         const fee = (amount * getPair.tradeFee) / 100;
         const feeModel = new FeeModel({
           feeType: margin_type,
@@ -175,6 +175,7 @@ const addMarginOrder = async (req, res) => {
           status: 1,
         });
         await order.save();
+        /*
         const fee = (amount * getPair.tradeFee) / 100;
         const feeModel = new FeeModel({
           feeType: margin_type,
@@ -184,6 +185,7 @@ const addMarginOrder = async (req, res) => {
           status: 1,
         });
         await feeModel.save();
+        */
         res.json({ status: "success", data: order });
         return;
       } else if (req.body.method == "market") {
@@ -328,6 +330,7 @@ const addMarginOrder = async (req, res) => {
             open_price: price,
           });
           await order.save();
+          /*
           const fee = (amount * getPair.tradeFee) / 100;
           const feeModel = new FeeModel({
             feeType: margin_type,
@@ -337,6 +340,8 @@ const addMarginOrder = async (req, res) => {
             status: 1,
           });
           await feeModel.save();
+          */
+
           res.json({ status: "success", data: order });
           return;
         }
@@ -376,6 +381,7 @@ const addMarginOrder = async (req, res) => {
           status: 1,
         });
         await order.save();
+        /*
         const fee = (amount * getPair.tradeFee) / 100;
         const feeModel = new FeeModel({
           feeType: margin_type,
@@ -385,6 +391,7 @@ const addMarginOrder = async (req, res) => {
           status: 1,
         });
         await feeModel.save();
+        */
         res.json({ status: "success", data: order });
         return;
       } else if (method == "stop_limit") {
@@ -468,6 +475,7 @@ const addMarginOrder = async (req, res) => {
           status: 1,
         });
         await order.save();
+        /*
         const fee = (amount * getPair.tradeFee) / 100;
         const feeModel = new FeeModel({
           feeType: margin_type,
@@ -477,6 +485,7 @@ const addMarginOrder = async (req, res) => {
           status: 1,
         });
         await feeModel.save();
+        */
         res.json({ status: "success", data: order });
         return;
       } else if (req.body.method == "market") {
@@ -619,7 +628,9 @@ const addMarginOrder = async (req, res) => {
             open_price: price,
           });
           await order.save();
+          /*
           const fee = (amount * getPair.tradeFee) / 100;
+
           const feeModel = new FeeModel({
             feeType: margin_type,
             amount: fee,
@@ -628,6 +639,7 @@ const addMarginOrder = async (req, res) => {
             status: 1,
           });
           await feeModel.save();
+          */
           res.json({ status: "success", data: order });
           return;
         }
