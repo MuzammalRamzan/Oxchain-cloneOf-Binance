@@ -1,5 +1,5 @@
 const Referral = require("../../models/Referral");
-
+var authFile = require("../../auth.js");
 const topReferrals = async(req, res)  => {
     let api_key_result = req.body.api_key;
   let result = await authFile.apiKeyChecker(api_key_result);

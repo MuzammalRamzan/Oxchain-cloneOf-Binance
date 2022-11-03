@@ -1,5 +1,5 @@
 const User = require("../../models/User");
-
+var authFile = require("../../auth.js");
 const changeAvatar = async function (req, res) {
   var user_id = req.body.user_id;
   var avatar = req.body.avatar;

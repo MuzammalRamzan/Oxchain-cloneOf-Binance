@@ -2,7 +2,7 @@ const Wallet = require("../../models/Wallet");
 const NotificationTokens = require("../../models/NotificationTokens");
 const Withdraws = require("../../models/Withdraw");
 var notifications = require("../../notifications.js");
-
+var authFile = require("../../auth.js");
 const withdraw = async (req, res) => {
   var user_id = req.body.user_id;
   var address = req.body.address;

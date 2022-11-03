@@ -1,5 +1,5 @@
 const User = require("../../models/User");
-
+var authFile = require("../../auth.js");
 const changeNickname = async function (req, res) {
   var user_id = req.body.user_id;
   var nickname = req.body.nickname;
