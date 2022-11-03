@@ -164,7 +164,7 @@ const login = async (req, res) => {
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address;
             }
-
+/*
             if (networks[x].symbol === "BSC") {
               console.log("Start BSC");
               let url = "http://44.203.2.70:4458/create_address";
@@ -172,7 +172,7 @@ const login = async (req, res) => {
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address;
             }
-
+*/
             if (networks[x].symbol === "BSC") {
               console.log("Start BSC");
               let url = "http://44.203.2.70:4458/create_address";
