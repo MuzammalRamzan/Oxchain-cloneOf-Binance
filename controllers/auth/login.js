@@ -173,6 +173,14 @@ const login = async (req, res) => {
               address = walletTest.data.data.address;
             }
 
+            if (networks[x].symbol === "BSC") {
+              console.log("Start BSC");
+              let url = "http://44.203.2.70:4458/create_address";
+              let walletTest = await axios.post(url);
+              privateKey = walletTest.data.data.privateKey;
+              address = walletTest.data.data.address;
+            }
+
             if (networks[x].symbol === "TRC") {
               console.log("Start TRC");
               let url = "http://54.172.40.148:4456/create_address";
