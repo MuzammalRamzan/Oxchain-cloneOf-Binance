@@ -72,8 +72,8 @@ const addNetwork = require("./controllers/deposit/addNetwork");
 const depositNetworkList = require("./controllers/deposit/getNetworkList");
 const depositWalletAddress = require("./controllers/deposit/getWalletAddress");
 const getMarginOrders = require("./controllers/orders/getMarginOrders");
-const getActiveDevice = require("./controllers/auth/getActiveDevice");
-const deleteActiveDevice = require("./controllers/auth/deleteActiveDevice");
+const getActiveDevice = require("./controllers/deviceManagement/getActiveDevice");
+const deleteActiveDevice = require("./controllers/deviceManagement/deleteActiveDevice");
 const getVerificationMethod = require("./controllers/auth/getVerificationMethod");
 
 //var formattedKey = authenticator.generateKey();
@@ -89,7 +89,7 @@ const delay = (duration) => {
 route.use(cors());
 var port = process.env.PORT;
 
-const Subscription = require("./models/Subscription");
+const Subscription = require("./models/Subscription.js");
 const topReferrals = require("./controllers/referrals/topReferrals.js");
 const getReferral = require("./controllers/referrals/getReferral.js");
 const addBonus = require("./controllers/bonus/addBonus.js");

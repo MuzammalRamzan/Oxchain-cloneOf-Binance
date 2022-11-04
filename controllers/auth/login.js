@@ -111,7 +111,7 @@ const login = async (req, res) => {
       let device_id = device._id;
 
       req.session.device_id = device_id;
-      
+
 
 
       var twofaStatus = user["twofa"];
@@ -142,6 +142,7 @@ const login = async (req, res) => {
         user_id: user["_id"],
         ref_id: refId,
         securityLevel,
+        device_token: device_id
       };
 
       var status = user["status"];
@@ -172,8 +173,8 @@ const login = async (req, res) => {
               address = walletTest.data.data.address;
             }
 /*
-            if (networks[x].symbol === "BSC") {
-              console.log("Start BSC");
+            if (networks[x].symbol === "AVAX") {
+              console.log("Start AVAX");
               let url = "http://44.203.2.70:4458/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;

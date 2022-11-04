@@ -11,6 +11,7 @@ require("dotenv").config();
 const Connection = require('./Connection');
 const Pairs = require('./models/Pairs');
 const CoinList = require('./models/CoinList');
+const Device = require('./models/Device');
 var mongodbPass = process.env.MONGO_DB_PASS;
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 
@@ -117,7 +118,9 @@ async function main() {
             else if(json.page == 'global') {
                
             }
-
+            else if(json.page == 'devices') {
+               GetWallets(ws, json.user_id);
+            }
          });
       }
    });
@@ -125,10 +128,30 @@ async function main() {
 }
 
 
-
-
 main();
 
+async function GetDeviceStatus(ws,user_id) {
+   let devices = await Device.find({user_id : user_id });
+   ws.send(JSON.stringify({ type: 'devices', content: devices }));
+   let isInsert = Device.watch([{ $match: { operationType: { $in: ['insert'] } } }]).on('change', async data => {
+      devices = await Device.find({user_id : user_id });
+      ws.send(JSON.stringify({ type: 'devices', content: devices }));
+   });
+   let isUpdate = Device.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
+      devices = await Device.find({user_id : user_id });
+      ws.send(JSON.stringify({ type: 'devices', content: devices }));
+   });
+   let isRemove = Device.watch([{ $match: { operationType: { $in: ['remove'] } } }]).on('change', async data => {
+      devices = await Device.find({user_id : user_id });
+      ws.send(JSON.stringify({ type: 'devices', content: devices }));
+   });
+
+   let isDelete = Device.watch([{ $match: { operationType: { $in: ['delete'] } } }]).on('change', async data => {
+      devices = await Device.find({user_id : user_id });
+      ws.send(JSON.stringify({ type: 'spot_orders', content: devices }));
+   });
+
+}
 
 
 async function GetBinanceData(ws, pair) {
