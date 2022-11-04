@@ -98,6 +98,12 @@ const getBonusHistory = require("./controllers/bonus/getBonusHistory.js");
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
+const session = require('express-session');
+app.use(session({
+  secret: 'oxhain_login_session',
+  resave: false,
+  saveUninitialized: true
+}));
 
 route.get("/", (req, res) => {
   res.send("success");

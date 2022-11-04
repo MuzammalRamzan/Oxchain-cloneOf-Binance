@@ -96,16 +96,23 @@ const login = async (req, res) => {
         city = req.body.city;
       }
 
+      
+
       let device = new Device({
         user_id: user._id,
         deviceName: deviceName,
         deviceType: deviceType,
+        loginTime : Date.now(),
         ip: ip,
         city: city,
       });
       await device.save();
 
       let device_id = device._id;
+
+      req.session.device_id = device_id;
+      
+
 
       var twofaStatus = user["twofa"];
       if (twofaStatus) securityLevel = securityLevel + 1;
