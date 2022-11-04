@@ -99,7 +99,7 @@ const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
 const session = require('express-session');
-app.use(session({
+route.use(session({
   secret: 'oxhain_login_session',
   resave: false,
   saveUninitialized: true
