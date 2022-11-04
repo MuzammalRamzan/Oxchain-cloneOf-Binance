@@ -75,6 +75,9 @@ const getMarginOrders = require("./controllers/orders/getMarginOrders");
 const getActiveDevice = require("./controllers/deviceManagement/getActiveDevice");
 const deleteActiveDevice = require("./controllers/deviceManagement/deleteActiveDevice");
 const getVerificationMethod = require("./controllers/auth/getVerificationMethod");
+const createApplicant = require("./controllers/kyc/createApplicant");
+const addDocument = require("./controllers/kyc/addDocument");
+const getApplicantStatus = require("./controllers/kyc/getApplicantStatus");
 
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
@@ -260,6 +263,9 @@ route.all("/updateCopyTrade", upload.none(), (req, res) => {
 });
 route.all("/addWithdraw", upload.none(), addWithdraw);
 route.all("/getDepositsUSDT", upload.none(), getDepositsUSDT);
+route.post("/createApplicant", upload.none(), createApplicant);
+route.post("/addDocument", upload.any(), addDocument);
+route.post("/getApplicantStatus", upload.none(), getApplicantStatus);
 
 route.listen(port, () => {
   console.log("Server Ayakta");
