@@ -14,6 +14,7 @@ const CoinList = require('./models/CoinList');
 const Device = require('./models/Device');
 const SpotOpenOrders = require('./SocketController/trade/spot/spot_open_orders');
 const SpotOrderHistory = require('./SocketController/trade/spot/spot_order_history');
+const SpotTradeHistory = require('./SocketController/trade/spot/trade_history');
 var mongodbPass = process.env.MONGO_DB_PASS;
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 
@@ -158,8 +159,15 @@ async function test() {
                   GetWallets(ws, json.user_id);
                   SpotOrderHistory(ws, json.user_id);
                }
-               
-            } 
+            }
+            
+            else  if (json.page == 'spot_trade_history') {
+               GetBinanceData(ws, json.pair);
+               if (json.user_id != null && json.user_id != 'undefined') {
+                  GetWallets(ws, json.user_id);
+                  SpotTradeHistory(ws, json.user_id);
+               }
+            }
          });
       }
    });

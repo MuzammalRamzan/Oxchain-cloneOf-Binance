@@ -1,6 +1,6 @@
 const Orders = require("../../../models/Orders");
 
-const SpotOrderHistory = async (ws, user_id) => {
+const SpotTradeHistory = async (ws, user_id) => {
     let orders = await Orders.find({
         user_id: user_id, type: 'market', $and:
             [
@@ -20,4 +20,4 @@ const SpotOrderHistory = async (ws, user_id) => {
     });
 
 }
-module.exports = SpotOrderHistory;
+module.exports = SpotTradeHistory;
