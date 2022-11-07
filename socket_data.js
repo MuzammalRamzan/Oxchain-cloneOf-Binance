@@ -144,7 +144,12 @@ async function test() {
          ws.on('message', async (data) => {
             let json = JSON.parse(data);
             if (json.page == 'spot_open_orders') {
-               SpotOpenOrders(ws,json.user_id);
+               GetBinanceData(ws, json.pair);
+               if (json.user_id != null && json.user_id != 'undefined') {
+                  GetWallets(ws, json.user_id);
+                  SpotOpenOrders(ws,json.user_id);
+               }
+               
             }
          });
       }
