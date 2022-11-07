@@ -10,8 +10,8 @@ const SpotOrderHistory = async (ws, user_id) => {
             ]
     });
     ws.send(JSON.stringify({ type: 'order_history', content: orders }));
-
     Orders.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
+        console.log("fa");
         let orders = await Orders.find({
             user_id: user_id, type: 'limit', $and:
                 [
