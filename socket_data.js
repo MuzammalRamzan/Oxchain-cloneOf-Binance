@@ -168,6 +168,73 @@ async function test() {
                   SpotTradeHistory(ws, json.user_id);
                }
             }
+
+            else if (json.page == 'spot_assets') {
+               let coinList = await CoinList.find({});
+               let wallet = await Wallet.find({ user_id: json.user_id });
+               let totalBtcValue = 0.0;
+               let totalUsdValue = 0.0;
+
+               let btcPrice = 0.0;
+               var b_ws = new WebSocket("wss://stream.binance.com/stream");
+
+               const initSocketMessage = {
+                  method: "SUBSCRIBE",
+                  params: ["!ticker@arr"],
+                  // params: ["!miniTicker@arr"],
+                  id: 1,
+               };
+
+               b_ws.onopen = (event) => {
+                  b_ws.send(JSON.stringify(initSocketMessage));
+               };
+
+               // Reconnect connection when disconnect connection
+               b_ws.onclose = () => {
+                  b_ws.send(JSON.stringify(initSocketMessage));
+               }
+               let walletData = {};
+               wallet.forEach(async (key, value) => {
+                  let getCoinInfo = coinList.filter(x => x._id == key.coin_id)[0];
+                  walletData[getCoinInfo.symbol] = { "symbol": getCoinInfo.symbol, "name": getCoinInfo.name, "network": getCoinInfo.network, "icon": getCoinInfo.image_url, "balance": 0.0, "amount": key.amount };
+
+               });
+
+
+               b_ws.onmessage = function (event) {
+
+                  const data = JSON.parse(event.data).data;
+                  if (data != null && data != 'undefined') {
+                     totalUsdValue = 0.0;
+                     totalBtcValue = 0.0;
+                     for (var value in walletData) {
+                        let getBtc = data.filter(x => x.s == "BTCUSDT");
+                        if (getBtc.length > 0) {
+                           btcPrice = getBtc[0].a;
+                        }
+                        console.log(value);
+                        if (value == 'Margin') {
+                           walletData[value].balance = walletData[value].amount;
+                           totalUsdValue += walletData[value].amount;
+                        } else if (value == 'USDT') {
+                           walletData[value].balance = walletData[value].amount;
+                           totalUsdValue += walletData[value].amount;
+                        } else {
+                           let item = data.filter(x => x.s == value + "USDT");
+                           if (item.length > 0) {
+                              walletData[value].balance = parseFloat(walletData[value].amount) * item[0].a;
+                              totalUsdValue += parseFloat(walletData[value].amount) * item[0].a;
+                           }
+                        }
+                     }
+                     totalBtcValue = totalUsdValue / btcPrice;
+                     ws.send(JSON.stringify({ type: "balances", content: { "wallets": walletData, "totalUSD": totalUsdValue, "totalBTC": totalBtcValue } }));
+                     console.log(walletData);
+                  }
+
+               }
+
+            }
          });
       }
    });
