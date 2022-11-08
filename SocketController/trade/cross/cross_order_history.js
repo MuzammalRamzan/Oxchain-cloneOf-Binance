@@ -1,14 +1,14 @@
 const MarginOrder = require("../../../models/MarginOrder");
 
-const CrossOpenOrders = async (ws, user_id) => {
-    
-    let orders = await MarginOrder.find({ user_id: user_id, status: {$gt : 0} });
+const CrossOrderHistory = async (ws, user_id) => {
+ 
+    let orders = await MarginOrder.find({ user_id: user_id, method: "limit" });
     ws.send(JSON.stringify({ type: 'open_orders', content: orders }));
 
     MarginOrder.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
-        let orders = await MarginOrder.find({ user_id: user_id, status: {$gt : 0} });
+        let orders = await MarginOrder.find({ user_id: user_id, method: "limit" });
         ws.send(JSON.stringify({ type: 'open_orders', content: orders }));
     });
 
 }
-module.exports = CrossOpenOrders;
+module.exports = CrossOrderHistory;
