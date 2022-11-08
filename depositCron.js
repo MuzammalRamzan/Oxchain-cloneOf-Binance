@@ -310,6 +310,74 @@ route.all("/usdtDepositCheck", async (req, res) => {
   }
 });
 
+route.all("/usdtDepositCheckERC", async (req, res) => {
+  var api_key_result = req.body.api_key;
+  let result = await authFile.apiKeyChecker(api_key_result);
+
+  console.log("başlıyor");
+
+  let networkId = "6358f354733321c968f40f6b";
+  if (result === true) {
+    let wallet = await WalletAddress.find({
+      status: 1,
+      network_id: "6358f354733321c968f40f6b",
+    }).exec();
+
+    let tx_id = "";
+    let user_id = "";
+    let amount = "";
+    let address = "";
+    let deposit = "";
+
+    for (let i = 0; i < wallet.length; i++) {
+      let address = wallet[i].wallet_address;
+
+      let user_id = wallet[i].user_id;
+      console.log(address);
+      if (address.length > 1) {
+        let checkRequest = await axios.get(
+          "https://api.etherscan.io/api?module=account&action=tokentx&address=" +
+            address +
+            "&startblock=0&endblock=99999999&page=1&offset=10&sort=asc&apikey=HH7FVKBY1U74K1VUYTUN1C4X973XN214FK&contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7"
+        );
+
+        if (checkRequest.data.result.length > 0) {
+          for (let j = 0; j < checkRequest.data.result.length; j++) {
+            tx_id = checkRequest.data.result[j].transaction_id;
+            amount = checkRequest.data.result[j].value / 1000000;
+
+            deposit = await Deposits.findOne({
+              user_id: user_id,
+              tx_id: tx_id,
+            }).exec();
+
+            if (deposit === null) {
+              utilities.addDeposit(
+                user_id,
+                "USDT",
+                amount,
+                address,
+                tx_id,
+                "62bc116eb65b02b777c97b3d",
+                networkId
+              );
+              console.log("deposit added");
+            } else {
+            }
+          }
+        } else {
+          console.log("no transaction");
+        }
+      } else {
+        console.log("no address");
+      }
+    }
+    res.json("cron_success");
+  } else {
+    res.json("errorRR");
+  }
+});
+
 route.listen(port, () => {
   console.log("server is running on port " + port);
 });
