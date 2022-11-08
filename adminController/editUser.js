@@ -3,7 +3,6 @@ const Admin = require("../models/Admin");
 var authFile = require("../auth.js");
 var UserModel = require("../models/User");
 var utilities = require("../utilities.js");
-const { MongoBulkWriteError } = require("mongodb");
 
 const BanUser = async (req, res) => {
   //burada banlanacak kullanıcı id'si alınacak
@@ -85,7 +84,41 @@ const ReBanUser = async (req, res) => {
   });
 };
 
+const editUser = async (req, res) => {
+  const apiKey = req.body.apiKey;
+  const userId = req.body.userId;
+  const twoFAPin = req.body.twoFAPin;
+  const name = req.body.name;
+  const surname = req.body.surname;
+  const email = req.body.email;
+  const countryCode = req.body.countryCode;
+  const phoneNumber = req.body.phoneNumber;
+  const city = req.body.city;
+  const country = req.body.country;
+  const address = req.body.address;
+
+  if (!apiKey) return res.json({ status: "error", message: "Api key is null" });
+  const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
+  if (!apiKeyCheck)
+    return res.json({ status: "error", message: "Api key is wrong" });
+
+  const data = {};
+  if (name) data.name = name;
+  if (email) data.email = email;
+  if (twoFAPin) data.twofa = twoFAPin;
+  if (surname) data.surname = surname;
+  if (countryCode) data.country_code = countryCode;
+  if (phoneNumber) data.phone_number = phoneNumber;
+  if (city) data.city = city;
+  if (country) data.country = country;
+  if (address) data.address = address;
+
+  await UserModel.updateOne({ _id: userId }, data);
+  return res.json({ status: "success", message: "User updated" });
+};
+
 module.exports = {
   BanUser,
   ReBanUser,
+  editUser
 };

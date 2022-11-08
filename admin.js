@@ -26,6 +26,9 @@ var port = 3003;
 const Login = require("./adminController/Login");
 const AddAdmin = require("./adminController/AddAdmin");
 const userList = require("./adminController/userList");
+const editAdmin = require("./adminController/editAdmin");
+const listAdmin = require("./adminController/listAdmin");
+const {editUser} = require("./adminController/editUser");
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
@@ -36,8 +39,9 @@ route.get("/", (req, res) => {
 
 route.all("/login", upload.none(), Login);
 route.all("/addAdmin", upload.none(), AddAdmin);
-
-route.all("/userList", upload.none(), userList);
+route.all("/editAdmin", upload.none(), editAdmin);
+route.all("/listAdmin", upload.none(), listAdmin);
+route.all("/editUser", upload.none(), editUser);
 
 route.listen(port, () => {
   console.log("Server Ayakta");
