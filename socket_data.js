@@ -18,6 +18,7 @@ const SpotTradeHistory = require('./SocketController/trade/spot/trade_history');
 const CrossOpenOrders = require('./SocketController/trade/cross/cross_open_orders');
 const CrossOrderHistory = require('./SocketController/trade/cross/cross_order_history');
 const CrossPositions = require('./SocketController/trade/cross/cross_positions');
+const CrossFunds = require('./SocketController/trade/cross/cross_funds');
 var mongodbPass = process.env.MONGO_DB_PASS;
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 
@@ -193,6 +194,14 @@ async function test() {
                if (json.user_id != null && json.user_id != 'undefined') {
                   GetWallets(ws, json.user_id);
                   CrossPositions(ws, json.user_id);
+               }
+            }
+
+            else  if (json.page == 'cross_funds') {
+               GetBinanceData(ws, json.pair);
+               if (json.user_id != null && json.user_id != 'undefined') {
+                  GetWallets(ws, json.user_id);
+                  CrossFunds(ws, json.user_id);
                }
             }
 
