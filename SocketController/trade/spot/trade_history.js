@@ -7,7 +7,7 @@ const SpotTradeHistory = async (ws, user_id) => {
                 { status: 0 },
             ]
     });
-    ws.send(JSON.stringify({ type: 'trade_history', content: orders }));
+    ws.send(JSON.stringify({page:"spot", type: 'trade_history', content: orders }));
 
     Orders.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
         let orders = await Orders.find({
@@ -16,7 +16,7 @@ const SpotTradeHistory = async (ws, user_id) => {
                     { status: 0 },
                 ]
         });
-        ws.send(JSON.stringify({ type: 'trade_history', content: orders }));
+        ws.send(JSON.stringify({ page:"spot",type: 'trade_history', content: orders }));
     });
 
 }

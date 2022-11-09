@@ -5,12 +5,12 @@ const Wallet = require("../../../models/Wallet")
 const SpotFunds = async (ws, user_id) => {
     let wallets = await Wallet.find({ user_id: user_id, status: 1 });
     let assets = await calculate(wallets, user_id);
-    ws.send(JSON.stringify({ type: 'funds', content: assets }));
+    ws.send(JSON.stringify({ page:"spot", type: 'funds', content: assets }));
 
     Wallet.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
         let wallets = await Wallet.find({ user_id: user_id, status: 1 });
         let assets = await calculate(wallets, user_id);
-        ws.send(JSON.stringify({ type: 'funds', content: assets }));
+        ws.send(JSON.stringify({ page:"spot", type: 'funds', content: assets }));
     });
 }
 
