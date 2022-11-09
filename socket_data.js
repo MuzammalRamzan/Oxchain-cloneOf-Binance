@@ -149,15 +149,16 @@ async function test() {
          }))
          ws.on('message', async (data) => {
             let json = JSON.parse(data);
-            if (json.page == 'spot_open_orders') {
+            if(json.page == 'trade') {
                GetBinanceData(ws, json.pair);
+            } 
+            else if (json.page == 'spot_open_orders') {
                if (json.user_id != null && json.user_id != 'undefined') {
                   GetWallets(ws, json.user_id);
                   SpotOpenOrders(ws,json.user_id);
                }
             }
             else  if (json.page == 'spot_order_history') {
-               GetBinanceData(ws, json.pair);
                if (json.user_id != null && json.user_id != 'undefined') {
                   GetWallets(ws, json.user_id);
                   SpotOrderHistory(ws, json.user_id);
@@ -165,7 +166,6 @@ async function test() {
             }
             
             else  if (json.page == 'spot_trade_history') {
-               GetBinanceData(ws, json.pair);
                if (json.user_id != null && json.user_id != 'undefined') {
                   GetWallets(ws, json.user_id);
                   SpotTradeHistory(ws, json.user_id);
@@ -173,7 +173,6 @@ async function test() {
             }
 
             else if (json.page == 'cross_open_orders') {
-               GetBinanceData(ws, json.pair);
                if (json.user_id != null && json.user_id != 'undefined') {
                   GetWallets(ws, json.user_id);
                   CrossOpenOrders(ws,json.user_id);
@@ -181,7 +180,6 @@ async function test() {
             }
 
             else  if (json.page == 'cross_order_history') {
-               GetBinanceData(ws, json.pair);
                if (json.user_id != null && json.user_id != 'undefined') {
                   GetWallets(ws, json.user_id);
                   CrossOrderHistory(ws, json.user_id);
@@ -190,7 +188,6 @@ async function test() {
 
 
             else  if (json.page == 'cross_positions') {
-               GetBinanceData(ws, json.pair);
                if (json.user_id != null && json.user_id != 'undefined') {
                   GetWallets(ws, json.user_id);
                   CrossPositions(ws, json.user_id);
@@ -198,7 +195,6 @@ async function test() {
             }
 
             else  if (json.page == 'cross_funds') {
-               GetBinanceData(ws, json.pair);
                if (json.user_id != null && json.user_id != 'undefined') {
                   GetWallets(ws, json.user_id);
                   CrossFunds(ws, json.user_id);
