@@ -153,44 +153,41 @@ async function test() {
             let json = JSON.parse(data);
             if(json.page == 'trade') {
                GetBinanceData(ws, json.pair);
+               GetMarginBalance(ws, json.user_id);
+               GetWallets(ws, json.user_id);
+
             } 
             else if (json.page == 'spot_open_orders') {
                if (json.user_id != null && json.user_id != 'undefined') {
-                  GetWallets(ws, json.user_id);
                   SpotOpenOrders(ws,json.user_id);
                }
             }
             else  if (json.page == 'spot_order_history') {
                if (json.user_id != null && json.user_id != 'undefined') {
-                  GetWallets(ws, json.user_id);
                   SpotOrderHistory(ws, json.user_id);
                }
             }
             
             else  if (json.page == 'spot_trade_history') {
                if (json.user_id != null && json.user_id != 'undefined') {
-                  GetWallets(ws, json.user_id);
                   SpotTradeHistory(ws, json.user_id);
                }
             }
 
             else  if (json.page == 'spot_funds') {
                if (json.user_id != null && json.user_id != 'undefined') {
-                  GetWallets(ws, json.user_id);
                   SpotFunds(ws, json.user_id);
                }
             }
 
             else if (json.page == 'cross_open_orders') {
                if (json.user_id != null && json.user_id != 'undefined') {
-                  GetWallets(ws, json.user_id);
                   CrossOpenOrders(ws,json.user_id);
                }
             }
 
             else  if (json.page == 'cross_order_history') {
                if (json.user_id != null && json.user_id != 'undefined') {
-                  GetWallets(ws, json.user_id);
                   CrossOrderHistory(ws, json.user_id);
                }
             }
@@ -198,21 +195,37 @@ async function test() {
 
             else  if (json.page == 'cross_positions') {
                if (json.user_id != null && json.user_id != 'undefined') {
-                  GetWallets(ws, json.user_id);
                   CrossPositions(ws, json.user_id);
                }
             }
 
             else  if (json.page == 'cross_funds') {
                if (json.user_id != null && json.user_id != 'undefined') {
-                  GetWallets(ws, json.user_id);
                   CrossFunds(ws, json.user_id);
+               }
+            }
+
+            else if (json.page == 'isolated_open_orders') {
+               if (json.user_id != null && json.user_id != 'undefined') {
+                  CrossOpenOrders(ws,json.user_id);
+               }
+            }
+
+            else  if (json.page == 'isolated_order_history') {
+               if (json.user_id != null && json.user_id != 'undefined') {
+                  CrossOrderHistory(ws, json.user_id);
+               }
+            }
+
+
+            else  if (json.page == 'isolated_positions') {
+               if (json.user_id != null && json.user_id != 'undefined') {
+                  CrossPositions(ws, json.user_id);
                }
             }
 
             else  if (json.page == 'isolated_funds') {
                if (json.user_id != null && json.user_id != 'undefined') {
-                  GetWallets(ws, json.user_id);
                   IsolatedFunds(ws, json.user_id);
                }
             }
