@@ -77,7 +77,6 @@ async function initialize() {
                     let item = list.find(x => x.s == order.pair_name.replace('/', ''));
                     if (item != null && item != '') {
                         let price = item.a;
-                        console.log(order.stop_limit);
                         if (order.stop_limit != 0) {
                             if (order.type == 'buy') {
                                 if (price >= order.target_price) {
@@ -175,7 +174,6 @@ async function initialize() {
                   //Tersine ise
                   let checkusdt = (reverseOreders.usedUSDT + reverseOreders.pnl) * reverseOreders.leverage;
                   if (checkusdt == order.usedUSDT * order.leverage) {
-                    console.log("Bura 0");
                     reverseOreders.status = 1;
                     let userBalance = await Wallet.findOne({
                       coin_id: MarginWalletId,
@@ -191,7 +189,6 @@ async function initialize() {
                   }
 
                   else if (checkusdt > order.usedUSDT * order.leverage) {
-                    console.log("Bura 1");
                     let writeUsedUSDT =
                       reverseOreders.usedUSDT + reverseOreders.pnl - order.usedUSDT;
                     if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
@@ -207,11 +204,9 @@ async function initialize() {
                     await reverseOreders.save();
                     await order.remove();
                   } else {
-                    console.log("Bura 2");
                     let ilkIslem = reverseOreders.usedUSDT;
                     let tersIslem = order.usedUSDT;
                     let data = ilkIslem - tersIslem;
-                    console.log("DATASSS : ", data);
                     userBalance = await Wallet.findOne({
                       coin_id: MarginWalletId,
                       user_id: order.user_id,
@@ -232,7 +227,8 @@ async function initialize() {
                   }
                 }
               } else {
-                console.log("Bura 44");
+
+
                 userBalance = await Wallet.findOne({
                   coin_id: MarginWalletId,
                   user_id: order.user_id,
@@ -322,19 +318,6 @@ async function initialize() {
                         order.pnl = pnl;
                         await order.save();
 
-                        console.log(
-
-                            "Type :",
-                            order.type,
-                            "Price : ",
-                            price,
-                            " Order Price : ",
-                            order.open_price,
-                            " PNL : ",
-                            pnl,
-                            " Amount : ",
-                            order.amount
-                        );
 
                     }
                 }
