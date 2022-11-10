@@ -24,6 +24,8 @@ const IsolatedFunds = require('./SocketController/trade/isolated/isolated_funds'
 const IsolatedOpenOrders = require('./SocketController/trade/isolated/isolated_open_orders');
 const IsolatedOrderHistory = require('./SocketController/trade/isolated/isolated_order_history');
 const IsolatedPositions = require('./SocketController/trade/isolated/isolated_positions');
+const IsolatedTradeHistory = require('./SocketController/trade/isolated/isolated_trade_history');
+const CrossTradeHistory = require('./SocketController/trade/cross/cross_trade_history');
 var mongodbPass = process.env.MONGO_DB_PASS;
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 
@@ -189,6 +191,12 @@ async function test() {
                }
             }
 
+            else  if (json.page == 'cross_trade_history') {
+               if (json.user_id != null && json.user_id != 'undefined') {
+                  CrossTradeHistory(ws, json.user_id);
+               }
+            }
+
             else  if (json.page == 'cross_order_history') {
                if (json.user_id != null && json.user_id != 'undefined') {
                   CrossOrderHistory(ws, json.user_id);
@@ -211,6 +219,13 @@ async function test() {
             else if (json.page == 'isolated_open_orders') {
                if (json.user_id != null && json.user_id != 'undefined') {
                   IsolatedOpenOrders(ws,json.user_id);
+               }
+            }
+
+            else  if (json.page == 'isolated_trade_history') {
+               if (json.user_id != null && json.user_id != 'undefined') {
+                  
+                  IsolatedTradeHistory(ws, json.user_id);
                }
             }
 
