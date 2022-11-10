@@ -4,21 +4,13 @@ const SpotOrderHistory = async (ws, user_id) => {
     let orders = await Orders.find({
         user_id: user_id, $and: [
             {
-                type: 'limit', $or:
-                    [
-                        { status: -2 },
-                        { status: -1 },
-                        { status: 0 },
-                    ]
+                type: 'limit'
             },
             {
-                type: 'stop_limit', $or:
-                    [
-                        { status: -2 },
-                        { status: -1 },
-                        { status: 0 },
-                    ]
-            }
+                type: 'stop_limit'
+            },
+
+
         ]
     });
     ws.send(JSON.stringify({ page: "spot", type: 'order_history', content: orders }));
@@ -27,21 +19,13 @@ const SpotOrderHistory = async (ws, user_id) => {
         let orders = await Orders.find({
             user_id: user_id, $and: [
                 {
-                    type: 'limit', $or:
-                        [
-                            { status: -2 },
-                            { status: -1 },
-                            { status: 0 },
-                        ]
+                    type: 'limit'
                 },
                 {
-                    type: 'stop_limit', $or:
-                        [
-                            { status: -2 },
-                            { status: -1 },
-                            { status: 0 },
-                        ]
-                }
+                    type: 'stop_limit'
+                },
+
+
             ]
         });
         ws.send(JSON.stringify({ page: "spot", type: 'order_history', content: orders }));
