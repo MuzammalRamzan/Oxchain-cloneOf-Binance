@@ -80,7 +80,7 @@ const addOrders = async function (req, res) {
           return;
         }
 
-        if (stop_limit == 0) {
+        if (stop_limit <= 0) {
           res.json({
             status: "fail",
             message: "Please enter stop limit",
@@ -88,7 +88,7 @@ const addOrders = async function (req, res) {
           return;
         }
         console.log(target_price, " | ", stop_limit);
-        if (target_price < stop_limit) {
+        if (stop_limit < target_price) {
           res.json({
             status: "fail",
             message:
@@ -209,14 +209,14 @@ const addOrders = async function (req, res) {
       if (req.body.type == "stop_limit") {
         target_price = req.body.target_price;
         let stop_limit = req.body.stop_limit ?? 0.0;
-        if (stop_limit == 0) {
+        if (stop_limit <= 0) {
           res.json({
             status: "fail",
             message: "Please enter stop limit",
           });
           return;
         }
-        if (target_price > stop_limit) {
+        if (stop_limit > target_price) {
           res.json({
             status: "fail",
             message:
