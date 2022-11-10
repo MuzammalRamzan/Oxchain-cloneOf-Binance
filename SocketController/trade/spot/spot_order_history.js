@@ -4,9 +4,11 @@ const SpotOrderHistory = async (ws, user_id) => {
     let orders = await Orders.find({
         user_id: user_id, $and: [
             {
+                user_id: user_id,
                 type: 'limit'
             },
             {
+                user_id: user_id,
                 type: 'stop_limit'
             },
 
@@ -17,11 +19,13 @@ const SpotOrderHistory = async (ws, user_id) => {
     Orders.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
 
         let orders = await Orders.find({
-            user_id: user_id, $and: [
+             $and: [
                 {
+                    user_id: user_id,
                     type: 'limit'
                 },
                 {
+                    user_id: user_id,
                     type: 'stop_limit'
                 },
 
