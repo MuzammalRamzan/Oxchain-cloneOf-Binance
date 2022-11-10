@@ -378,7 +378,7 @@ const addMarginOrder = async (req, res) => {
         }
 
         if (type == "buy") {
-          if (stop_limit > target_price) {
+          if (stop_limit < target_price) {
             res.json({
               status: "fail",
               message: "Stop limit price can't be greater then target price",
@@ -386,24 +386,24 @@ const addMarginOrder = async (req, res) => {
             return;
           }
 
-          if (price > stop_limit) {
+          if (target_price >= price) {
             res.json({
               status: "fail",
-              message: "Price can't be greater than stop price",
+              message: "Buy limit order must be below the price",
             });
             return;
           }
         }
 
         if (type == "sell") {
-          if (stop_limit < target_price) {
+          if (stop_limit > target_price) {
             res.json({
               status: "fail",
               message: "Stop limit price can't be smaller then target price",
             });
             return;
           }
-          if (price < stop_limit) {
+          if (target_price <= price) {
             res.json({
               status: "fail",
               message: "Price can't be smaller than stop price",
@@ -411,6 +411,7 @@ const addMarginOrder = async (req, res) => {
             return;
           }
         }
+
 
         amount =
           ((userBalance.amount * percent) / 100 / target_price) *
