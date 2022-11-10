@@ -70,7 +70,7 @@ async function main() {
                                         open_time: Date.now(),
                                         type: "market",
                                         method: "buy",
-                                        target_price: 0,
+                                        target_price: order.target_price,
                                         status: 0,
                                     });
 
@@ -115,7 +115,7 @@ async function main() {
                                         open_time: Date.now(),
                                         type: "market",
                                         method: "sell",
-                                        target_price: 0,
+                                        target_price: order.target_price,
                                         status: 0,
                                     });
 
