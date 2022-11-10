@@ -18,8 +18,9 @@ const UserSchema = new mongoose.Schema({
   twofa: { type: String, required: false, default: null, maxLength: 50 },
   nickname: { type: String, required: false, default: null },
   avatar: { type: String, required: false, default: null },
-  applicant_id: { type: String, required: false, default: null },
+  applicantId: { type: String, required: false, default: null },
   status: { type: String, required: false, default: 0 },
+  applicantStatus: { type: Number, required: false, default: 0 },
   createdAt: {
     type: Date,
     default: Date.now,

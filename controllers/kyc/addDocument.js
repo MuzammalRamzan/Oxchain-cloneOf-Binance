@@ -12,9 +12,8 @@ const addDocument = async (req, res) => {
   if (!result) res.json({ status: "fail", message: "Forbidden 403" });
 
   const user = await User.findById(user_id).lean();
-  console.log(req.files[0].buffer)
   try {
-    await addKYCDocument(user.applicant_id, req.files[0].buffer, { idDocType: doc_type, country: country_code, idDocSubType: doc_sub_type});
+    await addKYCDocument(user.applicantId, req.files[0].buffer, { idDocType: doc_type, country: country_code, idDocSubType: doc_sub_type});
     res.json({ status: "success", data: "update_success" });
   } catch (err) {
     throw err;

@@ -10,7 +10,12 @@ const getApplicantStatus = async (req, res) => {
 
   try {
     const user = await User.findById(user_id).lean();
-    const data = await getKYCStatus(user.applicant_id);
+    const data = await getKYCStatus(user.applicantId);
+    const applicantStatus = data?.reviewResult?.reviewAnswer == "GREEN" ? 1 : 0;
+    await User.updateOne(
+      { _id: user_id },
+      { $set: { applicantStatus } }
+    );
     res.json({ status: "success", data });
   } catch (err) {
     throw err;
