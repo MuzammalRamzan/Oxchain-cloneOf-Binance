@@ -142,80 +142,16 @@ async function main() {
                                 //CHECK TP
                                 if (price <= stop_limit) {
                                     console.log("alış gerçekleşiyor");
-                                    var getPair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
-                                    var fromWalelt = await Wallet.findOne({
-                                        coin_id: getPair.symbolOneID,
-                                        user_id: order.user_id,
-                                    }).exec();
-                                    var toWalelt = await Wallet.findOne({
-                                        coin_id: getPair.symbolTwoID,
-                                        user_id: order.user_id,
-                                    }).exec();
-                                    
-                                    const neworders = new Orders({
-                                        pair_id: getPair.symbolOneID,
-                                        second_pair: getPair.symbolTwoID,
-                                        pair_name: getPair.name,
-                                        user_id: order.user_id,
-                                        amount: parseFloat(order.amount),
-                                        open_price: target_price,
-                                        type: "market",
-                                        method: "buy",
-                                        target_price: 0,
-                                        status: 0,
-                                    });
-
-                                    order.status = 0;
+                                    order.type = 'limit';
                                     await order.save();
-                                    let saved = await neworders.save();
-                                    if (saved) {
-                                        console.log(toWalelt);
-                                        console.log(toWalelt.amount);
-                                        fromWalelt.amount = parseFloat(fromWalelt.amount) + order.amount;
-                                        await fromWalelt.save();
-                                        //toWalelt.amount = parseFloat(toWalelt.amount) - total;
-                                        //await toWalelt.save();
-                                    }
+                               
                                 }
                             } else if (order.method == 'sell') {
                                 if (price >= stop_limit) {
                                     console.log("satış gerçekleşiyor");
-                                    var getPair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
-                                    var fromWalelt = await Wallet.findOne({
-                                        coin_id: getPair.symbolOneID,
-                                        user_id: order.user_id,
-                                    }).exec();
-                                    var toWalelt = await Wallet.findOne({
-                                        coin_id: getPair.symbolTwoID,
-                                        user_id: order.user_id,
-                                    }).exec();
-
-                                    let total = parseFloat(order.amount) * target_price;
-                                    console.log("total : ", total);
-                                    const neworders = new Orders({
-                                        pair_id: getPair.symbolOneID,
-                                        second_pair: getPair.symbolTwoID,
-                                        pair_name: getPair.name,
-                                        user_id: order.user_id,
-                                        amount: parseFloat(order.amount),
-                                        open_price: target_price,
-                                        type: "market",
-                                        method: "sell",
-                                        target_price: 0,
-                                        status: 0,
-                                    });
-
-                                    order.status = 0;
+                                    order.type = 'limit';
                                     await order.save();
-                                    let saved = await neworders.save();
-                                    if (saved) {
-                                        console.log(toWalelt);
-                                        console.log(toWalelt.amount);
-                                        //fromWalelt.amount = parseFloat(fromWalelt.amount) - order.amount;
-                                        toWalelt.amount = parseFloat(toWalelt.amount) + total;
-                                        await toWalelt.save();
-                                        //await fromWalelt.save();
-                                    }
+                                
                                 }
                             }
                         }
