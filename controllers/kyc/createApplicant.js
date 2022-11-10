@@ -13,7 +13,7 @@ const createApplicant = async (req, res) => {
     const applicant = await createKYCApplicant(user_id, level_name);
     await User.updateOne(
       { _id: user_id },
-      { $set: { applicant_id: applicant.id } }
+      { $set: { applicantId: applicant.id } }
     );
     res.json({ status: "success", data: "update_success" });
   } catch (err) {
