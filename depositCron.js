@@ -202,6 +202,7 @@ route.all("/btcDepositCheck", async (req, res) => {
     for (let i = 0; i < wallet.length; i++) {
       let address = wallet[i].wallet_address;
       let user_id = wallet[i].user_id;
+      if(address == null) continue;
       if (address.length > 0) {
         let checkRequest = await axios.request({
           method: "post",
