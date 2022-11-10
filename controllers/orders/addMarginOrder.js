@@ -19,12 +19,12 @@ const addMarginOrder = async (req, res) => {
     let user_id = req.body.user_id;
     let symbol = req.body.symbol;
     let percent = req.body.percent;
-    let amount = req.body.amount;
+    let amount = parseFloat(req.body.amount) ?? 0.0;
     let type = req.body.type;
     let method = req.body.method;
-    let target_price = req.body.target_price ?? 0.0;
-    let stop_limit = req.body.stop_limit ?? 0.0;
-    let leverage = req.body.leverage ?? 0.0;
+    let target_price = parseFloat(req.body.target_price) ?? 0.0;
+    let stop_limit = parseFloat(req.body.stop_limit) ?? 0.0;
+    let leverage = parseFloat(req.body.leverage) ?? 0.0;
     if (amount <= 0) {
       res.json({ status: "fail", message: "invalid_amount" });
       return;
