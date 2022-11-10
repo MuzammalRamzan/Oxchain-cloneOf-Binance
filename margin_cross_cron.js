@@ -84,12 +84,12 @@ async function initialize() {
             
             if (order.stop_limit != 0) {
               if (order.type == 'buy') {
-                if (price >= order.target_price) {
+                if (price <= order.target_price) {
                   order.status = 0;
                   await order.save();
                   let n_order = new MarginOrder({
                     pair_id: order.pair_id,
-                    pair_name: order.name,
+                    pair_name: order.pair_name,
                     type: order.type,
                     margin_type: order.margin_type,
                     method: order.method,
@@ -113,7 +113,7 @@ async function initialize() {
                   await order.save();
                   let n_order = new MarginOrder({
                     pair_id: order.pair_id,
-                    pair_name: order.name,
+                    pair_name: order.pair_name,
                     type: order.type,
                     margin_type: order.margin_type,
                     method: order.method,
