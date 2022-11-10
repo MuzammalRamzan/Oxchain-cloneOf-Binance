@@ -78,10 +78,11 @@ async function initialize() {
         var order = limitOrders[i];
 
         if (order.method == 'limit') {
+          if(order.status == 0) continue;
           let item = list.find(x => x.s == order.pair_name.replace('/', ''));
           if (item != null && item != '') {
             let price = item.a;
-            
+
             if (order.stop_limit != 0) {
               if (order.type == 'buy') {
                 if (price <= order.target_price) {
@@ -160,7 +161,7 @@ async function initialize() {
                   let oldPNL = reverseOreders.pnl;
                   let oldLeverage = reverseOreders.leverage;
                   let newUsedUSDT = oldUsedUSDT + order.usedUSDT + oldPNL;
-                  
+
                   reverseOreders.usedUSDT = newUsedUSDT;
                   reverseOreders.open_price = price;
                   reverseOreders.pnl = 0;
@@ -169,7 +170,8 @@ async function initialize() {
                   reverseOreders.amount = (newUsedUSDT * order.leverage) / price;
 
                   await reverseOreders.save();
-                  await order.remove();
+                  order.status = 0;
+                  await order.save();
 
                 } else {
                   //Tersine ise
@@ -186,7 +188,8 @@ async function initialize() {
                       reverseOreders.usedUSDT;
                     await userBalance.save();
                     await reverseOreders.save();
-                    await order.remove();
+                    order.status = 0;
+                    await order.save();
                   }
 
                   else if (checkusdt > order.usedUSDT * order.leverage) {
@@ -203,7 +206,8 @@ async function initialize() {
                     userBalance.amount = userBalance.amount + reverseOreders.usedUSDT + order.usedUSDT;
                     await userBalance.save();
                     await reverseOreders.save();
-                    await order.remove();
+                    order.status = 0;
+                await order.save();
                   } else {
                     let ilkIslem = reverseOreders.usedUSDT;
                     let tersIslem = order.usedUSDT;
@@ -224,7 +228,8 @@ async function initialize() {
                     //reverseOreders.amount = ((((reverseOreders.usedUSDT + reverseOreders.pnl) * leverage) - (usedUSDT * leverage)) / price);
                     reverseOreders.amount = (writeUsedUSDT * order.leverage) / price;
                     await reverseOreders.save();
-                    await order.remove();
+                    order.status = 0;
+                await order.save();
                   }
                 }
               } else {
@@ -255,7 +260,8 @@ async function initialize() {
                   open_price: price,
                 });
                 await n_order.save();
-                await order.remove();
+                order.status = 0;
+                await order.save();
               }
             }
           }
@@ -333,7 +339,7 @@ async function initialize() {
             let item = findBinanceItem[0];
             if (order.type == 'buy') {
               let price = item.a;
-              
+
               let pnl = (price - order.open_price) * order.amount;
               order.pnl = pnl;
               await order.save();
