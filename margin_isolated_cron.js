@@ -268,12 +268,12 @@ async function initialize() {
                     if (item != null && item != '') {
                         let price = item.a;
                         if (order.type == 'buy') {
-                            if (price >= order.stop_limit) {
+                            if (price <= order.stop_limit) {
                                 order.method = 'limit';
                                 await order.save();
                             }
                         } else if (order.type == 'sell') {
-                            if (price <= order.stop_limit) {
+                            if (price >= order.stop_limit) {
                                 order.method = 'limit';
                                 await order.save();
                             }
