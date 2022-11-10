@@ -85,7 +85,7 @@ async function initialize() {
                                     await order.save();
                                     let n_order = new MarginOrder({
                                         pair_id: order.pair_id,
-                                        pair_name: order.name,
+                                        pair_name: order.pair_name,
                                         type: order.type,
                                         margin_type: order.margin_type,
                                         method: order.method,
@@ -110,7 +110,7 @@ async function initialize() {
                                     await order.save();
                                     let n_order = new MarginOrder({
                                         pair_id: order.pair_id,
-                                        pair_name: order.name,
+                                        pair_name: order.pair_name,
                                         type: order.type,
                                         margin_type: order.margin_type,
                                         method: order.method,
