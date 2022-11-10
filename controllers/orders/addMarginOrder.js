@@ -106,7 +106,7 @@ const addMarginOrder = async (req, res) => {
         }
 
         if (type == "buy") {
-          if (stop_limit > target_price) {
+          if (stop_limit < target_price) {
             res.json({
               status: "fail",
               message: "Stop limit price can't be greater then target price",
@@ -124,14 +124,14 @@ const addMarginOrder = async (req, res) => {
         }
 
         if (type == "sell") {
-          if (stop_limit < target_price) {
+          if (stop_limit > target_price) {
             res.json({
               status: "fail",
               message: "Stop limit price can't be smaller then target price",
             });
             return;
           }
-          if (target_price <= stop_limit) {
+          if (target_price <= price) {
             res.json({
               status: "fail",
               message: "Price can't be smaller than stop price",
