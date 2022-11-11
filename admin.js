@@ -28,7 +28,8 @@ const AddAdmin = require("./adminController/AddAdmin");
 const userList = require("./adminController/userList");
 const editAdmin = require("./adminController/editAdmin");
 const listAdmin = require("./adminController/listAdmin");
-const {editUser} = require("./adminController/editUser");
+const { editUser } = require("./adminController/editUser");
+const { denyApplicant } = require("./adminController/denyApplicant");
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
@@ -42,6 +43,7 @@ route.all("/addAdmin", upload.none(), AddAdmin);
 route.all("/editAdmin", upload.none(), editAdmin);
 route.all("/listAdmin", upload.none(), listAdmin);
 route.all("/editUser", upload.none(), editUser);
+route.all("/denyApplicant", upload.none(), denyApplicant);
 
 route.listen(port, () => {
   console.log("Server Ayakta");

@@ -18,6 +18,7 @@ const MarginCrossWallet = require("../../models/MarginCrossWallet");
 const MarginIsolatedWallet = require("../../models/MarginIsolatedWallet");
 const FutureCrossWallet = require("../../models/FutureCrossWallet");
 const FutureIsolatedWallet = require("../../models/FutureIsolatedWallet");
+const { getApplicantStatus } = require("../../sumsub");
 
 const login = async (req, res) => {
   let newRegisteredId;
@@ -351,6 +352,13 @@ const login = async (req, res) => {
         } else {
           data.trust = "no";
           data.log_id = newRegisteredId;
+        }
+        
+        if (user.applicantId) {
+          const data = await getApplicantStatus(user.applicantId);
+          const applicantStatus =
+            data?.reviewResult?.reviewAnswer == "GREEN" ? 1 : 0;
+          await User.updateOne({ _id: user_id }, { $set: { applicantStatus } });
         }
 
         if (loginType == "mobile") {
