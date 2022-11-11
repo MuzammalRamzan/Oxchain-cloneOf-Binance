@@ -14,6 +14,10 @@ const Device = require("../../models/Device");
 const NotificationTokens = require("../../models/NotificationTokens");
 var authFile = require("../../auth.js");
 var utilities = require("../../utilities.js");
+const MarginCrossWallet = require("../../models/MarginCrossWallet");
+const MarginIsolatedWallet = require("../../models/MarginIsolatedWallet");
+const FutureCrossWallet = require("../../models/FutureCrossWallet");
+const FutureIsolatedWallet = require("../../models/FutureIsolatedWallet");
 
 const login = async (req, res) => {
   let newRegisteredId;
@@ -157,9 +161,9 @@ const login = async (req, res) => {
             network_id: networks[x]._id,
           }).exec();
 
-          console.log(user._id);
-          console.log(networks[x]._id);
-          console.log(walletAddressCheck);
+
+
+
 
           if (walletAddressCheck == null) {
             let privateKey = "";
@@ -235,6 +239,64 @@ const login = async (req, res) => {
             console.log("Cüzdan var");
           }
 
+          //Margin Wallet Check
+          let margin_cross_check = await MarginCrossWallet.findOne({user_id: user._id, coin_id : coins[i]._id});
+          if(margin_cross_check == null) {
+            let createWallet = new MarginCrossWallet({
+              user_id: user._id,
+              coin_id : coins[i]._id,
+              amount : 0.0,
+              type : "margin_cross",
+              pnl : 0.0,
+              totalBonus : 0.0,
+              status : 1
+            });
+            await createWallet.save();
+          }
+
+          let margin_isole_check = await MarginIsolatedWallet.findOne({user_id: user._id, coin_id : coins[i]._id});
+          if(margin_isole_check == null) {
+            let createWallet = new MarginIsolatedWallet({
+              user_id: user._id,
+              coin_id : coins[i]._id,
+              amount : 0.0,
+              type : "margin_isolated",
+              pnl : 0.0,
+              totalBonus : 0.0,
+              status : 1
+            });
+            await createWallet.save();
+          }
+
+          //Future Wallet Check
+          let future_cross_check = await FutureCrossWallet.findOne({user_id: user._id, coin_id : coins[i]._id});
+          if(future_cross_check == null) {
+            let createWallet = new FutureCrossWallet({
+              user_id: user._id,
+              coin_id : coins[i]._id,
+              amount : 0.0,
+              type : "future_cross",
+              pnl : 0.0,
+              totalBonus : 0.0,
+              status : 1
+            });
+            await createWallet.save();
+          }
+
+          let future_isole_check = await FutureIsolatedWallet.findOne({user_id: user._id, coin_id : coins[i]._id});
+          if(future_isole_check == null) {
+            let createWallet = new FutureIsolatedWallet({
+              user_id: user._id,
+              coin_id : coins[i]._id,
+              amount : 0.0,
+              type : "future_isolated",
+              pnl : 0.0,
+              totalBonus : 0.0,
+              status : 1
+            });
+            await createWallet.save();
+          }
+          //End check
           const newWallet = new Wallet({
             name: coins[i]["name"],
             symbol: coins[i]["symbol"],
