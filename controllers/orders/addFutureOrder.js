@@ -2,9 +2,9 @@ const Wallet = require("../../models/Wallet");
 const Pairs = require("../../models/Pairs");
 const axios = require("axios");
 var authFile = require("../../auth.js");
-const MarginOrder = require("../../models/MarginOrder");
+const FutureOrder = require("../../models/FutureOrder");
 const setFeeCredit = require('../bonus/setFeeCredit');
-const addMarginOrder = async (req, res) => {
+const addFutureOrder = async (req, res) => {
   
   try {
     var api_key_result = req.body.api_key;
@@ -14,8 +14,8 @@ const addMarginOrder = async (req, res) => {
       return;
     }
 
-    const MarginWalletId = "62ff3c742bebf06a81be98fd";
-    let margin_type = req.body.margin_type;
+    const FutureWalletId = "62ff3c742bebf06a81be98fd";
+    let future_type = req.body.future_type;
     let user_id = req.body.user_id;
     let symbol = req.body.symbol;
     let percent = req.body.percent;
@@ -24,13 +24,13 @@ const addMarginOrder = async (req, res) => {
     let method = req.body.method;
     let target_price = parseFloat(req.body.target_price) ?? 0.0;
     let stop_limit = parseFloat(req.body.stop_limit) ?? 0.0;
-    let leverage = 3;
+    let leverage = parseFloat(req.body.leverage) ?? 0.0;
     if (amount <= 0) {
       res.json({ status: "fail", message: "invalid_amount" });
       return;
     }
     let userBalance = await Wallet.findOne({
-      coin_id: MarginWalletId,
+      coin_id: FutureWalletId,
       user_id: req.body.user_id,
     }).exec();
 
@@ -46,7 +46,7 @@ const addMarginOrder = async (req, res) => {
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
     result = await axios(url);
     var price = parseFloat(result.data[0].price);
-    if (margin_type == "isolated") {
+    if (future_type == "isolated") {
       if (method == "limit") {
         target_price = parseFloat(target_price);
 
@@ -62,11 +62,11 @@ const addMarginOrder = async (req, res) => {
 
         userBalance.amount = userBalance.amount - usedUSDT;
         await userBalance.save();
-        let order = new MarginOrder({
+        let order = new FutureOrder({
           pair_id: getPair._id,
           pair_name: getPair.name,
           type: type,
-          margin_type: margin_type,
+          future_type: future_type,
           method: method,
           user_id: user_id,
           usedUSDT: usedUSDT,
@@ -147,11 +147,11 @@ const addMarginOrder = async (req, res) => {
 
         userBalance.amount = userBalance.amount - usedUSDT;
         await userBalance.save();
-        let order = new MarginOrder({
+        let order = new FutureOrder({
           pair_id: getPair._id,
           pair_name: getPair.name,
           type: type,
-          margin_type: margin_type,
+          future_type: future_type,
           method: method,
           user_id: user_id,
           usedUSDT: usedUSDT,
@@ -176,10 +176,10 @@ const addMarginOrder = async (req, res) => {
           ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
         let usedUSDT = (amount * price) / req.body.leverage;
 
-        let reverseOreders = await MarginOrder.findOne({
+        let reverseOreders = await FutureOrder.findOne({
           user_id: req.body.user_id,
           pair_id: getPair._id,
-          margin_type: margin_type,
+          future_type: future_type,
           method: "market",
           status: 0,
         });
@@ -208,7 +208,7 @@ const addMarginOrder = async (req, res) => {
             reverseOreders.amount = (newUsedUSDT * leverage) / price;
 
             userBalance = await Wallet.findOne({
-              coin_id: MarginWalletId,
+              coin_id: FutureWalletId,
               user_id: req.body.user_id,
             }).exec();
             userBalance.amount = userBalance.amount - usedUSDT;
@@ -225,7 +225,7 @@ const addMarginOrder = async (req, res) => {
             if (checkusdt == usedUSDT * leverage) {
               reverseOreders.status = 1;
               userBalance = await Wallet.findOne({
-                coin_id: MarginWalletId,
+                coin_id: FutureWalletId,
                 user_id: req.body.user_id,
               }).exec();
               userBalance.amount =
@@ -246,7 +246,7 @@ const addMarginOrder = async (req, res) => {
               reverseOreders.amount =
                 (writeUsedUSDT * reverseOreders.leverage) / price;
               userBalance = await Wallet.findOne({
-                coin_id: MarginWalletId,
+                coin_id: FutureWalletId,
                 user_id: req.body.user_id,
               }).exec();
               userBalance.amount = userBalance.amount + usedUSDT;
@@ -268,7 +268,7 @@ const addMarginOrder = async (req, res) => {
               let data = ilkIslem - tersIslem;
               console.log("DATASSS : ", data);
               userBalance = await Wallet.findOne({
-                coin_id: MarginWalletId,
+                coin_id: FutureWalletId,
                 user_id: req.body.user_id,
               }).exec();
               userBalance.amount = userBalance.amount + data;
@@ -290,16 +290,16 @@ const addMarginOrder = async (req, res) => {
           }
         } else {
           userBalance = await Wallet.findOne({
-            coin_id: MarginWalletId,
+            coin_id: FutureWalletId,
             user_id: req.body.user_id,
           }).exec();
           userBalance.amount = userBalance.amount - usedUSDT;
           await userBalance.save();
-          let order = new MarginOrder({
+          let order = new FutureOrder({
             pair_id: getPair._id,
             pair_name: getPair.name,
             type: type,
-            margin_type: margin_type,
+            future_type: future_type,
             method: method,
             user_id: user_id,
             usedUSDT: usedUSDT,
@@ -319,7 +319,7 @@ const addMarginOrder = async (req, res) => {
           return;
         }
       }
-    } else if (margin_type == "cross") {
+    } else if (future_type == "cross") {
       if (method == "limit") {
         target_price = parseFloat(target_price);
 
@@ -335,11 +335,11 @@ const addMarginOrder = async (req, res) => {
 
         userBalance.amount = userBalance.amount - usedUSDT;
         await userBalance.save();
-        let order = new MarginOrder({
+        let order = new FutureOrder({
           pair_id: getPair._id,
           pair_name: getPair.name,
           type: type,
-          margin_type: margin_type,
+          future_type: future_type,
           method: method,
           user_id: user_id,
           usedUSDT: usedUSDT,
@@ -420,11 +420,11 @@ const addMarginOrder = async (req, res) => {
 
         userBalance.amount = userBalance.amount - usedUSDT;
         await userBalance.save();
-        let order = new MarginOrder({
+        let order = new FutureOrder({
           pair_id: getPair._id,
           pair_name: getPair.name,
           type: type,
-          margin_type: margin_type,
+          future_type: future_type,
           method: method,
           user_id: user_id,
           usedUSDT: usedUSDT,
@@ -449,10 +449,10 @@ const addMarginOrder = async (req, res) => {
           ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
         let usedUSDT = (amount * price) / req.body.leverage;
 
-        let reverseOreders = await MarginOrder.findOne({
+        let reverseOreders = await FutureOrder.findOne({
           user_id: req.body.user_id,
           pair_id: getPair._id,
-          margin_type: margin_type,
+          future_type: future_type,
           method: "market",
           status: 0,
         }).exec();
@@ -479,7 +479,7 @@ const addMarginOrder = async (req, res) => {
             reverseOreders.amount = (newUsedUSDT * leverage) / price;
 
             userBalance = await Wallet.findOne({
-              coin_id: MarginWalletId,
+              coin_id: FutureWalletId,
               user_id: req.body.user_id,
             }).exec();
             userBalance.amount = userBalance.amount - usedUSDT;
@@ -496,7 +496,7 @@ const addMarginOrder = async (req, res) => {
             if (checkusdt == usedUSDT * leverage) {
               reverseOreders.status = 1;
               userBalance = await Wallet.findOne({
-                coin_id: MarginWalletId,
+                coin_id: FutureWalletId,
                 user_id: req.body.user_id,
               }).exec();
               userBalance.amount =
@@ -517,7 +517,7 @@ const addMarginOrder = async (req, res) => {
               reverseOreders.amount =
                 (writeUsedUSDT * reverseOreders.leverage) / price;
               userBalance = await Wallet.findOne({
-                coin_id: MarginWalletId,
+                coin_id: FutureWalletId,
                 user_id: req.body.user_id,
               }).exec();
               userBalance.amount = userBalance.amount + usedUSDT;
@@ -539,7 +539,7 @@ const addMarginOrder = async (req, res) => {
               let data = ilkIslem - tersIslem;
               console.log("DATASSS : ", data);
               userBalance = await Wallet.findOne({
-                coin_id: MarginWalletId,
+                coin_id: FutureWalletId,
                 user_id: req.body.user_id,
               }).exec();
               userBalance.amount = userBalance.amount + data;
@@ -561,16 +561,16 @@ const addMarginOrder = async (req, res) => {
           }
         } else {
           userBalance = await Wallet.findOne({
-            coin_id: MarginWalletId,
+            coin_id: FutureWalletId,
             user_id: req.body.user_id,
           }).exec();
           userBalance.amount = userBalance.amount - usedUSDT;
           await userBalance.save();
-          let order = new MarginOrder({
+          let order = new FutureOrder({
             pair_id: getPair._id,
             pair_name: getPair.name,
             type: type,
-            margin_type: margin_type,
+            future_type: future_type,
             method: method,
             user_id: user_id,
             usedUSDT: usedUSDT,
@@ -596,4 +596,4 @@ const addMarginOrder = async (req, res) => {
   }
 };
 
-module.exports = addMarginOrder;
+module.exports = addFutureOrder;
