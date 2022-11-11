@@ -17,7 +17,7 @@ const sendMail = async function (req, res) {
     }).exec();
 
     if (user != null) {
-      var pin = Math.floor(100000 + Math.random() * 900000);
+      var pin = 0000;
 
       mailer.sendMail(
         user["email"],

@@ -9,7 +9,7 @@ const sendMailPin = async (req, res) => {
 
   console.log(result);
   if (result === true) {
-    var pin = Math.floor(100000 + Math.random() * 900000);
+    var pin = 0000;
 
     const newPin = new RegisterMail({
       email: email,

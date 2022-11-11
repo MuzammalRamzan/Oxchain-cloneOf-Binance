@@ -8,7 +8,7 @@ const sendSMSPin = async (req, res) => {
   let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
-    var pin = Math.floor(100000 + Math.random() * 900000);
+    var pin = 0000;
 
     const newPin = new RegisterSMS({
       phone_number: phone,
