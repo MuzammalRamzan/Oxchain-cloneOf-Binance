@@ -102,6 +102,7 @@ const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
 const session = require('express-session');
+const addMarginCrossOrder = require("./controllers/orders/addMarginCrossOrder.js");
 route.use(session({
   secret: 'oxhain_login_session',
   resave: false,
@@ -172,6 +173,7 @@ route.post("/getClosedMarginOrders", getClosedMarginOrders);
 route.post("/getOpenMarginOrders", getOpenMarginOrders);
 route.post("/closeMarginOrder", closeMarginOrder);
 route.post("/addMarginOrder", addMarginOrder);
+route.post("/addMarginCrossOrder", addMarginCrossOrder);
 route.get("/getMarginOrders", getMarginOrders);
 route.post("/spotHistory", async (req, res) => {
   var api_key_result = req.body.api_key;

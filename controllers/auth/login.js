@@ -246,6 +246,7 @@ const login = async (req, res) => {
             let createWallet = new MarginCrossWallet({
               user_id: user._id,
               coin_id : coins[i]._id,
+              symbol : coins[i].symbol,
               amount : 0.0,
               type : "margin_cross",
               pnl : 0.0,
@@ -260,6 +261,7 @@ const login = async (req, res) => {
             let createWallet = new MarginIsolatedWallet({
               user_id: user._id,
               coin_id : coins[i]._id,
+              symbol : coins[i].symbol,
               amount : 0.0,
               type : "margin_isolated",
               pnl : 0.0,
@@ -275,6 +277,7 @@ const login = async (req, res) => {
             let createWallet = new FutureCrossWallet({
               user_id: user._id,
               coin_id : coins[i]._id,
+              symbol : coins[i].symbol,
               amount : 0.0,
               type : "future_cross",
               pnl : 0.0,
@@ -289,6 +292,7 @@ const login = async (req, res) => {
             let createWallet = new FutureIsolatedWallet({
               user_id: user._id,
               coin_id : coins[i]._id,
+              symbol : coins[i].symbol,
               amount : 0.0,
               type : "future_isolated",
               pnl : 0.0,

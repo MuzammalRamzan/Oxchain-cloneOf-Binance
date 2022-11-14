@@ -4,6 +4,7 @@ var uniqueValidator = require("mongoose-unique-validator");
 const MarginCrossSchema = new mongoose.Schema({
     user_id: { type: String, required: true },
     coin_id: { type: String, required: true },
+    symbol : {type: String, required: true },
     amount: { type: Number, required: true, default: 0.00 },
     type: { type: String, required: true },
     pnl: { type: Number, required: false, default: 0.0 },

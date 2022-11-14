@@ -28,7 +28,44 @@ const IsolatedTradeHistory = require('./SocketController/trade/isolated/isolated
 const CrossTradeHistory = require('./SocketController/trade/cross/cross_trade_history');
 var mongodbPass = process.env.MONGO_DB_PASS;
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
+global.MarketData = {};
 
+async function fillMarketPrices() {
+   let coinList = await CoinList.find({});
+   var b_ws = new WebSocket("wss://stream.binance.com/stream");
+
+   for(var k = 0; k < coinList.length; k++) {
+      global.MarketData[coinList[k].symbol + "USDT"] = {"bid" : 0.0, "ask" : 0.0};
+   }
+
+   const initSocketMessage = {
+      method: "SUBSCRIBE",
+      params: ["!ticker@arr"],
+      // params: ["!miniTicker@arr"],
+      id: 1,
+   };
+
+   b_ws.onopen = (event) => {
+      b_ws.send(JSON.stringify(initSocketMessage));
+   };
+
+   // Reconnect connection when disconnect connection
+   b_ws.onclose = () => {
+      b_ws.send(JSON.stringify(initSocketMessage));
+   }
+   b_ws.onmessage = function (event) {
+
+      const data = JSON.parse(event.data).data;
+      if (data != null && data != 'undefined') {
+         for(var m = 0; m < data.length; m++) {
+            let x = data[m];
+            global.MarketData[x.s] = {"bid" : x.b, "ask" : x.a};
+         }
+      }
+   }
+
+}
+fillMarketPrices();
 async function main() {
    console.log("start");
    await Connection.connection();
@@ -156,30 +193,30 @@ async function test() {
          }))
          ws.on('message', async (data) => {
             let json = JSON.parse(data);
-            if(json.page == 'trade') {
+            if (json.page == 'trade') {
                GetBinanceData(ws, json.pair);
                GetMarginBalance(ws, json.user_id);
                GetWallets(ws, json.user_id);
 
-            } 
+            }
             else if (json.page == 'spot_open_orders') {
                if (json.user_id != null && json.user_id != 'undefined') {
-                  SpotOpenOrders(ws,json.user_id);
+                  SpotOpenOrders(ws, json.user_id);
                }
             }
-            else  if (json.page == 'spot_order_history') {
+            else if (json.page == 'spot_order_history') {
                if (json.user_id != null && json.user_id != 'undefined') {
                   SpotOrderHistory(ws, json.user_id);
                }
             }
-            
-            else  if (json.page == 'spot_trade_history') {
+
+            else if (json.page == 'spot_trade_history') {
                if (json.user_id != null && json.user_id != 'undefined') {
                   SpotTradeHistory(ws, json.user_id);
                }
             }
 
-            else  if (json.page == 'spot_funds') {
+            else if (json.page == 'spot_funds') {
                if (json.user_id != null && json.user_id != 'undefined') {
                   SpotFunds(ws, json.user_id);
                }
@@ -187,30 +224,30 @@ async function test() {
 
             else if (json.page == 'cross_open_orders') {
                if (json.user_id != null && json.user_id != 'undefined') {
-                  CrossOpenOrders(ws,json.user_id);
+                  CrossOpenOrders(ws, json.user_id);
                }
             }
 
-            else  if (json.page == 'cross_trade_history') {
+            else if (json.page == 'cross_trade_history') {
                if (json.user_id != null && json.user_id != 'undefined') {
                   CrossTradeHistory(ws, json.user_id);
                }
             }
 
-            else  if (json.page == 'cross_order_history') {
+            else if (json.page == 'cross_order_history') {
                if (json.user_id != null && json.user_id != 'undefined') {
                   CrossOrderHistory(ws, json.user_id);
                }
             }
 
 
-            else  if (json.page == 'cross_positions') {
+            else if (json.page == 'cross_positions') {
                if (json.user_id != null && json.user_id != 'undefined') {
                   CrossPositions(ws, json.user_id);
                }
             }
 
-            else  if (json.page == 'cross_funds') {
+            else if (json.page == 'cross_funds') {
                if (json.user_id != null && json.user_id != 'undefined') {
                   CrossFunds(ws, json.user_id);
                }
@@ -218,33 +255,33 @@ async function test() {
 
             else if (json.page == 'isolated_open_orders') {
                if (json.user_id != null && json.user_id != 'undefined') {
-                  IsolatedOpenOrders(ws,json.user_id);
+                  IsolatedOpenOrders(ws, json.user_id);
                }
             }
 
-            else  if (json.page == 'isolated_trade_history') {
+            else if (json.page == 'isolated_trade_history') {
                if (json.user_id != null && json.user_id != 'undefined') {
-                  
+
                   IsolatedTradeHistory(ws, json.user_id);
                }
             }
 
-            else  if (json.page == 'isolated_order_history') {
+            else if (json.page == 'isolated_order_history') {
                if (json.user_id != null && json.user_id != 'undefined') {
-                  
+
                   IsolatedOrderHistory(ws, json.user_id);
                }
             }
 
 
-            else  if (json.page == 'isolated_positions') {
+            else if (json.page == 'isolated_positions') {
                if (json.user_id != null && json.user_id != 'undefined') {
-                  
+
                   IsolatedPositions(ws, json.user_id);
                }
             }
 
-            else  if (json.page == 'isolated_funds') {
+            else if (json.page == 'isolated_funds') {
                if (json.user_id != null && json.user_id != 'undefined') {
                   IsolatedFunds(ws, json.user_id);
                }
@@ -387,6 +424,7 @@ async function GetBinanceData(ws, pair) {
          if (data.A && data.a && data.b && data.B && !data.e) {
             ws.send(JSON.stringify({ type: "order_books", content: data }));
          } else if (data.e === 'aggTrade') {
+
             ws.send(JSON.stringify({ type: "prices", content: data }));
          } else if (data.e === 'trade') {
             ws.send(JSON.stringify({ type: "trade", content: data }));
