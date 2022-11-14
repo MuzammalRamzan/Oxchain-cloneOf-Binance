@@ -1,7 +1,7 @@
-const Admin = require("../models/Admin");
+const PairsModel = require("../models/Pairs");
 const authFile = require("../auth.js");
 
-const listAdmin = async (req, res) => {
+const listPairs = async (req, res) => {
   const apiKey = req.body.apiKey;
 
   if (!apiKey) return res.json({ status: "error", message: "Api key is null" });
@@ -9,8 +9,8 @@ const listAdmin = async (req, res) => {
   if (!apiKeyCheck)
     return res.json({ status: "error", message: "Api key is wrong" });
 
-  const adminUsers = await Admin.find().lean();
-  return res.json({ status: "success", data: adminUsers });
+  const pairs = await PairsModel.find().lean();
+  return res.json({ status: "success", data: pairs });
 };
 
-module.exports = listAdmin;
+module.exports = listPairs;

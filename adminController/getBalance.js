@@ -1,16 +1,17 @@
-const Admin = require("../models/Admin");
+const WalletModel = require("../models/Wallet");
 const authFile = require("../auth.js");
 
-const listAdmin = async (req, res) => {
+const getBalance = async (req, res) => {
   const apiKey = req.body.apiKey;
+  const userId = req.body.userId;
 
   if (!apiKey) return res.json({ status: "error", message: "Api key is null" });
   const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
   if (!apiKeyCheck)
     return res.json({ status: "error", message: "Api key is wrong" });
 
-  const adminUsers = await Admin.find().lean();
-  return res.json({ status: "success", data: adminUsers });
+  const balance = await WalletModel.findOne({ user_id: userId }).lean();
+  return res.json({ status: "success", data: balance });
 };
 
-module.exports = listAdmin;
+module.exports = getBalance;
