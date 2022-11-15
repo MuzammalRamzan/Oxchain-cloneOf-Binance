@@ -195,7 +195,6 @@ const addMarginCrossOrder = async (req, res) => {
         res.json({ status: "success", data: order });
         return;
     } else if (req.body.method == "market") {
-        console.log(toWallet);
         if (type == 'buy') {
             if(toWallet.amount <= 0) {
                 res.json({ status: "fail", message: "Invalid balance" });
@@ -250,8 +249,6 @@ const addMarginCrossOrder = async (req, res) => {
         await setFeeCredit(user_id, getPair._id, fee);
         res.json({ status: "success", data: order });
         return;
-        return;
-
 
     }
 }
