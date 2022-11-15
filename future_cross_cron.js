@@ -5,11 +5,11 @@ const { createAdapter } = require("@socket.io/mongo-adapter");
 const { MongoClient } = require("mongodb");
 const FutureOrder = require("./models/FutureOrder.js");
 const Connection = require("./Connection");
-const Wallet = require("./models/Wallet.js");
 const Orders = require("./models/Orders.js");
 const UserRef = require("./models/UserRef.js");
 const User = require("./models/User.js");
 const Pairs = require("./models/Pairs.js");
+const FutureCrossWallet = require("./models/FutureCrossWallet.js");
 var mongodbPass = process.env.MONGO_DB_PASS;
 
 const io = new Server();
@@ -178,7 +178,7 @@ async function initialize() {
                   let checkusdt = (reverseOreders.usedUSDT + reverseOreders.pnl) * reverseOreders.leverage;
                   if (checkusdt == order.usedUSDT * order.leverage) {
                     reverseOreders.status = 1;
-                    let userBalance = await Wallet.findOne({
+                    let userBalance = await FutureCrossWallet.findOne({
                       coin_id: FutureWalletId,
                       user_id: req.body.user_id,
                     }).exec();
@@ -199,7 +199,7 @@ async function initialize() {
                     reverseOreders.usedUSDT = writeUsedUSDT;
                     reverseOreders.amount =
                       (writeUsedUSDT * reverseOreders.leverage) / price;
-                    let userBalance = await Wallet.findOne({
+                    let userBalance = await FutureCrossWallet.findOne({
                       coin_id: FutureWalletId,
                       user_id: order.user_id,
                     }).exec();
@@ -212,7 +212,8 @@ async function initialize() {
                     let ilkIslem = reverseOreders.usedUSDT;
                     let tersIslem = order.usedUSDT;
                     let data = ilkIslem - tersIslem;
-                    userBalance = await Wallet.findOne({
+                    
+                    userBalance = await FutureCrossWallet.findOne({
                       coin_id: FutureWalletId,
                       user_id: order.user_id,
                     }).exec();
@@ -233,7 +234,7 @@ async function initialize() {
                   }
                 }
               } else {
-                userBalance = await Wallet.findOne({
+                userBalance = await FutureCrossWallet.findOne({
                   coin_id: FutureWalletId,
                   user_id: order.user_id,
                 }).exec();
@@ -304,7 +305,7 @@ async function initialize() {
         let total = parseFloat(data.total) + parseFloat(data.usedUSDT);
 
 
-        let wallet = await Wallet.findOne({
+        let wallet = await FutureCrossWallet.findOne({
           user_id: data._id,
           coin_id: FutureWalletId,
         }).exec();

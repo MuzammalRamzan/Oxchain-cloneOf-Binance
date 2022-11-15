@@ -1,18 +1,17 @@
-const MarginOrder = require("../../models/MarginOrder");
 const Pairs = require("../../models/Pairs");
 const setFeeCredit = require('../bonus/setFeeCredit');
 const axios = require("axios");
 var authFile = require("../../auth.js");
-const MarginIsolatedWallet = require("../../models/MarginIsolatedWallet");
-
-const addMarginIsolatedOrder = async (req, res) => {
+const FutureCrossWallet = require("../../models/FutureCrossWallet");
+const FutureOrder = require("../../models/FutureOrder");
+const addFutureCrossOrder = async (req, res) => {
     var api_key_result = req.body.api_key;
     let result = await authFile.apiKeyChecker(api_key_result);
     if (result !== true) {
         res.json({ status: "fail", message: "Forbidden 403" });
         return;
     }
-    let margin_type = "isolated";
+    let future_type = "cross";
     let user_id = req.body.user_id;
     let percent = req.body.percent;
     let amount = parseFloat(req.body.amount) ?? 0.0;
@@ -32,11 +31,12 @@ const addMarginIsolatedOrder = async (req, res) => {
         res.json({ status: "fail", message: "invalid_pair" });
         return;
     }
-    let fromWallet = await MarginIsolatedWallet.findOne({
+    
+    let fromWallet = await FutureCrossWallet.findOne({
         coin_id: getPair.symbolOneID,
         user_id: user_id,
     }).exec();
-    let toWallet = await MarginIsolatedWallet.findOne({
+    let toWallet = await FutureCrossWallet.findOne({
         coin_id: getPair.symbolTwoID,
         user_id: user_id,
     }).exec();
@@ -74,11 +74,11 @@ const addMarginIsolatedOrder = async (req, res) => {
             await fromWallet.save();
         }
 
-        let order = new MarginOrder({
+        let order = new FutureOrder({
             pair_id: getPair._id,
             pair_name: getPair.name,
             type: type,
-            margin_type: margin_type,
+            future_type: future_type,
             method: method,
             user_id: user_id,
             usedUSDT: 0.0,
@@ -170,11 +170,11 @@ const addMarginIsolatedOrder = async (req, res) => {
         }
 
 
-        let order = new MarginOrder({
+        let order = new FutureOrder({
             pair_id: getPair._id,
             pair_name: getPair.name,
             type: type,
-            margin_type: margin_type,
+            future_type: future_type,
             method: method,
             user_id: user_id,
             usedUSDT: 0.0,
@@ -225,11 +225,11 @@ const addMarginIsolatedOrder = async (req, res) => {
             await toWallet.save();
         }
 
-        let order = new MarginOrder({
+        let order = new FutureOrder({
             pair_id: getPair._id,
             pair_name: getPair.name,
             type: type,
-            margin_type: margin_type,
+            future_type: future_type,
             method: method,
             user_id: user_id,
             usedUSDT: 0.0,
@@ -252,4 +252,4 @@ const addMarginIsolatedOrder = async (req, res) => {
 
     }
 }
-module.exports = addMarginIsolatedOrder;
+module.exports = addFutureCrossOrder;

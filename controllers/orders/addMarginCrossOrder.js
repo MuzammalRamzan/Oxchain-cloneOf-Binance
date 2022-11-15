@@ -11,9 +11,8 @@ const addMarginCrossOrder = async (req, res) => {
         res.json({ status: "fail", message: "Forbidden 403" });
         return;
     }
-    let margin_type = req.body.margin_type;
+    let margin_type = "cross";
     let user_id = req.body.user_id;
-    let symbol = req.body.symbol;
     let percent = req.body.percent;
     let amount = parseFloat(req.body.amount) ?? 0.0;
     let type = req.body.type;
