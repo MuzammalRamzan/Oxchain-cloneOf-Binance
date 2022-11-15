@@ -19,7 +19,7 @@ const addFutureCrossOrder = async (req, res) => {
     let method = req.body.method;
     let target_price = parseFloat(req.body.target_price) ?? 0.0;
     let stop_limit = parseFloat(req.body.stop_limit) ?? 0.0;
-    let leverage = 3;
+    let leverage = req.body.leverage;
 
     if (amount <= 0) {
         res.json({ status: "fail", message: "invalid_amount" });
@@ -150,10 +150,11 @@ const addFutureCrossOrder = async (req, res) => {
                 return;
             }
         }
-
+        let balanceTotal = parseFloat(toWallet.amount) * parseFloat(leverage);
         if (type == 'buy') {
+            
             amount = (toWallet.amount * percent) / 100 / parseFloat(target_price) * parseFloat(leverage);
-            if (toWallet.amount < amount) {
+            if (balanceTotal < amount) {
                 res.json({ status: "fail", message: "Invalid balance" });
                 return;
             }
@@ -195,13 +196,16 @@ const addFutureCrossOrder = async (req, res) => {
         res.json({ status: "success", data: order });
         return;
     } else if (req.body.method == "market") {
+        let balanceTotal = parseFloat(toWallet.amount) * parseFloat(leverage);
         if (type == 'buy') {
             if(toWallet.amount <= 0) {
                 res.json({ status: "fail", message: "Invalid balance" });
                 return;
             }
             amount = (toWallet.amount * percent) / 100 / parseFloat(price) * parseFloat(leverage);
-            if (toWallet.amount < amount) {
+            console.log(balanceTotal, " | ", amount);
+
+            if (balanceTotal < amount) {
                 res.json({ status: "fail", message: "Invalid balance" });
                 return;
             }

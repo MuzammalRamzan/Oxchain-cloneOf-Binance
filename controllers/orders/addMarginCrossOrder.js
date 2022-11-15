@@ -19,7 +19,7 @@ const addMarginCrossOrder = async (req, res) => {
     let method = req.body.method;
     let target_price = parseFloat(req.body.target_price) ?? 0.0;
     let stop_limit = parseFloat(req.body.stop_limit) ?? 0.0;
-    let leverage = 3;
+    let leverage = 1;
 
     if (amount <= 0) {
         res.json({ status: "fail", message: "invalid_amount" });
@@ -195,11 +195,13 @@ const addMarginCrossOrder = async (req, res) => {
         return;
     } else if (req.body.method == "market") {
         if (type == 'buy') {
+            
             if(toWallet.amount <= 0) {
                 res.json({ status: "fail", message: "Invalid balance" });
                 return;
             }
             amount = (toWallet.amount * percent) / 100 / parseFloat(price) * parseFloat(leverage);
+            console.log(amount);
             if (toWallet.amount < amount) {
                 res.json({ status: "fail", message: "Invalid balance" });
                 return;
@@ -213,7 +215,7 @@ const addMarginCrossOrder = async (req, res) => {
                 res.json({ status: "fail", message: "Invalid balance" });
                 return;
             }
-            amount = parseFloat(req.body.amount);
+            amount = (fromWallet.amount * percent) / 100.0;
             if (fromWallet.amount < amount) {
                 res.json({ status: "fail", message: "Invalid balance" });
                 return;
