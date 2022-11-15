@@ -1,16 +1,17 @@
-const PairsModel = require("../models/Pairs");
+const WithdrawModel = require("../models/Withdraw");
 const authFile = require("../auth.js");
 
-const listPairs = async (req, res) => {
+const userWithdraws = async (req, res) => {
   const apiKey = req.body.apiKey;
+  const userId = req.body.userId;
 
   if (!apiKey) return res.json({ status: "error", message: "Api key is null" });
   const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
   if (!apiKeyCheck)
     return res.json({ status: "error", message: "Api key is wrong" });
 
-  const pairs = await PairsModel.find().lean();
-  return res.json({ status: "success", data: pairs });
+  const withdraws = await WithdrawModel.find({ user_id: userId }).lean();
+  return res.json({ status: "success", data: withdraws });
 };
 
-module.exports = listPairs;
+module.exports = { userWithdraws };

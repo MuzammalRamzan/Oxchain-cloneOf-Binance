@@ -1,7 +1,7 @@
-const WalletModel = require("../models/Wallet");
+const DepositModel = require("../models/Deposits");
 const authFile = require("../auth.js");
 
-const getBalance = async (req, res) => {
+const userDeposits = async (req, res) => {
   const apiKey = req.body.apiKey;
   const userId = req.body.userId;
 
@@ -10,8 +10,8 @@ const getBalance = async (req, res) => {
   if (!apiKeyCheck)
     return res.json({ status: "error", message: "Api key is wrong" });
 
-  const balance = await WalletModel.findOne({ user_id: userId }).lean();
-  return res.json({ status: "success", data: balance });
+  const deposits = await DepositModel.find({ user_id: userId }).lean();
+  return res.json({ status: "success", data: deposits });
 };
 
-module.exports = getBalance;
+module.exports = { userDeposits };

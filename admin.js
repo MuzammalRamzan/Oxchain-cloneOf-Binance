@@ -24,12 +24,14 @@ route.use(cors());
 var port = 3003;
 
 const Login = require("./adminController/Login");
-const AddAdmin = require("./adminController/AddAdmin");
-const userList = require("./adminController/userList");
-const editAdmin = require("./adminController/editAdmin");
-const listAdmin = require("./adminController/listAdmin");
-const { editUser } = require("./adminController/editUser");
-const { denyApplicant } = require("./adminController/denyApplicant");
+const Admin = require("./adminController/Admin");
+const User = require("./adminController/User");
+const Bonus = require("./adminController/Bonus");
+const Deposit = require("./adminController/Deposit");
+const Pairs = require("./adminController/Pairs");
+const Wallet = require("./adminController/Wallet");
+const Withdraw = require("./adminController/Withdraw");
+
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
@@ -39,11 +41,24 @@ route.get("/", (req, res) => {
 });
 
 route.all("/login", upload.none(), Login);
-route.all("/addAdmin", upload.none(), AddAdmin);
-route.all("/editAdmin", upload.none(), editAdmin);
-route.all("/listAdmin", upload.none(), listAdmin);
-route.all("/editUser", upload.none(), editUser);
-route.all("/denyApplicant", upload.none(), denyApplicant);
+route.all("/addAdmin", upload.none(), Admin.addAdmin);
+route.all("/editAdmin", upload.none(), Admin.editAdmin);
+route.all("/listAdmin", upload.none(), Admin.listAdmin);
+route.all("/getAdmin", upload.none(), Admin.getAdmin);
+route.all("/editUser", upload.none(), User.editUser);
+route.all("/BanUser", upload.none(), User.BanUser);
+route.all("/ReBanUser", upload.none(), User.ReBanUser);
+route.all("/getUser", upload.none(), User.getUser);
+route.all("/userList", upload.none(), User.userList);
+route.all("/denyApplicant", upload.none(), User.denyApplicant);
+route.all("/setBonusRate", upload.none(), Bonus.setBonusRate);
+route.all("/userDeposits", upload.none(), Deposit.userDeposits);
+route.all("/listPairs", upload.none(), Pairs.listPairs);
+route.all("/setPairFee", upload.none(), Pairs.setPairFee);
+route.all("/getUserBalance", upload.none(), Wallet.getUserBalance);
+route.all("/getWalletBalance", upload.none(), Wallet.getWalletBalance);
+route.all("/setBalance", upload.none(), Wallet.setBalance);
+route.all("/userWithdraws", upload.none(), Withdraw.userWithdraws);
 
 route.listen(port, () => {
   console.log("Server Ayakta");

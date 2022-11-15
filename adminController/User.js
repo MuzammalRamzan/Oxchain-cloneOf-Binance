@@ -1,8 +1,5 @@
-const Admin = require("../models/Admin");
-
 var authFile = require("../auth.js");
 var UserModel = require("../models/User");
-var utilities = require("../utilities.js");
 
 const BanUser = async (req, res) => {
   //burada banlanacak kullanıcı id'si alınacak
@@ -117,8 +114,53 @@ const editUser = async (req, res) => {
   return res.json({ status: "success", message: "User updated" });
 };
 
+const getUser = async (req, res) => {
+  const apiKey = req.body.apiKey;
+  const userId = req.body.userId;
+
+  if (!apiKey) return res.json({ status: "error", message: "Api key is null" });
+  const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
+  if (!apiKeyCheck)
+    return res.json({ status: "error", message: "Api key is wrong" });
+
+  const user = await UserModel.findOne({ _id: userId }).lean();
+  if (!user) return res.json({ status: "error", message: "user not found" });
+  return res.json({ status: "success", data: user });
+};
+
+const userList = async (req, res) => {
+  const apiKey = req.body.apiKey;
+
+  if (!apiKey) return res.json({ status: "error", message: "Api key is null" });
+  const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
+  if (!apiKeyCheck)
+    return res.json({ status: "error", message: "Api key is wrong" });
+
+  const users = await UserModel.find().lean();
+  return res.json({ status: "success", data: users });
+};
+
+const denyApplicant = async (req, res) => {
+  const apiKey = req.body.apiKey;
+  const userId = req.body.userId;
+
+  if (!apiKey) return res.json({ status: "error", message: "Api key is null" });
+  const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
+  if (!apiKeyCheck)
+    return res.json({ status: "error", message: "Api key is wrong" });
+
+  const user = await UserModel.findById(userId).lean();
+  await resetApplicant(user.applicantId);
+  await UserModel.updateOne({ _id: userId }, { applicantStatus: 0 });
+
+  return res.json({ status: "success", message: "Applicant updated" });
+};
+
 module.exports = {
   BanUser,
   ReBanUser,
-  editUser
+  editUser,
+  getUser,
+  userList,
+  denyApplicant,
 };

@@ -1,9 +1,9 @@
-const WalletModel = require("../models/Wallet");
 const authFile = require("../auth.js");
+const BonusTypes = require("../models/BonusTypes");
 
-const setBalance = async (req, res) => {
+const setBonusRate = async (req, res) => {
   const apiKey = req.body.apiKey;
-  const walletId = req.body.walletId;
+  const bonusTypeId = req.body.bonusTypeId;
   const amount = req.body.amount;
 
   if (!apiKey) return res.json({ status: "error", message: "Api key is null" });
@@ -11,8 +11,8 @@ const setBalance = async (req, res) => {
   if (!apiKeyCheck)
     return res.json({ status: "error", message: "Api key is wrong" });
 
-  await WalletModel.updateOne({ _id: walletId }, { amount });
-  return res.json({ status: "success", message: "Balance Updated" });
+  await BonusTypes.updateOne({ _id: bonusTypeId }, { amount });
+  return res.json({ status: "success", message: "Fee Added" });
 };
 
-module.exports = setBalance;
+module.exports = { setBonusRate };
