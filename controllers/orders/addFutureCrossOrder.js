@@ -2,8 +2,9 @@ const Pairs = require("../../models/Pairs");
 const setFeeCredit = require('../bonus/setFeeCredit');
 const axios = require("axios");
 var authFile = require("../../auth.js");
-const FutureCrossWallet = require("../../models/FutureCrossWallet");
+
 const FutureOrder = require("../../models/FutureOrder");
+const FutureWalletModel = require("../../models/FutureWalletModel");
 const addFutureCrossOrder = async (req, res) => {
     var api_key_result = req.body.api_key;
     let result = await authFile.apiKeyChecker(api_key_result);
@@ -32,11 +33,11 @@ const addFutureCrossOrder = async (req, res) => {
         return;
     }
     
-    let fromWallet = await FutureCrossWallet.findOne({
+    let fromWallet = await FutureWalletModel.findOne({
         coin_id: getPair.symbolOneID,
         user_id: user_id,
     }).exec();
-    let toWallet = await FutureCrossWallet.findOne({
+    let toWallet = await FutureWalletModel.findOne({
         coin_id: getPair.symbolTwoID,
         user_id: user_id,
     }).exec();

@@ -3,7 +3,8 @@ const axios = require("axios");
 var authFile = require("../../auth.js");
 const FutureOrder = require("../../models/FutureOrder");
 const setFeeCredit = require('../bonus/setFeeCredit');
-const FutureIsolatedWallet = require("../../models/FutureIsolatedWallet");
+const FutureWalletModel = require("../../models/FutureWalletModel");
+
 const addFutureIsolatedOrder = async (req, res) => {
   
   try {
@@ -30,7 +31,8 @@ const addFutureIsolatedOrder = async (req, res) => {
       return;
     }
     
-    let userBalance = await FutureIsolatedWallet.findOne({
+    
+    let userBalance = await FutureWalletModel.findOne({
       coin_id: FutureWalletId,
       user_id: req.body.user_id,
     }).exec();
@@ -208,7 +210,7 @@ const addFutureIsolatedOrder = async (req, res) => {
             reverseOreders.open_time = Date.now();
             reverseOreders.amount = (newUsedUSDT * leverage) / price;
 
-            userBalance = await FutureIsolatedWallet.findOne({
+            userBalance = await FutureWalletModel.findOne({
               coin_id: FutureWalletId,
               user_id: req.body.user_id,
             }).exec();
@@ -225,7 +227,7 @@ const addFutureIsolatedOrder = async (req, res) => {
               reverseOreders.leverage;
             if (checkusdt == usedUSDT * leverage) {
               reverseOreders.status = 1;
-              userBalance = await FutureIsolatedWallet.findOne({
+              userBalance = await FutureWalletModel.findOne({
                 coin_id: FutureWalletId,
                 user_id: req.body.user_id,
               }).exec();
@@ -246,7 +248,7 @@ const addFutureIsolatedOrder = async (req, res) => {
               reverseOreders.usedUSDT = writeUsedUSDT;
               reverseOreders.amount =
                 (writeUsedUSDT * reverseOreders.leverage) / price;
-              userBalance = await FutureIsolatedWallet.findOne({
+              userBalance = await FutureWalletModel.findOne({
                 coin_id: FutureWalletId,
                 user_id: req.body.user_id,
               }).exec();
@@ -268,7 +270,7 @@ const addFutureIsolatedOrder = async (req, res) => {
               let tersIslem = usedUSDT;
               let data = ilkIslem - tersIslem;
               console.log("DATASSS : ", data);
-              userBalance = await FutureIsolatedWallet.findOne({
+              userBalance = await FutureWalletModel.findOne({
                 coin_id: FutureWalletId,
                 user_id: req.body.user_id,
               }).exec();
@@ -290,7 +292,7 @@ const addFutureIsolatedOrder = async (req, res) => {
             }
           }
         } else {
-          userBalance = await FutureIsolatedWallet.findOne({
+          userBalance = await FutureWalletModel.findOne({
             coin_id: FutureWalletId,
             user_id: req.body.user_id,
           }).exec();
@@ -479,7 +481,7 @@ const addFutureIsolatedOrder = async (req, res) => {
             reverseOreders.open_time = Date.now();
             reverseOreders.amount = (newUsedUSDT * leverage) / price;
 
-            userBalance = await FutureIsolatedWallet.findOne({
+            userBalance = await FutureWalletModel.findOne({
               coin_id: FutureWalletId,
               user_id: req.body.user_id,
             }).exec();
@@ -496,7 +498,7 @@ const addFutureIsolatedOrder = async (req, res) => {
               reverseOreders.leverage;
             if (checkusdt == usedUSDT * leverage) {
               reverseOreders.status = 1;
-              userBalance = await FutureIsolatedWallet.findOne({
+              userBalance = await FutureWalletModel.findOne({
                 coin_id: FutureWalletId,
                 user_id: req.body.user_id,
               }).exec();
@@ -517,7 +519,7 @@ const addFutureIsolatedOrder = async (req, res) => {
               reverseOreders.usedUSDT = writeUsedUSDT;
               reverseOreders.amount =
                 (writeUsedUSDT * reverseOreders.leverage) / price;
-              userBalance = await FutureIsolatedWallet.findOne({
+              userBalance = await FutureWalletModel.findOne({
                 coin_id: FutureWalletId,
                 user_id: req.body.user_id,
               }).exec();

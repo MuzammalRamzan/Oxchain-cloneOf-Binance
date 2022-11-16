@@ -26,6 +26,9 @@ const IsolatedOrderHistory = require('./SocketController/trade/isolated/isolated
 const IsolatedPositions = require('./SocketController/trade/isolated/isolated_positions');
 const IsolatedTradeHistory = require('./SocketController/trade/isolated/isolated_trade_history');
 const CrossTradeHistory = require('./SocketController/trade/cross/cross_trade_history');
+const FutureWalletModel = require('./models/FutureWalletModel');
+const FutureOrder = require('./models/FutureOrder');
+
 var mongodbPass = process.env.MONGO_DB_PASS;
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 global.MarketData = {};
@@ -197,6 +200,11 @@ async function test() {
                GetBinanceData(ws, json.pair);
                GetMarginBalance(ws, json.user_id);
                GetWallets(ws, json.user_id);
+
+            }
+            else if (json.page == 'future') {
+               GetBinanceData(ws, json.pair);
+               GetFutureBalance(ws, json.user_id);
 
             }
             else if (json.page == 'spot_open_orders') {
@@ -459,16 +467,54 @@ async function CalculateMarginBalance(user_id) {
    let balance = (wallet.amount + getOpenOrders[0].total);
    if (balance < 0) return 0;
    return balance;
-   /*
-   let totalUSDT = 0.0;
-   for (var n = 0; n < getOpenOrders.length; n++) {
-      totalPNL = totalPNL + (getOpenOrders[n].total);
-      totalUSDT = getOpenOrders[n].usedUSDT;
-   }
-   */
 
 }
 
+async function CalculateFutureBalance(user_id) {
+   let totalPNL = 0.0;
+   
+   let getOpenOrders = await FutureOrder.aggregate([
+      {
+         $match: { user_id: user_id, status: 0, method: "market", margin_type: "cross" },
+      },
+
+      {
+         $group: {
+            _id: "$user_id",
+            total: { $sum: "$pnl" },
+            usedUSDT: { $sum: "$usedUSDT" },
+         },
+      },
+   ]);
+   let wallet = await FutureWalletModel.findOne({ user_id: user_id, coin_id: MarginWalletId }).exec();
+   if (getOpenOrders.length == 0) return wallet.amount;
+   if (wallet == null) return 0;
+   let balance = (wallet.amount + getOpenOrders[0].total);
+   if (balance < 0) return 0;
+   return balance;
+
+}
+
+
+async function GetFutureBalance(ws, user_id) {
+   let balance = await CalculateFutureBalance(user_id);
+   if (balance <= 0) {
+      ws.send(JSON.stringify({ type: "future_balance", content: 0.0 }));
+   } else {
+      ws.send(JSON.stringify({ type: "future_balance", content: balance }));
+   }
+   
+   let isUpdate = FutureWalletModel.watch([{ $match: { operationType: { $in: ['update'] } } }]).on('change', async data => {
+      balance = await CalculateFutureBalance(user_id)
+      if (balance <= 0) {
+         ws.send(JSON.stringify({ type: "future_balance", content: 0.0 }));
+
+      } else {
+
+         ws.send(JSON.stringify({ type: "future_balance", content: balance }));
+      }
+   });
+}
 
 async function GetMarginBalance(ws, user_id) {
    let balance = await CalculateMarginBalance(user_id);

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 var uniqueValidator = require("mongoose-unique-validator");
 
-const FutureCrossSchema = new mongoose.Schema({
+const FutureWalletModelSchema = new mongoose.Schema({
     user_id: { type: String, required: true },
     coin_id: { type: String, required: true },
     amount: { type: Number, required: true, default: 0.00 },
@@ -16,6 +16,6 @@ const FutureCrossSchema = new mongoose.Schema({
     },
 });
 
-FutureCrossSchema.plugin(uniqueValidator);
+FutureWalletModelSchema.plugin(uniqueValidator);
 
-module.exports = mongoose.model("FutureCross", FutureCrossSchema);
+module.exports = mongoose.model("FutureWalletModel", FutureWalletModelSchema);

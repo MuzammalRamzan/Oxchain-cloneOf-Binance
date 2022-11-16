@@ -8,6 +8,7 @@ const Orders = require("./models/Orders.js");
 const UserRef = require("./models/UserRef.js");
 const User = require("./models/User.js");
 const FutureOrder = require("./models/FutureOrder");
+const FutureWalletModel = require("./models/FutureWalletModel");
 var mongodbPass = process.env.MONGO_DB_PASS;
 
 const io = new Server();
@@ -177,7 +178,7 @@ async function initialize() {
                   if (checkusdt == order.usedUSDT * order.leverage) {
                     reverseOreders.status = 1;
                     
-                    let userBalance = await FutureIsolatedWallet.findOne({
+                    let userBalance = await FutureWalletModel.findOne({
                       coin_id: FutureWalletId,
                       user_id: req.body.user_id,
                     }).exec();
@@ -198,7 +199,7 @@ async function initialize() {
                     reverseOreders.usedUSDT = writeUsedUSDT;
                     reverseOreders.amount =
                       (writeUsedUSDT * reverseOreders.leverage) / price;
-                    let userBalance = await FutureIsolatedWallet.findOne({
+                    let userBalance = await FutureWalletModel.findOne({
                       coin_id: FutureWalletId,
                       user_id: order.user_id,
                     }).exec();
@@ -211,7 +212,7 @@ async function initialize() {
                     let ilkIslem = reverseOreders.usedUSDT;
                     let tersIslem = order.usedUSDT;
                     let data = ilkIslem - tersIslem;
-                    userBalance = await FutureIsolatedWallet.findOne({
+                    userBalance = await FutureWalletModel.findOne({
                       coin_id: FutureWalletId,
                       user_id: order.user_id,
                     }).exec();
@@ -234,7 +235,7 @@ async function initialize() {
               } else {
 
 
-                userBalance = await FutureIsolatedWallet.findOne({
+                userBalance = await FutureWalletModel.findOne({
                   coin_id: FutureWalletId,
                   user_id: order.user_id,
                 }).exec();
