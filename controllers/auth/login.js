@@ -19,6 +19,8 @@ const MarginIsolatedWallet = require("../../models/MarginIsolatedWallet");
 const { getApplicantStatus } = require("../../sumsub");
 const FutureWalletModel = require("../../models/FutureWalletModel");
 
+const MarginWalletId = "62ff3c742bebf06a81be98fd";
+
 const login = async (req, res) => {
   let newRegisteredId;
   var api_key_result = req.body.api_key;
@@ -100,13 +102,13 @@ const login = async (req, res) => {
         city = req.body.city;
       }
 
-      
+
 
       let device = new Device({
         user_id: user._id,
         deviceName: deviceName,
         deviceType: deviceType,
-        loginTime : Date.now(),
+        loginTime: Date.now(),
         ip: ip,
         city: city,
       });
@@ -176,15 +178,15 @@ const login = async (req, res) => {
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address;
             }
-/*
-            if (networks[x].symbol === "AVAX") {
-              console.log("Start AVAX");
-              let url = "http://44.203.2.70:4458/create_address";
-              let walletTest = await axios.post(url);
-              privateKey = walletTest.data.data.privateKey;
-              address = walletTest.data.data.address;
-            }
-*/
+            /*
+                        if (networks[x].symbol === "AVAX") {
+                          console.log("Start AVAX");
+                          let url = "http://44.203.2.70:4458/create_address";
+                          let walletTest = await axios.post(url);
+                          privateKey = walletTest.data.data.privateKey;
+                          address = walletTest.data.data.address;
+                        }
+            */
             if (networks[x].symbol === "BSC") {
               console.log("Start BSC");
               let url = "http://44.203.2.70:4458/create_address";
@@ -240,52 +242,37 @@ const login = async (req, res) => {
           }
 
           //Margin Wallet Check
-          let margin_cross_check = await MarginCrossWallet.findOne({user_id: user._id, coin_id : coins[i]._id});
-          if(margin_cross_check == null) {
+          let margin_cross_check = await MarginCrossWallet.findOne({ user_id: user._id, coin_id: coins[i]._id });
+          if (margin_cross_check == null) {
             let createWallet = new MarginCrossWallet({
               user_id: user._id,
-              coin_id : coins[i]._id,
-              symbol : coins[i].symbol,
-              amount : 0.0,
-              type : "margin_cross",
-              pnl : 0.0,
-              totalBonus : 0.0,
-              status : 1
+              coin_id: coins[i]._id,
+              symbol: coins[i].symbol,
+              amount: 0.0,
+              type: "margin_cross",
+              pnl: 0.0,
+              totalBonus: 0.0,
+              status: 1
             });
             await createWallet.save();
           }
 
-          let margin_isole_check = await MarginIsolatedWallet.findOne({user_id: user._id, coin_id : coins[i]._id});
-          if(margin_isole_check == null) {
+          let margin_isole_check = await MarginIsolatedWallet.findOne({ user_id: user._id, coin_id: coins[i]._id });
+          if (margin_isole_check == null) {
             let createWallet = new MarginIsolatedWallet({
               user_id: user._id,
-              coin_id : coins[i]._id,
-              symbol : coins[i].symbol,
-              amount : 0.0,
-              type : "margin_isolated",
-              pnl : 0.0,
-              totalBonus : 0.0,
-              status : 1
+              coin_id: coins[i]._id,
+              symbol: coins[i].symbol,
+              amount: 0.0,
+              type: "margin_isolated",
+              pnl: 0.0,
+              totalBonus: 0.0,
+              status: 1
             });
             await createWallet.save();
           }
 
-          //Future Wallet Check
-          
-          let future_wallet_check = await FutureWalletModel.findOne({user_id: user._id, coin_id : coins[i]._id});
-          if(future_wallet_check == null) {
-            let createWallet = new FutureWalletModel({
-              user_id: user._id,
-              coin_id : coins[i]._id,
-              symbol : coins[i].symbol,
-              amount : 0.0,
-              type : "future",
-              pnl : 0.0,
-              totalBonus : 0.0,
-              status : 1
-            });
-            await createWallet.save();
-          }
+
 
           //End check
           const newWallet = new Wallet({
@@ -307,6 +294,23 @@ const login = async (req, res) => {
             newWallet.save();
           } else {
           }
+        }
+
+        //Future Wallet Check
+
+        let future_wallet_check = await FutureWalletModel.findOne({ user_id: user._id, coin_id: MarginWalletId });
+        if (future_wallet_check == null) {
+          let createWallet = new FutureWalletModel({
+            user_id: user._id,
+            coin_id: MarginWalletId,
+            symbol: "USDT",
+            amount: 0.0,
+            type: "future",
+            pnl: 0.0,
+            totalBonus: 0.0,
+            status: 1
+          });
+          await createWallet.save();
         }
 
         let logs = await LoginLogs.find({
@@ -343,7 +347,7 @@ const login = async (req, res) => {
           data.trust = "no";
           data.log_id = newRegisteredId;
         }
-        
+
         if (user.applicantId) {
           const data = await getApplicantStatus(user.applicantId);
           const applicantStatus =
