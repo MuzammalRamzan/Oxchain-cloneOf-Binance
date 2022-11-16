@@ -5,7 +5,7 @@ var authFile = require("../../auth.js");
 const FutureWalletId = "62ff3c742bebf06a81be98fd";
 const FutureOrder = require("../../models/FutureOrder");
 const FutureWalletModel = require("../../models/FutureWalletModel");
-const addFutureCrossOrder = async (req, res) => {
+const addFutureOrder = async (req, res) => {
     var api_key_result = req.body.api_key;
     let result = await authFile.apiKeyChecker(api_key_result);
     if (result !== true) {
@@ -45,7 +45,7 @@ const addFutureCrossOrder = async (req, res) => {
             }
         }
     })
-    
+
 
     let getPair = await Pairs.findOne({ name: symbol }).exec();
     if (getPair == null) {
@@ -618,4 +618,4 @@ const addFutureCrossOrder = async (req, res) => {
         }
     }
 }
-module.exports = addFutureCrossOrder;
+module.exports = addFutureOrder;
