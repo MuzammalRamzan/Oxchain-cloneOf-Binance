@@ -1,7 +1,8 @@
 const Admin = require("../models/Admin");
-
-var authFile = require("../auth.js");
+const { getToken } = require("../auth");
+const authFile = require("../auth.js");
 const utilities = require("../utilities");
+
 const Login = async (req, res) => {
   var apiKey = req.body.apiKey;
 
@@ -50,6 +51,7 @@ const Login = async (req, res) => {
     status: "success",
     message: "Login success",
     id: id,
+    token: getToken({ admin: id }),
   });
 };
 

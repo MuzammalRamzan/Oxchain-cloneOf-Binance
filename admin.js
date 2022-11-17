@@ -1,12 +1,10 @@
 "use strict";
-var authFile = require("./auth.js");
-var mailer = require("./mailer.js");
-var CopyTrade = require("./CopyTrade.js");
 const Connection = require("./Connection");
-var bodyParser = require("body-parser");
+const bodyParser = require("body-parser");
 const multer = require("multer");
 const express = require("express");
-var cors = require("cors");
+const cors = require("cors");
+const { expressjwt: jwt } = require("express-jwt");
 
 require("dotenv").config();
 
@@ -35,6 +33,13 @@ const Withdraw = require("./adminController/Withdraw");
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
+
+route.use(
+  jwt({
+    secret: "secret",
+    algorithms: ["HS256"],
+  }).unless({ path: ["/login"] })
+);
 
 route.get("/", (req, res) => {
   res.send("success");

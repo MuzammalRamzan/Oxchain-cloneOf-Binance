@@ -1,4 +1,5 @@
 var authenticator = require("authenticator");
+const jwt = require("jsonwebtoken");
 
 function apiKeyChecker(api_key_data) {
   return new Promise((resolve) => {
@@ -23,7 +24,12 @@ function verifyToken(pin, twofa) {
   });
 }
 
+const getToken = (user) => {
+  return jwt.sign(user, 'secret');
+};
+
 module.exports = {
   apiKeyChecker: apiKeyChecker,
   verifyToken: verifyToken,
+  getToken
 };
