@@ -14,7 +14,6 @@ const FuturePositions = async (ws, user_id) => {
 
 }
 async function GetFutureLiqPrice(orders) {
-
     for (var i = 0; i < orders.length; i++) {
        let order = orders[i];
        if (order.status == 1) continue;
@@ -30,7 +29,7 @@ async function GetFutureLiqPrice(orders) {
              }
           }
           else if (order.future_type == 'cross') {
-             orders[i] = await GetFutureLiqPrice(order);
+             orders[i] = await GetFutureCrossLiqPrice(order);
           }
        }
     }
@@ -39,7 +38,8 @@ async function GetFutureLiqPrice(orders) {
  }
 
 
-async function GetFutureLiqPrice(order) {
+async function GetFutureCrossLiqPrice(order) {
+   if(order == null || order.length == 0) return 0;
     let getOpenOrders = await FutureOrder.aggregate([
        {
           $match: { user_id: order.user_id, status: 0, method: "market", future_type: "cross" },
@@ -53,7 +53,6 @@ async function GetFutureLiqPrice(order) {
           },
        },
     ]);
- 
     let wallet = await FutureWalletModel.findOne({ user_id: order.user_id }).exec();
     
     let totalWallet = wallet.amount;
