@@ -56,8 +56,12 @@ const addFutureOrder = async (req, res) => {
 
     let userBalance = await FutureWalletModel.findOne({
         user_id: req.body.user_id,
-      }).exec();
+    }).exec();
 
+    if (userBalance.amount <= 0) {
+        res.json({ status: "fail", message: "Invalid balance" });
+        return;
+    }
     var urlPair = getPair.name.replace("/", "");
     console.log(urlPair);
     let url =
@@ -227,7 +231,7 @@ const addFutureOrder = async (req, res) => {
                     reverseOreders.amount = (newUsedUSDT * leverage) / price;
 
                     userBalance = await FutureWalletModel.findOne({
-                        
+
                         user_id: req.body.user_id,
                     }).exec();
                     userBalance.amount = userBalance.amount - usedUSDT;
@@ -244,7 +248,7 @@ const addFutureOrder = async (req, res) => {
                     if (checkusdt == usedUSDT * leverage) {
                         reverseOreders.status = 1;
                         userBalance = await FutureWalletModel.findOne({
-                            
+
                             user_id: req.body.user_id,
                         }).exec();
                         userBalance.amount =
@@ -265,7 +269,7 @@ const addFutureOrder = async (req, res) => {
                         reverseOreders.amount =
                             (writeUsedUSDT * reverseOreders.leverage) / price;
                         userBalance = await FutureWalletModel.findOne({
-                            
+
                             user_id: req.body.user_id,
                         }).exec();
                         userBalance.amount = userBalance.amount + usedUSDT;
@@ -287,7 +291,7 @@ const addFutureOrder = async (req, res) => {
                         let data = ilkIslem - tersIslem;
                         console.log("DATASSS : ", data);
                         userBalance = await FutureWalletModel.findOne({
-                            
+
                             user_id: req.body.user_id,
                         }).exec();
                         userBalance.amount = userBalance.amount + data;
@@ -463,10 +467,11 @@ const addFutureOrder = async (req, res) => {
             res.json({ status: "success", data: order });
             return;
         } else if (req.body.method == "market") {
+            console.log(userBalance.amount, " | ", percent, " | ", price, " | ", leverage);
             let amount =
                 ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
             let usedUSDT = (amount * price) / req.body.leverage;
-
+            console.log("used usdrt : ", usedUSDT);
             let reverseOreders = await FutureOrder.findOne({
                 user_id: req.body.user_id,
                 pair_id: getPair._id,
@@ -604,6 +609,6 @@ const addFutureOrder = async (req, res) => {
             }
         }
     }
-    
+
 }
 module.exports = addFutureOrder;

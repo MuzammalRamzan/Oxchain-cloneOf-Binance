@@ -30,6 +30,7 @@ const FutureWalletModel = require('./models/FutureWalletModel');
 const FutureOrder = require('./models/FutureOrder');
 const FuturePositions = require('./SocketController/trade/future/positions');
 const FutureOpenOrders = require('./SocketController/trade/future/open_orders');
+const FutureTradeHistory = require('./SocketController/trade/future/trade_history');
 
 var mongodbPass = process.env.MONGO_DB_PASS;
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
@@ -306,7 +307,10 @@ async function test() {
 
             else if (json.page == 'future_open_orders') {
                FutureOpenOrders(ws,json.user_id);
-            }
+            } 
+            else if (json.page == 'future_trade_history') {
+               FutureTradeHistory(ws,json.user_id);
+            } 
 
             else if (json.page == 'spot_assets') {
                let coinList = await CoinList.find({});

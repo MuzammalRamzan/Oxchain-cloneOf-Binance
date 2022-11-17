@@ -1,6 +1,14 @@
 const FutureOrder = require("../../../models/FutureOrder");
 const FutureWalletModel = require("../../../models/FutureWalletModel");
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
+
+
+
+
+
+
+console.log()
+
 const FuturePositions = async (ws, user_id) => {
     let orders = await FutureOrder.find({ user_id: user_id, method:"market", status: 0 });
     let assets = await GetFutureLiqPrice(orders);
@@ -14,6 +22,7 @@ const FuturePositions = async (ws, user_id) => {
 
 }
 async function GetFutureLiqPrice(orders) {
+   let assets = [];
     for (var i = 0; i < orders.length; i++) {
        let order = orders[i];
        if (order.status == 1) continue;
@@ -32,6 +41,17 @@ async function GetFutureLiqPrice(orders) {
              orders[i] = await GetFutureCrossLiqPrice(order);
           }
        }
+      
+       assets.push({
+         'symbol' : order.pair_name,
+         'leverage' : order.leverage,
+         'size' : parseFloat(order.usedUSDT) * order.leverage,
+         'entry_price' : order.open_price,
+         'mark_price' : order.type == 'buy' ? global.MarketData[order.pair_name.replace('/', '')].ask : global.MarketData[order.pair_name.replace('/', '')].bid,
+         'liq_price' : 0,
+         'margin_ratio' : 0
+
+       });
     }
     return orders;
  
