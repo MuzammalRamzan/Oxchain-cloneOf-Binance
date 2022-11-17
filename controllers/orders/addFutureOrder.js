@@ -54,15 +54,10 @@ const addFutureOrder = async (req, res) => {
     }
 
 
-
-    let fromWallet = await FutureWalletModel.findOne({
-        coin_id: getPair.symbolOneID,
-        user_id: user_id,
-    }).exec();
-    let toWallet = await FutureWalletModel.findOne({
-        coin_id: getPair.symbolTwoID,
-        user_id: user_id,
-    }).exec();
+    let userBalance = await FutureWalletModel.findOne({
+        coin_id: FutureWalletId,
+        user_id: req.body.user_id,
+      }).exec();
 
     var urlPair = getPair.name.replace("/", "");
     console.log(urlPair);
@@ -470,7 +465,7 @@ const addFutureOrder = async (req, res) => {
             res.json({ status: "success", data: order });
             return;
         } else if (req.body.method == "market") {
-            amount =
+            let amount =
                 ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
             let usedUSDT = (amount * price) / req.body.leverage;
 
@@ -617,5 +612,6 @@ const addFutureOrder = async (req, res) => {
             }
         }
     }
+    
 }
 module.exports = addFutureOrder;
