@@ -298,7 +298,7 @@ const login = async (req, res) => {
 
         //Future Wallet Check
 
-        let future_wallet_check = await FutureWalletModel.findOne({ user_id: user._id, coin_id: MarginWalletId });
+        let future_wallet_check = await FutureWalletModel.findOne({ user_id: user._id });
         if (future_wallet_check == null) {
           let createWallet = new FutureWalletModel({
             user_id: user._id,

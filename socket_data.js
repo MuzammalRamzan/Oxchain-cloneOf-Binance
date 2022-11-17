@@ -497,7 +497,7 @@ async function CalculateFutureBalance(user_id) {
          },
       },
    ]);
-   let wallet = await FutureWalletModel.findOne({ user_id: user_id, coin_id: MarginWalletId }).exec();
+   let wallet = await FutureWalletModel.findOne({ user_id: user_id }).exec();
    if (getOpenOrders.length == 0) return wallet.amount;
    if (wallet == null) return 0;
    let balance = (wallet.amount + getOpenOrders[0].total);

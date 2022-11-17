@@ -54,7 +54,7 @@ async function GetFutureLiqPrice(order) {
        },
     ]);
  
-    let wallet = await FutureWalletModel.findOne({ user_id: order.user_id, coin_id: MarginWalletId }).exec();
+    let wallet = await FutureWalletModel.findOne({ user_id: order.user_id }).exec();
     
     let totalWallet = wallet.amount;
  

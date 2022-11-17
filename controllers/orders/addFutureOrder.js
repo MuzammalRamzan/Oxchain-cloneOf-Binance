@@ -55,7 +55,6 @@ const addFutureOrder = async (req, res) => {
 
 
     let userBalance = await FutureWalletModel.findOne({
-        coin_id: FutureWalletId,
         user_id: req.body.user_id,
       }).exec();
 
@@ -228,7 +227,7 @@ const addFutureOrder = async (req, res) => {
                     reverseOreders.amount = (newUsedUSDT * leverage) / price;
 
                     userBalance = await FutureWalletModel.findOne({
-                        coin_id: FutureWalletId,
+                        
                         user_id: req.body.user_id,
                     }).exec();
                     userBalance.amount = userBalance.amount - usedUSDT;
@@ -245,7 +244,7 @@ const addFutureOrder = async (req, res) => {
                     if (checkusdt == usedUSDT * leverage) {
                         reverseOreders.status = 1;
                         userBalance = await FutureWalletModel.findOne({
-                            coin_id: FutureWalletId,
+                            
                             user_id: req.body.user_id,
                         }).exec();
                         userBalance.amount =
@@ -266,7 +265,7 @@ const addFutureOrder = async (req, res) => {
                         reverseOreders.amount =
                             (writeUsedUSDT * reverseOreders.leverage) / price;
                         userBalance = await FutureWalletModel.findOne({
-                            coin_id: FutureWalletId,
+                            
                             user_id: req.body.user_id,
                         }).exec();
                         userBalance.amount = userBalance.amount + usedUSDT;
@@ -288,7 +287,7 @@ const addFutureOrder = async (req, res) => {
                         let data = ilkIslem - tersIslem;
                         console.log("DATASSS : ", data);
                         userBalance = await FutureWalletModel.findOne({
-                            coin_id: FutureWalletId,
+                            
                             user_id: req.body.user_id,
                         }).exec();
                         userBalance.amount = userBalance.amount + data;
@@ -310,7 +309,6 @@ const addFutureOrder = async (req, res) => {
                 }
             } else {
                 userBalance = await FutureWalletModel.findOne({
-                    coin_id: FutureWalletId,
                     user_id: req.body.user_id,
                 }).exec();
                 userBalance.amount = userBalance.amount - usedUSDT;
@@ -497,9 +495,7 @@ const addFutureOrder = async (req, res) => {
                     reverseOreders.leverage = leverage;
                     reverseOreders.open_time = Date.now();
                     reverseOreders.amount = (newUsedUSDT * leverage) / price;
-
                     userBalance = await FutureWalletModel.findOne({
-                        coin_id: FutureWalletId,
                         user_id: req.body.user_id,
                     }).exec();
                     userBalance.amount = userBalance.amount - usedUSDT;
@@ -516,7 +512,6 @@ const addFutureOrder = async (req, res) => {
                     if (checkusdt == usedUSDT * leverage) {
                         reverseOreders.status = 1;
                         userBalance = await FutureWalletModel.findOne({
-                            coin_id: FutureWalletId,
                             user_id: req.body.user_id,
                         }).exec();
                         userBalance.amount =
@@ -537,7 +532,6 @@ const addFutureOrder = async (req, res) => {
                         reverseOreders.amount =
                             (writeUsedUSDT * reverseOreders.leverage) / price;
                         userBalance = await FutureWalletModel.findOne({
-                            coin_id: FutureWalletId,
                             user_id: req.body.user_id,
                         }).exec();
                         userBalance.amount = userBalance.amount + usedUSDT;
@@ -559,7 +553,6 @@ const addFutureOrder = async (req, res) => {
                         let data = ilkIslem - tersIslem;
                         console.log("DATASSS : ", data);
                         userBalance = await FutureWalletModel.findOne({
-                            coin_id: FutureWalletId,
                             user_id: req.body.user_id,
                         }).exec();
                         userBalance.amount = userBalance.amount + data;
@@ -582,7 +575,6 @@ const addFutureOrder = async (req, res) => {
             } else {
 
                 userBalance = await FutureWalletModel.findOne({
-                    coin_id: FutureWalletId,
                     user_id: req.body.user_id,
                 }).exec();
                 userBalance.amount = userBalance.amount - usedUSDT;
