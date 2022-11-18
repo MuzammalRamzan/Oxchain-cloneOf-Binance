@@ -1,6 +1,7 @@
 const DepositModel = require("../models/Deposits");
 const authFile = require("../auth.js");
 const User = require("../models/User");
+const CoinList = require("../models/CoinList");
 
 const userDeposits = async (req, res) => {
   const apiKey = req.body.apiKey;
@@ -31,14 +32,10 @@ const listDeposits = async (req, res) => {
   const deposits = await DepositModel.find({}).lean();
 
   for (let i = 0; i < deposits.length; i++) {
-    let userData;
-    if (deposits[i].user_id) {
-      userData;
-    } else {
-      userData;
-    }
+    let userData = await User.findOne({ _id: deposits[i].user_id });
     deposits[i].user = userData;
   }
+
   return res.json({ status: "success", data: deposits });
 };
 

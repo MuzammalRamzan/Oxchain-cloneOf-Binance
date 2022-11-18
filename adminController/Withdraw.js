@@ -1,5 +1,7 @@
 const WithdrawModel = require("../models/Withdraw");
 const authFile = require("../auth.js");
+const User = require("../models/User");
+const CoinList = require("../models/CoinList");
 
 const userWithdraws = async (req, res) => {
   const apiKey = req.body.apiKey;
@@ -15,6 +17,9 @@ const userWithdraws = async (req, res) => {
   for (let i = 0; i < withdraws.length; i++) {
     let userData = await User.findOne({ _id: withdraws[i].user_id });
     withdraws[i].user = userData;
+
+    let coinData = await CoinList.findOne({ _id: withdraws[i].coin_id });
+    withdraws[i].coin = coinData;
   }
 
   return res.json({ status: "success", data: withdraws });
@@ -33,6 +38,9 @@ const listWithdraws = async (req, res) => {
   for (let i = 0; i < withdraws.length; i++) {
     let userData = await User.findOne({ _id: withdraws[i].user_id });
     withdraws[i].user = userData;
+
+    let coinData = await CoinList.findOne({ _id: withdraws[i].coin_id });
+    withdraws[i].coin = coinData;
   }
 
   return res.json({ status: "success", data: withdraws });

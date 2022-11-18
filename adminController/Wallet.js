@@ -1,5 +1,6 @@
 const WalletModel = require("../models/Wallet");
 const authFile = require("../auth.js");
+const CoinList = require("../models/CoinList");
 
 const getUserBalance = async (req, res) => {
   const apiKey = req.body.apiKey;
@@ -16,14 +17,21 @@ const getUserBalance = async (req, res) => {
 
 const getWalletBalance = async (req, res) => {
   const apiKey = req.body.apiKey;
-  const walletId = req.body.walletId;
+  const user_id = req.body.userId;
 
   if (!apiKey) return res.json({ status: "error", message: "Api key is null" });
   const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
   if (!apiKeyCheck)
     return res.json({ status: "error", message: "Api key is wrong" });
 
-  const balance = await WalletModel.findOne({ _id: walletId }).lean();
+  const balance = await WalletModel.find({ user_id: user_id }).lean();
+
+  for (let i = 0; i < balance.length; i++) {
+    let coinData = await CoinList.findOne({ _id: balance[i].coin_id });
+    balance[i].coin = coinData;
+  }
+  console.log(balance);
+
   return res.json({ status: "success", data: balance });
 };
 
