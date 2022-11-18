@@ -13,6 +13,7 @@ const addWithdraw = (req, res) => {
   var coin_id = req.body.coin_id;
 
   authFile.apiKeyChecker(api_key_result).then((result) => {
+    console.log(result);
     if (result === true) {
       Wallet.findOne({ user_id: user_id, coin_id: coin_id }, { amount: 1 })
         .then((list) => {
@@ -29,26 +30,31 @@ const addWithdraw = (req, res) => {
               to: withdraw_address,
               status: 1,
             });
+            console.log(newWithdraw);
             NotificationTokens.findOne({
               user_id: user_id,
             }).then((response) => {
+              console.log(response);
               if (response == null) {
               } else {
                 var token = response["token_id"];
                 newWithdraw.save(function (err, room) {
                   if (err) {
                     res.json({ status: "fail", message: err });
+                    return;
                   } else {
                     var body =
                       "A withdraw order has been given from your account. Please wait for the admin to confirm your order.\n\n";
                     notifications.sendPushNotification(token, body);
                     res.json({ status: "success", data: "" });
+                    return;
                   }
                 });
               }
             });
           } else {
             res.json({ status: "fail", message: "not_enough_balance" });
+            return;
           }
         })
         .catch((err) => {

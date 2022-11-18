@@ -31,11 +31,25 @@ const FutureOrder = require('./models/FutureOrder');
 const FuturePositions = require('./SocketController/trade/future/positions');
 const FutureOpenOrders = require('./SocketController/trade/future/open_orders');
 const FutureTradeHistory = require('./SocketController/trade/future/trade_history');
+const Withdraw = require('./models/Withdraw');
 
 var mongodbPass = process.env.MONGO_DB_PASS;
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 global.MarketData = {};
+/*
+let w = new Withdraw({
+   amount: 100,
+   coin_id: "62fb45483f8c1ffba43e4813",
+   fee : 0.55,
+   tx_id: "deneme 123",
+   to: "TNDf74535gfsdfs",
+   status: 1,
+   user_id : "630dcee419b6e73400cf7006",
+   type: "",
 
+});
+w.save();
+*/
 async function fillMarketPrices() {
    let coinList = await CoinList.find({});
    var b_ws = new WebSocket("wss://stream.binance.com/stream");

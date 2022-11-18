@@ -43,6 +43,7 @@ async function GetFutureLiqPrice(orders) {
        }
       
        assets.push({
+         "id" : order._id,
          'symbol' : order.pair_name,
          'leverage' : order.leverage,
          'size' : parseFloat(order.usedUSDT) * order.leverage,
