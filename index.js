@@ -105,6 +105,8 @@ const session = require('express-session');
 const addMarginCrossOrder = require("./controllers/orders/addMarginCrossOrder.js");
 const addMarginIsolatedOrder = require("./controllers/orders/addMarginIsolatedOrder.js");
 const addFutureOrder = require("./controllers/orders/addFutureOrder.js");
+const cancelFutureLimit = require("./controllers/orders/cancelFutureLimit.js");
+const closeFutureOrder = require("./controllers/orders/closeFutureOrder.js");
 route.use(session({
   secret: 'oxhain_login_session',
   resave: false,
@@ -179,6 +181,8 @@ route.post("/addMarginCrossOrder", addMarginCrossOrder);
 route.post("/addMarginIsolatedOrder", addMarginIsolatedOrder);
 
 route.post("/addFutureOrder", addFutureOrder);
+route.post("/cancelFutureLimit", cancelFutureLimit);
+route.post("/closeFutureOrder", closeFutureOrder);
 
 route.get("/getMarginOrders", getMarginOrders);
 route.post("/spotHistory", async (req, res) => {
