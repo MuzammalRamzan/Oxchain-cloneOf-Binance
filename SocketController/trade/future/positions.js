@@ -56,7 +56,7 @@ async function GetFutureLiqPrice(orders) {
 
        });
     }
-    return orders;
+    return assets;
  
  }
 
