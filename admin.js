@@ -58,12 +58,14 @@ route.all("/userList", upload.none(), User.userList);
 route.all("/denyApplicant", upload.none(), User.denyApplicant);
 route.all("/setBonusRate", upload.none(), Bonus.setBonusRate);
 route.all("/userDeposits", upload.none(), Deposit.userDeposits);
+route.all("/depositList", upload.none(), Deposit.listDeposits);
 route.all("/listPairs", upload.none(), Pairs.listPairs);
 route.all("/setPairFee", upload.none(), Pairs.setPairFee);
 route.all("/getUserBalance", upload.none(), Wallet.getUserBalance);
 route.all("/getWalletBalance", upload.none(), Wallet.getWalletBalance);
 route.all("/setBalance", upload.none(), Wallet.setBalance);
 route.all("/userWithdraws", upload.none(), Withdraw.userWithdraws);
+route.all("/listWithdraws", upload.none(), Withdraw.listWithdraws);
 
 route.listen(port, () => {
   console.log("Server Ayakta");
