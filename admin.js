@@ -41,6 +41,14 @@ route.use(
   }).unless({ path: ["/login"] })
 );
 
+route.use(function (err, req, res, next) {
+  if (err.name === "UnauthorizedError") {
+    res.status(401).send("error: invalid token");
+  } else {
+    next(err);
+  }
+});
+
 route.get("/", (req, res) => {
   res.send("success");
 });

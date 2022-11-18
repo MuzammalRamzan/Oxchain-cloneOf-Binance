@@ -18,6 +18,7 @@ const MarginCrossWallet = require("../../models/MarginCrossWallet");
 const MarginIsolatedWallet = require("../../models/MarginIsolatedWallet");
 const { getApplicantStatus } = require("../../sumsub");
 const FutureWalletModel = require("../../models/FutureWalletModel");
+const { getToken } = require("../../auth");
 
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 
@@ -148,7 +149,8 @@ const login = async (req, res) => {
         user_id: user["_id"],
         ref_id: refId,
         securityLevel,
-        device_token: device_id
+        device_token: device_id,
+        token: getToken({ user: user_id }),
       };
 
       var status = user["status"];
@@ -349,9 +351,9 @@ const login = async (req, res) => {
         }
 
         if (user.applicantId) {
-          const data = await getApplicantStatus(user.applicantId);
+          const applicantData = await getApplicantStatus(user.applicantId);
           const applicantStatus =
-            data?.reviewResult?.reviewAnswer == "GREEN" ? 1 : 0;
+          applicantData?.reviewResult?.reviewAnswer == "GREEN" ? 1 : 0;
           await User.updateOne({ _id: user_id }, { $set: { applicantStatus } });
         }
 

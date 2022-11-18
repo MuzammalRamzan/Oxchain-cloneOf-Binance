@@ -7,6 +7,7 @@ var bodyParser = require("body-parser");
 const multer = require("multer");
 const express = require("express");
 var cors = require("cors");
+const { expressjwt: jwt } = require("express-jwt");
 
 require("dotenv").config();
 
@@ -101,17 +102,44 @@ const getBonusHistory = require("./controllers/bonus/getBonusHistory.js");
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
-const session = require('express-session');
+const session = require("express-session");
 const addMarginCrossOrder = require("./controllers/orders/addMarginCrossOrder.js");
 const addMarginIsolatedOrder = require("./controllers/orders/addMarginIsolatedOrder.js");
 const addFutureOrder = require("./controllers/orders/addFutureOrder.js");
 const cancelFutureLimit = require("./controllers/orders/cancelFutureLimit.js");
 const closeFutureOrder = require("./controllers/orders/closeFutureOrder.js");
-route.use(session({
-  secret: 'oxhain_login_session',
-  resave: false,
-  saveUninitialized: true
-}));
+
+route.use(
+  session({
+    secret: "oxhain_login_session",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+route.use(
+  jwt({
+    secret: "secret",
+    algorithms: ["HS256"],
+  }).unless({
+    path: [
+      "/",
+      "/login",
+      "sendMailPin",
+      "sendSMSPin",
+      "register",
+      "getReferral",
+    ],
+  })
+);
+
+route.use(function (err, req, res, next) {
+  if (err.name === "UnauthorizedError") {
+    res.status(401).send("Error: invalid token");
+  } else {
+    next(err);
+  }
+});
 
 route.get("/", (req, res) => {
   res.send("success");
@@ -153,7 +181,6 @@ route.all("/update2fa", upload.none(), update2fa);
 route.all("/getActiveDevice", upload.none(), getActiveDevice);
 route.all("/deleteActiveDevice", upload.none(), deleteActiveDevice);
 route.all("/getVerificationMethod", upload.none(), getVerificationMethod);
-
 
 //Wallet Modules
 route.post("/transfer", transfer);
