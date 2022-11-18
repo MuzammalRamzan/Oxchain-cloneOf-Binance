@@ -380,7 +380,7 @@ async function test() {
             }
          });
       }
-   });
+   }); 
 
 }
 test();

@@ -46,10 +46,13 @@ async function GetFutureLiqPrice(orders) {
          'symbol' : order.pair_name,
          'leverage' : order.leverage,
          'size' : parseFloat(order.usedUSDT) * order.leverage,
+         'margin_type' : order.margin_type,
          'entry_price' : order.open_price,
          'mark_price' : order.type == 'buy' ? global.MarketData[order.pair_name.replace('/', '')].ask : global.MarketData[order.pair_name.replace('/', '')].bid,
-         'liq_price' : 0,
-         'margin_ratio' : 0
+         'liq_price' : order.liqPrice,
+         'margin_ratio' : 0,
+         "margin" : order.usedUSDT,
+         "pnl" : order.pnl,
 
        });
     }
