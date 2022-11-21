@@ -55,7 +55,7 @@ async function GetFutureLiqPrice(orders) {
          'leverage' : order.leverage,
          "side" : order.type,
          'size' : (parseFloat(order.usedUSDT) * order.leverage),
-         'future_type' : order.margin_type,
+         'future_type' : order.future_type,
          'entry_price' : order.open_price,
          'mark_price' : order.type == 'buy' ? global.MarketData[order.pair_name.replace('/', '')].ask : global.MarketData[order.pair_name.replace('/', '')].bid,
          'liq_price' : order.liqPrice,
