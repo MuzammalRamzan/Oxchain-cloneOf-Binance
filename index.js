@@ -117,21 +117,21 @@ route.use(
   })
 );
 
-route.use(
-  jwt({
-    secret: "secret",
-    algorithms: ["HS256"],
-  }).unless({
-    path: [
-      "/",
-      "/login",
-      "sendMailPin",
-      "sendSMSPin",
-      "register",
-      "getReferral",
-    ],
-  })
-);
+// route.use(
+//   jwt({
+//     secret: "secret",
+//     algorithms: ["HS256"],
+//   }).unless({
+//     path: [
+//       "/",
+//       "/login",
+//       "sendMailPin",
+//       "sendSMSPin",
+//       "register",
+//       "getReferral",
+//     ],
+//   })
+// );
 
 route.use(function (err, req, res, next) {
   if (err.name === "UnauthorizedError") {
