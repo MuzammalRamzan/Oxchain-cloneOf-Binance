@@ -133,6 +133,7 @@ route.all("/bnbDepositCheck", async (req, res) => {
 
     for (let i = 0; i < wallet.length; i++) {
       let address = wallet[i].wallet_address;
+      if(address == null || address == '') continue;
       let user_id = wallet[i].user_id;
 
       if (address.length > 0) {
