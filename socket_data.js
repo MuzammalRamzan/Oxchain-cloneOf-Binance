@@ -219,7 +219,12 @@ async function test() {
                GetWallets(ws, json.user_id);
 
             }
+
             
+            
+            else if (json.page == 'all_prices') {
+                  GetAllPrices(ws);
+            }
             else if (json.page == 'spot_open_orders') {
                if (json.user_id != null && json.user_id != 'undefined') {
                   SpotOpenOrders(ws, json.user_id);
@@ -474,6 +479,40 @@ async function GetBinanceData(ws, pair) {
 
 }
 
+async function GetAllPrices(ws) {
+   let coinList = await CoinList.find({});
+   var b_ws = new WebSocket("wss://stream.binance.com/stream");
+
+   for(var k = 0; k < coinList.length; k++) {
+      global.MarketData[coinList[k].symbol + "USDT"] = {"bid" : 0.0, "ask" : 0.0};
+   }
+
+   const initSocketMessage = {
+      method: "SUBSCRIBE",
+      params: ["!ticker@arr"],
+      // params: ["!miniTicker@arr"],
+      id: 1,
+   };
+
+   b_ws.onopen = (event) => {
+      b_ws.send(JSON.stringify(initSocketMessage));
+   };
+
+   // Reconnect connection when disconnect connection
+   b_ws.onclose = () => {
+      b_ws.send(JSON.stringify(initSocketMessage));
+   }
+   b_ws.onmessage = function (event) {
+
+      const data = JSON.parse(event.data).data;
+      if (data != null && data != 'undefined') {
+         for(var m = 0; m < data.length; m++) {
+            let x = data[m];
+            global.MarketData[x.s] = {"bid" : x.b, "ask" : x.a};
+         }
+      }
+   }
+}
 
 async function CalculateMarginBalance(user_id) {
    let totalPNL = 0.0;
