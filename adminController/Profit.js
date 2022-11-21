@@ -3,6 +3,7 @@ const ProfitModel = require("../models/FeeModel");
 
 var authFile = require("../auth.js");
 var utilities = require("../utilities.js");
+var User = require("../models/User");
 
 const ProfitAll = async (req, res) => {
   //api key kontrolü yapılacak
@@ -32,6 +33,14 @@ const ProfitAll = async (req, res) => {
       status: "error",
       message: "Profit is null",
     });
+  }
+
+  for (var i = 0; i < profit.length; i++) {
+    var from_user = await User.findOne({ _id: profit[i].from_user_id });
+    var to_user = await User.findOne({ _id: profit[i].to_user_id });
+
+    profit[i].from_user_data = from_user.name + " " + from_user.surname;
+    profit[i].to_user_data = to_user.name + " " + to_user.surname;
   }
 
   res.json({

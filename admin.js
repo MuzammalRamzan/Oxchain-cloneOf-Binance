@@ -22,6 +22,7 @@ route.use(cors());
 var port = 3003;
 
 const Login = require("./adminController/Login");
+const Profit = require("./adminController/Profit");
 const Admin = require("./adminController/Admin");
 const User = require("./adminController/User");
 const Bonus = require("./adminController/Bonus");
@@ -74,6 +75,7 @@ route.all("/getWalletBalance", upload.none(), Wallet.getWalletBalance);
 route.all("/setBalance", upload.none(), Wallet.setBalance);
 route.all("/userWithdraws", upload.none(), Withdraw.userWithdraws);
 route.all("/listWithdraws", upload.none(), Withdraw.listWithdraws);
+route.all("/getProfit", upload.none(), Profit.ProfitAll);
 
 route.listen(port, () => {
   console.log("Server Ayakta");
