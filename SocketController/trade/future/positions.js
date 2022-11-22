@@ -48,7 +48,7 @@ async function GetFutureLiqPrice(orders) {
         let initialMargin = (lastPrice - order.open_price) * side * order.leverage;
         //let initialMargin = parseFloat(((lastPrice) - order.open_price) * side * order.usedUSDT);
         let roe = parseFloat(pnl) / parseFloat(initialMargin) / (parseFloat(order.usedUSDT) * parseFloat(order.leverage) * parseFloat(lastPrice) * (1 / parseFloat(order.leverage)));
-        console.log("roe : " ,roe, " | pnl : ", pnl, " | imr : ", initialMargin);
+        order.type == 'buy' ? global.MarketData[order.pair_name.replace('/', '')].ask : global.MarketData[order.pair_name.replace('/', '')].bid
        assets.push({
          "_id" : order._id,
          'symbol' : order.pair_name,
@@ -57,9 +57,9 @@ async function GetFutureLiqPrice(orders) {
          'size' : (parseFloat(order.usedUSDT) * order.leverage),
          'future_type' : order.future_type,
          'entry_price' : order.open_price,
-         'mark_price' : order.type == 'buy' ? global.MarketData[order.pair_name.replace('/', '')].ask : global.MarketData[order.pair_name.replace('/', '')].bid,
+         'mark_price' : mark_price,
          'liq_price' : order.liqPrice,
-         'margin_ratio' : 0,
+         'margin_ratio' : order.liqPrice * 100 / mark_price,
          "roe" : roe,
          "margin" : order.usedUSDT,
          "pnl" : order.pnl,
