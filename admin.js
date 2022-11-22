@@ -30,6 +30,8 @@ const Deposit = require("./adminController/Deposit");
 const Pairs = require("./adminController/Pairs");
 const Wallet = require("./adminController/Wallet");
 const Withdraw = require("./adminController/Withdraw");
+const Earnings = require("./adminController/Earnings");
+const AdminDashboard = require("./adminController/AdminDashboard");
 
 const upload = multer();
 route.use(bodyParser.json());
@@ -76,6 +78,9 @@ route.all("/setBalance", upload.none(), Wallet.setBalance);
 route.all("/userWithdraws", upload.none(), Withdraw.userWithdraws);
 route.all("/listWithdraws", upload.none(), Withdraw.listWithdraws);
 route.all("/getProfit", upload.none(), Profit.ProfitAll);
+route.all("/getEarnings", upload.none(), Earnings.getEarnings);
+route.all("/addEarning", upload.none(), Earnings.AddEarning);
+route.all("/getAdminDashboard", upload.none(), AdminDashboard.getData);
 
 route.listen(port, () => {
   console.log("Server Ayakta");
