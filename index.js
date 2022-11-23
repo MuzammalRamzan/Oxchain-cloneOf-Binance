@@ -108,6 +108,7 @@ const addMarginIsolatedOrder = require("./controllers/orders/addMarginIsolatedOr
 const addFutureOrder = require("./controllers/orders/addFutureOrder.js");
 const cancelFutureLimit = require("./controllers/orders/cancelFutureLimit.js");
 const closeFutureOrder = require("./controllers/orders/closeFutureOrder.js");
+const AdjustMargin = require("./controllers/orders/adjust_margin.js");
 
 route.use(
   session({
@@ -206,6 +207,7 @@ route.post("/closeMarginOrder", closeMarginOrder);
 route.post("/addMarginOrder", addMarginOrder);
 route.post("/addMarginCrossOrder", addMarginCrossOrder);
 route.post("/addMarginIsolatedOrder", addMarginIsolatedOrder);
+route.post("/adjustMargin", AdjustMargin);
 
 route.post("/addFutureOrder", addFutureOrder);
 route.post("/cancelFutureLimit", cancelFutureLimit);
@@ -236,7 +238,7 @@ route.all(
 route.all(
   "/enableWithdrawalWhiteList",
   upload.none(),
-  async function (req, res) {}
+  async function (req, res) { }
 );
 route.all("/addNotification", upload.none(), addNotification);
 route.all("/getNotification", upload.none(), getNotification);
