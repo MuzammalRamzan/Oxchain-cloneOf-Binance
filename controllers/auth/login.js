@@ -18,6 +18,9 @@ const MarginCrossWallet = require("../../models/MarginCrossWallet");
 const MarginIsolatedWallet = require("../../models/MarginIsolatedWallet");
 const { getApplicantStatus } = require("../../sumsub");
 const FutureWalletModel = require("../../models/FutureWalletModel");
+const WithdrawalWhiteListModel = require("../../models/WithdrawalWhiteList");
+const OneStepWithdrawModel = require("../../models/OneStepWithdraw");
+
 const { getToken } = require("../../auth");
 
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
@@ -349,6 +352,15 @@ const login = async (req, res) => {
           data.trust = "no";
           data.log_id = newRegisteredId;
         }
+
+        const withdrawalWhiteList = await WithdrawalWhiteListModel.findOne({
+          user_id: user._id,
+        }).lean();
+        data.withdrawalWhiteList = !!withdrawalWhiteList?.status;
+        const oneStepWithdraw = await OneStepWithdrawModel.findOne({
+          user_id: user._id,
+        }).lean();
+        data.oneStepWithdraw = !!oneStepWithdraw?.status;
 
         if (user.applicantId) {
           const applicantData = await getApplicantStatus(user.applicantId);
