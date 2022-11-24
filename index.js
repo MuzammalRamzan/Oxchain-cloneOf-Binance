@@ -112,6 +112,7 @@ const AdjustMargin = require("./controllers/orders/adjust_margin.js");
 const editOneStepWithdraw = require("./controllers/withdraw/editOneStepWithdraw");
 const editWithdrawalWhiteList = require("./controllers/withdraw/editWithdrawalWhiteList");
 const UpdateStop = require("./controllers/orders/updateStop.js");
+const FuturePercentClose = require("./controllers/orders/futurePercentClose.js");
 
 route.use(
   session({
@@ -212,6 +213,7 @@ route.post("/addMarginCrossOrder", addMarginCrossOrder);
 route.post("/addMarginIsolatedOrder", addMarginIsolatedOrder);
 route.post("/adjustMargin", AdjustMargin);
 route.post("/updateStop", UpdateStop);
+route.post("/futurePercentClose", FuturePercentClose);
 
 route.post("/addFutureOrder", addFutureOrder);
 route.post("/cancelFutureLimit", cancelFutureLimit);
