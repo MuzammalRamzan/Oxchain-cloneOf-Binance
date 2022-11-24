@@ -39,7 +39,7 @@ const UpdateStop = async (req, res) => {
             return;
         }
         getOrder.tp = tp;
-        await order.save();
+        await getOrder.save();
         res.json({ status: 'success', data: 'OK' });
         return;
     } else {
