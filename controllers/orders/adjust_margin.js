@@ -16,7 +16,7 @@ const AdjustMargin = async (req, res) => {
     }
 
     if (type == 'add') {
-        let wallet = await FutureWalletModel.find({ user_id: user_id });
+        let wallet = await FutureWalletModel.findOne({ user_id: user_id });
         let max = parseFloat(wallet.amount);
         if (amount >= max) {
             res.json({ status: "fail", message: "Invalid Amount" });
@@ -31,9 +31,14 @@ const AdjustMargin = async (req, res) => {
     }
 
     else if (type == 'remove') {
-
+        let wallet = await FutureWalletModel.findOne({ user_id: user_id });
         let orderSize = (order.open_price * order.amount) * order.leverage;
-        let max = (orderSize - order.usedUSDT) + order.pnl;
+        let max = 0.0;
+        if (order.usedUSDT > orderSize) {
+            max = order.usedUSDT - orderSize;
+        }
+        max += order.pnl;
+
         if (amount > max) {
             res.json({ status: "fail", message: "Invalid Amount" });
             return;
