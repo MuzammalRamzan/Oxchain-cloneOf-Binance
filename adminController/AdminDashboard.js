@@ -72,7 +72,11 @@ const getData = async (req, res) => {
     },
   ]);
 
-  var totalEarningToday = sumOfAmountToday[0].total;
+  if (sumOfAmountToday != "") {
+    var totalEarningToday = sumOfAmountToday[0].total;
+  } else {
+    var totalEarningToday = 0;
+  }
 
   //total earnings this month
 
@@ -80,7 +84,9 @@ const getData = async (req, res) => {
     {
       $match: {
         createdAt: {
-          $gte: new Date(today),
+          //between 1st and last day of the month
+          $gte: new Date(yyyy, mm - 1, 1),
+          $lte: new Date(yyyy, mm, 0),
         },
       },
     },
@@ -95,7 +101,11 @@ const getData = async (req, res) => {
     },
   ]);
 
-  var totalEarningThisMonth = sumOfAmountThisMonth[0].total;
+  if (sumOfAmountThisMonth != "") {
+    var totalEarningThisMonth = sumOfAmountThisMonth[0].total;
+  } else {
+    var totalEarningThisMonth = 0;
+  }
 
   var deposits = await DepositsModel.find({});
   var depositCount = deposits.length;
@@ -108,6 +118,20 @@ const getData = async (req, res) => {
 
   var orders = await OrderModel.find({});
   var orderCount = orders.length;
+
+  //get last 5 deposits
+
+  //get last 5 withdraws
+
+  var lastFiveWithdraws = await WithdrawModel.find({})
+    .sort({ createdAt: -1 })
+    .limit(5);
+
+  //get last 5 orders
+
+  var lastFiveOrders = await OrderModel.find({})
+    .sort({ createdAt: -1 })
+    .limit(5);
 
   myData.push({
     totalEarning: totalEarning,

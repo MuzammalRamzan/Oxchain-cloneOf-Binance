@@ -35,18 +35,33 @@ const ProfitAll = async (req, res) => {
     });
   }
 
+  let myData = [];
   for (var i = 0; i < profit.length; i++) {
     var from_user = await User.findOne({ _id: profit[i].from_user_id });
     var to_user = await User.findOne({ _id: profit[i].to_user_id });
 
     profit[i].from_user_data = from_user.name + " " + from_user.surname;
     profit[i].to_user_data = to_user.name + " " + to_user.surname;
+
+    let myDataItem = {
+      _id: profit[i]._id,
+      from_user_id: profit[i].from_user_id,
+      from_user_data: from_user.email,
+      to_user_id: profit[i].to_user_id,
+      to_user_data: to_user.email,
+      amount: profit[i].amount,
+      createdAt: profit[i].createdAt,
+      feeType: profit[i].feeType,
+    };
+
+    myData.push(myDataItem);
   }
 
+  console.log(profit);
   res.json({
     status: "success",
     message: "Profit is listed",
-    data: profit,
+    data: myData,
   });
 };
 
