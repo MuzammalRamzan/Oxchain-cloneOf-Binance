@@ -8,7 +8,7 @@ const AdjustMargin = async (req, res) => {
     let type = req.body.type;
 
 
-    let order = await FutureOrder.findOne({ user_id: user_id, _id: order_id });
+    let order = await FutureOrder.findOne({ user_id: user_id, _id: order_id, method: "market", status : 0 });
 
     if (order == null) {
         res.json({ status: "fail", message: "Invalid Order" });

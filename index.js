@@ -109,6 +109,7 @@ const addFutureOrder = require("./controllers/orders/addFutureOrder.js");
 const cancelFutureLimit = require("./controllers/orders/cancelFutureLimit.js");
 const closeFutureOrder = require("./controllers/orders/closeFutureOrder.js");
 const AdjustMargin = require("./controllers/orders/adjust_margin.js");
+const UpdateStop = require("./controllers/orders/updateStop.js");
 
 route.use(
   session({
@@ -208,6 +209,7 @@ route.post("/addMarginOrder", addMarginOrder);
 route.post("/addMarginCrossOrder", addMarginCrossOrder);
 route.post("/addMarginIsolatedOrder", addMarginIsolatedOrder);
 route.post("/adjustMargin", AdjustMargin);
+route.post("/updateStop", UpdateStop);
 
 route.post("/addFutureOrder", addFutureOrder);
 route.post("/cancelFutureLimit", cancelFutureLimit);
