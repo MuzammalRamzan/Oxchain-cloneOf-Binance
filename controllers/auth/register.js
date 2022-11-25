@@ -22,7 +22,8 @@ const registerController = async (req, res) => {
 
   let newUser;
 
-  if (registerType == "email") {
+
+  if (registerType == "email" && pin != '0') {
     let checkEmailPin = await RegisterMail.findOne({
       email: data,
       pin: pin,
@@ -46,7 +47,7 @@ const registerController = async (req, res) => {
     }
   }
 
-  if (registerType == "phone") {
+  if (registerType == "phone" && pin !== 0) {
     let checkPhonePin = await RegisterSMS.findOne({
       phone: data,
       pin: pin,
