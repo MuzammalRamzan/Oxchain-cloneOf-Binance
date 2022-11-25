@@ -113,6 +113,7 @@ const editOneStepWithdraw = require("./controllers/withdraw/editOneStepWithdraw"
 const editWithdrawalWhiteList = require("./controllers/withdraw/editWithdrawalWhiteList");
 const UpdateStop = require("./controllers/orders/updateStop.js");
 const FuturePercentClose = require("./controllers/orders/futurePercentClose.js");
+const Settings = require("./controllers/settings");
 
 route.use(
   session({
@@ -299,6 +300,7 @@ route.all("/getUserId", upload.none(), getUserId);
 route.all("/getSecurityKey", upload.none(), getSecurityKey);
 route.all("/checkSecurityKey", upload.none(), checkSecurityKey);
 route.all("/deleteSecurityKey", upload.none(), deleteSecurityKey);
+route.post("/settings", Settings);
 
 route.all("/changeAvatar", upload.none(), changeAvatar);
 route.all("/changeNickName", upload.none(), changeNickname);
