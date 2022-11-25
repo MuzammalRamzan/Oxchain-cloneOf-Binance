@@ -79,6 +79,7 @@ const getVerificationMethod = require("./controllers/auth/getVerificationMethod"
 const createApplicant = require("./controllers/kyc/createApplicant");
 const addDocument = require("./controllers/kyc/addDocument");
 const getApplicantStatus = require("./controllers/kyc/getApplicantStatus");
+const walletToWallet = require("./controllers/transfer/index");
 
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
@@ -150,6 +151,8 @@ route.use(function (err, req, res, next) {
 route.get("/", (req, res) => {
   res.send("success");
 });
+
+route.all("/walletToWallet", walletToWallet);
 
 route.post("/subscription", async (req, res) => {
   try {
@@ -245,7 +248,7 @@ route.all(
 route.all(
   "/enableWithdrawalWhiteList",
   upload.none(),
-  async function (req, res) { }
+  async function (req, res) {}
 );
 route.post("/editOneStepWithdraw", editOneStepWithdraw);
 route.post("/editWithdrawalWhiteList", editWithdrawalWhiteList);
