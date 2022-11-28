@@ -33,6 +33,8 @@ const FuturePercentClose = async (req,res) => {
         await wallet.save();
         res.send({status: 'success', data : 'OK'});
     }
+
+    
 }
 
 module.exports = FuturePercentClose;
