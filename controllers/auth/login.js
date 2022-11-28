@@ -154,6 +154,7 @@ const login = async (req, res) => {
         securityLevel,
         device_token: device_id,
         token: getToken({ user: user_id }),
+        name: user.name
       };
 
       var status = user["status"];
