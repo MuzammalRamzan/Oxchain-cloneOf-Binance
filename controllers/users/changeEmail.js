@@ -83,13 +83,13 @@ const changeEmail = async function (req, res) {
         if (doc != null) {
           res.json({ status: "success", data: "update_success" });
         } else {
-          res.json({ status: "fail", message: "update_fail" });
+          res.json({ status: "fail", message: "update_fail", showableMessage: "Update Failed" });
         }
       } else {
-        res.json({ status: "fail", message: "verification_failed" });
+        res.json({ status: "fail", message: "verification_failed", showableMessage: "Verification Failed" });
       }
     } else {
-      res.json({ status: "fail", message: "user_not_found" });
+      res.json({ status: "fail", message: "user_not_found", showableMessage: "User not Found" });
     }
   }
 };

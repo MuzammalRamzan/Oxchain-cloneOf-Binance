@@ -10,7 +10,7 @@ const get2fa = async function (req, res) {
     var formattedKey = authenticator.generateKey();
     res.json({ status: "success", data: formattedKey });
   } else {
-    res.json({ status: "fail", message: "403 Forbidden" });
+    res.json({ status: "fail", message: "403 Forbidden", showableMessage: "Forbidden 403" });
   }
 };
 

@@ -36,13 +36,13 @@ const getUserInfo = async function (req, res) {
       }
 
       if (status == 0) {
-        res.json({ status: "fail", message: "account_not_activated" });
+        res.json({ status: "fail", message: "account_not_activated", showableMessage: "Account not Activated" });
       }
     } else {
-      res.json({ status: "fail", message: "login_failed" });
+      res.json({ status: "fail", message: "login_failed", showableMessage: "Login Failed" });
     }
   } else {
-    res.json({ status: "fail", message: "403 Forbidden" });
+    res.json({ status: "fail", message: "403 Forbidden", showableMessage: "403 Forbidden" });
   }
 };
 

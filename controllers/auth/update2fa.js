@@ -25,10 +25,10 @@ const update2fa = async function (req, res) {
         }
       });
     } else {
-      res.json({ status: "fail", message: "wrong_auth_pin" });
+      res.json({ status: "fail", message: "wrong_auth_pin", showableMessage: "Wrong Auth Pin" });
     }
   } else {
-    res.json({ status: "fail", message: "403 Forbidden" });
+    res.json({ status: "fail", message: "403 Forbidden", showableMessage: "Forbidden 403" });
   }
 };
 

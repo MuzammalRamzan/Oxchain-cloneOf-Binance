@@ -19,14 +19,14 @@ const getUserId = async function (req, res) {
             });
             res.json({ status: "success", data: myArray });
           } else {
-            res.json({ status: "fail", message: "user_not_found" });
+            res.json({ status: "fail", message: "user_not_found", showableMessage: "User not Found" });
           }
         })
         .catch((err) => {
           res.json({ status: "fail", message: err });
         });
     } else {
-      res.json({ status: "fail", message: "403 Forbidden" });
+      res.json({ status: "fail", message: "403 Forbidden", showableMessage: "403 Forbidden" });
     }
   });
 };

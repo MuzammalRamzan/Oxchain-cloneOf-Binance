@@ -396,13 +396,13 @@ const login = async (req, res) => {
         }
       }
       if (status == "0") {
-        res.json({ status: "fail", message: "account_not_active" });
+        res.json({ status: "fail", message: "account_not_active", showableMessage: "Account not active" });
       }
     } else {
-      res.json({ status: "fail", message: "user_not_found" });
+      res.json({ status: "fail", message: "user_not_found", showableMessage: "User not Found" });
     }
   } else {
-    res.json({ status: "fail", message: "Forbidden 403" });
+    res.json({ status: "fail", message: "Forbidden 403", showableMessage: "Forbidden 403"});
   }
 };
 

@@ -33,11 +33,11 @@ const resetPassword = async function (req, res) {
           }
         });
       } else {
-        res.json({ status: "fail", message: "2fa_failed" });
+        res.json({ status: "fail", message: "2fa_failed", showableMessage: "2FA Failed" });
       }
     }
   } else {
-    res.json({ status: "fail", message: "403 Forbidden" });
+    res.json({ status: "fail", message: "403 Forbidden", showableMessage: "403 Forbidden" });
   }
 };
 

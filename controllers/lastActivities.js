@@ -15,7 +15,7 @@ const lastActivities = async function (req, res) {
           .exec();
         res.json({ status: "success", data: logs });
       } else {
-        res.json({ status: "success", data: "max_limit_100" });
+        res.json({ status: "success", data: "max_limit_100", showableMessage: 'limit should be less then 100' });
       }
     }
   });

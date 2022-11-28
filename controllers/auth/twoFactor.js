@@ -32,13 +32,13 @@ const twoFactor = async function (req, res) {
           res.json({ status: "success", message: "2fa_success" });
         }
       } else {
-        res.json({ status: "fail", message: "2fa_failed" });
+        res.json({ status: "fail", message: "2fa_failed", showableMessage: "2FA Failed" });
       }
     } else {
-      res.json({ status: "fail", message: "login_failed" });
+      res.json({ status: "fail", message: "login_failed", showableMessage: "Login Failed" });
     }
   } else {
-    res.json({ status: "fail", message: "403 Forbidden" });
+    res.json({ status: "fail", message: "403 Forbidden", showableMessage: "Forbidden 403" });
   }
 };
 

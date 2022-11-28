@@ -30,7 +30,7 @@ const registerController = async (req, res) => {
     }).exec();
 
     if (checkEmailPin == null) {
-      res.json({ status: "fail", message: "pin_not_match" });
+      res.json({ status: "fail", message: "pin_not_match", showableMessage: "Pin not match" });
       return;
     } else {
       RegisterMail.findOneAndUpdate(
@@ -54,7 +54,7 @@ const registerController = async (req, res) => {
     }).exec();
 
     if (checkPhonePin == null) {
-      res.json({ status: "fail", message: "pin_not_match" });
+      res.json({ status: "fail", message: "pin_not_match", showableMessage: "Pin not match" });
       return;
     } else {
       RegisterSMS.findOneAndUpdate(
@@ -119,7 +119,7 @@ const registerController = async (req, res) => {
           });
           newReferral.save();
         } else {
-          res.json({ status: "fail", message: "referral_not_found" });
+          res.json({ status: "fail", message: "referral_not_found", showableMessage: "Referral not found" });
         }
       }
       var regUserId = usr._id;

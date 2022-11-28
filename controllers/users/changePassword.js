@@ -85,19 +85,19 @@ const changePassword = async function (req, res) {
               }
             });
           } else {
-            res.json({ status: "fail", message: "2fa_failed" });
+            res.json({ status: "fail", message: "2fa_failed", showableMessage: "2FA Failed" });
           }
         } else {
-          res.json({ status: "fail", message: "wrong_old_password" });
+          res.json({ status: "fail", message: "wrong_old_password", showableMessage: "Wrong Old Password" });
         }
       } else {
-        res.json({ status: "fail", message: "pin_failed" });
+        res.json({ status: "fail", message: "pin_failed", showableMessage: "Pin Failed" });
       }
     } else {
-      res.json({ status: "fail", message: "user_not_found" });
+      res.json({ status: "fail", message: "user_not_found", showableMessage: "User not Found" });
     }
   } else {
-    res.json({ status: "fail", message: "403 Forbidden" });
+    res.json({ status: "fail", message: "403 Forbidden", showableMessage: "403 Forbidden" });
   }
 };
 
