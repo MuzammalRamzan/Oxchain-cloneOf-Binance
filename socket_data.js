@@ -424,11 +424,9 @@ async function GetDeviceStatus(ws, user_id) {
 
 async function GetBinanceFutureData(ws, pair) {
   if (pair == "" || pair == null || pair == "undefined") return;
-  var b_ws = new WebSocket("wss://fstream-auth.binance.com");
-
+  var b_ws = new WebSocket("wss://fstream.binance.com/ws/");
   // BNB_USDT => bnbusdt
   const noSlashPair = pair.replace("_", "").toLowerCase();
-
   const initSocketMessage = {
     method: "SUBSCRIBE",
     params: [
@@ -448,7 +446,7 @@ async function GetBinanceFutureData(ws, pair) {
   };
 
   b_ws.onmessage = function (event) {
-    const data = JSON.parse(event.data).data;
+    const data = JSON.parse(event.data);
     if (data != null && data != "undefined") {
       if (data.e === "markPriceUpdate") {
         ws.send(JSON.stringify({ type: "future_header", content: { "mark": data.p, "index": data.i } }));
