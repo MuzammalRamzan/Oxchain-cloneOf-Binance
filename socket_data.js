@@ -286,6 +286,7 @@ async function test() {
           }
         } else if (json.page == "future") {
           GetBinanceData(ws, json.pair);
+          GetBinanceFutureData(ws, json.pair);
           GetFutureBalance(ws, json.user_id);
         } else if (json.page == "future_positions") {
           FuturePositions(ws, json.user_id);
@@ -419,6 +420,42 @@ async function GetDeviceStatus(ws, user_id) {
     devices = await Device.find({ user_id: user_id });
     ws.send(JSON.stringify({ type: "spot_orders", content: devices }));
   });
+}
+
+async function GetBinanceFutureData(ws, pair) {
+  if (pair == "" || pair == null || pair == "undefined") return;
+  var b_ws = new WebSocket("wss://fstream-auth.binance.com");
+
+  // BNB_USDT => bnbusdt
+  const noSlashPair = pair.replace("_", "").toLowerCase();
+
+  const initSocketMessage = {
+    method: "SUBSCRIBE",
+    params: [
+      `${noSlashPair}@markPrice`,
+    ],
+    // params: ["!miniTicker@arr"],
+    id: 1,
+  };
+
+  b_ws.onopen = (event) => {
+    b_ws.send(JSON.stringify(initSocketMessage));
+  };
+
+  // Reconnect connection when disconnect connection
+  b_ws.onclose = () => {
+    b_ws.send(JSON.stringify(initSocketMessage));
+  };
+
+  b_ws.onmessage = function (event) {
+    const data = JSON.parse(event.data).data;
+    if (data != null && data != "undefined") {
+      if (data.e === "markPriceUpdate") {
+        ws.send(JSON.stringify({ type: "future_header", content: { "mark": data.p, "index": data.i } }));
+
+      }
+    }
+  };
 }
 
 async function GetBinanceData(ws, pair) {
