@@ -47,7 +47,7 @@ const registerController = async (req, res) => {
     }
   }
 
-  if (registerType == "phone" && pin !== 0) {
+  if (registerType == "phone" && pin !== '0') {
     let checkPhonePin = await RegisterSMS.findOne({
       phone: data,
       pin: pin,
