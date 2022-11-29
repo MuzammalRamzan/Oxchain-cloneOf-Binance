@@ -1,0 +1,44 @@
+const FutureOrder = require("../../../models/FutureOrder");
+
+const FutureOrderHistory = async (ws, user_id, filter) => {
+    let request = { user_id: user_id };
+    if (filter['symbol'] != null) {
+        request['pair_name'] = filter['symbol'];
+    }
+
+    if (filter['type'] == 'all' || filter['type'] == null) {
+        request["$or"] = [{ method: "limit" }, { method: "stop_limit" }];
+    } else {
+        request['method'] = filter['type'];
+    }
+
+    if ((filter['side'] != null)) {
+        if (filter['side'] != 'all')
+            request['type'] = filter['side'];
+    }
+
+    let status = [];
+    if (filter['cancelled'] != null) {
+        status.push({ status: -1 });
+    }
+    if (filter['filled'] != null) {
+        status.push({ status: 0 });
+    }
+    if (status.length > 0)
+        request[$or] = status;
+
+
+    console.log(request);
+
+
+    let orders = await FutureOrder.find(request);
+    ws.send(JSON.stringify({ page: "future", type: 'order_history', content: orders }));
+
+    FutureOrder.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
+        let orders = await FutureOrder.find(request);
+        if (orders.length > 0)
+            ws.send(JSON.stringify({ page: "future", type: 'order_history', content: orders }));
+    });
+
+}
+module.exports = FutureOrderHistory;
