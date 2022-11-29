@@ -1,6 +1,7 @@
 const FutureOrderModel = require("./models/FutureOrder");
 const Connection = require("./Connection");
 const PairsModel = require("./models/Pairs");
+const FutureWalletModel = require("./models/FutureWalletModel");
 var bodyParser = require("body-parser");
 const multer = require("multer");
 const express = require("express");
@@ -41,33 +42,92 @@ async function Calculate() {
     percentageArray[PairData[x].name] = percentageChange;
   }
 
+  let userZararArray = [];
+  let userKarArray = [];
+
+  let komisyon = "";
+  let bolunecekKisi = 0;
   for (let i = 0; i < orders.length; i++) {
     if (orders[i].type == "sell") {
       let pair = orders[i].pair_name;
-      let percentageData = percentageArray[pair];
-      if (percentageData > 0) {
-        // zarar etmiş
-      } else {
-        // kar etmiş
-      }
       let pnl = orders[i].pnl;
       let amount = orders[i].usedUSDT;
       let percentage = (pnl / amount) * 100;
-      console.log("Satış: " + percentage);
+      let percentageData = percentageArray[pair];
+      if (percentageData > 0) {
+        // zarar etmiş
+        bolunecekKisi = bolunecekKisi + 1;
+        userZararArray.push(orders[i].user_id);
+      } else {
+        if (amount * percentageData * 0.00075 < 0) {
+          komisyon += amount * percentageData * 0.00075 * -1;
+        } else {
+          komisyon += amount * percentageData * 0.00075;
+        }
+        userKarArray.push(orders[i].user_id);
+        // kar etmiş
+      }
     } else {
       let pair = orders[i].pair_name;
       let percentageData = percentageArray[pair];
-      if (percentageData > 0) {
-        // kar etmiş
-      } else {
-        // zarar etmiş
-      }
       let pnl = orders[i].pnl;
       let amount = orders[i].usedUSDT;
       let percentage = (pnl / amount) * 100;
-      console.log("Alış: " + percentage);
+
+      if (percentageData > 0) {
+        // kar etmiş
+        if (amount * percentageData * 0.00075 < 0) {
+          komisyon += amount * percentageData * 0.00075 * -1;
+        } else {
+          komisyon += amount * percentageData * 0.00075;
+        }
+        userKarArray.push(orders[i].user_id);
+      } else {
+        bolunecekKisi = bolunecekKisi + 1;
+        // zarar etmiş
+        userZararArray.push(orders[i].user_id);
+      }
     }
+  }
+
+  //get percentageData elements which are greater than 0
+
+  console.log(
+    "Bölünecek kişi: " +
+      bolunecekKisi +
+      " Total Komisyon: " +
+      komisyon +
+      " Alacağı Komisyon: " +
+      komisyon / bolunecekKisi
+  );
+
+  console.log("Zarar Edenler: " + userZararArray);
+  console.log("Kar Edenler: " + userKarArray);
+
+  for (let i = 0; i < userZararArray.length; i++) {
+    let user_id = userZararArray[i];
+    let wallet = await FutureWalletModel.findOne({
+      user_id: user_id,
+    }).exec();
+    let amount = wallet.amount;
+    let newAmount = amount + komisyon / bolunecekKisi;
+    wallet.amount = newAmount;
+    console.log(newAmount);
+    //save edilecek
+  }
+
+  for (let i = 0; i < userKarArray.length; i++) {
+    let user_id = userKarArray[i];
+    let wallet = await FutureWalletModel.findOne({
+      user_id: user_id,
+    }).exec();
+    let amount = wallet.amount;
+    let newAmount = amount - komisyon / bolunecekKisi;
+    wallet.amount = newAmount;
+    console.log(newAmount);
+    //save edilecek
   }
 }
 
 Calculate();
+setInterval(Calculate, 5000);

@@ -137,12 +137,12 @@ const transferWallet = async function (req, res) {
   if (to == "future") {
     const wallet = await FutureWalletModel.findOne({
       user_id: user_id,
-      coin_id: "62bc116eb65b02b777c97b3d",
+      coin_id: "62ff3c742bebf06a81be98fd",
     }).lean();
 
     if (wallet) {
       await FutureWalletModel.updateOne(
-        { user_id: user_id, coin_id: "62bc116eb65b02b777c97b3d" },
+        { user_id: user_id, coin_id: "62ff3c742bebf06a81be98fd" },
         { $inc: { amount: amount } }
       );
 
