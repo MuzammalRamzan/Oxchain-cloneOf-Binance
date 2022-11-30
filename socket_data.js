@@ -33,6 +33,30 @@ const FutureTradeHistory = require("./SocketController/trade/future/trade_histor
 const Withdraw = require("./models/Withdraw");
 const FutureAssets = require("./SocketController/trade/future/future_funds");
 const FutureOrderHistory = require("./SocketController/trade/future/order_history");
+const express = require("express");
+var bodyParser = require("body-parser");
+var cors = require("cors");
+var route = express();
+
+route.use(cors());
+route.use(bodyParser.json());
+route.use(bodyParser.urlencoded({ extended: true }));
+route.get("/price", (req, res) => {
+  var symbol = req.query.symbol;
+  if(symbol == null) {
+    res.json({'status' : 'fail', 'msg' : 'symbol not found'});
+    return;
+  }
+  let data = global.MarketData[symbol];
+  res.json({'status': 'success', 'data' : data});
+});
+
+
+route.listen(8542, () => {
+  console.log("Server Ayakta");
+});
+
+
 
 var mongodbPass = process.env.MONGO_DB_PASS;
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
