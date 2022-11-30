@@ -56,7 +56,11 @@ const closeFutureOrder = async (req, res) => {
     console.log("ok");
 
     res.json({ status: "success", data: doc });
-  } catch (err) {}
+  } catch (err) {
+    console.log(err);
+    res.json({ status: "fail", data: err.msg });
+
+  }
 };
 
 module.exports = closeFutureOrder;
