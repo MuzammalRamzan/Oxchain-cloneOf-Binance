@@ -80,6 +80,7 @@ const createApplicant = require("./controllers/kyc/createApplicant");
 const addDocument = require("./controllers/kyc/addDocument");
 const getApplicantStatus = require("./controllers/kyc/getApplicantStatus");
 const walletToWallet = require("./controllers/transfer/index");
+const getRegisteredAddresses = require("./controllers/registeredAddress/getRegisteredAddresses");
 
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
@@ -239,6 +240,7 @@ route.post("/deleteMarginLimit", deleteMarginLimit);
 route.all("/addOrders", upload.none(), addOrders);
 
 route.all("/addNewRegisteredAddress", upload.none(), addNewRegisteredAddress);
+route.all("/getRegisteredAddresses", upload.none(), getRegisteredAddresses);
 route.all(
   "/getRegisteredAddressList",
   upload.none(),
