@@ -60,7 +60,7 @@ const closeFutureOrder = async (req, res) => {
     res.json({ status: "success", data: doc });
   } catch (err) {
     console.log(err);
-    res.json({ status: "fail", data: err.msg });
+    res.json({ status: "fail", msg: err.message });
 
   }
 };
