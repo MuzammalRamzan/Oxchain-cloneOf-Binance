@@ -23,8 +23,10 @@ const closeFutureOrder = async (req, res) => {
     let getOrderDetail = await FutureOrder.findOne({ _id: orderId }).exec();
     let getPair = await Pairs.findOne({ _id: getOrderDetail.pair_id }).exec();
     var urlPair = getPair.name.replace("/", "");
+    
     let url =
       'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
+      console.log(url);
     result = await axios(url);
     var price = result.data[0].price;
     let doc = await FutureOrder.findOneAndUpdate(
