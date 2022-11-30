@@ -2,6 +2,7 @@ const FutureOrderModel = require("./models/FutureOrder");
 const Connection = require("./Connection");
 const PairsModel = require("./models/Pairs");
 const FutureWalletModel = require("./models/FutureWalletModel");
+const TransactionModel = require("./models/Transactions");
 var bodyParser = require("body-parser");
 const multer = require("multer");
 const express = require("express");
@@ -114,6 +115,14 @@ async function Calculate() {
     wallet.amount = newAmount;
     console.log(newAmount);
     //save edilecek
+
+    let transaction = new TransactionModel({
+      user_id: user_id,
+      amount: (komisyon / bolunecekKisi) * -1,
+      type: "commission",
+    });
+
+    await transaction.save();
   }
 
   for (let i = 0; i < userKarArray.length; i++) {
@@ -126,8 +135,15 @@ async function Calculate() {
     wallet.amount = newAmount;
     console.log(newAmount);
     //save edilecek
+
+    let transaction = new TransactionModel({
+      user_id: user_id,
+      amount: komisyon / bolunecekKisi,
+      type: "commission",
+    });
+
+    await transaction.save();
   }
 }
 
 Calculate();
-setInterval(Calculate, 5000);

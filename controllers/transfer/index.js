@@ -2,6 +2,7 @@ const WalletModel = require("../../models/Wallet");
 const MarginIsolatedWallet = require("../../models/MarginIsolatedWallet");
 const MarginCrossWallet = require("../../models/MarginCrossWallet");
 const FutureWalletModel = require("../../models/FutureWalletModel");
+const TransactionsModel = require("../../models/Transactions");
 
 var authFile = require("../../auth.js");
 
@@ -15,6 +16,12 @@ const transferWallet = async function (req, res) {
   if (!user_id || !amount || !from || !to) {
     return res.json({ status: "fail", message: "fill_all_blanks" });
   }
+
+  const transaction = new TransactionsModel({
+    user_id: user_id,
+    type: "transfer",
+    amount: amount,
+  });
 
   if (from == "spot") {
     const wallet = await WalletModel.findOne({
@@ -92,6 +99,8 @@ const transferWallet = async function (req, res) {
         { $inc: { amount: amount } }
       );
 
+      await transaction.save();
+
       return res.json({ status: "success", message: "transfer_success" });
     } else {
       res.json({ status: "fail", message: "wallet_not_found" });
@@ -109,6 +118,8 @@ const transferWallet = async function (req, res) {
         { user_id: user_id, coin_id: "62bc116eb65b02b777c97b3d" },
         { $inc: { amount: amount } }
       );
+
+      await transaction.save();
 
       return res.json({ status: "success", message: "transfer_success" });
     } else {
@@ -128,6 +139,8 @@ const transferWallet = async function (req, res) {
         { $inc: { amount: amount } }
       );
 
+      await transaction.save();
+
       return res.json({ status: "success", message: "transfer_success" });
     } else {
       res.json({ status: "fail", message: "wallet_not_found" });
@@ -145,7 +158,7 @@ const transferWallet = async function (req, res) {
         { user_id: user_id, coin_id: "62ff3c742bebf06a81be98fd" },
         { $inc: { amount: amount } }
       );
-
+      await transaction.save();
       return res.json({ status: "success", message: "transfer_success" });
     } else {
       res.json({ status: "fail", message: "wallet_not_found" });
