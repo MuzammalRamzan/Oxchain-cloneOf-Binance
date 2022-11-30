@@ -1,6 +1,6 @@
-const User = require("../models/User");
-const RegisteredAddress = require("../models/RegisteredAddress");
-var authFile = require("../auth.js");
+const User = require("../../models/User");
+const RegisteredAddress = require("../../models/RegisteredAddress");
+var authFile = require("../../auth.js");
 
 const addNewRegisteredAddress = async function (req, res) {
   
@@ -17,6 +17,10 @@ const addNewRegisteredAddress = async function (req, res) {
         address: req.body.address,
         coin_id: req.body.coin_id,
         tag: req.body.tag,
+        whiteListed: req.body.whiteListed,
+        type: req.body.type,
+        label: req.body.label,
+        origin: req.body.origin
       });
 
       let saved = await newAddress.save();
@@ -24,10 +28,10 @@ const addNewRegisteredAddress = async function (req, res) {
         res.json({ status: "success", message: saved });
       }
     } else {
-      res.json({ status: "fail", message: "Invalid user" });
+      res.json({ status: "fail", message: "Invalid user", showableMessage: "Invalid user" });
     }
   } else {
-    res.json({ status: "fail", message: "invalid_api_key" });
+    res.json({ status: "fail", message: "invalid_api_key", showableMessage: "Invalid api key" });
     return;
   }
 };
