@@ -25,11 +25,11 @@ const FutureOrderHistory = async (ws, user_id, filter) => {
         status.push({ status: 0 });
     }
     if (status.length > 0)
-        request[$or] = status;
+        request['$or'] = status;
 
-
-    console.log(request);
-
+    if(filter['date_from'] != null && filter['date_to'] != null) {
+        request['createdAt'] = {$gte : filter['date_from'], $lt : filter['date_to']};
+    }
 
     let orders = await FutureOrder.find(request);
     ws.send(JSON.stringify({ page: "future", type: 'order_history', content: orders }));
