@@ -6,6 +6,7 @@ const { MongoClient } = require("mongodb");
 const FutureOrder = require("./models/FutureOrder.js");
 const Connection = require("./Connection");
 const FutureWalletModel = require("./models/FutureWalletModel.js");
+const { default: axios } = require("axios");
 var mongodbPass = process.env.MONGO_DB_PASS;
 
 const io = new Server();
@@ -16,18 +17,16 @@ async function initialize() {
 
   let request = {};
   let orders = await FutureOrder.find(request).exec();
-
+  await Run(orders);
   let isInsert = FutureOrder.watch([
     { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
   ]).on("change", async (data) => {
     //orders = data;
     orders = await FutureOrder.find(request).exec();
+    await Run(orders);
   });
   
 
-  const allTickers = new WebSocket(
-    "wss://stream.binance.com:9443/ws/!ticker@arr"
-  );
 
 }
 
@@ -57,10 +56,13 @@ async function Run(orders ) {
 
     if (order.method == 'limit') {
       if(order.status == 0) continue;
-      let item = list.find(x => x.s == order.pair_name.replace('/', ''));
+      //let item = list.find(x => x.s == order.pair_name.replace('/', ''));
+      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/",""));
+      
       if (item != null && item != '') {
-        let price = item.a;
-
+        let price = item.data.data.ask;
+        console.log(price);
+        return;  
         if (order.stop_limit != 0) {
           if (order.type == 'buy') {
             if (price <= order.target_price) {
@@ -121,7 +123,7 @@ async function Run(orders ) {
               continue;
             }
           }
-
+          
           let reverseOreders = await FutureOrder.findOne({
             user_id: order.user_id,
             pair_id: order.pair_id,
@@ -237,7 +239,7 @@ async function Run(orders ) {
               target_price: order.target_price,
               leverage: order.leverage,
               amount: order.amount,
-              open_price: price,
+              open_price: order.target_price,
             });
             await n_order.save();
             order.status = 0;
@@ -247,9 +249,10 @@ async function Run(orders ) {
       }
     }
     else if (order.method == 'stop_limit') {
-      let item = list.find(x => x.s == order.pair_name.replace('/', ''));
+      //let item = list.find(x => x.s == order.pair_name.replace('/', ''));
+      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/",""));
       if (item != null && item != '') {
-        let price = item.a;
+        let price = item.data.data.ask;
         if (order.type == 'buy') {
           if (price <= order.stop_limit) {
             order.method = 'limit';
@@ -314,17 +317,17 @@ async function Run(orders ) {
     for (var k = 0; k < userOrders.length; k++) {
       let order = userOrders[k];
       if (order.status == 1) continue;
-      let findBinanceItem = list.filter(x => x.s == order.pair_name.replace('/', ''));
+      //let findBinanceItem = list.filter(x => x.s == order.pair_name.replace('/', ''));
+      let findBinanceItem = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/",""));
       if (findBinanceItem != null) {
-        let item = findBinanceItem[0];
+        let item = findBinanceItem.data;
         if (order.type == 'buy') {
-          let price = item.a;
-
+          let price = item.data.ask;
           let pnl = (price - order.open_price) * order.amount;
           order.pnl = pnl;
           await order.save();
         } else {
-          let price = item.a;
+          let price = item.data.bid;
           let pnl = (order.open_price - price) * order.amount;
           order.pnl = pnl;
           await order.save();
