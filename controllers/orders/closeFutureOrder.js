@@ -25,7 +25,7 @@ const closeFutureOrder = async (req, res) => {
     var urlPair = getPair.name.replace("/", "");
     
     let url =
-      'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
+      'http://18.130.193.166:8542/price?symbol=' + urlPair;
       console.log(url);
     result = await axios(url);
     var price = result.data[0].price;

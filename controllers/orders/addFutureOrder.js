@@ -65,7 +65,7 @@ const addFutureOrder = async (req, res) => {
     var urlPair = getPair.name.replace("/", "");
     console.log(urlPair);
     let url =
-        'http://18.116.203.170/prices/' + urlPair;
+        'http://18.130.193.166:8542/price?symbol=' + urlPair;
         console.log(url);
     result = await axios(url);
     var price = parseFloat(result.data[0].price);

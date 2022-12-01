@@ -44,7 +44,7 @@ const addMarginIsolatedOrder = async (req, res) => {
     var urlPair = getPair.name.replace("/", "");
     console.log(urlPair);
     let url =
-        'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
+        'http://18.130.193.166:8542/price?symbol=' + urlPair;
     result = await axios(url);
     var price = parseFloat(result.data[0].price);
     if (method == "limit") {

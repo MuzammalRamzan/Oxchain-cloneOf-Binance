@@ -40,7 +40,7 @@ const addOrders = async function (req, res) {
 
     var urlPair = req.body.pair_name.replace("/", "");
     let url =
-      'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
+      'http://18.130.193.166:8542/price?symbol=' + urlPair;
     let result = await axios(url);
     var price = result.data[0].price;
     let target_price = req.body.target_price ?? 0.0;
