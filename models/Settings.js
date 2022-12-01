@@ -9,6 +9,7 @@ const SettingsSchema = new mongoose.Schema({
   marketingEmails: { type: Boolean, default: false },
   analytics: { type: Boolean, default: false },
   advertising: { type: Boolean, default: false },
+  autoLock: { type: String, required: false },
   createdAt: {
     type: Date,
     default: Date.now,

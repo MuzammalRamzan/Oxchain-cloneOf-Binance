@@ -120,6 +120,7 @@ const FuturePercentClose = require("./controllers/orders/futurePercentClose.js")
 const Settings = require("./controllers/settings");
 const SetFavoritePair = require("./controllers/pair/setFavoritePair.js");
 const GetFavoritePairs = require("./controllers/pair/getFavoritePairs.js");
+const removeEmail = require("./controllers/users/removeEmail");
 
 route.use(
   session({
@@ -196,6 +197,7 @@ route.all("/update2fa", upload.none(), update2fa);
 route.all("/getActiveDevice", upload.none(), getActiveDevice);
 route.all("/deleteActiveDevice", upload.none(), deleteActiveDevice);
 route.all("/getVerificationMethod", upload.none(), getVerificationMethod);
+route.all("/removeEmail", upload.none(), removeEmail);
 
 //Wallet Modules
 route.post("/transfer", transfer);
