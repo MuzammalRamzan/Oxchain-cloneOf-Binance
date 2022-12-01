@@ -65,7 +65,8 @@ const addFutureOrder = async (req, res) => {
     var urlPair = getPair.name.replace("/", "");
     console.log(urlPair);
     let url =
-        'https://api.binance.com/api/v3/ticker/price?symbols=["' + urlPair + '"]';
+        'http://18.116.203.170/prices/' + urlPair;
+        console.log(url);
     result = await axios(url);
     var price = parseFloat(result.data[0].price);
     if (future_type == "isolated") {

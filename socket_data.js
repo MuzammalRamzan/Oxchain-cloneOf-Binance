@@ -43,12 +43,12 @@ route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
 route.get("/price", (req, res) => {
   var symbol = req.query.symbol;
-  if(symbol == null) {
-    res.json({'status' : 'fail', 'msg' : 'symbol not found'});
+  if (symbol == null) {
+    res.json({ 'status': 'fail', 'msg': 'symbol not found' });
     return;
   }
   let data = global.MarketData[symbol];
-  res.json({'status': 'success', 'data' : data});
+  res.json({ 'status': 'success', 'data': data });
 });
 
 
@@ -77,36 +77,41 @@ w.save();
 */
 async function fillMarketPrices() {
   let coinList = await CoinList.find({});
-  var b_ws = new WebSocket("wss://stream.binance.com/stream");
+  try {
+    var b_ws = new WebSocket("wss://stream.binance.com/stream");
 
-  for (var k = 0; k < coinList.length; k++) {
-    global.MarketData[coinList[k].symbol + "USDT"] = { bid: 0.0, ask: 0.0 };
-  }
-
-  const initSocketMessage = {
-    method: "SUBSCRIBE",
-    params: ["!ticker@arr"],
-    // params: ["!miniTicker@arr"],
-    id: 1,
-  };
-
-  b_ws.onopen = (event) => {
-    b_ws.send(JSON.stringify(initSocketMessage));
-  };
-
-  // Reconnect connection when disconnect connection
-  b_ws.onclose = () => {
-    b_ws.send(JSON.stringify(initSocketMessage));
-  };
-  b_ws.onmessage = function (event) {
-    const data = JSON.parse(event.data).data;
-    if (data != null && data != "undefined") {
-      for (var m = 0; m < data.length; m++) {
-        let x = data[m];
-        global.MarketData[x.s] = { bid: x.b, ask: x.a };
-      }
+    for (var k = 0; k < coinList.length; k++) {
+      global.MarketData[coinList[k].symbol + "USDT"] = { bid: 0.0, ask: 0.0 };
     }
-  };
+
+    const initSocketMessage = {
+      method: "SUBSCRIBE",
+      params: ["!ticker@arr"],
+      // params: ["!miniTicker@arr"],
+      id: 1,
+    };
+
+    b_ws.onopen = (event) => {
+      b_ws.send(JSON.stringify(initSocketMessage));
+    };
+
+    // Reconnect connection when disconnect connection
+    b_ws.onclose = () => {
+      b_ws.send(JSON.stringify(initSocketMessage));
+    };
+    b_ws.onmessage = function (event) {
+      const data = JSON.parse(event.data).data;
+      if (data != null && data != "undefined") {
+        for (var m = 0; m < data.length; m++) {
+          let x = data[m];
+          global.MarketData[x.s] = { bid: x.b, ask: x.a };
+        }
+      }
+    };
+  } catch(err) {
+    console.log("Fiyatlar alınmadı");
+    console.log(err.message);
+  }
 }
 fillMarketPrices();
 async function main() {
@@ -319,7 +324,7 @@ async function test() {
           FutureOpenOrders(ws, json.user_id);
         } else if (json.page == "future_order_history") {
           let filter = [];
-          if(json.filter != null) filter = json.filter;
+          if (json.filter != null) filter = json.filter;
           console.log(filter);
           FutureOrderHistory(ws, json.user_id, filter);
         } else if (json.page == "future_trade_history") {
