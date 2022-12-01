@@ -17,7 +17,7 @@ const getActiveDevice = async function (req, res) {
     if (device != null) {
       res.json({ status: "success", data: device });
     } else {
-      res.json({ status: "fail", message: "no_device_found" });
+      res.json({ status: "fail", message: "no_device_found", showableMessage: 'No Device found' });
     }
 
 

@@ -336,6 +336,7 @@ const login = async (req, res) => {
           deviceName: deviceName,
           manufacturer: manufacturer,
           model: deviceModel,
+          status: 'completed'
         });
 
         let room = await newUserLog.save();
