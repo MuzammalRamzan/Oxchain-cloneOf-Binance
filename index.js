@@ -117,6 +117,8 @@ const editWithdrawalWhiteList = require("./controllers/withdraw/editWithdrawalWh
 const UpdateStop = require("./controllers/orders/updateStop.js");
 const FuturePercentClose = require("./controllers/orders/futurePercentClose.js");
 const Settings = require("./controllers/settings");
+const SetFavoritePair = require("./controllers/pair/setFavoritePair.js");
+const GetFavoritePairs = require("./controllers/pair/getFavoritePairs.js");
 
 route.use(
   session({
@@ -259,6 +261,9 @@ route.post("/editWithdrawalWhiteList", editWithdrawalWhiteList);
 route.all("/addNotification", upload.none(), addNotification);
 route.all("/getNotification", upload.none(), getNotification);
 
+
+route.all("/setFavoritePair", upload.none(), SetFavoritePair);
+route.all("/getFavoritePairs", upload.none(), GetFavoritePairs);
 route.all("/getPairs", upload.none(), getPairs);
 route.all("/addPair", upload.none(), addPair);
 route.all("/getDigits", upload.none(), getDigits);
