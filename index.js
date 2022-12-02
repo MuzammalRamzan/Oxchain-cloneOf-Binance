@@ -117,6 +117,7 @@ const getOneStepWithdraw = require("./controllers/withdraw/getOneStepWithdraw");
 const editWithdrawalWhiteList = require("./controllers/withdraw/editWithdrawalWhiteList");
 const UpdateStop = require("./controllers/orders/updateStop.js");
 const FuturePercentClose = require("./controllers/orders/futurePercentClose.js");
+const FutureAmountClose = require("./controllers/orders/futureAmountClose.js");
 const Settings = require("./controllers/settings");
 const SetFavoritePair = require("./controllers/pair/setFavoritePair.js");
 const GetFavoritePairs = require("./controllers/pair/getFavoritePairs.js");
@@ -226,6 +227,7 @@ route.post("/addMarginIsolatedOrder", addMarginIsolatedOrder);
 route.post("/adjustMargin", AdjustMargin);
 route.post("/updateStop", UpdateStop);
 route.post("/futurePercentClose", FuturePercentClose);
+route.post("/futureAmountClose", FutureAmountClose);
 
 route.post("/addFutureOrder", addFutureOrder);
 route.post("/cancelFutureLimit", cancelFutureLimit);
@@ -264,7 +266,6 @@ route.post("/getOneStepWithdraw", getOneStepWithdraw);
 route.post("/editWithdrawalWhiteList", editWithdrawalWhiteList);
 route.all("/addNotification", upload.none(), addNotification);
 route.all("/getNotification", upload.none(), getNotification);
-
 
 route.all("/setFavoritePair", upload.none(), SetFavoritePair);
 route.all("/getFavoritePairs", upload.none(), GetFavoritePairs);
