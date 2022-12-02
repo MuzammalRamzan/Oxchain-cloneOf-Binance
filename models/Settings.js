@@ -1,14 +1,28 @@
 const mongoose = require("mongoose");
 
+const notificationSubSchema = new mongoose.Schema(
+  {
+    operational: { type: String, default: false },
+    transactionRisk: { type: String, default: false },
+    marketing: { type: String, default: false },
+  },
+  { _id: false }
+);
+
+const privacySubSchema = new mongoose.Schema(
+  {
+    advertising: { type: Boolean, default: false },
+    analytics: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
 const SettingsSchema = new mongoose.Schema({
   userId: { type: String, required: true },
-  p2pProfileSetting: { type: Object, default: {} },
-  notificationLanguage: { type: String, required: false },
-  orderConfirmationReminders: { type: Object, default: {} },
-  oneSiteNotification: { type: Boolean, default: false },
-  marketingEmails: { type: Boolean, default: false },
-  analytics: { type: Boolean, default: false },
-  advertising: { type: Boolean, default: false },
+  notifications: { type: notificationSubSchema },
+  language: { type: String, default: "english" },
+  currency: { type: String, default: "USD" },
+  privacy: { type: privacySubSchema },
   autoLock: { type: String, required: false },
   createdAt: {
     type: Date,
