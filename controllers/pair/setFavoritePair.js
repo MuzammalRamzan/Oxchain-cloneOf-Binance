@@ -4,11 +4,16 @@ const Pairs = require("../../models/Pairs");
 const SetFavoritePair = async (req, res) => {
   try {
     let user_id = req.body.user_id;
-    let pair = req.body.pair;
-
+    let coin_id = req.body.coin_id;
+    
     let pairData = await Pairs.findOne({
-      name: pair,
+      name: coin_id.replace('_', '/'),
     });
+
+    if(pairData == null) {
+      res.json({ status: "fail", msg: "invalid coin" });
+      return;
+    }
 
     let check = await FavoriteCoin.findOne({
       user_id: user_id,
