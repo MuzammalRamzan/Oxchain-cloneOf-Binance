@@ -26,7 +26,7 @@ const closeMarginOrder = async (req, res) => {
     let url =
       'http://18.130.193.166:8542/price?symbol=' + urlPair;
     result = await axios(url);
-    var price = result.data[0].price;
+    var price = result.data.data.ask;
     let doc = await MarginOrder.findOneAndUpdate(
       { _id: orderId },
       { $set: { status: 1, close_time: Date.now(), close_price: price } }

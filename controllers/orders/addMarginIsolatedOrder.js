@@ -46,7 +46,7 @@ const addMarginIsolatedOrder = async (req, res) => {
     let url =
         'http://18.130.193.166:8542/price?symbol=' + urlPair;
     result = await axios(url);
-    var price = parseFloat(result.data[0].price);
+    var price = parseFloat(result.data.data.ask);
     if (method == "limit") {
         target_price = parseFloat(target_price);
 

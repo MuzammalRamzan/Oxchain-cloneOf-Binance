@@ -28,7 +28,7 @@ const closeFutureOrder = async (req, res) => {
       'http://18.130.193.166:8542/price?symbol=' + urlPair;
       console.log(url);
     result = await axios(url);
-    var price = result.data[0].price;
+    var price = result.data.data.ask;
     let doc = await FutureOrder.findOneAndUpdate(
       { _id: orderId },
       { $set: { status: 1, close_time: Date.now(), close_price: price } }

@@ -68,7 +68,7 @@ const addFutureOrder = async (req, res) => {
         'http://18.130.193.166:8542/price?symbol=' + urlPair;
         console.log(url);
     result = await axios(url);
-    var price = parseFloat(result.data[0].price);
+    var price = parseFloat(result.data.data.ask);
     if (future_type == "isolated") {
         if (method == "limit") {
             target_price = parseFloat(target_price);
