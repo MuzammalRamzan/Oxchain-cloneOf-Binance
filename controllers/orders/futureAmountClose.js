@@ -55,6 +55,9 @@ const FutureAmountClose = async (req, res) => {
     order.pnl = parseFloat(pnl) + cikarilacakPnl;
   }
 
+  if(order.amount == amount){
+    order.status = 1;
+  }
   wallet.amount = parseFloat(wallet.amount) + usdtPrice;
   order.amount = parseFloat(order.amount) - amount;
   await order.save();
