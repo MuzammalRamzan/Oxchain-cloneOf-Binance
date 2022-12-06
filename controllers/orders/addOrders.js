@@ -42,7 +42,6 @@ const addOrders = async function (req, res) {
     let url =
       'http://18.130.193.166:8542/price?symbol=' + urlPair;
     let result = await axios(url);
-    console.log(result.data);
     var price = result.data.data.ask;
     
     console.log(price);
