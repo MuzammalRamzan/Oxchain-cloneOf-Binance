@@ -22,46 +22,46 @@ async function initialize() {
   let orders = await FutureOrder.find(request).exec();
 
   let isInsert = FutureOrder.watch([
-    { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+    {
+      $match: {
+        operationType: { $in: ["insert", "update", "remove", "delete"] },
+      },
+    },
   ]).on("change", async (data) => {
     //orders = data;
     orders = await FutureOrder.find(request).exec();
     await Run(orders);
   });
   await Run(orders);
-
 }
 async function Run(orders) {
-  let limitOrders = await FutureOrder.find(
-    {
-      $and: [
-        {
-          $or: [
-            { method: 'limit' },
-            { method: 'stop_limit' },
-          ]
-        },
-        {
-          future_type: 'isolated'
-        },
-        {
-          status: 1
-        }
-      ]
-    }
-  );
+  let limitOrders = await FutureOrder.find({
+    $and: [
+      {
+        $or: [{ method: "limit" }, { method: "stop_limit" }],
+      },
+      {
+        future_type: "isolated",
+      },
+      {
+        status: 1,
+      },
+    ],
+  });
 
   for (var i = 0; i < limitOrders.length; i++) {
     let order = limitOrders[i];
-    if (order.method == 'limit') {
-      if(order.status == 0) continue;
-      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/",""));
-      if (item != null && item != '') {
+    if (order.method == "limit") {
+      if (order.status == 0) continue;
+      let item = await axios(
+        "http://18.130.193.166:8542/price?symbol=" +
+          order.pair_name.replace("/", "")
+      );
+      if (item != null && item != "") {
         let price = item.data.data.ask;
         if (order.stop_limit != 0) {
-          if (order.type == 'buy') {
+          if (order.type == "buy") {
             if (price >= order.target_price) {
-
               order.status = 0;
               await order.save();
               let n_order = new FutureOrder({
@@ -84,9 +84,8 @@ async function Run(orders) {
               });
               await n_order.save();
             }
-          } else if (order.type == 'sell') {
+          } else if (order.type == "sell") {
             if (price <= order.target_price) {
-
               order.status = 0;
               await order.save();
               let n_order = new FutureOrder({
@@ -111,13 +110,11 @@ async function Run(orders) {
             }
           }
         } else {
-
-
-          if (order.type == 'buy') {
+          if (order.type == "buy") {
             if (price >= order.target_price) {
               continue;
             }
-          } else if (order.type == 'sell') {
+          } else if (order.type == "sell") {
             if (price <= order.target_price) {
               continue;
             }
@@ -127,7 +124,7 @@ async function Run(orders) {
             user_id: order.user_id,
             pair_id: order.pair_id,
             future_type: order.future_type,
-            method: 'market',
+            method: "market",
             status: 0,
           });
 
@@ -151,13 +148,14 @@ async function Run(orders) {
               await reverseOreders.save();
               order.status = 0;
               await order.save();
-
             } else {
               //Tersine ise
-              let checkusdt = (reverseOreders.usedUSDT + reverseOreders.pnl) * reverseOreders.leverage;
+              let checkusdt =
+                (reverseOreders.usedUSDT + reverseOreders.pnl) *
+                reverseOreders.leverage;
               if (checkusdt == order.usedUSDT * order.leverage) {
                 reverseOreders.status = 1;
-                
+
                 let userBalance = await FutureWalletModel.findOne({
                   coin_id: FutureWalletId,
                   user_id: req.body.user_id,
@@ -170,9 +168,7 @@ async function Run(orders) {
                 await reverseOreders.save();
                 order.status = 0;
                 await order.save();
-              }
-
-              else if (checkusdt > order.usedUSDT * order.leverage) {
+              } else if (checkusdt > order.usedUSDT * order.leverage) {
                 let writeUsedUSDT =
                   reverseOreders.usedUSDT + reverseOreders.pnl - order.usedUSDT;
                 if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
@@ -183,7 +179,8 @@ async function Run(orders) {
                   coin_id: FutureWalletId,
                   user_id: order.user_id,
                 }).exec();
-                userBalance.amount = userBalance.amount + reverseOreders.usedUSDT + order.usedUSDT;
+                userBalance.amount =
+                  userBalance.amount + reverseOreders.usedUSDT + order.usedUSDT;
                 await userBalance.save();
                 await reverseOreders.save();
                 order.status = 0;
@@ -206,15 +203,14 @@ async function Run(orders) {
                 if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
                 reverseOreders.usedUSDT = writeUsedUSDT;
                 //reverseOreders.amount = ((((reverseOreders.usedUSDT + reverseOreders.pnl) * leverage) - (usedUSDT * leverage)) / price);
-                reverseOreders.amount = (writeUsedUSDT * order.leverage) / price;
+                reverseOreders.amount =
+                  (writeUsedUSDT * order.leverage) / price;
                 await reverseOreders.save();
                 order.status = 0;
                 await order.save();
               }
             }
           } else {
-
-
             userBalance = await FutureWalletModel.findOne({
               coin_id: FutureWalletId,
               user_id: order.user_id,
@@ -229,7 +225,7 @@ async function Run(orders) {
               //type: order.type == 'buy' ? 'sell' : 'buy',
               type: order.type,
               future_type: order.future_type,
-              method: 'market',
+              method: "market",
               user_id: order.user_id,
               usedUSDT: order.usedUSDT,
               required_margin: order.usedUSDT,
@@ -245,23 +241,23 @@ async function Run(orders) {
             order.status = 0;
             await order.save();
           }
-
-
         }
       }
-    }
-    else if (order.method == 'stop_limit') {
-      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/",""));
-      if (item != null && item != '') {
+    } else if (order.method == "stop_limit") {
+      let item = await axios(
+        "http://18.130.193.166:8542/price?symbol=" +
+          order.pair_name.replace("/", "")
+      );
+      if (item != null && item != "") {
         let price = item.data.data.ask;
-        if (order.type == 'buy') {
+        if (order.type == "buy") {
           if (price <= order.stop_limit) {
-            order.method = 'limit';
+            order.method = "limit";
             await order.save();
           }
-        } else if (order.type == 'sell') {
+        } else if (order.type == "sell") {
           if (price >= order.stop_limit) {
-            order.method = 'limit';
+            order.method = "limit";
             await order.save();
           }
         }
@@ -269,46 +265,47 @@ async function Run(orders) {
     }
   }
 
-
   let totalPNL = 0.0;
   console.log(orders.length);
   for (var n = 0; n < orders.length; n++) {
-    if(orders.method != 'market') continue;
-    if(orders.status != 0) continue;
+    if (orders.method != "market") continue;
+    if (orders.status != 0) continue;
     let pnl = 0;
-    
 
     let order = orders[n];
-    let getPrice = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/",""));
+    let getPrice = await axios(
+      "http://18.130.193.166:8542/price?symbol=" +
+        order.pair_name.replace("/", "")
+    );
     let price = getPrice.data.data.ask;
     if (order.type == "buy") {
-      let liqPrice = (order.open_price - (order.open_price / (order.leverage * 1.0)));
+      let liqPrice =
+        order.open_price - order.open_price / (order.leverage * 1.0);
       pnl = (price - order.open_price) * order.amount;
       let reverseUsedUSDT = order.usedUSDT * -1;
-      if (order.open_price <= liqPrice) {
-        order.status = 1;
-      }
-      if (pnl <= reverseUsedUSDT) {
-        order.status = 1;
-      }
+   
+        if (order.open_price <= liqPrice) {
+          order.status = 1;
+        }
+        if (pnl <= reverseUsedUSDT) {
+          order.status = 1;
+        }
+      
     } else {
       let reverseUsedUSDT = order.usedUSDT;
       pnl = (order.open_price - price) * order.amount;
-      let liqPrice = (order.open_price + (order.open_price / (order.leverage * 1.0)));
+      let liqPrice =
+        order.open_price + order.open_price / (order.leverage * 1.0);
       if (order.open_price >= liqPrice) {
         order.status = 1;
       }
       if (pnl <= reverseUsedUSDT) {
         order.status = 1;
       }
-
     }
-    
+
     order.pnl = pnl;
     await order.save();
-
-
-
   }
 }
 

@@ -24,13 +24,19 @@ const FutureAmountClose = async (req, res) => {
     res.json({ status: "fail", message: "User not found" });
     return;
   }
+
+  let pairname = order.pair_name.replace("/", "");
+  console.log(pairname);
   let binanceData = await axios(
-    "http://18.130.193.166:8542/price?symbol=" +
-      order.pair_name.replace("/", "")
+    "http://18.130.193.166:8542/price?symbol=" + pairname
   );
+
   let marketPrice = parseFloat(binanceData.data.data.ask);
+  console.log("12");
 
   amount = parseFloat(amount);
+
+  console.log(order.amount);
 
   if (order.amount < amount) {
     res.json({ status: "fail", message: "Amount is too big" });
@@ -42,9 +48,11 @@ const FutureAmountClose = async (req, res) => {
   let usedUSDT = order.usedUSDT;
   let pnl = order.pnl;
 
-  let oran = amount / parseFloat(usedUSDT + pnl);
+  let oran = parseFloat(amount) / parseFloat(usedUSDT + pnl);
 
-  let cikarilacakUSDT = parseFloat(usedUSDT) * oran;
+  console.log("oran:" + oran);
+  let cikarilacakUSDT =
+    (parseFloat(usedUSDT) * oran * marketPrice) / order.leverage;
   let cikarilacakPnl = parseFloat(pnl) * oran;
 
   order.usedUSDT = parseFloat(usedUSDT) - cikarilacakUSDT;
@@ -55,14 +63,16 @@ const FutureAmountClose = async (req, res) => {
     order.pnl = parseFloat(pnl) + cikarilacakPnl;
   }
 
-  if(order.amount == amount){
+  if (order.amount == amount) {
     order.status = 1;
   }
+
+  console.log(order.amount - amount);
   wallet.amount = parseFloat(wallet.amount) + usdtPrice;
   order.amount = parseFloat(order.amount) - amount;
   await order.save();
   await wallet.save();
-  res.send({ status: "success", data: "OK" });
+  res.json({ status: "success", data: "OK" });
 };
 
 module.exports = FutureAmountClose;

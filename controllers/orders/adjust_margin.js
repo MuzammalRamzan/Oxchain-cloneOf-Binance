@@ -22,7 +22,7 @@ const AdjustMargin = async (req, res) => {
             res.json({ status: "fail", message: "Invalid Amount" });
             return;
         }
-        order.usedUSDT += amount;
+        order.adjusted += amount;
         await order.save();
         wallet.amount = parseFloat(wallet.amount) - amount;
         await wallet.save();
@@ -44,7 +44,7 @@ const AdjustMargin = async (req, res) => {
             return;
         }
 
-        order.usedUSDT -= amount;
+        order.adjusted -= amount;
         await order.save();
         wallet.amount = parseFloat(wallet.amount) + amount;
         await wallet.save();
