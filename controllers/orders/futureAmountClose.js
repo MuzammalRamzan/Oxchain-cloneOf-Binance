@@ -25,10 +25,10 @@ const FutureAmountClose = async (req, res) => {
     return;
   }
   let binanceData = await axios(
-    "https://api.binance.com/api/v3/ticker/price?symbol=" +
+    "http://18.130.193.166:8542/price?symbol=" +
       order.pair_name.replace("/", "")
   );
-  let marketPrice = parseFloat(binanceData.data["price"]);
+  let marketPrice = parseFloat(binanceData.data.data.ask);
 
   amount = parseFloat(amount);
 
