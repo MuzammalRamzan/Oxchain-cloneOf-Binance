@@ -325,10 +325,11 @@ async function test() {
         } else if (json.page == "future_order_history") {
           let filter = [];
           if (json.filter != null) filter = json.filter;
-          console.log(filter);
           FutureOrderHistory(ws, json.user_id, filter);
         } else if (json.page == "future_trade_history") {
-          FutureTradeHistory(ws, json.user_id);
+          let filter = [];
+          if (json.filter != null) filter = json.filter;
+          FutureTradeHistory(ws, json.user_id, filter);
         } else if (json.page == "future_assets") {
           if (json.user_id != null && json.user_id != "undefined") {
             FutureAssets(ws, json.user_id);

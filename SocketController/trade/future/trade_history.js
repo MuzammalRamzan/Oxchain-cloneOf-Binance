@@ -1,7 +1,7 @@
 const FutureOrder = require("../../../models/FutureOrder");
 const MarginOrder = require("../../../models/MarginOrder");
 
-const FutureTradeHistory = async (ws, user_id) => {
+const FutureTradeHistory = async (ws, user_id, filter) => {
 
     let request = { user_id: user_id, method : "market" };
     if (filter['symbol'] != null) {
