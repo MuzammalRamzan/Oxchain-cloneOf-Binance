@@ -19,7 +19,6 @@ async function calculate(wallets, user_id) {
     let assets = [];
     for (var i = 0; i < wallets.length; i++) {
         let wallet = wallets[i];
-        if(wallet.address == null || wallet.address == '') continue;
         
         let order = await FutureOrder.find({ pair_id: wallet.coin_id, user_id: user_id, future_type: 'cross', method: "market", type: "buy", status: 0 });
         let totalUsed = 0.0;
