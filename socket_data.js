@@ -36,6 +36,7 @@ const FutureOrderHistory = require("./SocketController/trade/future/order_histor
 const express = require("express");
 var bodyParser = require("body-parser");
 var cors = require("cors");
+const FutureTransactionHistory = require("./SocketController/trade/future/transaction_history");
 var route = express();
 
 route.use(cors());
@@ -330,6 +331,10 @@ async function test() {
           let filter = [];
           if (json.filter != null) filter = json.filter;
           FutureTradeHistory(ws, json.user_id, filter);
+        } else if (json.page == "future_transaction_history") {
+          let filter = [];
+          if (json.filter != null) filter = json.filter;
+          FutureTransactionHistory(ws, json.user_id, filter);
         } else if (json.page == "future_assets") {
           if (json.user_id != null && json.user_id != "undefined") {
             FutureAssets(ws, json.user_id);
