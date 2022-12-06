@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@socket.io/mongo-adapter": "^0.2.1",
+    "apple-auth": "^1.0.7",
     "authenticator": "^1.1.5",
     "axios": "^0.27.2",
     "cors": "^2.8.5",

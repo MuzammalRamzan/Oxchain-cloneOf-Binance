@@ -83,6 +83,7 @@ const getApplicantStatus = require("./controllers/kyc/getApplicantStatus");
 const walletToWallet = require("./controllers/transfer/index");
 const getRegisteredAddresses = require("./controllers/registeredAddress/getRegisteredAddresses");
 const googleAuth = require("./controllers/auth/googleAuth");
+const appleAuth = require("./controllers/auth/appleAuth");
 
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
@@ -201,6 +202,7 @@ route.all("/deleteActiveDevice", upload.none(), deleteActiveDevice);
 route.all("/getVerificationMethod", upload.none(), getVerificationMethod);
 route.all("/removeEmail", upload.none(), removeEmail);
 route.post("/googleAuth", googleAuth);
+route.post("/appleAuth", appleAuth);
 
 //Wallet Modules
 route.post("/transfer", transfer);

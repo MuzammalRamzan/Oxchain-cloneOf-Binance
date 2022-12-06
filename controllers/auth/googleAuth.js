@@ -1,8 +1,10 @@
 const { OAuth2Client } = require("google-auth-library");
 const UserModel = require("../../models/User");
 const authFile = require("../../auth.js");
+const { getToken } = require("../../auth");
 
-const client = new OAuth2Client("CLIENT_ID");
+const CLIENT_ID = "478064601125-05qphf7f1ho60j32vf50dt3f3esqsar3.apps.googleusercontent.com"
+const client = new OAuth2Client(CLIENT_ID);
 
 const googleAuth = async (req, res) => {
   const { token, apiKey } = req.body;
@@ -14,7 +16,7 @@ const googleAuth = async (req, res) => {
 
   const ticket = await client.verifyIdToken({
     idToken: token,
-    audience: "CLIENT_ID",
+    audience: CLIENT_ID,
   });
   const data = ticket?.getPayload();
   if (!data)
@@ -26,7 +28,8 @@ const googleAuth = async (req, res) => {
   const user = await UserModel.findOneAndUpdate({ email: data.email }, data, {
     upsert: true,
   });
-  return res.json({ status: "success", data: user });
+  const authToken = getToken({ user: user._id });
+  return res.json({ status: "success", data: { user, token: authToken } });
 };
 
 module.exports = googleAuth;
