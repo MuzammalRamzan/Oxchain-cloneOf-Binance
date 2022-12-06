@@ -15,7 +15,6 @@ const FutureTransactionHistory = async (ws, user_id, filter) => {
         request['createdAt'] = { $gte: filter['date_from'], $lt: filter['date_to'] };
     }
 
-    console.log(request);
     let table = await Transactions.find(request);
     ws.send(JSON.stringify({ page: "future", type: 'transaction_history', content: table }));
 
