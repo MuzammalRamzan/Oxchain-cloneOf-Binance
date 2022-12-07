@@ -268,8 +268,8 @@ async function Run(orders) {
   let totalPNL = 0.0;
   console.log(orders.length);
   for (var n = 0; n < orders.length; n++) {
-    if (orders.method != "market") continue;
-    if (orders.status != 0) continue;
+    if (orders[n].method != "market") continue;
+    if (orders[n].status != 0) continue;
     let pnl = 0;
 
     let order = orders[n];
@@ -278,7 +278,8 @@ async function Run(orders) {
         order.pair_name.replace("/", "")
     );
     let price = getPrice.data.data.ask;
-    if (order.type == "buy") {
+
+    if (orders[n].type == "buy") {
       if (order.adjusted != 0) {
         let adjusted = 0;
 
