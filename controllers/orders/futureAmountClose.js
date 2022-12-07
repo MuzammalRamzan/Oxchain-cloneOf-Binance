@@ -63,7 +63,7 @@ const FutureAmountClose = async (req, res) => {
     order.pnl = parseFloat(pnl) + cikarilacakPnl;
   }
 
-  if (order.amount == amount) {
+  if (order.amount <= amount) {
     order.status = 1;
   }
 

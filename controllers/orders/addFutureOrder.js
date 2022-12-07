@@ -30,7 +30,7 @@ const addFutureOrder = async (req, res) => {
 
 
     let getSameOrder = await FutureOrder.find({ pair_name: symbol, future_type: (future_type == 'cross' ? 'isolated' : 'cross'), user_id: user_id, $lt: 0 });
-    getSameOrder.forEach((val) => {
+    for(var h = 0; h < getSameOrder.length; h++ ) {
         if (val.method == 'market') {
             if (val.status == 0) {
                 res.json({ status: "fail", message: "You currently have a transaction for this symbol" });
@@ -44,7 +44,8 @@ const addFutureOrder = async (req, res) => {
                 return;
             }
         }
-    })
+    }
+    
 
 
     let getPair = await Pairs.findOne({ name: symbol }).exec();
