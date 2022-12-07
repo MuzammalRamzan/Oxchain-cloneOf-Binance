@@ -336,6 +336,7 @@ const addFutureOrder = async (req, res) => {
                     leverage: leverage,
                     amount: amount,
                     open_price: price,
+                    status: 0
                 });
                 await order.save();
                 const fee = (amount * getPair.tradeFee) / 100;
@@ -603,6 +604,7 @@ const addFutureOrder = async (req, res) => {
                     leverage: leverage,
                     amount: amount,
                     open_price: price,
+                    status: 0
                 });
                 await order.save();
                 const fee = (amount * getPair.tradeFee) / 100;
