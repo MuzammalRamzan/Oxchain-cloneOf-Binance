@@ -38,6 +38,7 @@ const FutureAmountClose = async (req, res) => {
 
   console.log(order.amount);
 
+  
   if (order.amount < amount) {
     res.json({ status: "fail", message: "Amount is too big" });
     return;
@@ -56,7 +57,9 @@ const FutureAmountClose = async (req, res) => {
   let cikarilacakPnl = parseFloat(pnl) * oran;
 
   order.usedUSDT = parseFloat(usedUSDT) - cikarilacakUSDT;
+  console.log("AMOUNT : ", amount);
   order.amount = parseFloat(order.amount) - amount;
+  console.log("Kalan : ", order.amount);
   if (order.pnl > 0) {
     order.pnl = parseFloat(pnl) - cikarilacakPnl;
   } else {
