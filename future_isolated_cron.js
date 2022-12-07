@@ -280,8 +280,6 @@ async function Run(orders) {
     let price = getPrice.data.data.ask;
 
     if (orders[n].type == "buy") {
-
-
       if (order.adjusted != 0) {
         let adjusted = 0;
 
@@ -300,36 +298,30 @@ async function Run(orders) {
         let AdjustedLiq =
           (parseFloat(adjusted) * parseFloat(liqHesaplayici)) / anaPara;
 
-
-
-
         let liqPrice =
           order.open_price -
           order.open_price / (order.leverage * 1.0) -
           AdjustedLiq;
         pnl = (price - order.open_price) * order.amount;
 
+        console.log(
+          "Open Price: " + order.open_price,
+          order.open_price -
+            order.open_price / (order.leverage * 1.0) -
+            AdjustedLiq
+        );
+
         let reverseUsedUSDT = order.usedUSDT * -1;
 
-        if (order.open_price >= liqPrice) {
+        if (order.open_price <= liqPrice) {
           order.status = 1;
         }
         //if (pnl <= reverseUsedUSDT) {
         //  order.status = 1;
         //}
-      } else 
-      {
-
-
-
-
-
-
-
+      } else {
         let liqPrice =
           order.open_price - order.open_price / (order.leverage * 1.0);
-
-
 
         pnl = (price - order.open_price) * order.amount;
         let reverseUsedUSDT = order.usedUSDT * -1;
@@ -340,18 +332,8 @@ async function Run(orders) {
         if (pnl <= reverseUsedUSDT) {
           order.status = 1;
         }
-
-
-
-
       }
-
-
-
     } else {
-
-
-
       let adjusted = 0;
       if (order.adjusted != 0) {
         if (order.adjusted > 0) {
@@ -393,12 +375,6 @@ async function Run(orders) {
           order.status = 1;
         }
       }
-
-
-
-
-
-
     }
 
     order.pnl = pnl;
