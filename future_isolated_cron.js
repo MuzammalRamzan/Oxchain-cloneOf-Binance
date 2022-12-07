@@ -279,28 +279,92 @@ async function Run(orders) {
     );
     let price = getPrice.data.data.ask;
     if (order.type == "buy") {
-      let liqPrice =
-        order.open_price - order.open_price / (order.leverage * 1.0);
-      pnl = (price - order.open_price) * order.amount;
-      let reverseUsedUSDT = order.usedUSDT * -1;
-   
+      if (order.adjusted != 0) {
+        let adjusted = 0;
+
+        if (order.adjusted > 0) {
+          adjusted = order.adjusted;
+        } else {
+          adjusted = order.adjusted * -1;
+        }
+
+        let anaPara = order.usedUSDT;
+
+        let liqHesaplayici = order.open_price / (order.leverage * 1.0);
+
+        let anaParaBoluAdjusted = parseFloat(anaPara) / parseFloat(adjusted);
+
+        let AdjustedLiq =
+          (parseFloat(adjusted) * parseFloat(liqHesaplayici)) / anaPara;
+
+        let liqPrice =
+          order.open_price -
+          order.open_price / (order.leverage * 1.0) -
+          AdjustedLiq;
+        pnl = (price - order.open_price) * order.amount;
+
+        let reverseUsedUSDT = order.usedUSDT * -1;
+
+        if (order.open_price >= liqPrice) {
+          order.status = 1;
+        }
+        //if (pnl <= reverseUsedUSDT) {
+        //  order.status = 1;
+        //}
+      } else {
+        let liqPrice =
+          order.open_price - order.open_price / (order.leverage * 1.0);
+        pnl = (price - order.open_price) * order.amount;
+        let reverseUsedUSDT = order.usedUSDT * -1;
+
         if (order.open_price <= liqPrice) {
           order.status = 1;
         }
         if (pnl <= reverseUsedUSDT) {
           order.status = 1;
         }
-      
-    } else {
-      let reverseUsedUSDT = order.usedUSDT;
-      pnl = (order.open_price - price) * order.amount;
-      let liqPrice =
-        order.open_price + order.open_price / (order.leverage * 1.0);
-      if (order.open_price >= liqPrice) {
-        order.status = 1;
       }
-      if (pnl <= reverseUsedUSDT) {
-        order.status = 1;
+    } else {
+      let adjusted = 0;
+      if (order.adjusted != 0) {
+        if (order.adjusted > 0) {
+          adjusted = order.adjusted;
+        } else {
+          adjusted = order.adjusted * -1;
+        }
+
+        let anaPara = order.usedUSDT;
+
+        let liqHesaplayici = order.open_price / (order.leverage * 1.0);
+
+        let anaParaBoluAdjusted = parseFloat(anaPara) / parseFloat(adjusted);
+
+        let AdjustedLiq =
+          (parseFloat(adjusted) * parseFloat(liqHesaplayici)) / anaPara;
+
+        let liqPrice =
+          order.open_price +
+          order.open_price / (order.leverage * 1.0) +
+          AdjustedLiq;
+        pnl = (price - order.open_price) * order.amount;
+
+        if (order.open_price >= liqPrice) {
+          order.status = 1;
+        }
+        //if (pnl <= reverseUsedUSDT) {
+        //  order.status = 1;
+        //}
+      } else {
+        let reverseUsedUSDT = order.usedUSDT;
+        pnl = (order.open_price - price) * order.amount;
+        let liqPrice =
+          order.open_price + order.open_price / (order.leverage * 1.0);
+        if (order.open_price >= liqPrice) {
+          order.status = 1;
+        }
+        if (pnl <= reverseUsedUSDT) {
+          order.status = 1;
+        }
       }
     }
 
