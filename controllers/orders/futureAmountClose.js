@@ -56,11 +56,12 @@ const FutureAmountClose = async (req, res) => {
   let cikarilacakPnl = parseFloat(pnl) * oran;
 
   order.usedUSDT = parseFloat(usedUSDT) - cikarilacakUSDT;
-
+  order.amount = parseFloat(order.amount) - amount;
   if (order.pnl > 0) {
     order.pnl = parseFloat(pnl) - cikarilacakPnl;
   } else {
     order.pnl = parseFloat(pnl) + cikarilacakPnl;
+
   }
 
   
