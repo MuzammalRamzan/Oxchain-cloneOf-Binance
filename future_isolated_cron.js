@@ -298,8 +298,8 @@ async function Run(orders) {
           (parseFloat(adjusted) * parseFloat(liqHesaplayici)) / anaPara;
 
         let liqPrice =
-          order.open_price -
-          order.open_price / (order.leverage * 1.0) -
+          order.open_price +
+          order.open_price / (order.leverage * 1.0) +
           AdjustedLiq;
         pnl = (price - order.open_price) * order.amount;
 
@@ -343,8 +343,8 @@ async function Run(orders) {
           (parseFloat(adjusted) * parseFloat(liqHesaplayici)) / anaPara;
 
         let liqPrice =
-          order.open_price +
-          order.open_price / (order.leverage * 1.0) +
+          order.open_price -
+          order.open_price / (order.leverage * 1.0) -
           AdjustedLiq;
         pnl = (price - order.open_price) * order.amount;
 
