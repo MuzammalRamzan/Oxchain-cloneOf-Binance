@@ -35,29 +35,27 @@ const FutureAmountClose = async (req, res) => {
 
   amount = parseFloat(amount);
 
-
   console.log(order.amount, " | ", amount);
   if (order.amount < amount) {
     res.json({ status: "fail", message: "Amount is too big" });
     return;
   }
-  
+
   order.amount = parseFloat(order.amount) - amount;
   if (order.amount <= 0 || order.amount <= amount) {
     order.status = 1;
   }
-  
-  let totalUsdt = parseFloat(amount) * marketPrice;
-  let withOutTotalUsdt = (parseFloat(amount) / parseFloat(order.leverage)) * marketPrice ;
+
+  let totalUsdt = parseFloat(amount / parseFloat(order.leverage)) * marketPrice;
+  let withOutTotalUsdt =
+    (parseFloat(amount) / parseFloat(order.leverage)) * marketPrice;
   wallet.amount = parseFloat(wallet.amount) + withOutTotalUsdt;
   order.usedUSDT = parseFloat(order.usedUSDT) - totalUsdt;
-  
-  
 
   await order.save();
   await wallet.save();
   res.json({ status: "success", data: "OK" });
-/*
+  /*
   let usdtPrice = parseFloat(order.amount) * marketPrice;
 
   let usedUSDT = order.usedUSDT;
@@ -92,7 +90,7 @@ const FutureAmountClose = async (req, res) => {
     }
   }
 */
-/*
+  /*
   if (order.amount <= 0 || order.amount <= amount) {
     order.status = 1;
   }
