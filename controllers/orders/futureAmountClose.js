@@ -76,7 +76,7 @@ const FutureAmountClose = async (req, res) => {
 
   console.log(order.amount - amount);
   wallet.amount = parseFloat(wallet.amount) + usdtPrice;
-  order.amount = parseFloat(order.amount) - amount;
+  
   await order.save();
   await wallet.save();
   res.json({ status: "success", data: "OK" });
