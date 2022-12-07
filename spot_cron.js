@@ -6,6 +6,7 @@ const Pairs = require("./models/Pairs");
 const Wallet = require("./models/Wallet");
 require("dotenv").config();
 const Connection = require('./Connection');
+const { default: axios } = require("axios");
 async function main() {
     var mongodbPass = process.env.MONGO_DB_PASS;
 
@@ -14,10 +15,11 @@ async function main() {
 
     let request = { $and: [{ status: { $gt: 0 } }, { $or: [{ type: "limit" }, { type: "stop_limit" }] }] };
     let orders = await Orders.find(request).exec();
-
+    await Run(orders);
     let isInsert = Orders.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
         //orders = data;
         orders = await Orders.find(request).exec();
+        await Run(orders);
     });
 
 
@@ -30,6 +32,7 @@ async function Run(orders) {
         let order = orders[k];
 
         let target_price = parseFloat(order.target_price);
+        
         if (order.type == 'limit') {
             if (order.status == 0) continue;
             if (order.method == 'buy') {

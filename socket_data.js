@@ -37,6 +37,8 @@ const express = require("express");
 var bodyParser = require("body-parser");
 var cors = require("cors");
 const FutureTransactionHistory = require("./SocketController/trade/future/transaction_history");
+const MarginCrossWallet = require("./models/MarginCrossWallet");
+const MarginIsolatedWallet = require("./models/MarginIsolatedWallet");
 var route = express();
 
 route.use(cors());
@@ -275,6 +277,11 @@ async function test() {
           if (json.user_id != null && json.user_id != "undefined") {
             SpotFunds(ws, json.user_id);
           }
+        } else if(json.page == 'cross') {
+          if (json.user_id != null && json.user_id != "undefined") {
+            GetCrossWallet(ws, json.user_id);
+          }
+          
         } else if (json.page == "cross_open_orders") {
           if (json.user_id != null && json.user_id != "undefined") {
             CrossOpenOrders(ws, json.user_id);
@@ -295,7 +302,14 @@ async function test() {
           if (json.user_id != null && json.user_id != "undefined") {
             CrossFunds(ws, json.user_id);
           }
-        } else if (json.page == "isolated_open_orders") {
+        } else if(json.page == 'isolated') {
+          if (json.user_id != null && json.user_id != "undefined") {
+            GetIsolatedWallet(ws, json.user_id);
+          }
+          
+        }
+        
+        else if (json.page == "isolated_open_orders") {
           if (json.user_id != null && json.user_id != "undefined") {
             IsolatedOpenOrders(ws, json.user_id);
           }
@@ -725,6 +739,68 @@ async function GetWallets(ws, user_id) {
     wallet = await Wallet.find({ user_id: user_id }).exec();
     SendWallet(ws, wallet);
   });
+}
+
+
+async function GetIsolatedWallet(ws, user_id) {
+  let wallet = await MarginIsolatedWallet.find({user_id: user_id});
+  SendIsolatedWallet(ws, wallet);
+  MarginIsolatedWallet.watch([{
+    $match: {operationType : {$in : ['insert', 'update', 'delete', 'remove']}}
+  }]).on('change', async (data) => {
+    let wallet = await MarginIsolatedWallet.find({user_id: user_id});
+    SendIsolatedWallet(ws, wallet);
+  });
+}
+
+async function SendIsolatedWallet(ws, _wallets) {
+  var wallets = new Array();
+  for (var i = 0; i < _wallets.length; i++) {
+    let item = _wallets[i];
+
+    let pairInfo = await Pairs.findOne({ symbolOneID: item.coin_id }).exec();
+    if (pairInfo == null) continue;
+    wallets.push({
+      id: item._id,
+      coin_id: item.coin_id,
+
+      balance: item.amount,
+      address: item.address,
+      symbolName: pairInfo.name,
+    });
+  }
+  ws.send(JSON.stringify({ page: "margin", type: "isolated_wallet", content: wallets }));
+}
+
+
+async function GetCrossWallet(ws, user_id) {
+  let wallet = await MarginCrossWallet.find({user_id: user_id});
+  SendCrossWallet(ws, wallet);
+  MarginCrossWallet.watch([{
+    $match: {operationType : {$in : ['insert', 'update', 'delete', 'remove']}}
+  }]).on('change', async (data) => {
+    let wallet = await MarginCrossWallet.find({user_id: user_id});
+    SendCrossWallet(ws, wallet);
+  });
+}
+
+async function SendCrossWallet(ws, _wallets) {
+  var wallets = new Array();
+  for (var i = 0; i < _wallets.length; i++) {
+    let item = _wallets[i];
+
+    let pairInfo = await Pairs.findOne({ symbolOneID: item.coin_id }).exec();
+    if (pairInfo == null) continue;
+    wallets.push({
+      id: item._id,
+      coin_id: item.coin_id,
+
+      balance: item.amount,
+      address: item.address,
+      symbolName: pairInfo.name,
+    });
+  }
+  ws.send(JSON.stringify({ page: "margin", type: "cross_wallet", content: wallets }));
 }
 
 async function GetOrders(ws, user_id, type, filter) {

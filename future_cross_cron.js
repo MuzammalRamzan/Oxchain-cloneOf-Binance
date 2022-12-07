@@ -61,8 +61,7 @@ async function Run(orders ) {
       
       if (item != null && item != '') {
         let price = item.data.data.ask;
-        console.log(price);
-        return;  
+        
         if (order.stop_limit != 0) {
           if (order.type == 'buy') {
             if (price <= order.target_price) {
