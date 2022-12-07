@@ -282,7 +282,7 @@ async function Run(orders) {
       if (order.adjusted != 0) {
         let adjusted = 0;
 
-        if (order.adjusted > 0) {
+        if (parseFloat(order.adjusted) > 0) {
           adjusted = order.adjusted;
         } else {
           adjusted = order.adjusted * -1;
