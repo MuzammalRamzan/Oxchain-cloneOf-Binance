@@ -20,7 +20,7 @@ const addMarginIsolatedOrder = async (req, res) => {
     let method = req.body.method;
     let target_price = parseFloat(req.body.target_price) ?? 0.0;
     let stop_limit = parseFloat(req.body.stop_limit) ?? 0.0;
-    let leverage = 3;
+    let leverage = 10;
 
     if (amount <= 0) {
         res.json({ status: "fail", message: "invalid_amount" });

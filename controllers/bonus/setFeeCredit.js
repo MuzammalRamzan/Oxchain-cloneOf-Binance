@@ -28,7 +28,10 @@ const setFeeCredit = async function (user_id, pair_id, amount) {
         if(insertAmount < 0) continue;
         console.log(parentReferralCounter, " | ", percentAmount, " | ", insertAmount);
         let getWallet = await Wallet.findOne({ user_id: getRefferUser.user_id, coin_id: pair_id });
-
+        if(getWallet == null) {
+            parentReferralCounter++;
+            continue;
+        }
         getWallet.totalBonus = parseFloat(getWallet.totalBonus) + insertAmount;
         await getWallet.save();
         let insertFeeTable = new FeeModel({

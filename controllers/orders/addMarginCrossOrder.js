@@ -19,7 +19,7 @@ const addMarginCrossOrder = async (req, res) => {
     let method = req.body.method;
     let target_price = parseFloat(req.body.target_price) ?? 0.0;
     let stop_limit = parseFloat(req.body.stop_limit) ?? 0.0;
-    let leverage = 1;
+    let leverage = 3;
 
     if (amount <= 0) {
         res.json({ status: "fail", message: "invalid_amount" });

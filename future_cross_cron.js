@@ -16,8 +16,12 @@ async function initialize() {
   await Connection.connection();
 
   let request = {};
+  
+  setInterval(async function() {
   let orders = await FutureOrder.find(request).exec();
   await Run(orders);
+  }, 1000);
+  /*
   let isInsert = FutureOrder.watch([
     { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
   ]).on("change", async (data) => {
@@ -25,6 +29,7 @@ async function initialize() {
     orders = await FutureOrder.find(request).exec();
     await Run(orders);
   });
+  */
   
 
 
