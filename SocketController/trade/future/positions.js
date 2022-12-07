@@ -42,10 +42,21 @@ async function GetFutureLiqPrice(orders) {
       if (order.future_type == "isolated") {
         if (order.type == "buy") {
           if (order.adjusted != 0) {
+            let anaPara = order.usedUSDT;
+
+            let adjusted = order.adjusted;
+            let liqHesaplayici = order.open_price / (order.leverage * 1.0);
+
+            let anaParaBoluAdjusted =
+              parseFloat(anaPara) / parseFloat(adjusted);
+
+            let AdjustedLiq =
+              (parseFloat(adjusted) * parseFloat(liqHesaplayici)) / anaPara;
+
             order.liqPrice =
-              order.open_price +
-              order.adjusted -
-              order.open_price / (order.leverage * 1.0);
+              order.open_price -
+              order.open_price / (order.leverage * 1.0) -
+              AdjustedLiq;
             orders[i] = order;
           } else {
             order.liqPrice =
@@ -54,10 +65,20 @@ async function GetFutureLiqPrice(orders) {
           }
         } else {
           if (order.adjusted != 0) {
-            order.liqPrice =
-              order.open_price -
-              order.adjusted +
-              order.open_price / (order.leverage * 1.0);
+            let anaPara = order.usedUSDT;
+
+            let adjusted = order.adjusted;
+            let liqHesaplayici = order.open_price / (order.leverage * 1.0);
+
+            let anaParaBoluAdjusted =
+              parseFloat(anaPara) / parseFloat(adjusted);
+
+            let AdjustedLiq =
+              (parseFloat(adjusted) * parseFloat(liqHesaplayici)) / anaPara;
+
+            order.open_price +
+              order.open_price / (order.leverage * 1.0) +
+              AdjustedLiq;
             orders[i] = order;
           } else {
             order.liqPrice =
@@ -99,7 +120,7 @@ async function GetFutureLiqPrice(orders) {
       margin_ratio: (order.liqPrice * 100) / mark_price,
       roe: roe,
       margin: order.usedUSDT,
-      adjusted : order.adjusted,
+      adjusted: order.adjusted,
       pnl: order.pnl,
     });
   }
