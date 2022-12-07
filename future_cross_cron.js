@@ -326,14 +326,45 @@ async function Run(orders ) {
       if (findBinanceItem != null) {
         let item = findBinanceItem.data;
         if (order.type == 'buy') {
-          let price = item.data.ask;
+          let price = parseFloat(item.data.ask);
           let pnl = (price - order.open_price) * order.amount;
           order.pnl = pnl;
+          let tp = parseFloat(order.tp);
+          let sl = parseFloat(order.sl);
+          if(tp != 0 && price >= tp) {
+            console.log("TP OLDU");
+            order.status = 1;
+            let w = await FutureWalletModel.findOne({user_id : order.user_id});
+            w.amount = parseFloat(w.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
+            await w.save();
+          }
+          if(sl != 0 && price <= sl) {
+            console.log("SL OLDU");
+            console.log(price, " | ", sl);
+            order.status = 1;
+            let w = await FutureWalletModel.findOne({user_id : order.user_id});
+            w.amount = parseFloat(w.amount) + (parseFloat(order.usedUSDT) - parseFloat(order.pnl));
+            await w.save();
+          } 
           await order.save();
         } else {
           let price = item.data.bid;
           let pnl = (order.open_price - price) * order.amount;
           order.pnl = pnl;
+          let tp = parseFloat(order.tp);
+          let sl = parseFloat(order.sl);
+          if(tp != 0 && price <= tp) {
+            order.status = 1;
+            let w = await FutureWalletModel.findOne({user_id : order.user_id});
+            w.amount = parseFloat(w.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
+            await w.save();
+          }
+          if(sl != 0 && price >= sl) {
+            order.status = 1;
+            let w = await FutureWalletModel.findOne({user_id : order.user_id});
+            w.amount = parseFloat(w.amount) + (parseFloat(order.usedUSDT) - parseFloat(order.pnl));
+            await w.save();
+          } 
           await order.save();
         }
       }
