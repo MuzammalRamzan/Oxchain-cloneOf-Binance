@@ -64,7 +64,7 @@ const FutureAmountClose = async (req, res) => {
   }
 
   
-  if (order.amount < 0 || order.amount <= amount) {
+  if (order.amount <= 0 || order.amount <= amount) {
     order.status = 1;
   }
 
