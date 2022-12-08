@@ -21,6 +21,8 @@ const UserSchema = new mongoose.Schema({
   applicantId: { type: String, required: false, default: null },
   status: { type: String, required: false, default: 0 },
   applicantStatus: { type: Number, required: false, default: 0 },
+  deleted: { type: Boolean, default: false },
+  reason: { type: String, required: false },
   createdAt: {
     type: Date,
     default: Date.now,
