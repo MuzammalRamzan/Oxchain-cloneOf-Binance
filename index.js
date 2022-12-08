@@ -124,6 +124,7 @@ const Settings = require("./controllers/settings");
 const SetFavoritePair = require("./controllers/pair/setFavoritePair.js");
 const GetFavoritePairs = require("./controllers/pair/getFavoritePairs.js");
 const removeEmail = require("./controllers/users/removeEmail");
+const myReferrals = require("./controllers/referrals/myReferrals");
 
 route.use(
   session({
@@ -282,6 +283,7 @@ route.all("/getCoinInfo", upload.none(), getCoinInfo);
 //Referral Modules
 route.all("/getReferral", upload.none(), getReferral);
 route.all("/topReferrals", upload.none(), topReferrals);
+route.all("/myReferrals", upload.none(), myReferrals);
 
 route.all("/getWallet", upload.none(), getWallet);
 
