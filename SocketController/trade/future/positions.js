@@ -120,6 +120,8 @@ async function GetFutureLiqPrice(orders) {
       margin_ratio: (order.liqPrice * 100) / mark_price,
       roe: roe,
       margin: order.usedUSDT,
+      tp: tp,
+      sl: sl,
       adjusted: order.adjusted,
       pnl: order.pnl,
     });
