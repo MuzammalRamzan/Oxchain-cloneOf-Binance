@@ -125,6 +125,7 @@ const SetFavoritePair = require("./controllers/pair/setFavoritePair.js");
 const GetFavoritePairs = require("./controllers/pair/getFavoritePairs.js");
 const removeEmail = require("./controllers/users/removeEmail");
 const myReferrals = require("./controllers/referrals/myReferrals");
+const getAdminSettings = require("./controllers/getAdminSettings");
 
 route.use(
   session({
@@ -324,6 +325,7 @@ route.all("/getSecurityKey", upload.none(), getSecurityKey);
 route.all("/checkSecurityKey", upload.none(), checkSecurityKey);
 route.all("/deleteSecurityKey", upload.none(), deleteSecurityKey);
 route.post("/settings", Settings);
+route.post("/getAdminSettings", getAdminSettings);
 
 route.all("/changeAvatar", upload.none(), changeAvatar);
 route.all("/changeNickName", upload.none(), changeNickname);

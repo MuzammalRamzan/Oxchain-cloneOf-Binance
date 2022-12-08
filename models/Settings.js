@@ -24,6 +24,7 @@ const SettingsSchema = new mongoose.Schema({
   currency: { type: String, default: "USD" },
   privacy: { type: privacySubSchema },
   autoLock: { type: String, required: false },
+  lightMode: { type: Boolean, default: true },
   createdAt: {
     type: Date,
     default: Date.now,
