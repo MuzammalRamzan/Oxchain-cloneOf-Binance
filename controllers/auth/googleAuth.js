@@ -1,5 +1,6 @@
 const { OAuth2Client } = require("google-auth-library");
 const UserModel = require("../../models/User");
+const RegisterMailModel = require("../../models/RegisterMail");
 const authFile = require("../../auth.js");
 const { getToken } = require("../../auth");
 
@@ -28,6 +29,18 @@ const googleAuth = async (req, res) => {
   const user = await UserModel.findOneAndUpdate({ email: data.email }, data, {
     upsert: true,
   });
+
+  await RegisterMailModel.updateOne(
+    { email: data.email },
+    {
+      email: data.email,
+      status: "1",
+    },
+    {
+      upsert: true,
+    }
+  );
+
   const authToken = getToken({ user: user._id });
   return res.json({ status: "success", data: { user, token: authToken } });
 };

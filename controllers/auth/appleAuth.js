@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const UserModel = require("../../models/User");
 const path = require('path');
 const { getToken } = require("../../auth");
+const RegisterMailModel = require("../../models/RegisterMail");
 
 const authKeyPath = path.join(__dirname, '../../AuthKey.p8');
 
@@ -28,6 +29,16 @@ const appleAuth = async (req, res) => {
     const user = await UserModel.findOneAndUpdate({ email: data.email }, data, {
         upsert: true,
       });
+      await RegisterMailModel.updateOne(
+        { email: data.email },
+        {
+          email: data.email,
+          status: "1",
+        },
+        {
+          upsert: true,
+        }
+      );
       const authToken = getToken({ user: user._id });
       return res.json({ status: "success", data: { user, token: authToken } });
   } catch (err) {
