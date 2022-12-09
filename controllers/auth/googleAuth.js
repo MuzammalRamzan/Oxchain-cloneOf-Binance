@@ -16,33 +16,37 @@ const googleAuth = async (req, res) => {
   if (!apiKeyCheck)
     return res.json({ status: "error", message: "Api key is wrong" });
 
-  const ticket = await client.verifyIdToken({
-    idToken: token,
-  });
-  const data = ticket?.getPayload();
-  if (!data)
-    return res.json({
-      status: "error",
-      message: "Unable to authenticate user!",
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+    });
+    const data = ticket?.getPayload();
+    if (!data)
+      return res.json({
+        status: "error",
+        message: "Unable to authenticate user!",
+      });
+
+    const user = await UserModel.findOneAndUpdate({ email: data.email }, data, {
+      upsert: true,
     });
 
-  const user = await UserModel.findOneAndUpdate({ email: data.email }, data, {
-    upsert: true,
-  });
+    await RegisterMailModel.updateOne(
+      { email: data.email },
+      {
+        email: data.email,
+        status: "1",
+      },
+      {
+        upsert: true,
+      }
+    );
 
-  await RegisterMailModel.updateOne(
-    { email: data.email },
-    {
-      email: data.email,
-      status: "1",
-    },
-    {
-      upsert: true,
-    }
-  );
-
-  const authToken = getToken({ user: user._id });
-  return res.json({ status: "success", data: { user, token: authToken } });
+    const authToken = getToken({ user: user._id });
+    return res.json({ status: "success", data: { user, token: authToken } });
+  } catch (err) {
+    return res.status(401).json({ status: "error", message: err });
+  }
 };
 
 module.exports = googleAuth;
