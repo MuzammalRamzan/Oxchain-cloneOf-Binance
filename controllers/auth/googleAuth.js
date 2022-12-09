@@ -3,7 +3,8 @@ const UserModel = require("../../models/User");
 const authFile = require("../../auth.js");
 const { getToken } = require("../../auth");
 
-const CLIENT_ID = "478064601125-05qphf7f1ho60j32vf50dt3f3esqsar3.apps.googleusercontent.com"
+const CLIENT_ID =
+  "478064601125-05qphf7f1ho60j32vf50dt3f3esqsar3.apps.googleusercontent.com";
 const client = new OAuth2Client(CLIENT_ID);
 
 const googleAuth = async (req, res) => {
@@ -16,7 +17,6 @@ const googleAuth = async (req, res) => {
 
   const ticket = await client.verifyIdToken({
     idToken: token,
-    audience: CLIENT_ID,
   });
   const data = ticket?.getPayload();
   if (!data)
