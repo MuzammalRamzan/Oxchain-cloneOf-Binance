@@ -4,8 +4,8 @@ const addAnnouncement = async (req, res) => {
   const { title, message } = req.body;
 
   const newAnnouncement = new AnnouncementsModel({
-    title,
-    message,
+    title: title,
+    message: message,
   });
 
   const save = await newAnnouncement.save();
