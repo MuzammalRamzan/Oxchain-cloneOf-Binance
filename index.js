@@ -85,6 +85,9 @@ const getRegisteredAddresses = require("./controllers/registeredAddress/getRegis
 const googleAuth = require("./controllers/auth/googleAuth");
 const appleAuth = require("./controllers/auth/appleAuth");
 
+const addAnnouncement = require("./controllers/announcement/addAnnouncement");
+const getAnnouncement = require("./controllers/announcement/getAnnouncement");
+
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
 //console.log(authenticator.verifyToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse", "260180"));
@@ -162,6 +165,9 @@ route.use(function (err, req, res, next) {
 route.get("/", (req, res) => {
   res.send("success");
 });
+
+route.all("/addAnnouncement", addAnnouncement);
+route.all("/getAnnouncements", getAnnouncement);
 
 route.all("/walletToWallet", walletToWallet);
 
