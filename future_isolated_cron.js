@@ -267,7 +267,6 @@ async function Run(orders) {
   }
 
   let totalPNL = 0.0;
-  console.log(orders.length);
   for (var n = 0; n < orders.length; n++) {
     if (orders[n].method != "market") continue;
     if (orders[n].status != 0) continue;
