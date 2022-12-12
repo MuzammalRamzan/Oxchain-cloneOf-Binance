@@ -87,6 +87,7 @@ const appleAuth = require("./controllers/auth/appleAuth");
 
 const addAnnouncement = require("./controllers/announcement/addAnnouncement");
 const getAnnouncement = require("./controllers/announcement/getAnnouncement");
+const getLocation = require("./controllers/users/getLocation");
 
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
@@ -169,6 +170,7 @@ route.get("/", (req, res) => {
 
 route.all("/addAnnouncement", addAnnouncement);
 route.all("/getAnnouncements", getAnnouncement);
+route.all("/getLocation", getLocation);
 
 route.all("/walletToWallet", walletToWallet);
 

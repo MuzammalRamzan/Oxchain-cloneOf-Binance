@@ -1,5 +1,5 @@
 const geoip = require("geoip-lite");
-const authFile = require("../auth");
+const authFile = require("../../auth");
 
 const getLocation = async (req, res) => {
   const { apiKey } = req.body;
