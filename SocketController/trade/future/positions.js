@@ -53,14 +53,15 @@ async function GetFutureLiqPrice(orders) {
             let AdjustedLiq =
               (parseFloat(adjusted) * parseFloat(liqHesaplayici)) / anaPara;
 
+          
+          
             order.liqPrice =
               order.open_price -
-              order.open_price / (order.leverage * 1.0) -
-              AdjustedLiq;
+              (order.usedUSDT) * (order.open_price / (order.leverage * 1.0)) + AdjustedLiq;
             orders[i] = order;
           } else {
             order.liqPrice =
-              order.open_price - order.open_price / (order.leverage * 1.0);
+              order.open_price - (order.usedUSDT) * (order.open_price / (order.leverage * 1.0));
             orders[i] = order;
           }
         } else {
@@ -77,12 +78,11 @@ async function GetFutureLiqPrice(orders) {
               (parseFloat(adjusted) * parseFloat(liqHesaplayici)) / anaPara;
 
             order.open_price +
-              order.open_price / (order.leverage * 1.0) +
-              AdjustedLiq;
+            (order.usedUSDT) * (order.open_price / (order.leverage * 1.0)) + AdjustedLiq;
             orders[i] = order;
           } else {
             order.liqPrice =
-              order.open_price + order.open_price / (order.leverage * 1.0);
+            (order.usedUSDT) * (order.open_price / (order.leverage * 1.0)) ;
             orders[i] = order;
           }
         }
@@ -174,6 +174,7 @@ async function GetFutureCrossLiqPrice(order) {
   console.log("-------");
   let liqPrice = 0.0;
   if (order.type == "buy")
+  
     liqPrice =
       order.open_price -
       (kasa / order_usedUSDT) * (order.open_price / (order.leverage * 1.0));

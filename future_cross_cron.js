@@ -15,7 +15,7 @@ const FutureWalletId = "62ff3c742bebf06a81be98fd";
 async function initialize() {
   await Connection.connection();
 
-  let request = {};
+  let request = {future_type: "cross", method: "market", status : 0};
   
   setInterval(async function() {
   let orders = await FutureOrder.find(request).exec();
@@ -161,6 +161,7 @@ async function Run(orders ) {
               //Tersine ise
               let checkusdt = (reverseOreders.usedUSDT + reverseOreders.pnl) * reverseOreders.leverage;
               if (checkusdt == order.usedUSDT * order.leverage) {
+                console.log("Bura 1");
                 reverseOreders.status = 1;
                 
                 let userBalance = await FutureWalletModel.findOne({
@@ -354,12 +355,14 @@ async function Run(orders ) {
           let tp = parseFloat(order.tp);
           let sl = parseFloat(order.sl);
           if(tp != 0 && price <= tp) {
+            console.log("Bura 44");
             order.status = 1;
             let w = await FutureWalletModel.findOne({user_id : order.user_id});
             w.amount = parseFloat(w.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
             await w.save();
           }
           if(sl != 0 && price >= sl) {
+            console.log("Bura 45");
             order.status = 1;
             let w = await FutureWalletModel.findOne({user_id : order.user_id});
             w.amount = parseFloat(w.amount) + (parseFloat(order.usedUSDT) - parseFloat(order.pnl));

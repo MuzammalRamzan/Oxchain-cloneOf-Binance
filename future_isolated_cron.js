@@ -18,7 +18,7 @@ const FutureWalletId = "62ff3c742bebf06a81be98fd";
 async function initialize() {
   await Connection.connection();
 
-  let request = {};
+  let request = { future_type: "isolated", method: "market", status: 0 };
   let orders = await FutureOrder.find(request).exec();
 
   let isInsert = FutureOrder.watch([
@@ -55,7 +55,7 @@ async function Run(orders) {
       if (order.status == 0) continue;
       let item = await axios(
         "http://18.130.193.166:8542/price?symbol=" +
-          order.pair_name.replace("/", "")
+        order.pair_name.replace("/", "")
       );
       if (item != null && item != "") {
         let price = item.data.data.ask;
@@ -154,6 +154,7 @@ async function Run(orders) {
                 (reverseOreders.usedUSDT + reverseOreders.pnl) *
                 reverseOreders.leverage;
               if (checkusdt == order.usedUSDT * order.leverage) {
+                console.log("Bura 1");
                 reverseOreders.status = 1;
 
                 let userBalance = await FutureWalletModel.findOne({
@@ -246,7 +247,7 @@ async function Run(orders) {
     } else if (order.method == "stop_limit") {
       let item = await axios(
         "http://18.130.193.166:8542/price?symbol=" +
-          order.pair_name.replace("/", "")
+        order.pair_name.replace("/", "")
       );
       if (item != null && item != "") {
         let price = item.data.data.ask;
@@ -275,7 +276,7 @@ async function Run(orders) {
     let order = orders[n];
     let getPrice = await axios(
       "http://18.130.193.166:8542/price?symbol=" +
-        order.pair_name.replace("/", "")
+      order.pair_name.replace("/", "")
     );
     let price = getPrice.data.data.ask;
 
@@ -300,20 +301,22 @@ async function Run(orders) {
 
         let liqPrice =
           order.open_price -
-          order.open_price / (order.leverage * 1.0) -
-          AdjustedLiq;
+          (order.usedUSDT) * (order.open_price / (order.leverage * 1.0)) + AdjustedLiq;
+
+        console.log("LIQ FIYATI : ", liqPrice);
         pnl = (price - order.open_price) * order.amount;
 
         console.log(
           "Open Price: " + order.open_price,
           order.open_price -
-            order.open_price / (order.leverage * 1.0) -
-            AdjustedLiq
+          order.open_price / (order.leverage * 1.0) -
+          AdjustedLiq
         );
 
         let reverseUsedUSDT = order.usedUSDT * -1;
 
         if (order.open_price <= liqPrice) {
+          console.log("Bura 2");
           order.status = 1;
         }
         //if (pnl <= reverseUsedUSDT) {
@@ -327,9 +330,11 @@ async function Run(orders) {
         let reverseUsedUSDT = order.usedUSDT * -1;
 
         if (order.open_price <= liqPrice) {
+          console.log("Bura 3");
           order.status = 1;
         }
         if (pnl <= reverseUsedUSDT) {
+          console.log("Bura 4");
           order.status = 1;
         }
       }
@@ -353,10 +358,8 @@ async function Run(orders) {
 
         let liqPrice =
           order.open_price +
-          order.open_price / (order.leverage * 1.0) +
-          AdjustedLiq;
+          (order.usedUSDT) * (order.open_price / (order.leverage * 1.0)) + AdjustedLiq;
         pnl = (price - order.open_price) * order.amount;
-
         if (order.open_price >= liqPrice) {
           order.status = 1;
         }
@@ -366,14 +369,31 @@ async function Run(orders) {
       } else {
         let reverseUsedUSDT = order.usedUSDT;
         pnl = (order.open_price - price) * order.amount;
-        let liqPrice =
-          order.open_price + order.open_price / (order.leverage * 1.0);
-        if (order.open_price >= liqPrice) {
-          order.status = 1;
+
+        if (order.type == 'buy') {
+          let liqPrice =
+            order.open_price -
+            (order.usedUSDT) * (order.open_price / (order.leverage * 1.0));
+          if (order.open_price <= liqPrice) {
+            order.status = 1;
+          }
+        } else {
+          let liqPrice =
+            order.open_price +
+            (order.usedUSDT) * (order.open_price / (order.leverage * 1.0));
+          if (order.open_price >= liqPrice) {
+            order.status = 1;
+          }
         }
+
+
+        /*
         if (pnl <= reverseUsedUSDT) {
+          console.log("reverseUsedUSDT : ", reverseUsedUSDT, " pnl : ", pnl);
+          console.log("Bura 7");
           order.status = 1;
         }
+        */
       }
     }
 
