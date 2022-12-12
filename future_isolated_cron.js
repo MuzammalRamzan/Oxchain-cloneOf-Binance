@@ -303,7 +303,7 @@ async function Run(orders) {
           order.open_price -
           (order.usedUSDT) * (order.open_price / (order.leverage * 1.0)) + AdjustedLiq;
 
-        console.log("LIQ FIYATI : ", liqPrice);
+        
         pnl = (price - order.open_price) * order.amount;
 
         console.log(

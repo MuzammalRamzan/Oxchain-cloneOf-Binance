@@ -60,8 +60,10 @@ async function GetFutureLiqPrice(orders) {
               (order.usedUSDT) * (order.open_price / (order.leverage * 1.0)) + AdjustedLiq;
             orders[i] = order;
           } else {
-            order.liqPrice =
-              order.open_price - (order.usedUSDT) * (order.open_price / (order.leverage * 1.0));
+            order.liqPrice = order.open_price - (order.usedUSDT) * (order.open_price / (order.leverage * 1.0));
+            if(order.liqPrice < 0) {
+              order.liqPrice *= -1;
+            }
             orders[i] = order;
           }
         } else {
