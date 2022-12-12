@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
-var uniqueValidator = require("mongoose-unique-validator");
 
 const NotificationSchema = new mongoose.Schema({
   notificationTitle: { type: String, required: true },
   notificationMessage: { type: String, required: true },
+  userId: { type: String, required: true},
+  hasRead: { type: Boolean, default: false},
   status: { type: String, required: false, default: 0 },
   createdAt: {
     type: Date,
