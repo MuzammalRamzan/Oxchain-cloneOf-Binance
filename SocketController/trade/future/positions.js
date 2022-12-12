@@ -79,11 +79,11 @@ async function GetFutureLiqPrice(orders) {
             let AdjustedLiq =
               (parseFloat(adjusted) * parseFloat(liqHesaplayici)) / anaPara;
 
-            order.open_price +
+            order.liqPrice = order.open_price +
             (order.usedUSDT) * (order.open_price / (order.leverage * 1.0)) + AdjustedLiq;
             orders[i] = order;
           } else {
-            order.liqPrice =
+            order.liqPrice = order.open_price +
             (order.usedUSDT) * (order.open_price / (order.leverage * 1.0)) ;
             orders[i] = order;
           }

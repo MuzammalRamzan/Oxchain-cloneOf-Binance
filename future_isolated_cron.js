@@ -381,6 +381,7 @@ async function Run(orders) {
           let liqPrice =
             order.open_price +
             (order.usedUSDT) * (order.open_price / (order.leverage * 1.0));
+            console.log("LLL : ",liqPrice);
           if (order.open_price >= liqPrice) {
             order.status = 1;
           }
@@ -389,7 +390,7 @@ async function Run(orders) {
 
         /*
         if (pnl <= reverseUsedUSDT) {
-          console.log("reverseUsedUSDT : ", reverseUsedUSDT, " pnl : ", pnl);
+          console.log("reverseUsedUSDT : ", reverseUsedUSDT, " pnl : s", pnl);
           console.log("Bura 7");
           order.status = 1;
         }
