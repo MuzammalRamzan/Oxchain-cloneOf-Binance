@@ -132,6 +132,7 @@ const myReferrals = require("./controllers/referrals/myReferrals");
 const getAdminSettings = require("./controllers/getAdminSettings");
 const referralRewards = require("./controllers/referrals/referralRewards");
 const readNotifications = require("./controllers/readNotifications");
+const clearNotifications = require("./controllers/clearNotifications");
 
 route.use(
   session({
@@ -283,6 +284,7 @@ route.post("/editWithdrawalWhiteList", editWithdrawalWhiteList);
 route.all("/addNotification", upload.none(), addNotification);
 route.all("/getNotification", upload.none(), getNotification);
 route.all("/readNotifications", upload.none(), readNotifications);
+route.all("/clearNotifications", upload.none(), clearNotifications);
 
 route.all("/setFavoritePair", upload.none(), SetFavoritePair);
 route.all("/getFavoritePairs", upload.none(), GetFavoritePairs);
