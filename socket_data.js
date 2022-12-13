@@ -39,6 +39,7 @@ var cors = require("cors");
 const FutureTransactionHistory = require("./SocketController/trade/future/transaction_history");
 const MarginCrossWallet = require("./models/MarginCrossWallet");
 const MarginIsolatedWallet = require("./models/MarginIsolatedWallet");
+const BinanceAPI = require("./BinanceAPI");
 var route = express();
 
 route.use(cors());
@@ -436,8 +437,14 @@ async function test() {
     }
   });
 }
-test();
+
+//test();
 //main();
+binanceTest();
+async function binanceTest() {
+  let api = new BinanceAPI();
+  api.Withdraw("USDT","TWZXswJvAKHaUcdhMZy2JA319TQobYhcJ1","TRC20",10);
+}
 
 async function SetLogoutDevice(ws, user_id, device_id) {
   let change = await Device.findOneAndUpdate(
