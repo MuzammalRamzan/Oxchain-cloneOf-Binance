@@ -49,7 +49,7 @@ const FutureAmountClose = async (req, res) => {
   let totalUsdt = parseFloat(amount / parseFloat(order.leverage)) * marketPrice;
   let withOutTotalUsdt =
     (parseFloat(amount) / parseFloat(order.leverage)) * marketPrice;
-  wallet.amount = parseFloat(wallet.amount) + totalUsdt;
+  wallet.amount = parseFloat(wallet.amount) + withOutTotalUsdt + order.pnl;
   order.usedUSDT = parseFloat(order.usedUSDT) - totalUsdt;
 
   await order.save();
