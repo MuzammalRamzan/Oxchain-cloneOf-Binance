@@ -133,6 +133,8 @@ const getAdminSettings = require("./controllers/getAdminSettings");
 const referralRewards = require("./controllers/referrals/referralRewards");
 const readNotifications = require("./controllers/readNotifications");
 const clearNotifications = require("./controllers/clearNotifications");
+const addVerificationId = require("./controllers/verificationId/addVerificationId");
+const getVerificationIds = require("./controllers/verificationId/getVerificationIds");
 
 route.use(
   session({
@@ -173,6 +175,9 @@ route.get("/", (req, res) => {
 route.all("/addAnnouncement", addAnnouncement);
 route.all("/getAnnouncements", getAnnouncement);
 route.all("/getLocation", getLocation);
+
+route.all("/getVerificationIds", upload.any(), getVerificationIds);
+route.all("/addVerificationId", upload.any(), addVerificationId);
 
 route.all("/walletToWallet", walletToWallet);
 

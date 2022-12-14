@@ -1,21 +1,17 @@
 const mongoose = require("mongoose");
 
-const documentSubSchema = new mongoose.Schema({
+const VerificationIdSchema = new mongoose.Schema({
+  userId: { type: String, required: true },
   type: { type: String, required: true },
   subType: { type: String, required: false },
-  url: { type: String, required: false },
+  url: { type: String, required: true },
   status: { type: String, default: "pending" },
   level: { type: String, required: true },
   country: { type: String, required: false },
-});
-
-const VerificationSchema = new mongoose.Schema({
-  userId: { type: String, required: true },
-  documents: { type: [documentSubSchema], default: [] },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
 
-module.exports = mongoose.model("Verification", VerificationSchema);
+module.exports = mongoose.model("VerificationId", VerificationIdSchema);
