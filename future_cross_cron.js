@@ -289,8 +289,8 @@ async function Run(orders ) {
   let totalPNL = 0.0;
   for (var i = 0; i < getOpenOrders.length; i++) {
     let data = getOpenOrders[i];
-    let total = parseFloat(data.total) + parseFloat(data.usedUSDT);
-
+    let total = splitLengthNumber(parseFloat(data.total)) + splitLengthNumber(parseFloat(data.usedUSDT));
+    console.log("TOTAL ", total);
 
     let wallet = await FutureWalletModel.findOne({
       user_id: data._id,
@@ -299,7 +299,9 @@ async function Run(orders ) {
     let marginWalletAmount = wallet.amount;
 
     //buraya isoleden gelen aktif emirlerin ana yatırma bakiyesini eklemeliyiz çünkü bütün margin wallet bakiyesini değiştiriyor bu fonksiyon
-    wallet.pnl = data.total;
+    wallet.pnl = splitLengthNumber(data.total);
+    console.log("ben");
+    console.log(data.total);
     await wallet.save();
 
     let totalWallet =
@@ -313,7 +315,7 @@ async function Run(orders ) {
       await FutureOrder.updateMany({ user_id: data._id, future_type: 'cross', method: 'stop_limit' }, { $set: { status: -3 } }).exec()
 
     } else {
-      wallet.pnl = data.total;
+      wallet.pnl = splitLengthNumber(data.total);
     }
     //
     await wallet.save();
@@ -328,7 +330,7 @@ async function Run(orders ) {
         let item = findBinanceItem.data;
         if (order.type == 'buy') {
           let price = parseFloat(item.data.ask);
-          let pnl = (price - order.open_price) * order.amount;
+          let pnl = splitLengthNumber((price - order.open_price) * order.amount);
           order.pnl = pnl;
           let tp = parseFloat(order.tp);
           let sl = parseFloat(order.sl);
@@ -337,6 +339,7 @@ async function Run(orders ) {
             order.status = 1;
             let w = await FutureWalletModel.findOne({user_id : order.user_id});
             w.amount = parseFloat(w.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
+            
             await w.save();
           }
           if(sl != 0 && price <= sl) {
@@ -351,7 +354,7 @@ async function Run(orders ) {
         } else {
           let price = item.data.bid;
           let pnl = (order.open_price - price) * order.amount;
-          order.pnl = pnl;
+          order.pnl = splitLengthNumber(pnl);
           let tp = parseFloat(order.tp);
           let sl = parseFloat(order.sl);
           if(tp != 0 && price <= tp) {
@@ -375,6 +378,11 @@ async function Run(orders ) {
     }
   }
 
+}
+
+
+function splitLengthNumber(q) {
+  return q.toString().length > 10 ? parseFloat(q.toString().substring(0,10)) : q;
 }
 
 initialize();

@@ -303,7 +303,7 @@ async function Run(orders) {
           (order.usedUSDT) * (order.open_price / (order.leverage * 1.0)) + AdjustedLiq;
 
         
-        pnl = (price - order.open_price) * order.amount;
+        pnl = splitLengthNumber((price - order.open_price) * order.amount);
 
         console.log(
           "Open Price: " + order.open_price,
@@ -325,7 +325,7 @@ async function Run(orders) {
         let liqPrice =
           order.open_price - order.open_price / (order.leverage * 1.0);
 
-        pnl = (price - order.open_price) * order.amount;
+        pnl = splitLengthNumber((price - order.open_price) * order.amount);
         let reverseUsedUSDT = order.usedUSDT * -1;
 
         if (order.open_price <= liqPrice) {
@@ -358,7 +358,7 @@ async function Run(orders) {
         let liqPrice =
           order.open_price +
           (order.usedUSDT) * (order.open_price / (order.leverage * 1.0)) + AdjustedLiq;
-        pnl = (price - order.open_price) * order.amount;
+        pnl = splitLengthNumber((price - order.open_price) * order.amount);
         if (order.open_price >= liqPrice) {
           order.status = 1;
         }
@@ -367,7 +367,7 @@ async function Run(orders) {
         //}
       } else {
         let reverseUsedUSDT = order.usedUSDT;
-        pnl = (order.open_price - price) * order.amount;
+        pnl = splitLengthNumber((order.open_price - price) * order.amount);
 
         if (order.type == 'buy') {
           let liqPrice =
@@ -400,6 +400,9 @@ async function Run(orders) {
     order.pnl = pnl;
     await order.save();
   }
+}
+function splitLengthNumber(q) {
+  return q.toString().length > 10 ? parseFloat(q.toString().substring(0,10)) : q;
 }
 
 initialize();
