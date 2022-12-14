@@ -23,11 +23,12 @@ const addFutureOrder = async (req, res) => {
     let leverage = req.body.leverage;
     let symbol = req.body.symbol;
 
-    if (amount <= 0) {
-        res.json({ status: "fail", message: "invalid_amount" });
+    if (amount <= 0 || percent <= 0) {
+        res.json({ status: "fail", message: "Invalid amount" });
         return;
     }
 
+    
 
     let getSameOrder = await FutureOrder.find({ pair_name: symbol, future_type: (future_type == 'cross' ? 'isolated' : 'cross'), user_id: user_id, $lt: 0 });
     for(var h = 0; h < getSameOrder.length; h++ ) {

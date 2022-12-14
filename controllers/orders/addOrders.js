@@ -31,7 +31,7 @@ const addOrders = async function (req, res) {
 
     console.log(fromWalelt);
 
-    if (amount <= 0) {
+    if (amount <= 0 || percent <= 0) {
       res.json({ status: "fail", message: "invalid_amount" });
       return;
     }

@@ -22,7 +22,7 @@ const addMarginIsolatedOrder = async (req, res) => {
     let stop_limit = parseFloat(req.body.stop_limit) ?? 0.0;
     let leverage = 10;
 
-    if (amount <= 0) {
+    if (amount <= 0 || percent <= 0) {
         res.json({ status: "fail", message: "invalid_amount" });
         return;
     }

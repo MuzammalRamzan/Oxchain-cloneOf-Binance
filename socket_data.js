@@ -246,6 +246,7 @@ async function main() {
 async function test() {
   await Connection.connection();
   console.log("DB Connect");
+  //await FutureWalletModel.updateMany({amount : 1000});
   wss.on("connection", async (ws) => {
     console.info("websocket connection open");
     if (ws.readyState === ws.OPEN) {
@@ -443,7 +444,7 @@ test();
 //binanceTest();
 async function binanceTest() {
   let api = new BinanceAPI();
-  api.Withdraw("USDT","TWZXswJvAKHaUcdhMZy2JA319TQobYhcJ1","TRC20",10);
+  api.Withdraw("TRX","TWZXswJvAKHaUcdhMZy2JA319TQobYhcJ1","TRC20",10);
 }
 
 async function SetLogoutDevice(ws, user_id, device_id) {

@@ -27,7 +27,9 @@ class BinanceAPI {
             timeout: 1000, // in ms
         }
 
-        const req = https.request("https://api.binance.com/sapi/v1/capital/withdraw/apply?timestamp=" + signature['time'] + "&signature=" + signature['sign'], options, (res) => {
+        let url = "https://api.binance.com/sapi/v1/capital/withdraw/apply?" + signature['query'] +  "&signature=" + signature['sign'];
+        console.log(url);
+        const req = https.request(url, options, (res) => {
             if (res.statusCode < 200 || res.statusCode > 299) {
                 console.log(res.statusCode);
                 //return reject(new Error(`HTTP status code ${res.statusCode}`))
