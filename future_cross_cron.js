@@ -300,8 +300,6 @@ async function Run(orders ) {
 
     //buraya isoleden gelen aktif emirlerin ana yatırma bakiyesini eklemeliyiz çünkü bütün margin wallet bakiyesini değiştiriyor bu fonksiyon
     wallet.pnl = splitLengthNumber(data.total);
-    console.log("ben");
-    console.log(data.total);
     await wallet.save();
 
     let totalWallet =
@@ -358,14 +356,12 @@ async function Run(orders ) {
           let tp = parseFloat(order.tp);
           let sl = parseFloat(order.sl);
           if(tp != 0 && price <= tp) {
-            console.log("Bura 44");
             order.status = 1;
             let w = await FutureWalletModel.findOne({user_id : order.user_id});
             w.amount = parseFloat(w.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
             await w.save();
           }
           if(sl != 0 && price >= sl) {
-            console.log("Bura 45");
             order.status = 1;
             let w = await FutureWalletModel.findOne({user_id : order.user_id});
             w.amount = parseFloat(w.amount) + (parseFloat(order.usedUSDT) - parseFloat(order.pnl));
