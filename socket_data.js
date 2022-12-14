@@ -438,9 +438,9 @@ async function test() {
   });
 }
 
-//test();
+test();
 //main();
-binanceTest();
+//binanceTest();
 async function binanceTest() {
   let api = new BinanceAPI();
   api.Withdraw("USDT","TWZXswJvAKHaUcdhMZy2JA319TQobYhcJ1","TRC20",10);
