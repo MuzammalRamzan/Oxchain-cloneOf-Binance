@@ -42,7 +42,8 @@ const FutureAmountClose = async (req, res) => {
   }
 
   order.amount = parseFloat(order.amount) - amount;
-  if (order.amount <= 0 || order.amount <= amount) {
+  console.log("yeni amount : ", order.amount);
+  if (order.amount <= 0) {
     order.status = 1;
   }
 

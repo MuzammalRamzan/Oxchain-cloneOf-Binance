@@ -499,6 +499,7 @@ const addFutureOrder = async (req, res) => {
                     let newUsedUSDT = oldUsedUSDT + usedUSDT + oldPNL;
                     console.log(oldUsedUSDT, " | ", usedUSDT, " | ", oldPNL);
                     console.log(newUsedUSDT);
+                    console.log("new amount : ", (newUsedUSDT * leverage) / price);
                     reverseOreders.usedUSDT = newUsedUSDT;
                     reverseOreders.open_price = price;
                     reverseOreders.pnl = 0;
