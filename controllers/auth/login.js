@@ -144,6 +144,8 @@ const login = async (req, res) => {
       var data = {
         response: "success",
         email: user.email,
+        country_code: user.country_code ?? "",
+        phone_number: user.phone_number ?? "",
         twofa: twofaStatus,
         emailVerify: emailVerifyExist,
         smsVerify: smsVerifyExist,
@@ -367,7 +369,7 @@ const login = async (req, res) => {
         if (user.applicantId) {
           const applicantData = await getApplicantStatus(user.applicantId);
           const applicantStatus =
-          applicantData?.reviewResult?.reviewAnswer == "GREEN" ? 1 : 0;
+            applicantData?.reviewResult?.reviewAnswer == "GREEN" ? 1 : 0;
           await User.updateOne({ _id: user_id }, { $set: { applicantStatus } });
         }
 
@@ -403,7 +405,7 @@ const login = async (req, res) => {
       res.json({ status: "fail", message: "user_not_found", showableMessage: "User not Found" });
     }
   } else {
-    res.json({ status: "fail", message: "Forbidden 403", showableMessage: "Forbidden 403"});
+    res.json({ status: "fail", message: "Forbidden 403", showableMessage: "Forbidden 403" });
   }
 };
 

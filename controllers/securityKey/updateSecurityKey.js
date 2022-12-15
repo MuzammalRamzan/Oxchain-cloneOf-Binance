@@ -24,17 +24,21 @@ const updateSecurityKey = async function (req, res) {
   if (user && user.twofa) {
     twofaCheck = await authFile.verifyToken(twofapin, twofa);
   } else {
-    twofaCheck = await RegisterMail.findOne({
-      email: user.email,
-      pin: twofapin,
-      status: "1",
-    }).lean();
-    if (!twofaCheck)
-      twofaCheck = await RegisterSMS.findOne({
-        phone_number: user.phone_number,
+    if (user.email != null) {
+      twofaCheck = await MailVerification.findOne({
+        user_id: user_id,
         pin: twofapin,
-        status: "1",
+        reason: "updateSecurityKey",
       }).lean();
+    }
+
+    if (user.phone_number != null) {
+      twofaCheck = await SMSVerification.findOne({
+        user_id: user_id,
+        pin: twofapin,
+        reason: "updateSecurityKey",
+      }).lean();
+    }
   }
   if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed" });
 

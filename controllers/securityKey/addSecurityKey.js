@@ -3,8 +3,8 @@ var authFile = require("../../auth.js");
 var utilities = require("../../utilities.js");
 const User = require("../../models/User");
 const RegisterMail = require("../../models/RegisterMail");
-const RegisterSMS = require("../../models/RegisterSMS");
-
+const SMSVerification = require("../../models/SMSVerification");
+const MailVerification = require("../../models/MailVerification");
 const addSecurityKey = async function (req, res) {
   var user_id = req.body.user_id;
   var security_key = utilities.hashData(req.body.security_key);
@@ -32,17 +32,21 @@ const addSecurityKey = async function (req, res) {
   if (user && user.twofa) {
     twofaCheck = await authFile.verifyToken(twofapin, twofa);
   } else {
-    twofaCheck = await RegisterMail.findOne({
-      email: user.email,
-      pin: twofapin,
-      status: "1",
-    }).lean();
-    if (!twofaCheck)
-      twofaCheck = await RegisterSMS.findOne({
-        phone_number: user.phone_number,
+    if (user.email != null) {
+      twofaCheck = await MailVerification.findOne({
+        user_id: user_id,
         pin: twofapin,
-        status: "1",
+        reason: "addSecurityKey",
       }).lean();
+    }
+
+    if (user.phone_number != null) {
+      twofaCheck = await SMSVerification.findOne({
+        user_id: user_id,
+        pin: twofapin,
+        reason: "addSecurityKey",
+      }).lean();
+    }
   }
   if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed" });
 

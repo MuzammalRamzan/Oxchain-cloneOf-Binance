@@ -59,6 +59,9 @@ const changePassword = async function (req, res) {
           }
         }
       }
+
+
+      
       const filter = { _id: user_id, status: 1 };
       if (pinVerified === true) {
         if (utilities.hashData(old_password) == db_password) {
