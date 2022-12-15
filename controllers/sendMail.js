@@ -4,6 +4,20 @@ var authFile = require("../auth.js");
 var mailer = require("../mailer.js");
 
 const sendMail = async function (req, res) {
+
+  let newMail = "";
+  if (req.body.newMail != null && req.body.newMail != "" && req.body.newMail != undefined) {
+    newMail = req.body.newMail;
+    let user = await User.findOne({
+      email: newMail,
+    }).exec();
+
+    if (user != null) {
+      res.json({ status: "fail", message: "email_already_exist" });
+      return;
+    }
+
+  }
   var user_id = req.body.user_id;
   var api_key_result = req.body.api_key;
   var reason = req.body.reason;
@@ -17,7 +31,52 @@ const sendMail = async function (req, res) {
     }).exec();
 
     if (user != null) {
-      var pin = 0000;
+      var pin = "0000";
+
+      var pin2 = "0001";
+
+      if (reason == "change_email" && newMail != "") {
+
+
+        let check = await MailVerification.findOne({
+          user_id: user_id,
+          reason: "change_email_new",
+        }).exec();
+
+
+        mailer.sendMail(
+          newMail,
+          "Oxhain verification",
+          "Pin : " + pin2,
+          function (err, data) {
+            if (err) {
+              console.log("Error " + err);
+            } else {
+              console.log("sms sent");
+            }
+          }
+        );
+
+        if (check != null) {
+          MailVerification.updateOne(
+            { user_id: user["_id"], reason: "change_email_new" },
+            { $set: { pin: pin } },
+          );
+        } else {
+          newPin = new MailVerification({
+            user_id: user["_id"],
+            pin: pin2,
+            reason: "change_email_new",
+            status: 0,
+          });
+          newPin.save();
+        }
+
+
+
+      }
+
+
 
       mailer.sendMail(
         user["email"],

@@ -8,6 +8,8 @@ const changeEmail = async function (req, res) {
 
   var newEmail = req.body.new_email;
 
+  let newMailPin = req.body.newMailPin;
+
   var api_key_result = req.body.api_key;
 
   let result2 = "";
@@ -23,74 +25,83 @@ const changeEmail = async function (req, res) {
       var email = user["email"];
       var phone = user["phone"];
 
-      if (email != null && phone != null) {
-        let emailCheck = await EmailVerification.findOne({
+
+      let check1 = "";
+      let check2 = "";
+      let check3 = "";
+
+      if (email != undefined && email != null && email != "") {
+
+        check1 = await EmailVerification.findOne({
           user_id: user_id,
-          status: 0,
-          pin: req.body.emailPin,
           reason: "change_email",
-        });
+          pin: req.body.mailPin,
+          status: 0
+        }).exec();
 
-        let phoneCheck = await SMSVerification.findOne({
-          user_id: user_id,
-          status: 0,
-          pin: req.body.phonePin,
-          reason: "change_email",
-        });
+        if (!check1) return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong Mail Pin" });
 
-        if (emailCheck != null && phoneCheck != null) {
-          result2 = true;
-        } else {
-          result2 = false;
-        }
-      } else {
-        if (email != null) {
-          let emailCheck = await EmailVerification.findOne({
-            user_id: user_id,
-            status: 0,
-            pin: req.body.emailPin,
-            reason: "change_email",
-          });
 
-          if (emailCheck != null) {
-            result2 = true;
-          } else {
-            result2 = false;
-          }
-        } else if (phone != null) {
-          let phoneCheck = await SMSVerification.findOne({
-            user_id: user_id,
-            status: 0,
-            pin: req.body.phonePin,
-            reason: "change_email",
-          });
-
-          if (phoneCheck != null) {
-            result2 = true;
-          } else {
-            result2 = false;
-          }
-        }
       }
 
-      const filter = { _id: user_id, status: 1 };
+      if (phone != undefined && phone != null && phone != "") {
+        check3 = await SMSVerification.findOne({
+          user_id: user_id,
+          reason: "change_email",
+          pin: req.body.smsPin,
+          status: 0
+        }).exec();
 
-      console.log(result2);
-      if (result2 === true) {
-        const update = { email: newEmail };
-        let doc = await User.findOneAndUpdate(filter, update).exec();
+        if (!check3) return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong SMS Pin" });
 
-        if (doc != null) {
-          res.json({ status: "success", data: "update_success" });
-        } else {
-          res.json({ status: "fail", message: "update_fail", showableMessage: "Update Failed" });
-        }
-      } else {
-        res.json({ status: "fail", message: "verification_failed", showableMessage: "Verification Failed" });
+
       }
+
+      check2 = await EmailVerification.findOne({
+        user_id: user_id,
+        reason: "change_email_new",
+        pin: newMailPin,
+        status: 0
+      }).exec();
+
+      if (!check2) return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong New Mail Pin" });
+
+
+      if (check1 != "") {
+        check1.status = 1;
+        check1.save();
+      }
+
+      if (check2 != "") {
+        check2.status = 1;
+        check2.save();
+      }
+
+      if (check3 != "") {
+        check3.status = 1;
+        check3.save();
+      }
+
+
+
+
+      const filter = { _id: user_id, status: "1" };
+
+      const update = { email: newEmail };
+      let doc = await User.findOneAndUpdate(filter, update).exec();
+
+      if (doc != null) {
+
+
+        res.json({ status: "success", data: "update_success" });
+      } else {
+        res.json({ status: "fail", message: "update_fail", showableMessage: "Update Failed" });
+      }
+
     } else {
       res.json({ status: "fail", message: "user_not_found", showableMessage: "User not Found" });
     }
+
   }
 };
 

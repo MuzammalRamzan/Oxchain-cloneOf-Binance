@@ -7,7 +7,7 @@ const changePhone = async function (req, res) {
   var user_id = req.body.user_id;
   var twofapin = req.body.twofapin;
   var country_code = req.body.country_code;
-  var newPhone = req.body.phone;
+  var newPhone = req.body.newPhone;
 
   let result2 = "";
   var api_key_result = req.body.api_key;
@@ -24,112 +24,96 @@ const changePhone = async function (req, res) {
       var email = user["email"];
       var phone = user["phone"];
 
-      if (email != null && phone != null) {
-        let emailCheck = await EmailVerification.findOne({
+      let check1 = "";
+      let check2 = "";
+      let check3 = "";
+
+      if (email != undefined && email != null && email != "") {
+        check1 = await EmailVerification.findOne({
           user_id: user_id,
-          status: 0,
-          pin: req.body.emailPin,
           reason: "change_phone",
-        });
-
-        let phoneCheck = await SMSVerification.findOne({
-          user_id: user_id,
+          pin: req.body.mailPin,
           status: 0,
-          pin: req.body.phonePin,
-          reason: "change_phone",
-        });
+        }).exec();
 
-        if (emailCheck != null && phoneCheck != null) {
-          result2 = true;
-          await EmailVerification.updateOne(
-            {
-              user_id: user_id,
-              _id: emailCheck._id,
-              status: 0,
-              reason: "change_phone",
-            },
-            { status: 1 }
-          );
-          await SMSVerification.updateOne(
-            {
-              user_id: user_id,
-              _id: phoneCheck._id,
-              status: 0,
-              reason: "change_phone",
-            },
-            { status: 1 }
-          );
-        } else {
-          result2 = false;
-        }
-      } else {
-        if (email != null) {
-          let emailCheck = await EmailVerification.findOne({
-            user_id: user_id,
-            status: 0,
-            pin: req.body.emailPin,
-            reason: "change_phone",
+        if (!check1)
+          return res.json({
+            status: "fail",
+            message: "verification_failed",
+            showableMessage: "Wrong Mail Pin",
           });
-
-          if (emailCheck != null) {
-            result2 = true;
-
-            await EmailVerification.updateOne(
-              {
-                user_id: user_id,
-                _id: emailCheck._id,
-                status: 0,
-                reason: "change_phone",
-              },
-              { status: 1 }
-            );
-          } else {
-            result2 = false;
-          }
-        } else if (phone != null) {
-          let phoneCheck = await SMSVerification.findOne({
-            user_id: user_id,
-            status: 0,
-            pin: req.body.phonePin,
-            reason: "change_phone",
-          });
-
-          if (phoneCheck != null) {
-            result2 = true;
-
-            await SMSVerification.updateOne(
-              {
-                user_id: user_id,
-                _id: phoneCheck._id,
-                status: 0,
-                reason: "change_phone",
-              },
-              { status: 1 }
-            );
-          } else {
-            result2 = false;
-          }
-        }
       }
 
-      const filter = { _id: user_id, status: 1 };
+      if (phone != undefined && phone != null && phone != "") {
+        check3 = await SMSVerification.findOne({
+          user_id: user_id,
+          reason: "change_phone",
+          pin: req.body.smsPin,
+          status: 0,
+        }).exec();
 
-      if (result2 === true) {
-        const update = { phone: newPhone };
-        let doc = await User.findOneAndUpdate(filter, update).exec();
 
-        if (doc != null) {
-          res.json({ status: "success", data: "update_success" });
-        } else {
-          res.json({ status: "fail", message: "update_fail", showableMessage: "Update Failed" });
-        }
-      } else {
-        res.json({ status: "fail", message: "verification_failed", showableMessage: "Verification Failed" });
+        if (!check3)
+
+
+          return res.json({
+            status: "fail",
+            message: "verification_failed",
+            showableMessage: "Wrong SMS Pin",
+          });
       }
+
+
+      check2 = await SMSVerification.findOne({
+        user_id: user_id,
+        reason: "change_phone_new",
+        pin: req.body.newSmsPin,
+        status: 0,
+      }).exec();
+
+      if (!check2)
+        return res.json({
+          status: "fail",
+          message: "verification_failed",
+          showableMessage: "Wrong 2FA Pin",
+        });
+
+
+
+
+
+
+
+      if (check1 != "") {
+        check1.status = 1;
+        check1.save();
+      }
+
+      if (check2 != "") {
+        check2.status = 1;
+        check2.save();
+      }
+
+      if (check3 != "") {
+        check3.status = 1;
+        check3.save();
+      }
+
+
+      const filter = { _id: user_id, status: "1" };
+
+      const update = { phone_number: newPhone, country_code: country_code ?? "90" };
+      let doc = await User.findOneAndUpdate(filter, update).exec();
+
+      if (doc != null) {
+        res.json({ status: "success", data: "update_success" });
+      } else {
+        res.json({ status: "fail", message: "update_fail", showableMessage: "Update Failed" });
+      }
+
+    } else {
+      res.json({ status: "fail", message: "user_not_found", showableMessage: "User not Found" });
     }
-  } else {
-    res.json({ status: "fail", message: "user_not_found", showableMessage: "User not Found" });
   }
 };
-
 module.exports = changePhone;
