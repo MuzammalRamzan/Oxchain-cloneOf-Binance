@@ -16,88 +16,76 @@ const changePassword = async function (req, res) {
   let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
+
     let user = await User.findOne({
       _id: user_id,
       status: 1,
     }).exec();
 
-    let pinVerified = false;
     if (user != null) {
-      var twofa = user["twofa"];
-      var db_password = user["password"];
 
-      let emailVerifiedCheck = await RegisterMail.findOne({
-        user_id: user_id,
-        status: 1,
-      }).exec();
+      if (user.password != utilities.hashData(old_password)) return res.json({ status: "fail", message: "wrong_password", showableMessage: "Wrong Password" });
 
-      let smsVerifiedCheck = await RegisterSMS.findOne({
-        user_id: user_id,
-        status: 1,
-      }).exec();
+      var email = user["email"];
+      var phone = user["phone"];
 
-      if (emailVerifiedCheck != null) {
-        let pinCheck = await MailVerification.findOne({
+      let check1 = "";
+      let check3 = "";
+
+      if (email != undefined && email != null && email != "") {
+        check1 = await MailVerification.findOne({
           user_id: user_id,
-          pin: req.body.pin,
           reason: "change_password",
+          pin: req.body.mailPin,
+          status: 0,
         }).exec();
 
-        if (pinCheck != null) {
-          pinVerified = true;
-        }
-      } else {
-        if (smsVerifiedCheck != null) {
-          let pinCheck = await MailVerification.findOne({
+        if (!check1)
+          return res.json({
+            status: "fail",
+            message: "verification_failed",
+            showableMessage: "Wrong Mail Pin",
+          });
+
+      }
+
+      if (phone != undefined && phone != null && phone != "") {
+        check3 = await RegisterSMS.findOne
+          ({
             user_id: user_id,
-            pin: req.body.pin,
             reason: "change_password",
+            pin: req.body.smsPin,
+            status: 0,
           }).exec();
 
-          if (pinCheck != null) {
-            pinVerified = true;
-          }
-        }
+        if (!check3)
+          return res.json({
+            status: "fail",
+            message: "verification_failed",
+            showableMessage: "Wrong SMS Pin",
+          });
       }
 
-      
-      const filter = { _id: user_id, status: 1 };
-      if (pinVerified === true) {
-        if (utilities.hashData(old_password) == db_password) {
-          var result2 = "";
-          if (twofa != null) {
-            result2 = await authFile.verifyToken(twofapin, twofa);
-          } else {
-            var check = await RegisterMail.findOne({
-              email: user["email"],
-              pin: twofapin,
-            }).exec();
-            if (check != null) {
-              result2 = true;
-            }
-          }
-
-          if (result2 === true) {
-            const update = { password: utilities.hashData(password) };
-            User.findOneAndUpdate(filter, update, (err, doc) => {
-              if (err) {
-                res.json({ status: "fail", message: err });
-              } else {
-                res.json({ status: "success", data: "update_success" });
-              }
-            });
-          } else {
-            res.json({ status: "fail", message: "2fa_failed", showableMessage: "2FA Failed" });
-          }
-        } else {
-          res.json({ status: "fail", message: "wrong_old_password", showableMessage: "Wrong Old Password" });
-        }
-      } else {
-        res.json({ status: "fail", message: "pin_failed", showableMessage: "Pin Failed" });
+      if (check1 != "") {
+        check1.status = 1;
+        check1.save();
       }
+
+      if (check3 != "") {
+        check3.status = 1;
+        check3.save();
+      }
+
+      user.password = utilities.hashData(password);
+      user.save();
+
+      res.json({ status: "success", message: "password_changed", showableMessage: "Password Changed" });
+
     } else {
-      res.json({ status: "fail", message: "user_not_found", showableMessage: "User not Found" });
+      res.json({ status: "fail", message: "user_not_found", showableMessage: "User not found" });
     }
+
+
   } else {
     res.json({ status: "fail", message: "403 Forbidden", showableMessage: "403 Forbidden" });
   }
