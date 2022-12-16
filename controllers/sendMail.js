@@ -60,7 +60,7 @@ const sendMail = async function (req, res) {
         if (check != null) {
           MailVerification.updateOne(
             { user_id: user["_id"], reason: "change_email_new" },
-            { $set: { pin: pin } },
+            { $set: { pin: pin, status: 0, } },
           );
         } else {
           newPin = new MailVerification({
