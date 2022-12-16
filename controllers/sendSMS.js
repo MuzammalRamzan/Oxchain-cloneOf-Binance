@@ -49,7 +49,7 @@ const sendSMS = async function (req, res) {
         if (check != null) {
           SMSVerification.updateOne(
             { user_id: user["_id"], reason: "change_phone_new" },
-            { $set: { pin: pin, status: 0, } },
+            { pin: pin, status: 0, }
           );
         } else {
           newPin = new SMSVerification({
