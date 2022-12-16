@@ -75,7 +75,7 @@ const changePhone = async function (req, res) {
         return res.json({
           status: "fail",
           message: "verification_failed",
-          showableMessage: "Wrong 2FA Pin",
+          showableMessage: "Wrong New Pin",
         });
 
 

@@ -9,6 +9,7 @@ const sendSMS = async function (req, res) {
   var api_key_result = req.body.api_key;
   var reason = req.body.reason;
   let newPhone = req.body.newPhone ?? "";
+  let country_code = req.body.country_code ?? "90";
 
   var result = await authFile.apiKeyChecker(api_key_result);
 
@@ -27,6 +28,17 @@ const sendSMS = async function (req, res) {
 
       if (reason == "change_phone_new" && newPhone != "") {
 
+
+        let checkForPhone = await User.findOne({
+          phone: newPhone,
+          country_code: country_code,
+        }).exec();
+
+
+        if(checkForPhone != null){
+          return res.json({ status: "fail", message: "phone_already_exist", showableMessage: "Phone already exist" });
+        }
+        
         let check = await SMSVerification.findOne({
           user_id: user_id,
           reason: "change_phone_new",
