@@ -13,7 +13,7 @@ const sendMail = async function (req, res) {
     }).exec();
 
     if (user != null) {
-      res.json({ status: "fail", message: "email_already_exist" });
+      res.json({ status: "fail", message: "email_already_exist", showableMessage: "Email already exist" });
       return;
     }
 
@@ -71,6 +71,8 @@ const sendMail = async function (req, res) {
           });
           newPin.save();
         }
+
+        res.json({ status: "success", data: "mail_send", showableMessage: "Mail send" });
 
 
 

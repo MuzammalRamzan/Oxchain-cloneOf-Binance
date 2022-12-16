@@ -74,6 +74,8 @@ const sendSMS = async function (req, res) {
             }
           }
         );
+
+        res.json({ status: "success", data: "sms_send", showableMessage: "SMS send" });
       }
       else {
 
