@@ -24,6 +24,15 @@ const changePhone = async function (req, res) {
       var email = user["email"];
       var phone = user["phone"];
 
+      let checkForPhone = await User.findOne({
+        phone: newPhone,
+        country_code: country_code,
+      }).exec();
+
+      if (checkForPhone != null) {
+        return res.json({ status: "fail", message: "phone_already_exist", showableMessage: "Phone already exist" });
+      }
+
       let check1 = "";
       let check2 = "";
       let check3 = "";
