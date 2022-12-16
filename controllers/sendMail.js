@@ -35,7 +35,7 @@ const sendMail = async function (req, res) {
 
       var pin2 = "0001";
 
-      if (reason == "change_email" && newMail != "") {
+      if (reason == "change_email_new" && newMail != "") {
 
 
         let check = await MailVerification.findOne({
