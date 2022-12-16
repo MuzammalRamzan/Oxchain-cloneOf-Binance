@@ -10,6 +10,8 @@ const DepositsSchema = new mongoose.Schema({
   currency: { type: String, required: false, default: null },
   fee: { type: String, required: false, default: null },
   updatedAt: { type: String, required: false, default: null },
+  netowrk_id: { type: mongoose.Schema.Types.ObjectId,  ref : "Network"},
+  move_to_admin : {type : Boolean,  default : 0},
   status: { type: String, required: false, default: 0 },
   createdAt: {
     type: Date,

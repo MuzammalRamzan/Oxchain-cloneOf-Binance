@@ -10,11 +10,11 @@ const SUMSUB_BASE_URL = "https://api.sumsub.com";
 
 const config = {};
 config.baseURL = SUMSUB_BASE_URL;
-
+/*
 axios.interceptors.request.use(createSignature, function (error) {
   return Promise.reject(error);
 });
-
+*/
 // This function creates signature for the request as described here: https://developers.sumsub.com/api-reference/#app-tokens
 
 function createSignature(config) {

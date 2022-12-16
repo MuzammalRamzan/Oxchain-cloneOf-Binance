@@ -20,6 +20,8 @@ var notifications = require("./notifications.js");
 var utilities = require("./utilities.js");
 const WalletAddress = require("./models/WalletAddress");
 const Connection = require("./Connection");
+const schedule = require('node-schedule');
+
 require("dotenv").config();
 
 //var formattedKey = authenticator.generateKey();
@@ -59,6 +61,49 @@ route.get("/", (req, res) => {
   res.send("success");
 });
 
+function PostRequestSync(url, data) {
+  return new Promise((resolve, reject) => {
+    axios.post(url, data).then(response => resolve(response)).catch(error => reject(error));
+  });
+}
+
+async function OxhainTasks() {
+
+
+  //Check TRC20 Admin Transfer
+  schedule.scheduleJob('*/2 * * * *', async function () {
+    let deposits = await Deposits.find({ move_to_admin: false, netowrk_id: { $exists: true } });
+    for (var i = 0; i < deposits.length; i++) {
+      let depo = deposits[i];
+      console.log(depo.netowrk_id);
+      switch (depo.netowrk_id.toString()) {
+        case "6358f17cbc20445270757291":
+          //TRC20
+          let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: depo.address });
+          if (getTRXData.data.status == 'success') {
+            let balance = getTRXData.data.data;
+            if (balance < 12000000) {
+              let trx_txid = await PostRequestSync("http://54.172.40.148:4456/trx_transfer", { from: process.env.TRCADDR, to: depo.address, pkey: process.env.TRCPKEY, amount: 12000000 });
+              console.log(trx_txid.data);
+            }
+            let _amount = parseFloat(depo.amount) * 1000000
+            let getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
+            let usdt_transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { to: process.env.TRCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: _amount });
+            if (usdt_transaction.data.status == 'success') {
+              depo.move_to_admin = true;
+              depo.save();
+            }
+          }
+          console.log();
+          break;
+      }
+    }
+  });
+
+}
+
+OxhainTasks();
+
 route.all("/ethDepositCheck", async (req, res) => {
   var api_key_result = req.body.api_key;
   let result = await authFile.apiKeyChecker(api_key_result);
@@ -76,9 +121,9 @@ route.all("/ethDepositCheck", async (req, res) => {
       if (address.length > 0) {
         let checkRequest = await axios.get(
           "https://api.etherscan.io/api?module=account&action=txlist&address=" +
-            address +
-            "&endblock=latest&apikey=" +
-            ethKey
+          address +
+          "&endblock=latest&apikey=" +
+          ethKey
         );
 
         var amount = "";
@@ -133,15 +178,15 @@ route.all("/bnbDepositCheck", async (req, res) => {
 
     for (let i = 0; i < wallet.length; i++) {
       let address = wallet[i].wallet_address;
-      if(address == null || address == '') continue;
+      if (address == null || address == '') continue;
       let user_id = wallet[i].user_id;
 
       if (address.length > 0) {
         let checkRequest = await axios.get(
           "https://api.bscscan.com/api?module=account&action=txlist&address=" +
-            address +
-            "&endblock=latest&apikey=" +
-            bscKey
+          address +
+          "&endblock=latest&apikey=" +
+          bscKey
         );
 
         var amount = "";
@@ -203,7 +248,7 @@ route.all("/btcDepositCheck", async (req, res) => {
     for (let i = 0; i < wallet.length; i++) {
       let address = wallet[i].wallet_address;
       let user_id = wallet[i].user_id;
-      if(address == null) continue;
+      if (address == null) continue;
       if (address.length > 0) {
         let checkRequest = await axios.request({
           method: "post",
@@ -275,8 +320,8 @@ route.all("/usdtDepositCheck", async (req, res) => {
       if (address.length > 1) {
         let checkRequest = await axios.get(
           "https://api.trongrid.io/v1/accounts/" +
-            address +
-            "/transactions/trc20?limit=20&contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+          address +
+          "/transactions/trc20?limit=20&contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
         );
 
         for (let j = 0; j < checkRequest.data.data.length; j++) {
@@ -312,6 +357,8 @@ route.all("/usdtDepositCheck", async (req, res) => {
   }
 });
 
+
+
 route.all("/usdtDepositCheckERC", async (req, res) => {
   var api_key_result = req.body.api_key;
   let result = await authFile.apiKeyChecker(api_key_result);
@@ -339,8 +386,8 @@ route.all("/usdtDepositCheckERC", async (req, res) => {
       if (address.length > 1) {
         let checkRequest = await axios.get(
           "https://api.etherscan.io/api?module=account&action=tokentx&address=" +
-            address +
-            "&startblock=0&endblock=99999999&page=1&offset=10&sort=asc&apikey=HH7FVKBY1U74K1VUYTUN1C4X973XN214FK&contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7"
+          address +
+          "&startblock=0&endblock=99999999&page=1&offset=10&sort=asc&apikey=HH7FVKBY1U74K1VUYTUN1C4X973XN214FK&contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7"
         );
 
         if (checkRequest.data.result.length > 0) {

@@ -35,6 +35,7 @@ async function addDeposit(
     address: address,
     status: 1,
     currency: coin_name,
+    netowrk_id : networkId
   });
 
   NotificationTokens.findOne({
