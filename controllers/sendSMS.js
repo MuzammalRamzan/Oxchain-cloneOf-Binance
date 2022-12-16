@@ -25,7 +25,7 @@ const sendSMS = async function (req, res) {
 
 
 
-      if (reason == "change_phone" && newPhone != "") {
+      if (reason == "change_phone_new" && newPhone != "") {
 
         let check = await SMSVerification.findOne({
           user_id: user_id,
