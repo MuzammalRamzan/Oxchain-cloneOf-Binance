@@ -105,7 +105,7 @@ const sendMail = async function (req, res) {
         if (check != null) {
           MailVerification.updateOne(
             { user_id: user["_id"], reason: reason },
-            { $set: { pin: pin, status: 0 } },
+            { pin: pin, status: 0 },
             function (err, result) {
               if (err) {
                 res.json({ status: "fail", message: err });
