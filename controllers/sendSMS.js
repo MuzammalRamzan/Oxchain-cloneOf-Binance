@@ -89,7 +89,7 @@ const sendSMS = async function (req, res) {
 
         if (check2 != null) {
           SMSVerification.updateOne(
-            { user_id: user["_id"], reason: reason, status: 0 },
+            { user_id: user["_id"], reason: reason },
             { $set: { pin: pin } },
             function (err, result) {
               if (err) {
