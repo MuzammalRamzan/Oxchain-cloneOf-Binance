@@ -60,7 +60,7 @@ const sendMail = async function (req, res) {
         if (check != null) {
           MailVerification.updateOne(
             { user_id: user["_id"], reason: "change_email_new" },
-            { pin: pin, status: 0, }
+            { pin: pin, status: "0", }
           );
         } else {
           newPin = new MailVerification({
@@ -99,13 +99,12 @@ const sendMail = async function (req, res) {
         let check = await MailVerification.findOne({
           user_id: user_id,
           reason: reason,
-          status: 0,
         }).exec();
 
         if (check != null) {
           MailVerification.updateOne(
             { user_id: user["_id"], reason: reason },
-            { pin: pin, status: 0 },
+            { pin: pin, status: "0" },
             function (err, result) {
               if (err) {
                 res.json({ status: "fail", message: err });

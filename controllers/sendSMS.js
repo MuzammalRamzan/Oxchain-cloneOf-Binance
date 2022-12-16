@@ -49,7 +49,7 @@ const sendSMS = async function (req, res) {
         if (check != null) {
           SMSVerification.updateOne(
             { user_id: user["_id"], reason: "change_phone_new" },
-            { pin: pin, status: 0, }
+            { pin: pin, status: "0", }
           );
         } else {
           newPin = new SMSVerification({
@@ -84,13 +84,12 @@ const sendSMS = async function (req, res) {
         let check2 = await SMSVerification.findOne({
           user_id: user_id,
           reason: reason,
-          status: 0,
         }).exec();
 
         if (check2 != null) {
           SMSVerification.updateOne(
             { user_id: user["_id"], reason: reason },
-            { pin: pin, status: 0 },
+            { pin: pin, status: "0" },
             function (err, result) {
               if (err) {
                 res.json({ status: "fail", message: err });
