@@ -75,40 +75,44 @@ const sendSMS = async function (req, res) {
           }
         );
       }
+      else {
 
-      let check2 = await SMSVerification.findOne({
-        user_id: user_id,
-        reason: reason,
-        status: 0,
-      }).exec();
 
-      if (check2 != null) {
-        SMSVerification.updateOne(
-          { user_id: user["_id"], reason: reason, status: 0 },
-          { $set: { pin: pin } },
-          function (err, result) {
+
+        let check2 = await SMSVerification.findOne({
+          user_id: user_id,
+          reason: reason,
+          status: 0,
+        }).exec();
+
+        if (check2 != null) {
+          SMSVerification.updateOne(
+            { user_id: user["_id"], reason: reason, status: 0 },
+            { $set: { pin: pin } },
+            function (err, result) {
+              if (err) {
+                res.json({ status: "fail", message: err });
+              } else {
+                res.json({ status: "success", data: "sms_send" });
+              }
+            }
+          );
+        } else {
+          const newPin = new SMSVerification({
+            user_id: user["_id"],
+            pin: pin,
+            reason: reason,
+            status: 0,
+          });
+
+          newPin.save(function (err) {
             if (err) {
               res.json({ status: "fail", message: err });
             } else {
               res.json({ status: "success", data: "sms_send" });
             }
-          }
-        );
-      } else {
-        const newPin = new SMSVerification({
-          user_id: user["_id"],
-          pin: pin,
-          reason: reason,
-          status: 0,
-        });
-
-        newPin.save(function (err) {
-          if (err) {
-            res.json({ status: "fail", message: err });
-          } else {
-            res.json({ status: "success", data: "sms_send" });
-          }
-        });
+          });
+        }
       }
 
 

@@ -75,55 +75,59 @@ const sendMail = async function (req, res) {
 
 
       }
+      else {
 
 
 
-      mailer.sendMail(
-        user["email"],
-        "Oxhain verification",
-        "Pin : " + pin,
-        function (err, data) {
-          if (err) {
-            console.log("Error " + err);
-          } else {
-            console.log("sms sent");
+
+
+        mailer.sendMail(
+          user["email"],
+          "Oxhain verification",
+          "Pin : " + pin,
+          function (err, data) {
+            if (err) {
+              console.log("Error " + err);
+            } else {
+              console.log("sms sent");
+            }
           }
-        }
-      );
+        );
 
-      let check = await MailVerification.findOne({
-        user_id: user_id,
-        reason: reason,
-        status: 0,
-      }).exec();
+        let check = await MailVerification.findOne({
+          user_id: user_id,
+          reason: reason,
+          status: 0,
+        }).exec();
 
-      if (check != null) {
-        MailVerification.updateOne(
-          { user_id: user["_id"], reason: reason, status: 0 },
-          { $set: { pin: pin } },
-          function (err, result) {
+        if (check != null) {
+          MailVerification.updateOne(
+            { user_id: user["_id"], reason: reason, status: 0 },
+            { $set: { pin: pin } },
+            function (err, result) {
+              if (err) {
+                res.json({ status: "fail", message: err });
+              } else {
+                res.json({ status: "success", data: "mail_send" });
+              }
+            }
+          );
+        } else {
+          const newPin = new MailVerification({
+            user_id: user["_id"],
+            pin: pin,
+            reason: reason,
+            status: 0,
+          });
+
+          newPin.save(function (err) {
             if (err) {
               res.json({ status: "fail", message: err });
             } else {
               res.json({ status: "success", data: "mail_send" });
             }
-          }
-        );
-      } else {
-        const newPin = new MailVerification({
-          user_id: user["_id"],
-          pin: pin,
-          reason: reason,
-          status: 0,
-        });
-
-        newPin.save(function (err) {
-          if (err) {
-            res.json({ status: "fail", message: err });
-          } else {
-            res.json({ status: "success", data: "mail_send" });
-          }
-        });
+          });
+        }
       }
     } else {
       res.json({ status: "fail", message: "user_not_found" });
