@@ -1,0 +1,49 @@
+const MarketingMailsModel = require('../../models/marketingMails');
+const authFile = require('../../auth.js');
+
+const index = async function (req, res) {
+
+    const user_id = req.body.user_id;
+    const api_key_result = req.body.api_key;
+    const result = await authFile.apiKeyChecker(api_key_result);
+
+    if (result === true) {
+        const marketingMails = await Marketing.findOne({
+            user_id: user_id,
+        }).exec();
+
+        if (marketingMails != null) {
+            if (marketingMails.status === 1) {
+                marketingMails.status = 0;
+                return res.json({ status: "success", data: "disabled" });
+            }
+            else {
+                marketingMails.status = 1;
+                return res.json({ status: "success", data: "enabled" });
+            }
+        }
+        else {
+            const newMarketingMails = new MarketingMailsModel({
+                user_id: user_id,
+            });
+
+            newMarketingMails.save((err, doc) => {
+                if (err) {
+                    return res.json({ status: "fail", message: err });
+                }
+                else {
+                    return res.json({ status: "success", data: "enabled" });
+                }
+            }
+            );
+        }
+    }
+    else {
+        return res.json({
+            status: "fail", message: "api_key is not valid"
+        });
+    }
+
+};
+
+module.exports = index;
