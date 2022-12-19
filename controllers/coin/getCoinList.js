@@ -42,7 +42,10 @@ function parseCoins(coins, amounts) {
 
     for (let i = 0; i < coins.length; i++) {
       let a = coins[i].toObject();
-      a.balance = amounts.filter((amount) => amount.coin_id == a._id)[0].amount;
+      let select = amounts.filter((amount) => amount.coin_id == a._id);
+      if(select != null && select.length > 0) {
+        a.balance = select[0].amount;
+      }
       parsedCoins.push(a);
     }
     resolve(parsedCoins);
