@@ -7,7 +7,7 @@ const index = async function (req, res) {
     const result = await authFile.apiKeyChecker(api_key_result);
 
     if (result === true) {
-        const marketingMails = await Marketing.findOne({
+        const marketingMails = await MarketingMailsModel.findOne({
             user_id: user_id,
         }).exec();
 
