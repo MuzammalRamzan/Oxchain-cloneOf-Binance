@@ -3,6 +3,7 @@ var authFile = require("../../auth.js");
 const User = require("../../models/User");
 const RegisterMail = require("../../models/RegisterMail");
 const RegisterSMS = require("../../models/RegisterSMS");
+const utilities = require("../../utilities.js");
 
 const updateSecurityKey = async function (req, res) {
   var user_id = req.body.user_id;
@@ -13,34 +14,41 @@ const updateSecurityKey = async function (req, res) {
   var deposit = req.body.deposit;
   var withdraw = req.body.withdraw;
 
-  var twofapin = req.body.twofapin;
+  var twofapin = req.body.twofapin ?? null;
+
+  let phonePin = req.body.phonePin ?? null;
+  let mailPin = req.body.mailPin ?? null;
 
   const result = await authFile.apiKeyChecker(api_key_result);
   if (!result) return res.json({ status: "fail", message: "403 Forbidden" });
 
   const user = await User.findOne({ _id: user_id }).lean();
   let twofaCheck;
+  let emailCheck;
+  let phoneCheck;
 
   if (user && user.twofa) {
     twofaCheck = await authFile.verifyToken(twofapin, twofa);
+    if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed" });
   } else {
     if (user.email != null) {
-      twofaCheck = await MailVerification.findOne({
+      emailCheck = await MailVerification.findOne({
         user_id: user_id,
-        pin: twofapin,
+        pin: mailPin,
         reason: "updateSecurityKey",
       }).lean();
+      if (!emailCheck) return res.json({ status: "fail", message: "failed", showableMessage: "Wrong Mail pin" });
     }
 
     if (user.phone_number != null) {
-      twofaCheck = await SMSVerification.findOne({
+      phoneCheck = await SMSVerification.findOne({
         user_id: user_id,
-        pin: twofapin,
+        pin: phonePin,
         reason: "updateSecurityKey",
       }).lean();
+      if (!phoneCheck) return res.json({ status: "fail", message: "failed", showableMessage: "Wrong SMS pin" });
     }
   }
-  if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed" });
 
   const securityKey = await SecurityKey.findOne({
     user_id: user_id,
@@ -49,7 +57,7 @@ const updateSecurityKey = async function (req, res) {
   }).lean();
 
   if (!securityKey)
-    return res.json({ status: "fail", message: "security_key_not_found" });
+    return res.json({ status: "fail", message: "security_key_not_found", showableMessage: "Security key not found" });
 
   const filter = { _id: req.body.id, status: "1" };
   const update = {
@@ -57,6 +65,7 @@ const updateSecurityKey = async function (req, res) {
     deposit: deposit,
     withdraw: withdraw,
     trade: trade,
+    key: utilities.hashData(security_key),
   };
   await SecurityKey.findOneAndUpdate(filter, update);
 

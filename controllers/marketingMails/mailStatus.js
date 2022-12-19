@@ -12,7 +12,7 @@ const index = async function (req, res) {
         }).exec();
 
         if (marketingMails != null) {
-            if (marketingMails.status === 1) {
+            if (marketingMails.status == 1) {
                 res.json({ status: "success", data: "enabled" });
             }
             else {

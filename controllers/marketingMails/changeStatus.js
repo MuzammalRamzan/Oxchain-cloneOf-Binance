@@ -13,13 +13,15 @@ const index = async function (req, res) {
         }).exec();
 
         if (marketingMails != null) {
-            if (marketingMails.status === 1) {
+            if (marketingMails.status == 1) {
                 marketingMails.status = 0;
-                return res.json({ status: "success", data: "disabled" });
+                marketingMails.save();
+                return res.json({ status: "success", data: "disabled", showableMessage: "Marketing mails are disabled" });
             }
             else {
                 marketingMails.status = 1;
-                return res.json({ status: "success", data: "enabled" });
+                marketingMails.save();
+                return res.json({ status: "success", data: "enabled", showableMessage: "Marketing mails are enabled" });
             }
         }
         else {
@@ -32,7 +34,7 @@ const index = async function (req, res) {
                     return res.json({ status: "fail", message: err });
                 }
                 else {
-                    return res.json({ status: "success", data: "enabled" });
+                    return res.json({ status: "success", data: "enabled", showableMessage: "Marketing mails are enabled" });
                 }
             }
             );
