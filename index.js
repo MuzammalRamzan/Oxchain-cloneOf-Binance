@@ -89,6 +89,9 @@ const addAnnouncement = require("./controllers/announcement/addAnnouncement");
 const getAnnouncement = require("./controllers/announcement/getAnnouncement");
 const getLocation = require("./controllers/users/getLocation");
 
+const getSiteNotificationSettings = require("./controllers/siteNotifications/get");
+const updateSiteNotificationSettings = require("./controllers/siteNotifications/update");
+
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
 //console.log(authenticator.verifyToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse", "260180"));
@@ -182,6 +185,9 @@ route.all("/getVerificationIds", upload.any(), getVerificationIds);
 route.all("/addVerificationId", upload.any(), addVerificationId);
 
 route.all("/walletToWallet", walletToWallet);
+
+route.all("/getSiteNotificationSettings", getSiteNotificationSettings);
+route.all("/updateSiteNotificationSettings", updateSiteNotificationSettings);
 
 route.post("/subscription", async (req, res) => {
   try {

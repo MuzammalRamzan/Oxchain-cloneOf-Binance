@@ -20,6 +20,8 @@ const { getApplicantStatus } = require("../../sumsub");
 const FutureWalletModel = require("../../models/FutureWalletModel");
 const WithdrawalWhiteListModel = require("../../models/WithdrawalWhiteList");
 const OneStepWithdrawModel = require("../../models/OneStepWithdraw");
+const SiteNotificationsModel = require("../../models/SiteNotifications");
+
 
 const { getToken } = require("../../auth");
 
@@ -107,6 +109,21 @@ const login = async (req, res) => {
       }
 
 
+
+      let checkSiteNotifications = await SiteNotificationsModel.findOne({
+        user_id: user._id,
+      }).exec();
+
+      if (checkSiteNotifications == null) {
+        let siteNotifications = new SiteNotificationsModel({
+          user_id: user._id,
+          activities: 1,
+          trade: 1,
+          news: 1,
+          system_messages: 1,
+        });
+        await siteNotifications.save();
+      }
 
       let device = new Device({
         user_id: user._id,
