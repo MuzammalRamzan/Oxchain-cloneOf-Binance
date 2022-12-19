@@ -1,4 +1,4 @@
-const MarketingMailsModel = require('../../models/marketingMails');
+const MarketingMailsModel = require('../../models/MarketingMail');
 const authFile = require('../../auth.js');
 
 const index = async function (req, res) {

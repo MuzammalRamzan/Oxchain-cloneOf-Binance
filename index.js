@@ -136,6 +136,8 @@ const clearNotifications = require("./controllers/clearNotifications");
 const addVerificationId = require("./controllers/verificationId/addVerificationId");
 const getVerificationIds = require("./controllers/verificationId/getVerificationIds");
 
+const marketingMailStatus = require("./controllers/marketingMails/mailStatus");
+const changeMarketingMailStatus = require("./controllers/marketingMails/changeStatus");
 route.use(
   session({
     secret: "oxhain_login_session",
@@ -281,7 +283,7 @@ route.all(
 route.all(
   "/enableWithdrawalWhiteList",
   upload.none(),
-  async function (req, res) {}
+  async function (req, res) { }
 );
 route.post("/editOneStepWithdraw", editOneStepWithdraw);
 route.post("/getOneStepWithdraw", getOneStepWithdraw);
@@ -352,6 +354,9 @@ route.all("/changeNickName", upload.none(), changeNickname);
 route.all("/addCopyTrade", upload.none(), (req, res) => {
   res.json(CopyTrade.test());
 });
+
+route.all("/getMarketingMailStatus", upload.none(), marketingMailStatus);
+route.all("/changeMarketingMailStatus", upload.none(), changeMarketingMailStatus);
 
 route.all("/updateCopyTrade", upload.none(), (req, res) => {
   res.json(CopyTrade.updateTrade());
