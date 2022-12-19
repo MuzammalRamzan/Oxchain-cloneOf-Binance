@@ -4,6 +4,8 @@ const User = require("../../models/User");
 const RegisterMail = require("../../models/RegisterMail");
 const RegisterSMS = require("../../models/RegisterSMS");
 const utilities = require("../../utilities.js");
+const MailVerification = require("../../models/MailVerification");
+const SMSVerification = require("../../models/SMSVerification");
 
 const updateSecurityKey = async function (req, res) {
   var user_id = req.body.user_id;
@@ -24,8 +26,8 @@ const updateSecurityKey = async function (req, res) {
 
   const user = await User.findOne({ _id: user_id }).lean();
   let twofaCheck;
-  let emailCheck;
-  let phoneCheck;
+  let emailCheck = "";
+  let phoneCheck = "";
 
   if (user && user.twofa) {
     twofaCheck = await authFile.verifyToken(twofapin, twofa);
@@ -36,6 +38,7 @@ const updateSecurityKey = async function (req, res) {
         user_id: user_id,
         pin: mailPin,
         reason: "updateSecurityKey",
+        status: "0",
       }).lean();
       if (!emailCheck) return res.json({ status: "fail", message: "failed", showableMessage: "Wrong Mail pin" });
     }
@@ -45,6 +48,7 @@ const updateSecurityKey = async function (req, res) {
         user_id: user_id,
         pin: phonePin,
         reason: "updateSecurityKey",
+        status: "0",
       }).lean();
       if (!phoneCheck) return res.json({ status: "fail", message: "failed", showableMessage: "Wrong SMS pin" });
     }
@@ -60,14 +64,43 @@ const updateSecurityKey = async function (req, res) {
     return res.json({ status: "fail", message: "security_key_not_found", showableMessage: "Security key not found" });
 
   const filter = { _id: req.body.id, status: "1" };
-  const update = {
-    wallet: wallet,
-    deposit: deposit,
-    withdraw: withdraw,
-    trade: trade,
-    key: utilities.hashData(security_key),
-  };
-  await SecurityKey.findOneAndUpdate(filter, update);
+
+
+  if (security_key != null) {
+    await SecurityKey.findOneAndUpdate(filter, {
+      wallet: wallet,
+      deposit: deposit,
+      withdraw: withdraw,
+      trade: trade,
+      key: utilities.hashData(security_key)
+    });
+  }
+  else {
+    await SecurityKey.findOneAndUpdate(filter, {
+      wallet: wallet,
+      deposit: deposit,
+      withdraw: withdraw,
+      trade: trade,
+    });
+  }
+
+  if (emailCheck) {
+    await MailVerification.findOneAndUpdate(
+      { _id: emailCheck._id },
+      { status: "1" }
+    );
+  }
+
+  if (phoneCheck) {
+    await SMSVerification.findOneAndUpdate(
+      { _id: phoneCheck._id },
+      { status: "1" }
+    );
+  }
+
+
+
+
 
   return res.json({ status: "success", data: "update_success" });
 };
