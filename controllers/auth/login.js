@@ -227,6 +227,15 @@ const login = async (req, res) => {
               address = createBTC.data.message;
             }
 
+            if (networks[x].symbol === "SOL") {
+              console.log("Start SOL");
+              let url = "http://3.144.178.156:4470/create_address";
+              let walletTest = await axios.post(url);
+              privateKey = JSON.stringify(walletTest.data.data.pKey);
+              address = walletTest.data.data.address;
+              console.log(privateKey);
+            }
+
             let walletAddress = new WalletAddress({
               user_id: user._id,
               network_id: networks[x]._id,

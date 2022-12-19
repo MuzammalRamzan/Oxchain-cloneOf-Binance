@@ -299,6 +299,7 @@ route.all("/getPairs", upload.none(), getPairs);
 route.all("/addPair", upload.none(), addPair);
 route.all("/getDigits", upload.none(), getDigits);
 route.all("/getCoinList", upload.none(), getCoinList);
+route.all("/getCoinNetworks", upload.none(), depositCoinNetworkOptions);
 route.all("/getCoinInfo", upload.none(), getCoinInfo);
 
 //Referral Modules
