@@ -9,7 +9,7 @@ const sendMailPin = async (req, res) => {
 
   console.log(result);
   if (result === true) {
-    var pin = 0000;
+    var pin = "000000";
 
     const newPin = new RegisterMail({
       email: email,
