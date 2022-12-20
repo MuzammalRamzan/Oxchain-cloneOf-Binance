@@ -2,24 +2,40 @@ const RegisteredAddressModel = require("../../models/RegisteredAddress");
 const authFile = require("../../auth.js");
 
 const getRegisteredAddresses = async (req, res) => {
-  const apiKey = req.body.apiKey;
-  const userId = req.body.userId;
-  const coinId = req.body.coinId;
-  const whiteList = req.body.whiteList;
+  const api_key = req.body.api_key;
+  const user_id = req.body.user_id;
+  const coin_id = req.body.coin_id;
+  const whiteListed = req.body.whiteListed;
   const type = req.body.type;
+  const label = req.body.label;
+  const origin = req.body.origin;
+  const network = req.body.network;
 
-  if (!apiKey) return res.json({ status: "error", message: "Api key is null" });
-  const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
-  if (!apiKeyCheck)
-    return res.json({ status: "error", message: "Api key is wrong" });
 
-  const query = { user_id: userId };
-  if (coinId) query.coin_id = coinId;
-  if (whiteList) query.whiteList = whiteList;
-  if (type) query.type = type;
+  const result = await authFile.apiKeyChecker(api_key);
+  if (result === true) {
 
-  const addresses = await RegisteredAddressModel.find(query).lean();
-  return res.json({ status: "success", data: addresses });
+    // Get all registered addresses for a user with filters if provided
+    const registeredAddresses = await RegisteredAddressModel.find({
+      user_id,
+      ...(coin_id && { coin_id }),
+      ...(whiteListed && { whiteListed }),
+      ...(type && { type }),
+      ...(label && { label }),
+      ...(origin && { origin }),
+      ...(network && { network }),
+    }).exec();
+
+    res.json({
+      status: "success",
+      data: registeredAddresses,
+    });
+  } else {
+    res.json({
+      status: "error",
+      message: "Invalid API Key",
+    });
+  }
 };
 
 module.exports = getRegisteredAddresses;
