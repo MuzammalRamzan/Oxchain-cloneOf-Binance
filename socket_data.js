@@ -40,6 +40,7 @@ const FutureTransactionHistory = require("./SocketController/trade/future/transa
 const MarginCrossWallet = require("./models/MarginCrossWallet");
 const MarginIsolatedWallet = require("./models/MarginIsolatedWallet");
 const BinanceAPI = require("./BinanceAPI");
+const CheckLogoutDevice = require("./SocketController/device/check_logout_device");
 var route = express();
 
 route.use(cors());
@@ -139,7 +140,11 @@ async function test() {
           GetWallets(ws, json.user_id);
         } else if (json.page == "all_prices") {
           GetAllPrices(ws);
-        } else if (json.page == "spot_open_orders") {
+        } 
+        else if(json.page == 'devices') {
+          CheckLogoutDevice(ws, json.user_id);
+        }
+        else if (json.page == "spot_open_orders") {
           if (json.user_id != null && json.user_id != "undefined") {
             SpotOpenOrders(ws, json.user_id);
           }

@@ -53,6 +53,7 @@ const { Console } = require("console");
 const { exit } = require("process");
 
 const auth = require("./auth.js");
+const ContractAddress = require("./models/ContractAddress");
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
@@ -70,6 +71,7 @@ function PostRequestSync(url, data) {
 async function OxhainTasks() {
 
 
+  ContractAddress.find();
   //Check TRC20 Admin Transfer
   //schedule.scheduleJob('*/2 * * * *', async function () {
     let deposits = await Deposits.find({ move_to_admin: false, netowrk_id: { $exists: true } });
@@ -99,8 +101,9 @@ async function OxhainTasks() {
           case "6358f354733321c968f40f6b" : 
           //ERC20
           let getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
+          let contractInfo = await ContractAddress.findOne({coin_id : depo.coin_id, network_id : depo.netowrk_id});
           let amount = parseFloat(depo.amount);
-          let transaction = await PostRequestSync("http://34.239.168.239:4455/transfer", { to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
+          let transaction = await PostRequestSync("http://34.239.168.239:4455/contract_transfer", { token: depo.currency,  to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
           console.log(transaction.data);
             if (transaction.data.status == 'success') {
               depo.move_to_admin = true;
