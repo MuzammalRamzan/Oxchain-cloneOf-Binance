@@ -5,6 +5,12 @@ var authFile = require("../../auth.js");
 const FutureWalletId = "62ff3c742bebf06a81be98fd";
 const FutureOrder = require("../../models/FutureOrder");
 const FutureWalletModel = require("../../models/FutureWalletModel");
+
+function splitLengthNumber(q) {
+    return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
+}
+
+
 const addFutureOrder = async (req, res) => {
     var api_key_result = req.body.api_key;
     let result = await authFile.apiKeyChecker(api_key_result);
@@ -28,10 +34,10 @@ const addFutureOrder = async (req, res) => {
         return;
     }
 
-    
+
 
     let getSameOrder = await FutureOrder.find({ pair_name: symbol, future_type: (future_type == 'cross' ? 'isolated' : 'cross'), user_id: user_id, $lt: 0 });
-    for(var h = 0; h < getSameOrder.length; h++ ) {
+    for (var h = 0; h < getSameOrder.length; h++) {
         let val = getSameOrder[h];
         if (val.method == 'market') {
             if (val.status == 0) {
@@ -47,7 +53,7 @@ const addFutureOrder = async (req, res) => {
             }
         }
     }
-    
+
 
 
     let getPair = await Pairs.findOne({ name: symbol }).exec();
@@ -66,10 +72,10 @@ const addFutureOrder = async (req, res) => {
         return;
     }
     var urlPair = getPair.name.replace("/", "");
-    console.log(urlPair);
+
     let url =
         'http://18.130.193.166:8542/price?symbol=' + urlPair;
-        console.log(url);
+    console.log(url);
     result = await axios(url);
     var price = parseFloat(result.data.data.ask);
     if (future_type == "isolated") {
@@ -84,9 +90,10 @@ const addFutureOrder = async (req, res) => {
             amount =
                 ((userBalance.amount * percent) / 100 / target_price) *
                 req.body.leverage;
+            amount = splitLengthNumber(amount);
             let usedUSDT = (amount * target_price) / req.body.leverage;
 
-            userBalance.amount = userBalance.amount - usedUSDT;
+            userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
             await userBalance.save();
 
             let order = new FutureOrder({
@@ -172,7 +179,7 @@ const addFutureOrder = async (req, res) => {
                 req.body.leverage;
             let usedUSDT = (amount * target_price) / req.body.leverage;
 
-            userBalance.amount = userBalance.amount - usedUSDT;
+            userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
             await userBalance.save();
             let order = new FutureOrder({
                 pair_id: getPair._id,
@@ -232,13 +239,13 @@ const addFutureOrder = async (req, res) => {
                     reverseOreders.pnl = 0;
                     reverseOreders.leverage = leverage;
                     reverseOreders.open_time = Date.now();
-                    reverseOreders.amount = (newUsedUSDT * leverage) / price;
+                    reverseOreders.amount = splitLengthNumber((newUsedUSDT * leverage) / price);
 
                     userBalance = await FutureWalletModel.findOne({
 
                         user_id: req.body.user_id,
                     }).exec();
-                    userBalance.amount = userBalance.amount - usedUSDT;
+                    userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
                     await userBalance.save();
 
                     await reverseOreders.save();
@@ -276,7 +283,7 @@ const addFutureOrder = async (req, res) => {
 
                             user_id: req.body.user_id,
                         }).exec();
-                        userBalance.amount = userBalance.amount + usedUSDT;
+                        userBalance.amount = splitLengthNumber(userBalance.amount + usedUSDT);
                         await userBalance.save();
                         await reverseOreders.save();
                         res.json({ status: "success", data: reverseOreders });
@@ -298,7 +305,7 @@ const addFutureOrder = async (req, res) => {
 
                             user_id: req.body.user_id,
                         }).exec();
-                        userBalance.amount = userBalance.amount + data;
+                        userBalance.amount = splitLengthNumber(userBalance.amount + data);
                         await userBalance.save();
 
                         reverseOreders.type = type;
@@ -308,7 +315,7 @@ const addFutureOrder = async (req, res) => {
                         if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
                         reverseOreders.usedUSDT = writeUsedUSDT;
                         //reverseOreders.amount = ((((reverseOreders.usedUSDT + reverseOreders.pnl) * leverage) - (usedUSDT * leverage)) / price);
-                        reverseOreders.amount = (writeUsedUSDT * leverage) / price;
+                        reverseOreders.amount = splitLengthNumber((writeUsedUSDT * leverage) / price);
                         await reverseOreders.save();
 
                         res.json({ status: "success", data: reverseOreders });
@@ -319,7 +326,7 @@ const addFutureOrder = async (req, res) => {
                 userBalance = await FutureWalletModel.findOne({
                     user_id: req.body.user_id,
                 }).exec();
-                userBalance.amount = userBalance.amount - usedUSDT;
+                userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
                 await userBalance.save();
                 let order = new FutureOrder({
                     pair_id: getPair._id,
@@ -360,7 +367,7 @@ const addFutureOrder = async (req, res) => {
                 req.body.leverage;
             let usedUSDT = (amount * target_price) / req.body.leverage;
 
-            userBalance.amount = userBalance.amount - usedUSDT;
+            userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
             await userBalance.save();
             let order = new FutureOrder({
                 pair_id: getPair._id,
@@ -445,7 +452,7 @@ const addFutureOrder = async (req, res) => {
                 req.body.leverage;
             let usedUSDT = (amount * target_price) / req.body.leverage;
 
-            userBalance.amount = userBalance.amount - usedUSDT;
+            userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
             await userBalance.save();
             let order = new FutureOrder({
                 pair_id: getPair._id,
@@ -505,11 +512,11 @@ const addFutureOrder = async (req, res) => {
                     reverseOreders.pnl = 0;
                     reverseOreders.leverage = leverage;
                     reverseOreders.open_time = Date.now();
-                    reverseOreders.amount = (newUsedUSDT * leverage) / price;
+                    reverseOreders.amount = splitLengthNumber((newUsedUSDT * leverage) / price);
                     userBalance = await FutureWalletModel.findOne({
                         user_id: req.body.user_id,
                     }).exec();
-                    userBalance.amount = userBalance.amount - usedUSDT;
+                    userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
                     await userBalance.save();
 
                     await reverseOreders.save();
@@ -545,7 +552,7 @@ const addFutureOrder = async (req, res) => {
                         userBalance = await FutureWalletModel.findOne({
                             user_id: req.body.user_id,
                         }).exec();
-                        userBalance.amount = userBalance.amount + usedUSDT;
+                        userBalance.amount = splitLengthNumber(userBalance.amount + usedUSDT);
                         await userBalance.save();
                         await reverseOreders.save();
                         res.json({ status: "success", data: reverseOreders });
@@ -566,7 +573,7 @@ const addFutureOrder = async (req, res) => {
                         userBalance = await FutureWalletModel.findOne({
                             user_id: req.body.user_id,
                         }).exec();
-                        userBalance.amount = userBalance.amount + data;
+                        userBalance.amount = splitLengthNumber(userBalance.amount + data);
                         await userBalance.save();
 
                         reverseOreders.type = type;
@@ -576,7 +583,7 @@ const addFutureOrder = async (req, res) => {
                         if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
                         reverseOreders.usedUSDT = writeUsedUSDT;
                         //reverseOreders.amount = ((((reverseOreders.usedUSDT + reverseOreders.pnl) * leverage) - (usedUSDT * leverage)) / price);
-                        reverseOreders.amount = (writeUsedUSDT * leverage) / price;
+                        reverseOreders.amount = splitLengthNumber((writeUsedUSDT * leverage) / price);
                         await reverseOreders.save();
 
                         res.json({ status: "success", data: reverseOreders });
@@ -588,7 +595,7 @@ const addFutureOrder = async (req, res) => {
                 userBalance = await FutureWalletModel.findOne({
                     user_id: req.body.user_id,
                 }).exec();
-                userBalance.amount = userBalance.amount - usedUSDT;
+                userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
                 await userBalance.save();
                 let order = new FutureOrder({
                     pair_id: getPair._id,

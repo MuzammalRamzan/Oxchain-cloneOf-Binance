@@ -289,8 +289,9 @@ async function Run(orders ) {
   let totalPNL = 0.0;
   for (var i = 0; i < getOpenOrders.length; i++) {
     let data = getOpenOrders[i];
+    
     let total = splitLengthNumber(splitLengthNumber(parseFloat(data.total))) + splitLengthNumber(parseFloat(data.usedUSDT));
-    console.log("TOTAL ", total);
+    
 
     let wallet = await FutureWalletModel.findOne({
       user_id: data._id,
@@ -343,7 +344,7 @@ async function Run(orders ) {
           }
           if(sl != 0 && price <= sl) {
             console.log("SL OLDU");
-            console.log(price, " | ", sl);
+            
             order.status = 1;
             let w = await FutureWalletModel.findOne({user_id : order.user_id});
             let newBalance = parseFloat(w.amount) + (parseFloat(order.usedUSDT) - parseFloat(order.pnl));
