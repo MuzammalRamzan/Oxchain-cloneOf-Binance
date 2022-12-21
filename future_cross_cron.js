@@ -289,7 +289,7 @@ async function Run(orders ) {
   let totalPNL = 0.0;
   for (var i = 0; i < getOpenOrders.length; i++) {
     let data = getOpenOrders[i];
-    let total = splitLengthNumber(parseFloat(data.total)) + splitLengthNumber(parseFloat(data.usedUSDT));
+    let total = splitLengthNumber(splitLengthNumber(parseFloat(data.total))) + splitLengthNumber(parseFloat(data.usedUSDT));
     console.log("TOTAL ", total);
 
     let wallet = await FutureWalletModel.findOne({
