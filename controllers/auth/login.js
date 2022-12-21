@@ -64,16 +64,12 @@ const login = async (req, res) => {
   var notificationToken = req.body.notificationToken;
   let result = await authFile.apiKeyChecker(api_key_result);
 
-  console.log(searchType);
   if (result === true) {
-    console.log(req.body.user);
-    console.log(utilities.hashData(req.body.password));
     let user = await User.findOne({
       [searchType]: req.body.user,
       password: utilities.hashData(req.body.password),
     }).exec();
 
-    console.log(user);
 
     let securityLevel = 0;
 
@@ -198,20 +194,12 @@ const login = async (req, res) => {
 
             if (networks[x].symbol === "ERC") {
               console.log("Start ERC");
-              let url = "http://34.239.168.239:4455/create_address";
+              let url = "http://44.200.112.60:4455/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address;
             }
-            /*
-                        if (networks[x].symbol === "AVAX") {
-                          console.log("Start AVAX");
-                          let url = "http://44.203.2.70:4458/create_address";
-                          let walletTest = await axios.post(url);
-                          privateKey = walletTest.data.data.privateKey;
-                          address = walletTest.data.data.address;
-                        }
-            */
+            
             if (networks[x].symbol === "BSC") {
               console.log("Start BSC");
               let url = "http://44.203.2.70:4458/create_address";
@@ -225,9 +213,7 @@ const login = async (req, res) => {
               let url = "http://54.172.40.148:4456/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
-              console.log(walletTest.data);
               address = walletTest.data.data.address.base58;
-              console.log(privateKey);
             }
 
             if (networks[x].symbol === "BTC") {
@@ -250,7 +236,6 @@ const login = async (req, res) => {
               let walletTest = await axios.post(url);
               privateKey = JSON.stringify(walletTest.data.data.pKey);
               address = walletTest.data.data.address;
-              console.log(privateKey);
             }
 
             let walletAddress = new WalletAddress({
