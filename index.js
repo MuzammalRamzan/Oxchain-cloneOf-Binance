@@ -85,6 +85,9 @@ const getRegisteredAddresses = require("./controllers/registeredAddress/getRegis
 const googleAuth = require("./controllers/auth/googleAuth");
 const appleAuth = require("./controllers/auth/appleAuth");
 
+const addAvatar = require("./controllers/avatar/addAvatar");
+const getAvatar = require("./controllers/avatar/getAvatarList");
+
 const addAnnouncement = require("./controllers/announcement/addAnnouncement");
 const getAnnouncement = require("./controllers/announcement/getAnnouncement");
 const getLocation = require("./controllers/users/getLocation");
@@ -183,6 +186,9 @@ route.all("/getLocation", getLocation);
 
 route.all("/getVerificationIds", upload.any(), getVerificationIds);
 route.all("/addVerificationId", upload.any(), addVerificationId);
+
+route.all("/addAvatar", addAvatar);
+route.all("/getAvatar", getAvatar);
 
 route.all("/walletToWallet", walletToWallet);
 
