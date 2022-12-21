@@ -336,7 +336,8 @@ async function Run(orders ) {
             console.log("TP OLDU");
             order.status = 1;
             let w = await FutureWalletModel.findOne({user_id : order.user_id});
-            w.amount = parseFloat(w.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
+            let newBalance = parseFloat(w.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
+            w.amount = splitLengthNumber(newBalance);
             
             await w.save();
           }
@@ -345,7 +346,8 @@ async function Run(orders ) {
             console.log(price, " | ", sl);
             order.status = 1;
             let w = await FutureWalletModel.findOne({user_id : order.user_id});
-            w.amount = parseFloat(w.amount) + (parseFloat(order.usedUSDT) - parseFloat(order.pnl));
+            let newBalance = parseFloat(w.amount) + (parseFloat(order.usedUSDT) - parseFloat(order.pnl));
+            w.amount = splitLengthNumber(newBalance);
             await w.save();
           } 
           await order.save();
@@ -358,13 +360,15 @@ async function Run(orders ) {
           if(tp != 0 && price <= tp) {
             order.status = 1;
             let w = await FutureWalletModel.findOne({user_id : order.user_id});
-            w.amount = parseFloat(w.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
+            let newBalance = parseFloat(w.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
+            w.amount = splitLengthNumber(newBalance);
             await w.save();
           }
           if(sl != 0 && price >= sl) {
             order.status = 1;
             let w = await FutureWalletModel.findOne({user_id : order.user_id});
-            w.amount = parseFloat(w.amount) + (parseFloat(order.usedUSDT) - parseFloat(order.pnl));
+            let newBalance = parseFloat(w.amount) + (parseFloat(order.usedUSDT) - parseFloat(order.pnl));
+            w.amount = splitLengthNumber(newBalance);
             await w.save();
           } 
           await order.save();
