@@ -85,6 +85,9 @@ const getRegisteredAddresses = require("./controllers/registeredAddress/getRegis
 const googleAuth = require("./controllers/auth/googleAuth");
 const appleAuth = require("./controllers/auth/appleAuth");
 
+const removePhone = require("./controllers/users/removePhone");
+const removeEmail = require("./controllers/users/removeEmail");
+
 const addAvatar = require("./controllers/avatar/addAvatar");
 const getAvatar = require("./controllers/avatar/getAvatarList");
 
@@ -133,7 +136,6 @@ const FutureAmountClose = require("./controllers/orders/futureAmountClose.js");
 const Settings = require("./controllers/settings");
 const SetFavoritePair = require("./controllers/pair/setFavoritePair.js");
 const GetFavoritePairs = require("./controllers/pair/getFavoritePairs.js");
-const removeEmail = require("./controllers/users/removeEmail");
 const myReferrals = require("./controllers/referrals/myReferrals");
 const getAdminSettings = require("./controllers/getAdminSettings");
 const referralRewards = require("./controllers/referrals/referralRewards");
@@ -232,6 +234,8 @@ route.all("/update2fa", upload.none(), update2fa);
 route.all("/getActiveDevice", upload.none(), getActiveDevice);
 route.all("/deleteActiveDevice", upload.none(), deleteActiveDevice);
 route.all("/getVerificationMethod", upload.none(), getVerificationMethod);
+
+route.all("/removePhone", upload.none(), removePhone);
 route.all("/removeEmail", upload.none(), removeEmail);
 route.post("/googleAuth", googleAuth);
 route.post("/appleAuth", appleAuth);
