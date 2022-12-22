@@ -33,7 +33,7 @@ const sendMail = async function (req, res) {
     if (user != null) {
       var pin = "0000";
 
-      var pin2 = "0001";
+      var pin2 = "0000";
 
       if (reason == "change_email_new" && newMail != "") {
 

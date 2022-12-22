@@ -22,23 +22,22 @@ const sendSMS = async function (req, res) {
     if (user != null) {
       var pin = "0000";
 
-      var pin2 = "0001";
-
+      var pin2 = "0000";
 
 
       if (reason == "change_phone_new" && newPhone != "") {
 
 
         let checkForPhone = await User.findOne({
-          phone: newPhone,
+          phone_number: newPhone,
           country_code: country_code,
         }).exec();
 
 
-        if(checkForPhone != null){
+        if (checkForPhone != null) {
           return res.json({ status: "fail", message: "phone_already_exist", showableMessage: "Phone already exist" });
         }
-        
+
         let check = await SMSVerification.findOne({
           user_id: user_id,
           reason: "change_phone_new",

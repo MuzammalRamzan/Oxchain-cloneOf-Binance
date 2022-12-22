@@ -7,6 +7,10 @@ var bodyParser = require("body-parser");
 const multer = require("multer");
 const express = require("express");
 var cors = require("cors");
+
+//express-fileupload
+const fileUpload = require("express-fileupload");
+
 const { expressjwt: jwt } = require("express-jwt");
 
 require("dotenv").config();
@@ -144,6 +148,9 @@ const clearNotifications = require("./controllers/clearNotifications");
 const addVerificationId = require("./controllers/verificationId/addVerificationId");
 const getVerificationIds = require("./controllers/verificationId/getVerificationIds");
 
+
+const UploadKYC = require("./controllers/kyc/UploadKYC");
+
 const marketingMailStatus = require("./controllers/marketingMails/mailStatus");
 const changeMarketingMailStatus = require("./controllers/marketingMails/changeStatus");
 route.use(
@@ -221,6 +228,8 @@ route.post("/subscription", async (req, res) => {
 route.post("/addBonusType", addBonusType);
 route.post("/addBonus", addBonus);
 route.post("/getBonusHistory", getBonusHistory);
+
+route.all("/UploadKYC", upload.any(), UploadKYC);
 
 //AUTH
 route.all("/login", upload.none(), login);

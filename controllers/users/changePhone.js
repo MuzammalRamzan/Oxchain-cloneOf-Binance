@@ -45,12 +45,13 @@ const changePhone = async function (req, res) {
           status: 0,
         }).exec();
 
-        if (!check1)
+        if (!check1) {
           return res.json({
             status: "fail",
             message: "verification_failed",
             showableMessage: "Wrong Mail Pin",
           });
+        }
       }
 
       if (phone != undefined && phone != null && phone != "") {
@@ -62,14 +63,14 @@ const changePhone = async function (req, res) {
         }).exec();
 
 
-        if (!check3)
-
-
+        if (!check3) {
           return res.json({
             status: "fail",
             message: "verification_failed",
             showableMessage: "Wrong SMS Pin",
           });
+        }
+
       }
 
 
@@ -80,18 +81,13 @@ const changePhone = async function (req, res) {
         status: 0,
       }).exec();
 
-      if (!check2)
+      if (!check2) {
         return res.json({
           status: "fail",
           message: "verification_failed",
           showableMessage: "Wrong New Pin",
         });
-
-
-
-
-
-
+      }
 
       if (check1 != "") {
         check1.status = 1;
