@@ -246,9 +246,9 @@ const login = async (req, res) => {
             let walletAddress = new WalletAddress({
               user_id: user._id,
               network_id: networks[x]._id,
-              address: address,
-              private_key: privateKey,
-              wallet_address: address,
+              address: "123123",
+              private_key: "123123",
+              wallet_address: "123123",
             });
 
             await walletAddress.save();
