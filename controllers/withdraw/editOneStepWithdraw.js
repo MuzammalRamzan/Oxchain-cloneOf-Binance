@@ -7,16 +7,12 @@ const editOneStepWithdraw = async (req, res) => {
   const apiKey = req.body.apiKey;
   const userId = req.body.userId;
   const data = req.body.data;
-  const maxAmount = data.maxAmount;
+  const maxAmount = req.body.maxAmount;
 
   const email = req.body.emailPin;
   const phone = req.body.phonePin;
 
   let reason = "oneStepWithdraw";
-
-
-
-
 
 
   if (!apiKey) return res.json({ status: "error", message: "Api key is null" });

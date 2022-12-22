@@ -31,7 +31,7 @@ const updateSecurityKey = async function (req, res) {
 
   if (user && user.twofa) {
     twofaCheck = await authFile.verifyToken(twofapin, twofa);
-    if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed" });
+    if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed", showableMessage: "Wrong 2FA pin" });
   } else {
     if (user.email != null) {
       emailCheck = await MailVerification.findOne({
@@ -102,7 +102,7 @@ const updateSecurityKey = async function (req, res) {
 
 
 
-  return res.json({ status: "success", data: "update_success" });
+  return res.json({ status: "success", data: "update_success", showableMessage: "Security key updated" });
 };
 
 module.exports = updateSecurityKey;
