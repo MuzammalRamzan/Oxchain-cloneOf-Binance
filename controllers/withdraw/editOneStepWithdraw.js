@@ -35,10 +35,9 @@ const editOneStepWithdraw = async (req, res) => {
     });
 
     if (mailVerification) {
-      verified = true;
     }
     else {
-      verified = false;
+      return res.json({ status: "failed", message: "verification_failed", showableMessage: "Mail pin is wrong" });
     }
   }
 
@@ -51,14 +50,13 @@ const editOneStepWithdraw = async (req, res) => {
     });
 
     if (smsVerification) {
-      verified = true;
+
     }
     else {
-      verified = false;
+      return res.json({ status: "failed", message: "verification_failed", showableMessage: "Phone pin is wrong" });
     }
   }
 
-  if (verified == false) return res.json({ status: "error", message: "Pin is wrong" });
 
   if (!oneStepChecker) {
     let oneStep = new OneStepWithdrawModel({
