@@ -134,6 +134,7 @@ const AdjustMargin = require("./controllers/orders/adjust_margin.js");
 const editOneStepWithdraw = require("./controllers/withdraw/editOneStepWithdraw");
 const getOneStepWithdraw = require("./controllers/withdraw/getOneStepWithdraw");
 const editWithdrawalWhiteList = require("./controllers/withdraw/editWithdrawalWhiteList");
+const getWithdrawalWhiteList = require("./controllers/withdraw/getWithdrawalWhiteList");
 const UpdateStop = require("./controllers/orders/updateStop.js");
 const FuturePercentClose = require("./controllers/orders/futurePercentClose.js");
 const FutureAmountClose = require("./controllers/orders/futureAmountClose.js");
@@ -313,6 +314,7 @@ route.all(
 route.post("/editOneStepWithdraw", editOneStepWithdraw);
 route.post("/getOneStepWithdraw", getOneStepWithdraw);
 route.post("/editWithdrawalWhiteList", editWithdrawalWhiteList);
+route.post("/getWithdrawalWhiteList", getWithdrawalWhiteList);
 route.all("/addNotification", upload.none(), addNotification);
 route.all("/getNotification", upload.none(), getNotification);
 route.all("/readNotifications", upload.none(), readNotifications);
