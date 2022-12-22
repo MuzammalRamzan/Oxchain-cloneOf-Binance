@@ -30,7 +30,8 @@ const updateSecurityKey = async function (req, res) {
   let phoneCheck = "";
 
   if (user && user.twofa) {
-    twofaCheck = await authFile.verifyToken(twofapin, twofa);
+
+    twofaCheck = await authFile.verifyToken(twofapin, user.twofa);
     if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed", showableMessage: "Wrong 2FA pin" });
   } else {
     if (user.email != null) {
