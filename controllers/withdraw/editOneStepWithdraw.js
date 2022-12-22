@@ -4,8 +4,8 @@ const SMSVerification = require("../../models/SMSVerification");
 const MailVerification = require("../../models/MailVerification");
 
 const editOneStepWithdraw = async (req, res) => {
-  const apiKey = req.body.apiKey;
-  const userId = req.body.userId;
+  const apiKey = req.body.api_key;
+  const userId = req.body.user_id;
   const data = req.body.data;
   const maxAmount = req.body.maxAmount;
 
