@@ -47,6 +47,9 @@ const withdraw = async (req, res) => {
     return;
   }
 
+  res.json({ status: "success", data: "TEST" });
+  return;
+
   console.log("111");
   console.log({ from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000) });
   let usdt_transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000).toString() });
