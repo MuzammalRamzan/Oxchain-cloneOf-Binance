@@ -58,9 +58,9 @@ const sendSMS = async function (req, res) {
         );
 
         if (check != null) {
-          SMSVerification.updateOne(
+          SMSVerification.findOneAndUpdate(
             { user_id: user["_id"], reason: "change_phone_new" },
-            { pin: pin, status: "0", }
+            { pin: pin2, status: "0" },
           );
         } else {
           newPin = new SMSVerification({

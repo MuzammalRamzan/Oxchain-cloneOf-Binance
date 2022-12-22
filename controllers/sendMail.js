@@ -58,7 +58,7 @@ const sendMail = async function (req, res) {
         );
 
         if (check != null) {
-          MailVerification.updateOne(
+          MailVerification.findOneAndUpdate(
             { user_id: user["_id"], reason: "change_email_new" },
             { pin: pin, status: "0", }
           );
