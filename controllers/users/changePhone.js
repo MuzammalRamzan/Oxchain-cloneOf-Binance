@@ -25,7 +25,7 @@ const changePhone = async function (req, res) {
       var phone = user["phone"];
 
       let checkForPhone = await User.findOne({
-        phone: newPhone,
+        phone_number: newPhone,
         country_code: country_code,
       }).exec();
 
