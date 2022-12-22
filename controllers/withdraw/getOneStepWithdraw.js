@@ -2,16 +2,35 @@ const authFile = require("../../auth");
 const OneStepWithdrawModel = require("../../models/OneStepWithdraw");
 
 const getOneStepWithdraw = async function (req, res) {
-  const apiKey = req.body.apiKey;
-  const userId = req.body.userId;
 
-  if (!apiKey) return res.json({ status: "error", message: "Api key is null" });
-  const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
-  if (!apiKeyCheck)
-    return res.json({ status: "error", message: "Api key is wrong" });
+  let user_id = req.body.user_id;
+  let api_key = req.body.api_key;
 
-  const data = await OneStepWithdrawModel.findOne({ user_id: userId });
-  return res.json({ status: "success", data });
+  let result = await authFile.apiKeyChecker(api_key);
+
+  if (result == true) {
+    let oneStepWithdraw = await OneStepWithdrawModel.findOne({
+      user_id: user_id,
+    }).exec();
+
+    if (oneStepWithdraw != null) {
+      res.json({
+        status: "success",
+        message: "one step withdraw found",
+        oneStepWithdraw: oneStepWithdraw,
+      });
+    }
+    else {
+      res.json({
+        status: "fail",
+        message: "one step withdraw not found",
+      });
+    }
+  }
+  else {
+    res.json("error");
+  }
+
 };
 
 module.exports = getOneStepWithdraw;
