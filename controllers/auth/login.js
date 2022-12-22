@@ -168,6 +168,7 @@ const login = async (req, res) => {
         ref_id: refId,
         securityLevel,
         device_token: device_id,
+        avatar: user.avatar ?? "",
         token: getToken({ user: user_id }),
         name: user.name
       };
@@ -203,7 +204,7 @@ const login = async (req, res) => {
               privateKey = "test";
               address = "test";
             }
-            
+
             if (networks[x].symbol === "BSC") {
               console.log("Start BSC");
               let url = "http://44.203.2.70:4458/create_address";
