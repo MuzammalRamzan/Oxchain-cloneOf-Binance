@@ -21,7 +21,7 @@ const FutureWalletModel = require("../../models/FutureWalletModel");
 const WithdrawalWhiteListModel = require("../../models/WithdrawalWhiteList");
 const OneStepWithdrawModel = require("../../models/OneStepWithdraw");
 const SiteNotificationsModel = require("../../models/SiteNotifications");
-
+const VerificationIdModel = require("../../models/VerificationId");
 
 const { getToken } = require("../../auth");
 
@@ -166,6 +166,33 @@ const login = async (req, res) => {
 
       if (userRef != null) refId = userRef["refCode"] ?? "";
       else refId = "";
+
+
+      let VerificationCheck = await VerificationIdModel.findOne({
+        user_id: user._id,
+      }).exec();
+
+      let verificationStatus;
+      if (VerificationCheck != null) {
+
+        if (VerificationCheck.status == 1) {
+
+          verificationStatus = "verified";
+        }
+
+        if (VerificationCheck.status == 0) {
+          verificationStatus = "pending";
+        }
+
+        if (VerificationCheck.status == 2) {
+          verificationStatus = "rejected";
+        }
+      }
+      else {
+        verificationStatus = "none";
+      }
+
+
       var data = {
         response: "success",
         email: user.email,
@@ -184,7 +211,8 @@ const login = async (req, res) => {
         token: getToken({ user: user_id }),
         name: user.name,
         nickname: user.nickname,
-        last_login: logs
+        last_login: logs,
+        verificationStatus: verificationStatus,
       };
 
       var status = user["status"];

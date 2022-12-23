@@ -1,11 +1,11 @@
 const UserModel = require('../models/User');
+const VerificationIdModel = require('../models/VerificationId');
 
 const Mailer = require('../mailer');
 
 var authFile = require('../auth.js');
-const VerificationIdModel = require('../models/VerificationId');
 
-const approveUser = async (req, res) => {
+const denyUser = async (req, res) => {
 
     const api_key = req.body.api_key;
     const user_id = req.body.user_id;
@@ -18,21 +18,23 @@ const approveUser = async (req, res) => {
         }).exec();
 
         if (user) {
-
-            let verification = await VerificationIdModel.findOne({
-                user_id: user._id
-            }).exec();
+            let verification = await VerificationIdModel
+                .findOne({
+                    user_id: user._id
+                })
+                .exec();
 
             if (verification) {
-                verification.status = 1;
+
+                verification.status = 2;
                 await verification.save();
 
-                Mailer.sendMail(user.email, "Account Approved", "Your account has been approved");
+                Mailer.sendMail(user.email, "Account Denied", "Your account has been denied. Please upload a valid ID");
 
                 return res.json({
                     status: "success",
-                    message: "User approved",
-                    showableMessage: "User approved",
+                    message: "User denied",
+                    showableMessage: "User denied",
                 });
             }
             else {
@@ -52,6 +54,7 @@ const approveUser = async (req, res) => {
         }
 
     } else {
+
         res.json({
             status: "error",
             message: "Invalid API Key",
@@ -60,4 +63,4 @@ const approveUser = async (req, res) => {
     }
 };
 
-module.exports = approveUser;
+module.exports = denyUser;

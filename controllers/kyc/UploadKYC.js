@@ -35,7 +35,7 @@ const UploadKYC = async function (req, res) {
                 }).exec();
 
 
-            if (verification == null) {
+            if (verification == null || verification.status == 2) {
 
                 //get file from request
                 var file = req.files;
@@ -69,22 +69,53 @@ const UploadKYC = async function (req, res) {
 
                 console.log("user_id: " + user_id, "status: 0", "url: " + 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/' + user_id + '.' + file_extension, "country: " + country)
 
-                let verification = new VerificationModel({
-                    user_id: user_id,
-                    status: 0,
-                    url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/' + user_id + '.' + file_extension,
-                    country: country,
-                });
+                if (verification.status == 2) {
 
-                verification.save(function (err) {
-                    if (err) {
-                        return res.json({ status: "fail", message: "error", showableMessage: "Error while uploading KYC" });
-                    } else {
-                        return res.json({ status: "success", message: "success", showableMessage: "KYC Uploaded" });
-                    }
+                    VerificationModel.findOneAndUpdate
+                        ({
+                            user_id: user_id,
+                        },
+                            {
+                                status: 0,
+                                url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/' + user_id + '.' + file_extension,
+                                country: country,
+                            },
+                        ).exec(function (err) {
+                            if (err) {
+                                return res.json({ status: "fail", message: "error", showableMessage: "Error while uploading KYC" });
+                            } else {
+                                return res.json({ status: "success", message: "success", showableMessage: "KYC Updated" });
+                            }
+                        }
+                        );
                 }
-                );
+                else {
+                    let verification = new VerificationModel({
+                        user_id: user_id,
+                        status: 0,
+                        url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/' + user_id + '.' + file_extension,
+                        country: country,
+                    });
+
+                    verification.save(function (err) {
+                        if (err) {
+                            return res.json({ status: "fail", message: "error", showableMessage: "Error while uploading KYC" });
+                        } else {
+                            return res.json({ status: "success", message: "success", showableMessage: "KYC Uploaded" });
+                        }
+                    }
+                    );
+                }
+
+
+
             }
+            else {
+
+                return res.json({ status: "fail", message: "already_uploaded", showableMessage: "KYC Already Uploaded" });
+
+            }
+
 
 
 
