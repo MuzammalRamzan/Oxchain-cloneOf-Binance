@@ -152,6 +152,18 @@ const login = async (req, res) => {
       }).lean();
       if (securityKey) securityLevel = securityLevel + 1;
 
+      let logs = await LoginLogs.find({
+        user_id: user["_id"],
+        ip: ip,
+        deviceName: deviceName,
+        manufacturer: manufacturer,
+        model: deviceModel,
+      })
+        .sort({ $natural: -1 })
+        .limit(1)
+        .exec();
+
+
       if (userRef != null) refId = userRef["refCode"] ?? "";
       else refId = "";
       var data = {
@@ -170,7 +182,9 @@ const login = async (req, res) => {
         device_token: device_id,
         avatar: user.avatar ?? "",
         token: getToken({ user: user_id }),
-        name: user.name
+        name: user.name,
+        nickname: user.nickname,
+        last_login: logs
       };
 
       var status = user["status"];
@@ -244,9 +258,9 @@ const login = async (req, res) => {
             let walletAddress = new WalletAddress({
               user_id: user._id,
               network_id: networks[x]._id,
-              address: "123123",
-              private_key: "123123",
-              wallet_address: "123123",
+              address: address,
+              private_key: privateKey,
+              wallet_address: address,
             });
 
             await walletAddress.save();
@@ -296,6 +310,9 @@ const login = async (req, res) => {
 
 
 
+
+
+
           //End check
           const newWallet = new Wallet({
             name: coins[i]["name"],
@@ -335,16 +352,7 @@ const login = async (req, res) => {
           await createWallet.save();
         }
 
-        let logs = await LoginLogs.find({
-          user_id: user["_id"],
-          ip: ip,
-          deviceName: deviceName,
-          manufacturer: manufacturer,
-          model: deviceModel,
-        })
-          .sort({ $natural: -1 })
-          .limit(1)
-          .exec();
+
 
         const newUserLog = new LoginLogs({
           user_id: user["_id"],
