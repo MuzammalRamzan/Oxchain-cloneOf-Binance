@@ -18,6 +18,9 @@ const getKyc = async (req, res) => {
 
         if (verification) {
 
+            let array = [];
+
+            let userObject = {};
             for (let i = 0; i < verification.length; i++) {
                 let user = await UserModel
                     .findOne({
@@ -25,7 +28,21 @@ const getKyc = async (req, res) => {
                     })
                     .exec();
 
-                verification[i].user = user;
+                userObject = {
+                    user_id: user._id,
+                    email: user.email,
+                    name: user.name ?? "",
+                    surname: user.surname ?? "",
+                    country_code: user.country_code ?? "",
+                    phone_number: user.phone_number ?? "",
+                    address: user.address ?? "",
+                    city: user.city ?? "",
+                    url: verification[i].url,
+                    country: verification[i].country,
+                    createdAt: verification[i].createdAt,
+                }
+
+                array.push(userObject);
 
             }
 
@@ -33,7 +50,7 @@ const getKyc = async (req, res) => {
                 status: "success",
                 message: "KYC applications found",
                 showableMessage: "KYC applications found",
-                data: verification
+                data: userObject
             });
         }
 
