@@ -4,10 +4,11 @@ const Withdraws = require("../../models/Withdraw");
 var notifications = require("../../notifications.js");
 var authFile = require("../../auth.js");
 const axios = require("axios");
+const Network = require("../../models/Network");
 
 function PostRequestSync(url, data) {
   return new Promise((resolve, reject) => {
-    
+
     axios.post(url, data).then(response => resolve(response)).catch(error => reject(error));
   });
 }
@@ -15,7 +16,8 @@ function PostRequestSync(url, data) {
 const withdraw = async (req, res) => {
   var user_id = req.body.user_id;
   var coin_id = req.body.coin_id;
-  var to = req.body.to;
+  var network_id = req.body.network_id;
+  var to = req.body.toAddress;
   var amount = req.body.amount;
   var api_key_result = req.body.api_key;
   /*
@@ -36,6 +38,11 @@ const withdraw = async (req, res) => {
     res.json({ status: "fail", message: "unknow_error" });
     return;
   }
+  let networkInfo = await Network.findOne({ _id: network_id });
+  if (networkInfo == null) {
+    res.json({ status: "fail", message: "Network not found" });
+    return;
+  }
   let balance = parseFloat(fromWalelt.amount);
   if (amount <= 0) {
     res.json({ status: "fail", message: "invalid_amount" });
@@ -47,19 +54,45 @@ const withdraw = async (req, res) => {
     return;
   }
 
-  res.json({ status: "success", data: "TEST" });
-  return;
-
-  console.log("111");
-  console.log({ from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000) });
-  let usdt_transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000).toString() });
-  console.log("222");
-  console.log(usdt_transaction.data);
-  if (usdt_transaction.data.status != 'success') {
-    console.log(usdt_transaction.data);
-    res.json({ status: "fail", msg: "unknow error" });
-    return;
+  let transaction = null;
+  switch (networkInfo.symbol) {
+    case "TRC":
+      transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000).toString() });
+      console.log(transaction.data);
+      if (transaction.data.status != 'success') {
+        res.json({ status: "fail", msg: "unknow error" });
+        return;
+      }
+      break;
+    case "SEGWIT":
+      transaction = await axios.request({
+        method: "post",
+        url: "http://3.15.2.155",
+        data: "request=balance&address=" + to,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
+      console.log(transaction.data);
+      transaction = await axios.request({
+        method: "post",
+        url: "http://3.15.2.155",
+        data: "request=transfer&to=" + to + "&amount=" + amount,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
+      console.log(transaction.data);
+      if (transaction.data.status != 'success') {
+        res.json({ status: "fail", msg: transaction.data.message });
+        return;
+      }
+      break;
+      default : 
+      res.json({ status: "fail", msg: "Invalid network" });
+      break;
   }
+
 
   let data = new Withdraws({
     user_id: user_id,
@@ -67,7 +100,7 @@ const withdraw = async (req, res) => {
     amount: amount,
     to: to,
     fee: 0.0,
-    tx_id : usdt_transaction.data.data,
+    tx_id: ""
   });
 
   await data.save();
