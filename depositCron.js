@@ -100,10 +100,11 @@ async function OxhainTasks() {
           break;
           case "6358f354733321c968f40f6b" : 
           //ERC20
+          console.log("ERC DEPOSIT");
           let getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
           let contractInfo = await ContractAddress.findOne({coin_id : depo.coin_id, network_id : depo.netowrk_id});
           let amount = parseFloat(depo.amount);
-          let transaction = await PostRequestSync("http://34.239.168.239:4455/contract_transfer", { token: depo.currency,  to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
+          let transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: depo.currency,  to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
           console.log(transaction.data);
             if (transaction.data.status == 'success') {
               depo.move_to_admin = true;

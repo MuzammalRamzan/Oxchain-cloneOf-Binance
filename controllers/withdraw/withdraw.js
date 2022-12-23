@@ -5,6 +5,7 @@ var notifications = require("../../notifications.js");
 var authFile = require("../../auth.js");
 const axios = require("axios");
 const Network = require("../../models/Network");
+const CoinList = require("../../models/CoinList");
 
 function PostRequestSync(url, data) {
   return new Promise((resolve, reject) => {
@@ -64,8 +65,16 @@ const withdraw = async (req, res) => {
         return;
       }
       break;
+      case "ERC" : 
+      let coinInfo = await CoinList.findOne({_id : coin_id});
+      transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: coinInfo.symbol, from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000).toString() });
+      console.log(transaction.data);
+      if (transaction.data.status != 'success') {
+        res.json({ status: "fail", msg: "unknow error" });
+        return;
+      }
+      break;
     case "SEGWIT":
-    
       transaction = await axios.request({
         method: "post",
         url: "http://3.15.2.155",
