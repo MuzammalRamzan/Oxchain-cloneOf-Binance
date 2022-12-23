@@ -50,7 +50,7 @@ const getKyc = async (req, res) => {
                 status: "success",
                 message: "KYC applications found",
                 showableMessage: "KYC applications found",
-                data: userObject
+                data: array
             });
         }
 
