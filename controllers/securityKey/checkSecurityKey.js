@@ -16,9 +16,9 @@ const checkSecurityKey = (req, res) => {
         key: utilities.hashData(req.body.key),
       }).then((securityKey) => {
         if (securityKey != null) {
-          res.json({ status: "success", data: "" });
+          res.json({ status: "success", data: "", showableMessage: "Success" });
         } else {
-          res.json({ status: "fail", message: "wrong_key" });
+          res.json({ status: "fail", message: "wrong_key", showableMessage: "Wrong key" });
         }
       });
     }
