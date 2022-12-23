@@ -234,7 +234,7 @@ const login = async (req, res) => {
           if (walletAddressCheck == null) {
             let privateKey = "";
             let address = "";
-
+console.log(networks[x].symbol);
             if (networks[x].symbol === "ERC") {
               /*
               console.log("Start ERC");
@@ -263,7 +263,7 @@ const login = async (req, res) => {
               address = walletTest.data.data.address.base58;
             }
 
-            if (networks[x].symbol === "BTC") {
+            if (networks[x].symbol === "SEGWIT") {
               console.log("Start BTCNetwork");
               let createBTC = await axios.request({
                 method: "post",
