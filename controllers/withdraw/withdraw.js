@@ -65,15 +65,7 @@ const withdraw = async (req, res) => {
       }
       break;
     case "SEGWIT":
-      transaction = await axios.request({
-        method: "post",
-        url: "http://3.15.2.155",
-        data: "request=balance&address=" + to,
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      });
-      console.log(transaction.data);
+    
       transaction = await axios.request({
         method: "post",
         url: "http://3.15.2.155",
