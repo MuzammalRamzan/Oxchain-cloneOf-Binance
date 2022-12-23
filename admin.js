@@ -32,8 +32,10 @@ const Wallet = require("./adminController/Wallet");
 const Withdraw = require("./adminController/Withdraw");
 const Earnings = require("./adminController/Earnings");
 const AdminDashboard = require("./adminController/AdminDashboard");
-
+const GetKyc = require("./adminController/GetKyc");
 const ApproveKyc = require("./adminController/ApproveKyc");
+const DenyKyc = require("./adminController/DenyKyc");
+
 
 const upload = multer();
 route.use(bodyParser.json());
@@ -56,6 +58,9 @@ route.all("/login", upload.none(), Login);
 route.all("/addAdmin", upload.none(), Admin.addAdmin);
 route.all("/editAdmin", upload.none(), Admin.editAdmin);
 route.all("/ApproveKyc", upload.none(), ApproveKyc);
+route.all("/DenyKyc", upload.none(), DenyKyc);
+route.all("/GetKyc", upload.none(), GetKyc);
+
 route.all("/listAdmin", upload.none(), Admin.listAdmin);
 route.all("/getAdmin", upload.none(), Admin.getAdmin);
 route.all("/editUser", upload.none(), User.editUser);
