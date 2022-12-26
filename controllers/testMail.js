@@ -1,20 +1,19 @@
-var nodemailer = require("nodemailer");
+const mailer = require('../mailer');
 
-async function sendNewMail(email, title, body) {
-  var transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: "support@oxhain.com",
-      pass: "Ql3w5wwe@",
-    },
-  });
 
-  let htmlTemplate = `<div style='width:500px; height:auto; background-color:white; border:1px solid #9932CC; border-radius:5px; margin:0 auto; text-align:center;'>
+const sender = async (req, res) => {
+
+
+    //create mail template
+
+
+
+    let htmlTemplate = `<div style='width:500px; height:auto; background-color:white; border:1px solid #9932CC; border-radius:5px; margin:0 auto; text-align:center;'>
    
     <h1 style='color:gray'>Oxhain Exchange</h1>
     <img src='https://pbs.twimg.com/profile_images/1584899893746978817/1Rv7NKve_400x400.jpg' style='width:100px; height:100px; margin:0 auto;'>
-    <p style='margin:0 auto; margin-top:15px; font-size:18px;'><b>`+ title + `</b></p>
-    <p style='margin:0 auto; margin-top:5px; color:gray;'>`+ body + `</p></br>
+    <p style='margin:0 auto; margin-top:15px; font-size:18px;'><b>Order Filled</b></p>
+    <p style='margin:0 auto; margin-top:5px; color:gray;'>Your limit order has been filled.</p></br>
 
     <div style='width:90%; height:1px; background-color:#9932CC; margin:0 auto;'></div></br>
     
@@ -42,26 +41,14 @@ async function sendNewMail(email, title, body) {
 
     <p style='margin:0 auto; margin-top:5px; margin-bottom:15px; color:gray;'>© 2022 Oxhain Exchange. All rights reserved.</p>
     </div>`;
-  var mailOptions = {
-    from: "support@oxhain.com",
-    to: email,
-    subject: title,
-    html: htmlTemplate,
-  };
 
-  transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      return "false";
-    } else {
-      return "true";
-    }
-  });
+
+    mailer.sendMail('volkansaka1@hotmail.com', 'Test', htmlTemplate);
+
+    res.json({ message: 'Mail sent' });
+
+
+
 }
 
-async function sendNewSMS(phone, body) {
-  return "true";
-}
-module.exports = {
-  sendMail: sendNewMail,
-  sendSMS: sendNewSMS,
-};
+module.exports = sender;
