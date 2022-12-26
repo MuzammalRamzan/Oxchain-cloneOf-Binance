@@ -9,6 +9,8 @@ const Wallet = require("./models/Wallet.js");
 const Orders = require("./models/Orders.js");
 const UserRef = require("./models/UserRef.js");
 const User = require("./models/User.js");
+const mailer = require("./mailer");
+const SiteNotificaitonModel = require("./models/SiteNotificaitons.js");
 var mongodbPass = process.env.MONGO_DB_PASS;
 
 const io = new Server();
@@ -55,12 +57,26 @@ async function Run(orders) {
     let order = limitOrders[i];
     if (order.method == 'limit') {
       if (order.status == 0) continue;
-      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/",""));
+      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
         let price = item.data.data.ask;
         if (order.stop_limit != 0) {
           if (order.type == 'buy') {
             if (price >= order.target_price) {
+
+
+
+              let user = await User.findOne({ _id: order.user_id });
+              if (user.email != null && user.email != '') {
+
+                let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
+                if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                  if (SiteNotificaitonsCheck.trade == 1) {
+                    mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
+                  }
+                }
+              }
 
               order.status = 0;
               await order.save();
@@ -86,6 +102,19 @@ async function Run(orders) {
             }
           } else if (order.type == 'sell') {
             if (price <= order.target_price) {
+
+              let user = await User.findOne({ _id: order.user_id });
+              if (user.email != null && user.email != '') {
+
+                let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
+                if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                  if (SiteNotificaitonsCheck.trade == 1) {
+                    mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
+                  }
+                }
+              }
+
 
               order.status = 0;
               await order.save();
@@ -250,7 +279,7 @@ async function Run(orders) {
       }
     }
     else if (order.method == 'stop_limit') {
-      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/",""));
+      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
         let price = item.data.data.ask;
         if (order.type == 'buy') {
@@ -285,6 +314,18 @@ async function Run(orders) {
           pnl = (price - order.open_price) * order.amount;
           let reverseUsedUSDT = order.usedUSDT * -1;
           if (order.open_price <= liqPrice) {
+            let user = await User.findOne({ _id: order.user_id });
+            if (user.email != null && user.email != '') {
+
+              let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
+              if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                if (SiteNotificaitonsCheck.trade == 1) {
+
+                  mailer.sendMail(user.email, 'Margin Position', 'Your position has been liquidated. Please check your account.');
+                }
+              }
+            }
             order.status = 1;
           }
           if (pnl <= reverseUsedUSDT) {
@@ -294,23 +335,25 @@ async function Run(orders) {
           pnl = (order.open_price - price) * order.amount;
           let liqPrice = (order.open_price + (order.open_price / (order.leverage * 1.0)));
           if (order.open_price >= liqPrice) {
+            let user = await User.findOne({ _id: order.user_id });
+            if (user.email != null && user.email != '') {
+              let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
+              if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+                if (SiteNotificaitonsCheck.trade == 1) {
+                  mailer.sendMail(user.email, 'Margin Position', 'Your position has been liquidated. Please check your account.');
+                }
+              }
+            }
             order.status = 1;
           }
           if (pnl <= reverseUsedUSDT) {
             order.status = 1;
           }
-
         }
         order.pnl = pnl;
         await order.save();
-
-
       }
     }
-
-
-
   }
-
 }
 initialize();

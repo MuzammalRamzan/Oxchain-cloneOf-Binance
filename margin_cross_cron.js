@@ -10,6 +10,8 @@ const Orders = require("./models/Orders.js");
 const UserRef = require("./models/UserRef.js");
 const User = require("./models/User.js");
 const Pairs = require("./models/Pairs.js");
+const mailer = require("./mailer");
+const SiteNotificaitonModel = require("./models/SiteNotifications");
 var mongodbPass = process.env.MONGO_DB_PASS;
 
 const io = new Server();
@@ -28,7 +30,7 @@ async function initialize() {
     orders = await MarginOrder.find(request).exec();
     await Run(orders);
   });
-  
+
 
 
 
@@ -58,14 +60,26 @@ async function Run(orders) {
     var order = limitOrders[i];
 
     if (order.method == 'limit') {
-      if(order.status == 0) continue;
-      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/",""));
+      if (order.status == 0) continue;
+      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
         let price = item.data.data.ask;
 
         if (order.stop_limit != 0) {
           if (order.type == 'buy') {
             if (price <= order.target_price) {
+
+              let user = await User.findOne({ _id: order.user_id });
+              if (user.email != null && user.email != '') {
+
+                let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
+                if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                  if (SiteNotificaitonsCheck.trade == 1) {
+                    mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
+                  }
+                }
+              }
               order.status = 0;
               await order.save();
               let n_order = new MarginOrder({
@@ -90,6 +104,17 @@ async function Run(orders) {
             }
           } else if (order.type == 'sell') {
             if (price <= order.target_price) {
+              let user = await User.findOne({ _id: order.user_id });
+              if (user.email != null && user.email != '') {
+
+                let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
+                if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                  if (SiteNotificaitonsCheck.trade == 1) {
+                    mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
+                  }
+                }
+              }
               order.status = 0;
               await order.save();
               let n_order = new MarginOrder({
@@ -187,7 +212,7 @@ async function Run(orders) {
                 await userBalance.save();
                 await reverseOreders.save();
                 order.status = 0;
-            await order.save();
+                await order.save();
               } else {
                 let ilkIslem = reverseOreders.usedUSDT;
                 let tersIslem = order.usedUSDT;
@@ -209,7 +234,7 @@ async function Run(orders) {
                 reverseOreders.amount = (writeUsedUSDT * order.leverage) / price;
                 await reverseOreders.save();
                 order.status = 0;
-            await order.save();
+                await order.save();
               }
             }
           } else {
@@ -247,7 +272,7 @@ async function Run(orders) {
       }
     }
     else if (order.method == 'stop_limit') {
-      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/",""));
+      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
         let price = item.data.data.ask;
         if (order.type == 'buy') {
@@ -314,7 +339,7 @@ async function Run(orders) {
     for (var k = 0; k < userOrders.length; k++) {
       let order = userOrders[k];
       if (order.status == 1) continue;
-      let findBinanceItem = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/",""));
+      let findBinanceItem = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (findBinanceItem != null) {
         let item = findBinanceItem.data.data;
         if (order.type == 'buy') {

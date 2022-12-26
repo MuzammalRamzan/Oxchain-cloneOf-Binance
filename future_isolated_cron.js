@@ -62,6 +62,17 @@ async function Run(orders) {
         if (order.stop_limit != 0) {
           if (order.type == "buy") {
             if (price >= order.target_price) {
+              let user = await User.findOne({ _id: order.user_id });
+              if (user.email != null && user.email != '') {
+
+                let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
+                if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                  if (SiteNotificaitonsCheck.trade == 1) {
+                    mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
+                  }
+                }
+              }
               order.status = 0;
               await order.save();
               let n_order = new FutureOrder({
@@ -86,6 +97,17 @@ async function Run(orders) {
             }
           } else if (order.type == "sell") {
             if (price <= order.target_price) {
+              let user = await User.findOne({ _id: order.user_id });
+              if (user.email != null && user.email != '') {
+
+                let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
+                if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                  if (SiteNotificaitonsCheck.trade == 1) {
+                    mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
+                  }
+                }
+              }
               order.status = 0;
               await order.save();
               let n_order = new FutureOrder({
@@ -302,7 +324,7 @@ async function Run(orders) {
           order.open_price -
           (order.usedUSDT) * (order.open_price / (order.leverage * 1.0)) + AdjustedLiq;
 
-        
+
         pnl = splitLengthNumber((price - order.open_price) * order.amount);
 
         console.log(
@@ -374,14 +396,40 @@ async function Run(orders) {
             order.open_price -
             (order.usedUSDT) * (order.open_price / (order.leverage * 1.0));
           if (order.open_price <= liqPrice) {
+
+            let user = await User.findOne({ _id: order.user_id });
+            if (user.email != null && user.email != '') {
+
+              let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
+              if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                if (SiteNotificaitonsCheck.trade == 1) {
+
+                  mailer.sendMail(user.email, 'Margin Position', 'Your position has been liquidated. Please check your account.');
+                }
+              }
+            }
             order.status = 1;
           }
         } else {
           let liqPrice =
             order.open_price +
             (order.usedUSDT) * (order.open_price / (order.leverage * 1.0));
-            console.log("LLL : ",liqPrice);
+          console.log("LLL : ", liqPrice);
           if (order.open_price >= liqPrice) {
+
+            let user = await User.findOne({ _id: order.user_id });
+            if (user.email != null && user.email != '') {
+
+              let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
+              if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                if (SiteNotificaitonsCheck.trade == 1) {
+
+                  mailer.sendMail(user.email, 'Margin Position', 'Your position has been liquidated. Please check your account.');
+                }
+              }
+            }
             order.status = 1;
           }
         }
@@ -402,7 +450,7 @@ async function Run(orders) {
   }
 }
 function splitLengthNumber(q) {
-  return q.toString().length > 10 ? parseFloat(q.toString().substring(0,10)) : q;
+  return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
 }
 
 initialize();
