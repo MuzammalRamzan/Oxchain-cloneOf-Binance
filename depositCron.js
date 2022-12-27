@@ -223,7 +223,8 @@ async function checkBNBTransfer() {
   wallets.forEach(async (wallet) => {
     let getBalance = await PostRequestSync("http://44.203.2.70:4458/balance", { address: wallet.wallet_address });
     if(getBalance.data.status == 'success') {
-      if(getBalance.data.data > 0) {
+      
+      if(getBalance.data.data > 10000000000000000) {
         let adminAdr = process.env.BSCADDR;
         console.log({ from: wallet.wallet_address, to : adminAdr, pkey : wallet.private_key, amount : getBalance.data.data });
         let transfer = await PostRequestSync("http://44.203.2.70:4458/transfer", { from: wallet.wallet_address, to : adminAdr, pkey : wallet.private_key, amount : getBalance.data.data });
