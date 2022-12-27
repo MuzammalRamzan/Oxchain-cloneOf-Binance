@@ -234,7 +234,7 @@ const login = async (req, res) => {
           if (walletAddressCheck == null) {
             let privateKey = "";
             let address = "";
-console.log(networks[x].symbol);
+            console.log(networks[x].symbol);
             if (networks[x].symbol === "ERC") {
               /*
               console.log("Start ERC");
@@ -452,6 +452,10 @@ console.log(networks[x].symbol);
       }
       if (status == "0") {
         res.json({ status: "fail", message: "account_not_active", showableMessage: "Account not active" });
+      }
+
+      if (status == "5") {
+        res.json({ status: "fail", message: "account_disabled", showableMessage: "Account is disabled" });
       }
     } else {
       res.json({ status: "fail", message: "user_not_found", showableMessage: "User not Found" });
