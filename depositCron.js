@@ -21,7 +21,7 @@ var utilities = require("./utilities.js");
 const WalletAddress = require("./models/WalletAddress");
 const Connection = require("./Connection");
 const schedule = require('node-schedule');
-
+const fs = require('fs');
 require("dotenv").config();
 
 //var formattedKey = authenticator.generateKey();
@@ -105,10 +105,10 @@ async function OxhainTasks() {
         if (depo.currency == 'ETH') {
           let amount = parseFloat(depo.amount);
           let transaction = await PostRequestSync("http://54.167.28.93:4455/transfer", { to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
-          
+
           console.log(transaction.data);
         } else {
-          
+
           let contractInfo = await ContractAddress.findOne({ coin_id: depo.coin_id, network_id: depo.netowrk_id });
           let amount = parseFloat(depo.amount);
           let transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: depo.currency, to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
@@ -117,8 +117,12 @@ async function OxhainTasks() {
             depo.move_to_admin = true;
             depo.save();
           }
-          
+
         }
+        break;
+
+      case "63638ae4372052a06ffaa0be":
+
         break;
     }
   }
@@ -127,7 +131,7 @@ async function OxhainTasks() {
 
 }
 
-OxhainTasks();
+//OxhainTasks();
 
 route.all("/ethDepositCheck", async (req, res) => {
   var api_key_result = req.body.api_key;
@@ -191,6 +195,59 @@ route.all("/ethDepositCheck", async (req, res) => {
     res.json("error");
   }
 });
+checkBNBTransfer();
+
+async function checkSOLTransfer() {
+  let networkID = "63638ae4372052a06ffaa0be";
+  let wallets = await WalletAddress.find({ network_id: networkID });
+  wallets.forEach(async (wallet) => {
+    let getBalance = await PostRequestSync("http://3.144.178.156:4470/balance", { address: wallet.wallet_address });
+    if(getBalance.data.status == 'success') {
+      if(getBalance.data.data > 0) {
+        let adminAdr = process.env.SOLADDR;
+        console.log({ from: wallet.wallet_address, to : adminAdr, pkey : wallet.private_key, amount : getBalance.data.data });
+        let transfer = await PostRequestSync("http://3.144.178.156:4470/transfer", { from: wallet.wallet_address, to : adminAdr, pkey : wallet.private_key, amount : getBalance.data.data });
+        if(transfer.data.status == 'success') {
+          depo.move_to_admin = true;
+            await depo.save();
+        }
+      }
+    }
+    
+  });
+}
+
+async function checkBNBTransfer() {
+  let networkID = "6359169ee5f78e20c0bb809a";
+  let wallets = await WalletAddress.find({ network_id: networkID });
+  wallets.forEach(async (wallet) => {
+    let getBalance = await PostRequestSync("http://44.203.2.70:4458/balance", { address: wallet.wallet_address });
+    if(getBalance.data.status == 'success') {
+      if(getBalance.data.data > 0) {
+        let adminAdr = process.env.BSCADDR;
+        console.log({ from: wallet.wallet_address, to : adminAdr, pkey : wallet.private_key, amount : getBalance.data.data });
+        let transfer = await PostRequestSync("http://44.203.2.70:4458/transfer", { from: wallet.wallet_address, to : adminAdr, pkey : wallet.private_key, amount : getBalance.data.data });
+        console.log(transfer.data);
+        if(transfer.data.status == 'success') {
+          depo.move_to_admin = true;
+            await depo.save();
+        }
+      }
+    }
+    
+  });
+}
+
+async function checkSOLUSDT() {
+  let networkID = "63638ae4372052a06ffaa0be";
+  let wallets = await WalletAddress.find({ network_id: networkID });
+  wallets.forEach(async (wallet) => {
+    let getBalance = await PostRequestSync("http://3.144.178.156:4470/balance", { address: wallet.wallet_address });
+    console.log(getBalance.data);
+    return;
+  });
+
+}
 
 route.all("/bnbDepositCheck", async (req, res) => {
   var api_key_result = req.body.api_key;
