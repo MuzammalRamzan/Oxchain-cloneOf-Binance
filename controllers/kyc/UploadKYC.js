@@ -36,6 +36,7 @@ const UploadKYC = async function (req, res) {
 
 
             if (verification == null) {
+                let country = User.country || null;
 
                 //get file from request
                 var file = req.files;
@@ -44,19 +45,18 @@ const UploadKYC = async function (req, res) {
                 //get file extension
                 var file_extension = file_name.split('.').pop();
 
-                let country = User.country || null;
                 //upload file to aws s3
-                let params = {
+                let params2 = {
                     params: {
                         Bucket: "oxhain",
-                        Key: 'KYC/' + user_id + '.' + file_extension,
+                        Key: 'KYC/front-' + user_id + '.' + file_extension,
                         Body: file[0].buffer,
                         ContentType: "image/jpg",
                     },
                 };
 
-                var upload = new AWS.S3.ManagedUpload(params);
-                var promise = upload.promise();
+                var upload2 = new AWS.S3.ManagedUpload(params2);
+                var promise = upload2.promise();
                 promise.then(
                     function (data) {
                         console.log('Successfully uploaded photo.');
@@ -73,9 +73,42 @@ const UploadKYC = async function (req, res) {
                 let verification = new VerificationModel({
                     user_id: user_id,
                     status: 0,
-                    url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/' + user_id + '.' + file_extension,
+                    url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/front-' + user_id + '.' + file_extension,
+                    url2: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/back-' + user_id + '.' + file_extension,
                     country: country,
                 });
+
+                //second photo  
+
+                //get file from request
+                var file = req.files;
+                var file_name = file[1].originalname;
+
+                //get file extension
+                var file_extension = file_name.split('.').pop();
+
+                //upload file to aws s3
+                let params = {
+                    params: {
+                        Bucket: "oxhain",
+                        Key: 'KYC/back-' + user_id + '.' + file_extension,
+                        Body: file[1].buffer,
+                        ContentType: "image/jpg",
+                    },
+                };
+
+                var upload = new AWS.S3.ManagedUpload(params);
+                var promise = upload.promise();
+                promise.then(
+                    function (data) {
+                        console.log('Successfully uploaded photo.');
+                    },
+                    function (err) {
+                        console.error('There was an error uploading: ', err.message);
+                    }
+                );
+
+
 
                 verification.save(function (err) {
                     if (err) {
