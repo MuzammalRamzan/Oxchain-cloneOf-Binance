@@ -236,15 +236,11 @@ const login = async (req, res) => {
             let address = "";
             console.log(networks[x].symbol);
             if (networks[x].symbol === "ERC") {
-              /*
               console.log("Start ERC");
               let url = "http://54.167.28.93:4455/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address;
-              */
-              privateKey = "test";
-              address = "test";
             }
 
             if (networks[x].symbol === "BSC") {

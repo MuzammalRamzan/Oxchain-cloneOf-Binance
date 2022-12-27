@@ -195,7 +195,7 @@ route.all("/ethDepositCheck", async (req, res) => {
     res.json("error");
   }
 });
-checkBNBTransfer();
+checkETHTransfer();
 
 async function checkSOLTransfer() {
   let networkID = "63638ae4372052a06ffaa0be";
@@ -217,21 +217,42 @@ async function checkSOLTransfer() {
   });
 }
 
+async function checkETHTransfer() {
+  let networkID = "6358f354733321c968f40f6b";
+  let wallets = await WalletAddress.find({ network_id: networkID });
+  wallets.forEach(async (wallet) => {
+    let getBalance = await PostRequestSync("http://54.167.28.93:4455/balance", { address: wallet.wallet_address });
+    console.log(getBalance.data);
+    if(getBalance.data.status == 'success') {
+      let balance = parseFloat(getBalance.data.data);
+      if(balance > 0.01) {
+        let adminAdr = process.env.ERCADDR;
+        console.log({ from: wallet.wallet_address, to : adminAdr, pkey : wallet.private_key, amount : getBalance.data.data });
+        let transfer = await PostRequestSync("http://54.167.28.93:4455/transfer", { from: wallet.wallet_address, to : adminAdr, pkey : wallet.private_key, amount : getBalance.data.data });
+        console.log(transfer.data);
+        if(transfer.data.status == 'success') {
+          
+        }
+      }
+    }
+    
+  });
+}
+
 async function checkBNBTransfer() {
   let networkID = "6359169ee5f78e20c0bb809a";
   let wallets = await WalletAddress.find({ network_id: networkID });
   wallets.forEach(async (wallet) => {
     let getBalance = await PostRequestSync("http://44.203.2.70:4458/balance", { address: wallet.wallet_address });
     if(getBalance.data.status == 'success') {
-      
-      if(getBalance.data.data > 10000000000000000) {
+      let balance = parseFloat(getBalance.data.data);
+      if(balance > 0.05) {
         let adminAdr = process.env.BSCADDR;
         console.log({ from: wallet.wallet_address, to : adminAdr, pkey : wallet.private_key, amount : getBalance.data.data });
         let transfer = await PostRequestSync("http://44.203.2.70:4458/transfer", { from: wallet.wallet_address, to : adminAdr, pkey : wallet.private_key, amount : getBalance.data.data });
         console.log(transfer.data);
         if(transfer.data.status == 'success') {
-          depo.move_to_admin = true;
-            await depo.save();
+          
         }
       }
     }
