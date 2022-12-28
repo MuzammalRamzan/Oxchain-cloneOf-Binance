@@ -2,6 +2,7 @@ const User = require("../../models/User");
 var authFile = require("../../auth.js");
 const SMSVerification = require("../../models/SMSVerification");
 const EmailVerification = require("../../models/MailVerification");
+const ChangeLogsModel = require("../../models/ChangeLogs");
 
 const changeEmail = async function (req, res) {
   var user_id = req.body.user_id;
@@ -92,6 +93,14 @@ const changeEmail = async function (req, res) {
 
       if (doc != null) {
 
+        let changeLog = new ChangeLogsModel({
+          user_id: user_id,
+          type: "Change E-Mail",
+          device: req.body.device ?? "Unknown",
+          ip: req.body.ip ?? "Unknown",
+          city: req.body.city ?? "Unknown",
+        });
+        changeLog.save();
 
         res.json({ status: "success", data: "update_success" });
       } else {

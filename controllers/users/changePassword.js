@@ -4,6 +4,7 @@ const RegisterSMS = require("../../models/RegisterSMS");
 const MailVerification = require("../../models/MailVerification");
 var authFile = require("../../auth.js");
 var utilities = require("../../utilities.js");
+const ChangeLogsModel = require("../../models/ChangeLogs");
 
 const changePassword = async function (req, res) {
   var user_id = req.body.user_id;
@@ -78,6 +79,15 @@ const changePassword = async function (req, res) {
 
       user.password = utilities.hashData(password);
       user.save();
+
+      let changeLog = new ChangeLogsModel({
+        user_id: user_id,
+        type: "Change Password",
+        device: req.body.device ?? "Unknown",
+        ip: req.body.ip ?? "Unknown",
+        city: req.body.city ?? "Unknown",
+      });
+      changeLog.save();
 
       res.json({ status: "success", message: "password_changed", showableMessage: "Password Changed" });
 

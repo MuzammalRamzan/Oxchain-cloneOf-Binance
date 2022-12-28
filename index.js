@@ -90,6 +90,8 @@ const getRegisteredAddresses = require("./controllers/registeredAddress/getRegis
 const googleAuth = require("./controllers/auth/googleAuth");
 const appleAuth = require("./controllers/auth/appleAuth");
 
+const securityActivities = require("./controllers/accountActivities/securityActivities");
+
 const removePhone = require("./controllers/users/removePhone");
 const removeEmail = require("./controllers/users/removeEmail");
 
@@ -201,6 +203,7 @@ route.all("/addVerificationId", upload.any(), addVerificationId);
 route.all("/addAvatar", addAvatar);
 route.all("/getAvatar", getAvatar);
 
+route.all("/securityActivities", securityActivities);
 route.all("/walletToWallet", walletToWallet);
 
 route.all("/getSiteNotificationSettings", getSiteNotificationSettings);
