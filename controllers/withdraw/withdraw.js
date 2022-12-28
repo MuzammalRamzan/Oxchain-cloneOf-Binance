@@ -81,7 +81,7 @@ const withdraw = async (req, res) => {
       break;
     case "ERC":
       coinInfo = await CoinList.findOne({ _id: coin_id });
-      transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: coinInfo.symbol, from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000).toString() });
+      transaction = await PostRequestSync("http://54.167.28.93:4455/transfer", {  from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
       console.log(transaction.data);
       if (transaction.data.status != 'success') {
         res.json({ status: "fail", msg: "unknow error" });

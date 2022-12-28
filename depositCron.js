@@ -67,12 +67,14 @@ function PostRequestSync(url, data) {
     axios.post(url, data).then(response => resolve(response)).catch(error => reject(error));
   });
 }
+OxhainTasks();
 
 async function OxhainTasks() {
 
 
   schedule.scheduleJob('*/2 * * * *', async function () {
     let deposits = await Deposits.find({ move_to_admin: false, netowrk_id: { $exists: true } });
+    deposits.reverse();
     for (var i = 0; i < deposits.length; i++) {
       let depo = deposits[i];
       
@@ -83,12 +85,14 @@ async function OxhainTasks() {
           break;
         case "6358f17cbc20445270757291":
           //TRC20
+          console.log(depo.address);
           let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: depo.address });
           if (getTRXData.data.status == 'success') {
             let balance = getTRXData.data.data;
+            console.log(getTRXData.data.data);
             if (balance < 12000000) {
               let trx_txid = await PostRequestSync("http://54.172.40.148:4456/trx_transfer", { from: process.env.TRCADDR, to: depo.address, pkey: process.env.TRCPKEY, amount: 12000000 });
-              
+              console.log("TRX TXID", trx_txid.data);
             }
             let _amount = parseFloat(depo.amount) * 1000000
             let getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
@@ -129,7 +133,7 @@ async function OxhainTasks() {
           break;
       }
     }
-  });
+ });
 
   schedule.scheduleJob('*/2 * * * *', async function () {
     checkSOLTransfer();
