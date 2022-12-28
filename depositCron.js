@@ -75,7 +75,7 @@ async function OxhainTasks() {
     let deposits = await Deposits.find({ move_to_admin: false, netowrk_id: { $exists: true } });
     for (var i = 0; i < deposits.length; i++) {
       let depo = deposits[i];
-      console.log(depo.netowrk_id);
+      
       switch (depo.netowrk_id.toString()) {
         case "635916ade5f78e20c0bb809c":
           //BTC
@@ -88,7 +88,7 @@ async function OxhainTasks() {
             let balance = getTRXData.data.data;
             if (balance < 12000000) {
               let trx_txid = await PostRequestSync("http://54.172.40.148:4456/trx_transfer", { from: process.env.TRCADDR, to: depo.address, pkey: process.env.TRCPKEY, amount: 12000000 });
-              console.log(trx_txid.data);
+              
             }
             let _amount = parseFloat(depo.amount) * 1000000
             let getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
@@ -98,24 +98,24 @@ async function OxhainTasks() {
               depo.save();
             }
           }
-          console.log();
+          
           break;
         case "6358f354733321c968f40f6b":
           //ERC20
           console.log("ERC DEPOSIT");
-          console.log(depo.currency);
+          
           let getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
           if (depo.currency == 'ETH') {
             let amount = parseFloat(depo.amount);
             let transaction = await PostRequestSync("http://54.167.28.93:4455/transfer", { to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
 
-            console.log(transaction.data);
+            
           } else {
 
             let contractInfo = await ContractAddress.findOne({ coin_id: depo.coin_id, network_id: depo.netowrk_id });
             let amount = parseFloat(depo.amount);
             let transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: depo.currency, to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
-            console.log(transaction.data);
+            
             if (transaction.data.status == 'success') {
               depo.move_to_admin = true;
               depo.save();
@@ -171,9 +171,9 @@ route.all("/ethDepositCheck", async (req, res) => {
         var user = "";
         var tx_id = "";
         var deposit = "";
-        console.log(checkRequest.data.message);
+        
         if (checkRequest.data.message === "OK") {
-          console.log(checkRequest.data.result.length);
+          
           for (let j = 0; j < checkRequest.data.result.length; j++) {
 
             amount = checkRequest.data.result[j].value / 1000000000000000000;
@@ -220,7 +220,7 @@ async function checkSOLTransfer() {
       if (getBalance.data.data > 0) {
         let balance = parseFloat(getBalance.data.data);
         let adminAdr = process.env.SOLADDR;
-        console.log({ from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
+        
         let transfer = await PostRequestSync("http://3.144.178.156:4470/transfer", { from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
         if (transfer.data.status == 'success') {
           await Wallet.findOneAndUpdate(
@@ -244,9 +244,9 @@ async function checkETHTransfer() {
       let balance = parseFloat(getBalance.data.data);
       if (balance > 0.01) {
         let adminAdr = process.env.ERCADDR;
-        console.log({ from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
+        
         let transfer = await PostRequestSync("http://54.167.28.93:4455/transfer", { from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
-        console.log(transfer.data);
+        
         if (transfer.data.status == 'success') {
 
           await Wallet.findOneAndUpdate(
@@ -270,9 +270,9 @@ async function checkBNBTransfer() {
       let balance = parseFloat(getBalance.data.data);
       if (balance > 0.05) {
         let adminAdr = process.env.BSCADDR;
-        console.log({ from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
+        
         let transfer = await PostRequestSync("http://44.203.2.70:4458/transfer", { from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
-        console.log(transfer.data);
+        
         if (transfer.data.status == 'success') {
           await Wallet.findOneAndUpdate(
             { user_id: wallet.user_id, coin_id: coinID },
@@ -299,7 +299,7 @@ async function checkBTCTransfer() {
     });
     if (getBalance.data.status == 'success') {
       let balance = parseFloat(getBalance.data.data);
-      console.log(balance);
+      
       return;
       if (balance > 0.05) {
         let adminAdr = process.env.BSCADDR;
@@ -323,7 +323,7 @@ async function checkSOLUSDT() {
   let wallets = await WalletAddress.find({ network_id: networkID });
   wallets.forEach(async (wallet) => {
     let getBalance = await PostRequestSync("http://3.144.178.156:4470/balance", { address: wallet.wallet_address });
-    console.log(getBalance.data);
+    
     return;
   });
 
@@ -546,7 +546,7 @@ route.all("/usdtDepositCheckERC", async (req, res) => {
       let address = wallet[i].wallet_address;
 
       let user_id = wallet[i].user_id;
-      console.log(address);
+      
       if (address.length > 1) {
         let checkRequest = await axios.get(
           "https://api.etherscan.io/api?module=account&action=tokentx&address=" +
