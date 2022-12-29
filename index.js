@@ -151,6 +151,8 @@ const readNotifications = require("./controllers/readNotifications");
 const clearNotifications = require("./controllers/clearNotifications");
 const addVerificationId = require("./controllers/verificationId/addVerificationId");
 const getVerificationIds = require("./controllers/verificationId/getVerificationIds");
+const topReferralEarners = require("./controllers/referrals/topReferralEarners");
+const myReferralEarns = require("./controllers/referrals/myReferralEarns");
 
 
 const UploadKYC = require("./controllers/kyc/UploadKYC");
@@ -338,6 +340,8 @@ route.all("/getReferral", upload.none(), getReferral);
 route.all("/topReferrals", upload.none(), topReferrals);
 route.all("/myReferrals", upload.none(), myReferrals);
 route.all("/referralRewards", upload.none(), referralRewards);
+route.all("/topReferralEarners", upload.none(), topReferralEarners);
+route.all("/myReferralEarns", upload.none(), myReferralEarns);
 
 route.all("/getWallet", upload.none(), getWallet);
 

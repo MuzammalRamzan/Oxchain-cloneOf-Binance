@@ -16,6 +16,9 @@ const activities = async function (req, res) {
             _id: user_id,
         }).exec();
 
+        let dayCount = req.body.dayCount ?? 0;
+
+
         if (user != null) {
             let returnData = [];
             //aggregate all the devices with same ip address and city and deviceName of the user
@@ -23,7 +26,8 @@ const activities = async function (req, res) {
             let devices = await DevicesModel.aggregate([
                 {
                     $match: {
-                        user_id: user_id
+                        user_id: user_id,
+                        ...(dayCount && { createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - dayCount)) } })
                     }
                 },
                 {
@@ -68,7 +72,8 @@ const activities = async function (req, res) {
 
 
             let changeLogs = await ChangeLogsModel.find({
-                user_id: user_id
+                user_id: user_id,
+                ...(dayCount && { createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - dayCount)) } })
             }).exec();
 
             if (changeLogs != null) {
