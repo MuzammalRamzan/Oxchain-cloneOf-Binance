@@ -21,6 +21,26 @@ const UploadKYC = async function (req, res) {
     var api_key_result = req.body.api_key;
     var result = await authFile.apiKeyChecker(api_key_result);
 
+    //get 3 files from request (front, back, selfie) as base64 string and send to aws s3 
+
+    let file1 = req.body.file1;
+    let file2 = req.body.file2;
+    let file3 = req.body.file3;
+    let file1extension = req.body.file1extension;
+    let file2extension = req.body.file2extension;
+    let file3extension = req.body.file3extension;
+
+
+    //base64 string to file
+    var base64Data = file1.replace(/^data:image\/(png|jpeg);base64,/, "");
+    let file1New = new Buffer.from(base64Data, 'base64');
+
+    var base64Data2 = file2.replace(/^data:image\/(png|jpeg);base64,/, "");
+    let file2New = new Buffer.from(base64Data2, 'base64');
+
+    var base64Data3 = file3.replace(/^data:image\/(png|jpeg);base64,/, "");
+    let file3New = new Buffer.from(base64Data3, 'base64');
+
 
     if (result === true) {
         let user = await User.findOne({
@@ -35,22 +55,17 @@ const UploadKYC = async function (req, res) {
                 }).exec();
 
 
+
             if (verification == null) {
                 let country = User.country || null;
 
-                //get file from request
-                var file = req.files;
-                var file_name = file[0].originalname;
-
-                //get file extension
-                var file_extension = file_name.split('.').pop();
 
                 //upload file to aws s3
                 let params2 = {
                     params: {
                         Bucket: "oxhain",
-                        Key: 'KYC/front-' + user_id + '.' + file_extension,
-                        Body: file[0].buffer,
+                        Key: 'KYC/front-' + user_id + '.' + file1extension,
+                        Body: file1New,
                         ContentType: "image/jpg",
                     },
                 };
@@ -67,32 +82,20 @@ const UploadKYC = async function (req, res) {
                 );
 
 
-                console.log("user_id: " + user_id, "status: 0", "url: " + 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/' + user_id + '.' + file_extension, "country: " + country)
 
 
-                let verification = new VerificationModel({
-                    user_id: user_id,
-                    status: 0,
-                    url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/front-' + user_id + '.' + file_extension,
-                    url2: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/back-' + user_id + '.' + file_extension,
-                    country: country,
-                });
+
 
                 //second photo  
 
-                //get file from request
-                var file = req.files;
-                var file_name = file[1].originalname;
 
-                //get file extension
-                var file_extension = file_name.split('.').pop();
 
                 //upload file to aws s3
                 let params = {
                     params: {
                         Bucket: "oxhain",
-                        Key: 'KYC/back-' + user_id + '.' + file_extension,
-                        Body: file[1].buffer,
+                        Key: 'KYC/back-' + user_id + '.' + file2extension,
+                        Body: file2New,
                         ContentType: "image/jpg",
                     },
                 };
@@ -109,7 +112,36 @@ const UploadKYC = async function (req, res) {
                 );
 
 
+                //upload file to aws s3
+                let params3 = {
+                    params: {
+                        Bucket: "oxhain",
+                        Key: 'KYC/selfie-' + user_id + '.' + file3extension,
+                        Body: file3New,
+                        ContentType: "image/jpg",
+                    },
+                };
 
+                var upload = new AWS.S3.ManagedUpload(params3);
+                var promise = upload.promise();
+                promise.then(
+                    function (data) {
+                        console.log('Successfully uploaded photo.');
+                    },
+                    function (err) {
+                        console.error('There was an error uploading: ', err.message);
+                    }
+                );
+
+
+                let verification = new VerificationModel({
+                    user_id: user_id,
+                    status: 0,
+                    url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/front-' + user_id + '.' + file1extension,
+                    url2: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/back-' + user_id + '.' + file2extension,
+                    url3: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/selfie-' + user_id + '.' + file3extension,
+                    country: country,
+                });
                 verification.save(function (err) {
                     if (err) {
                         return res.json({ status: "fail", message: "error", showableMessage: "Error while uploading KYC" });
@@ -129,7 +161,9 @@ const UploadKYC = async function (req, res) {
                         },
                             {
                                 status: 0,
-                                url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/' + user_id + '.' + file_extension,
+                                url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/front-' + user_id + '.' + file1extension,
+                                url2: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/back-' + user_id + '.' + file2extension,
+                                url3: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/selfie-' + user_id + '.' + file3extension,
                                 country: country,
                             },
                         ).exec(function (err) {
