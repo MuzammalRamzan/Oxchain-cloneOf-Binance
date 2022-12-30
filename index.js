@@ -156,6 +156,7 @@ const myReferralEarns = require("./controllers/referrals/myReferralEarns");
 
 
 const UploadKYC = require("./controllers/kyc/UploadKYC");
+const UploadRecidency = require("./controllers/kyc/uploadRecidency");
 
 const marketingMailStatus = require("./controllers/marketingMails/mailStatus");
 const changeMarketingMailStatus = require("./controllers/marketingMails/changeStatus");
@@ -237,6 +238,7 @@ route.post("/addBonus", addBonus);
 route.post("/getBonusHistory", getBonusHistory);
 
 route.all("/UploadKYC", upload.any(), UploadKYC);
+route.all("/UploadRecidency", upload.any(), UploadRecidency);
 
 //AUTH
 route.all("/login", upload.none(), login);

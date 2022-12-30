@@ -26,6 +26,8 @@ const UploadKYC = async function (req, res) {
     let file1 = req.body.file1;
     let file2 = req.body.file2;
     let file3 = req.body.file3;
+    let file4 = req.body.file4;
+    let file5 = req.body.file5;
     let file1extension = req.body.file1extension;
     let file2extension = req.body.file2extension;
     let file3extension = req.body.file3extension;
@@ -40,6 +42,15 @@ const UploadKYC = async function (req, res) {
 
     var base64Data3 = file3.replace(/^data:image\/(png|jpeg);base64,/, "");
     let file3New = new Buffer.from(base64Data3, 'base64');
+
+    var base64Data4 = file4.replace(/^data:image\/(png|jpeg);base64,/, "");
+    let file4New = new Buffer.from(base64Data4, 'base64');
+
+    let file5New = null;
+    if (req.body.recidencyFileExtension2 != null) {
+        var base64Data5 = file5.replace(/^data:image\/(png|jpeg);base64,/, "");
+        file5New = new Buffer.from(base64Data5, 'base64');
+    }
 
 
     if (result === true) {
@@ -81,14 +92,7 @@ const UploadKYC = async function (req, res) {
                     }
                 );
 
-
-
-
-
-
                 //second photo  
-
-
 
                 //upload file to aws s3
                 let params = {
@@ -134,12 +138,64 @@ const UploadKYC = async function (req, res) {
                 );
 
 
+                //upload file to aws s3
+                let params4 = {
+                    params: {
+                        Bucket: "oxhain",
+                        Key: 'KYC/recidency1-' + user_id + '.' + req.body.recidencyFileExtension2,
+                        Body: file4New,
+                        ContentType: "image/jpg",
+                    },
+                };
+
+                var upload = new AWS.S3.ManagedUpload(params4);
+                var promise = upload.promise();
+                promise.then(
+                    function (data) {
+                        console.log('Successfully uploaded photo.');
+                    },
+                    function (err) {
+                        console.error('There was an error uploading: ', err.message);
+                    }
+                );
+
+
+
+                if (req.body.recidencyFileExtension2 != null) {
+
+
+                    //upload file to aws s3
+                    let params4 = {
+                        params: {
+                            Bucket: "oxhain",
+                            Key: 'KYC/recidency2-' + user_id + '.' + req.body.recidencyFileExtension2,
+                            Body: file5New,
+                            ContentType: "image/jpg",
+                        },
+                    };
+
+                    var upload = new AWS.S3.ManagedUpload(params4);
+                    var promise = upload.promise();
+                    promise.then(
+                        function (data) {
+                            console.log('Successfully uploaded photo.');
+                        },
+                        function (err) {
+                            console.error('There was an error uploading: ', err.message);
+                        }
+                    );
+
+                }
+
+
                 let verification = new VerificationModel({
                     user_id: user_id,
                     status: 0,
                     url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/front-' + user_id + '.' + file1extension,
                     url2: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/back-' + user_id + '.' + file2extension,
                     url3: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/selfie-' + user_id + '.' + file3extension,
+                    urlRecidency1: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/recidency1-' + user_id + '.' + req.body.recidencyFileExtension,
+                    urlRecidency2: req.body.recidencyFileExtension2 != null ? 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/recidency2-' + user_id + '.' + req.body.recidencyFileExtension2 : null,
                     country: country,
                 });
                 verification.save(function (err) {
@@ -164,6 +220,8 @@ const UploadKYC = async function (req, res) {
                                 url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/front-' + user_id + '.' + file1extension,
                                 url2: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/back-' + user_id + '.' + file2extension,
                                 url3: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/selfie-' + user_id + '.' + file3extension,
+                                urlRecidency1: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/recidency1-' + user_id + '.' + req.body.recidencyFileExtension,
+                                urlRecidency2: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/recidency2-' + user_id + '.' + req.body.recidencyFileExtension2,
                                 country: country,
                             },
                         ).exec(function (err) {
