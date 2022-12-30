@@ -155,6 +155,11 @@ const topReferralEarners = require("./controllers/referrals/topReferralEarners")
 const myReferralEarns = require("./controllers/referrals/myReferralEarns");
 
 
+//only for testing purposes for emircan
+
+const clearKYCAndRecidency = require("./controllers/kyc/clearKYCAndRecidency.js");
+
+
 const UploadKYC = require("./controllers/kyc/UploadKYC");
 const UploadRecidency = require("./controllers/kyc/uploadRecidency");
 
@@ -233,6 +238,11 @@ route.post("/subscription", async (req, res) => {
 //DEPOSIT
 
 //BONUS & CREDIT
+
+
+//TESTING
+route.all("/clearKYCAndRecidency", upload.any(), clearKYCAndRecidency);
+
 route.post("/addBonusType", addBonusType);
 route.post("/addBonus", addBonus);
 route.post("/getBonusHistory", getBonusHistory);
