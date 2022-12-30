@@ -118,6 +118,10 @@ const delay = (duration) => {
 route.use(cors());
 var port = process.env.PORT;
 
+
+//set limit for request body for base64 image upload
+route.use(bodyParser.json({ limit: "50mb" }));
+route.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 const Subscription = require("./models/Subscription.js");
 const topReferrals = require("./controllers/referrals/topReferrals.js");
 const getReferral = require("./controllers/referrals/getReferral.js");
