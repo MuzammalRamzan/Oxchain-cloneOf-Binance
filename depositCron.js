@@ -9,6 +9,7 @@ const Pairs = require("./models/Pairs");
 const Orders = require("./models/Orders");
 const LoginLogs = require("./models/LoginLogs");
 const SecurityKey = require("./models/SecurityKey");
+const ContractAddressSchema = require("./models/ContractAddress");
 const Deposits = require("./models/Deposits");
 const Notification = require("./models/Notifications");
 const ReadNotification = require("./models/ReadNotifications");
@@ -40,7 +41,6 @@ var mongodbPass = process.env.MONGO_DB_PASS;
 var ethKey = process.env.ETH_API_KEY;
 var bscKey = process.env.BSC_API_KEY;
 
-Connection.connection();
 
 var cors = require("cors");
 route.use(cors());
@@ -53,7 +53,8 @@ const { Console } = require("console");
 const { exit } = require("process");
 
 const auth = require("./auth.js");
-const ContractAddress = require("./models/ContractAddress");
+const { ObjectID, ObjectId } = require("bson");
+
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
@@ -69,9 +70,66 @@ function PostRequestSync(url, data) {
 }
 OxhainTasks();
 
+async function checkTronDeposit() {
+  let networkId = "6358f17cbc20445270757291";
+  let wallet = await WalletAddress.find({
+    network_id: networkId,
+  }).exec();
+
+  let tx_id = "";
+  let user_id = "";
+  let amount = "";
+  let address = "";
+  let deposit = "";
+
+  for (let i = 0; i < wallet.length; i++) {
+    let address = wallet[i].wallet_address;
+
+    let user_id = wallet[i].user_id;
+    if (address.length > 1) {
+      
+      let checkRequest = await axios.get(
+        "https://api.trongrid.io/v1/accounts/" +
+        address +
+        "/transactions/trc20?limit=30"
+      );
+
+      for (let j = 0; j < checkRequest.data.data.length; j++) {
+        let _contract = checkRequest.data.data[j].token_info.address;
+        console.log({contract : _contract, network_id: networkId});
+        
+        let getContractInfo = await ContractAddressSchema.findOne({contract : _contract, network_id: ObjectId(networkId)}).exec();
+        console.log(getContractInfo);
+        return;
+        tx_id = checkRequest.data.data[j].transaction_id;
+        amount = checkRequest.data.data[j].value / 1000000;
+        console.log()
+        deposit = await Deposits.findOne({
+          user_id: user_id,
+          tx_id: tx_id,
+        }).exec();
+
+        if (deposit === null) {
+          utilities.addDeposit(
+            user_id,
+            "USDT",
+            amount,
+            address,
+            tx_id,
+            "62bc116eb65b02b777c97b3d",
+            networkId
+          );
+        } else {
+        }
+      }
+    } 
+  }
+}
+
 async function OxhainTasks() {
-
-
+  await Connection.connection();
+  checkTronDeposit();
+  return;
   schedule.scheduleJob('*/2 * * * *', async function () {
     let deposits = await Deposits.find({ move_to_admin: false, netowrk_id: { $exists: true } });
     deposits.reverse();
@@ -115,8 +173,8 @@ async function OxhainTasks() {
 
             
           } else {
-
-            let contractInfo = await ContractAddress.findOne({ coin_id: depo.coin_id, network_id: depo.netowrk_id });
+            
+            let contractInfo = await ContractAddressSchema.findOne({ coin_id: depo.coin_id, network_id: depo.netowrk_id });
             let amount = parseFloat(depo.amount);
             let transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: depo.currency, to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
             
@@ -213,6 +271,8 @@ route.all("/ethDepositCheck", async (req, res) => {
     res.json("error");
   }
 });
+
+
 
 async function checkSOLTransfer() {
   let networkID = "63638ae4372052a06ffaa0be";
@@ -471,7 +531,6 @@ route.all("/usdtDepositCheck", async (req, res) => {
   let networkId = "6358f17cbc20445270757291";
   if (result === true) {
     let wallet = await WalletAddress.find({
-      status: 1,
       network_id: "6358f17cbc20445270757291",
     }).exec();
 
