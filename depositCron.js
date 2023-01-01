@@ -335,9 +335,8 @@ async function checkERCContractDeposit() {
     let address = wallet[i].wallet_address;
     if (address == null) continue;
     let user_id = wallet[i].user_id;
-    address = address.toUpperCase();
-    console.log(address);
     let url = "https://api.etherscan.io/api?module=account&action=tokentx&address=" + address + "&endblock=latest&apikey=" + ethKey;
+    console.log(url);
     //let url = "https://api.etherscan.io/api?module=account&action=tokentx&address=0xA484D878E8FA056D694fAFC0B8e15c28F5D97853&endblock=latest&apikey=" + ethKey;
     let checkRequest = await axios.get(url);
 
@@ -353,8 +352,9 @@ async function checkERCContractDeposit() {
         console.log(item);
 
         console.log(address);
+        console.log(user_id);
         if(item.to.toUpperCase() != address) continue;
-
+        console.log("geçti");
         user = await User.findOne({ _id: user_id }).exec();
         console.log(user);
         deposit = await Deposits.findOne({
