@@ -191,7 +191,7 @@ OxhainTasks();
 async function OxhainTasks() {
   await Connection.connection();
   console.log("db connected");
-  checkETHContractDeposit();
+  checkERCContractDeposit();
   return;
   schedule.scheduleJob('*/2 * * * *', async function () {
     let deposits = await Deposits.find({ move_to_admin: false, netowrk_id: { $exists: true } });
@@ -325,7 +325,7 @@ async function checkETHDeposit() {
   }
   res.json("cron_success");
 }
-async function checkETHContractDeposit() {
+async function checkERCContractDeposit() {
   let networkId = "6358f354733321c968f40f6b";
   let wallet = await WalletAddress.find({
 
@@ -335,6 +335,8 @@ async function checkETHContractDeposit() {
     let address = wallet[i].wallet_address;
     if (address == null) continue;
     let user_id = wallet[i].user_id;
+    address = address.toUpperCase();
+    console.log(address);
     let url = "https://api.etherscan.io/api?module=account&action=tokentx&address=" + address + "&endblock=latest&apikey=" + ethKey;
     //let url = "https://api.etherscan.io/api?module=account&action=tokentx&address=0xA484D878E8FA056D694fAFC0B8e15c28F5D97853&endblock=latest&apikey=" + ethKey;
     let checkRequest = await axios.get(url);
@@ -348,7 +350,10 @@ async function checkETHContractDeposit() {
 
       for (let j = 0; j < checkRequest.data.result.length; j++) {
         let item = checkRequest.data.result[j];
-        if(item.to != address) continue;
+        console.log(item);
+
+        console.log(address);
+        if(item.to.toUpperCase() != address) continue;
 
         user = await User.findOne({ _id: user_id }).exec();
         console.log(user);

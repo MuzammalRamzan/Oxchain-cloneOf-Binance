@@ -114,7 +114,6 @@ async function fillMarketPrices() {
       }
     };
   } catch(err) {
-    console.log("Fiyatlar alınmadı");
     console.log(err.message);
   }
 }
@@ -283,7 +282,6 @@ async function test() {
                 if (getBtc.length > 0) {
                   btcPrice = getBtc[0].a;
                 }
-                console.log(value);
                 if (value == "Margin") {
                   walletData[value].balance = walletData[value].amount;
                   totalUsdValue += walletData[value].amount;
@@ -311,7 +309,6 @@ async function test() {
                   },
                 })
               );
-              console.log(walletData);
             }
           };
         }
@@ -534,10 +531,7 @@ async function CalculateFutureBalance(user_id) {
   let wallet = await FutureWalletModel.findOne({ user_id: user_id }).exec();
   if (getOpenOrders.length == 0) return wallet.amount;
   if (wallet == null) return 0;
-  console.log(wallet.amount);
-  console.log(getOpenOrders[0].total);
   let balance = parseFloat(wallet.amount) + parseFloat(getOpenOrders[0].total);
-  console.log(balance);
   if (balance < 0) return 0;
   return balance;
 }
@@ -608,7 +602,6 @@ async function GetWallets(ws, user_id) {
     { $match: { operationType: { $in: ["insert"] } } },
   ]).on("change", async (data) => {
     //orders = data;
-    console.log("insert order socket");
     wallet = await Wallet.find({ user_id: user_id }).exec();
     SendWallet(ws, wallet);
   });
@@ -716,7 +709,6 @@ async function GetOrders(ws, user_id, type, filter) {
     { $match: { operationType: { $in: ["insert"] } } },
   ]).on("change", async (data) => {
     //orders = data;
-    console.log("insert order socket");
     orders = await Orders.find(request).exec();
     ws.send(JSON.stringify({ type: "spot_orders", content: orders }));
   });
@@ -737,8 +729,6 @@ async function GetOrders(ws, user_id, type, filter) {
   let isRemove = Orders.watch([
     { $match: { operationType: { $in: ["remove"] } } },
   ]).on("change", async (data) => {
-    console.log("silindi");
-    console.log("del order socket");
     orders = await Orders.find(request).exec();
     ws.send(JSON.stringify({ type: "spot_orders", content: orders }));
   });
@@ -746,8 +736,6 @@ async function GetOrders(ws, user_id, type, filter) {
   let isDelete = Orders.watch([
     { $match: { operationType: { $in: ["delete"] } } },
   ]).on("change", async (data) => {
-    console.log("silindi 2");
-    console.log("del order socket");
     orders = await Orders.find(request).exec();
     ws.send(JSON.stringify({ type: "spot_orders", content: orders }));
   });
@@ -759,8 +747,6 @@ async function GetMarginOrders(
   margin_order_type,
   margin_order_method_type
 ) {
-  console.log("Margin orders");
-  console.log(user_id);
   let request = { user_id: user_id, status: { $gt: -3 } };
 
   if (margin_order_type != null && margin_order_type != "")
@@ -780,7 +766,6 @@ async function GetMarginOrders(
     { $match: { operationType: { $in: ["insert"] } } },
   ]).on("change", async (data) => {
     //orders = data;
-    console.log("inserted");
     orders = await MarginOrder.find(request).exec();
     ws.send(
       JSON.stringify({
@@ -803,8 +788,6 @@ async function GetMarginOrders(
   let isRemove = MarginOrder.watch([
     { $match: { operationType: { $in: ["remove"] } } },
   ]).on("change", async (data) => {
-    console.log("silindi");
-    console.log(data);
     orders = await MarginOrder.find(request).exec();
     ws.send(
       JSON.stringify({
@@ -817,8 +800,6 @@ async function GetMarginOrders(
   let isDelete = MarginOrder.watch([
     { $match: { operationType: { $in: ["delete"] } } },
   ]).on("change", async (data) => {
-    console.log("silindi 2");
-    console.log(data);
     orders = await MarginOrder.find(request).exec();
     ws.send(
       JSON.stringify({
@@ -875,11 +856,6 @@ async function GetCrossLiqPrice(order) {
   }
 
   let kasa = totalWallet + (order_total - order.pnl) + order_usedUSDT;
-  console.log("-------");
-  console.log(kasa);
-  console.log(order_usedUSDT);
-  console.log(totalWallet);
-  console.log("-------");
   let liqPrice = 0.0;
   if (order.type == "buy")
     liqPrice =
