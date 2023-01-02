@@ -34,6 +34,7 @@ const Earnings = require("./adminController/Earnings");
 const AdminDashboard = require("./adminController/AdminDashboard");
 const GetKyc = require("./adminController/GetKyc");
 const ApproveKyc = require("./adminController/ApproveKyc");
+const ApproveRecidency = require("./adminController/ApproveRecidency");
 const DenyKyc = require("./adminController/DenyKyc");
 
 
@@ -58,6 +59,7 @@ route.all("/login", upload.none(), Login);
 route.all("/addAdmin", upload.none(), Admin.addAdmin);
 route.all("/editAdmin", upload.none(), Admin.editAdmin);
 route.all("/ApproveKyc", upload.none(), ApproveKyc);
+route.all("/ApproveRecidency", upload.none(), ApproveRecidency);
 route.all("/DenyKyc", upload.none(), DenyKyc);
 route.all("/GetKyc", upload.none(), GetKyc);
 
