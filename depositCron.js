@@ -168,7 +168,6 @@ async function checkTronContractDeposit() {
         if (deposit === null) {
           let _contract = checkRequest.data.data[j].token_info.address;
           let getContractInfo = await ContractAddressSchema.findOne({ contract: _contract });
-          console.log(getContractInfo);
           if (getContractInfo == null) continue;
           let coinInfo = await CoinList.findOne({ _id: getContractInfo.coin_id });
           if (coinInfo == null) continue;
@@ -253,7 +252,6 @@ async function checkERCContractDeposit() {
     if (address == null) continue;
     let user_id = wallet[i].user_id;
     let url = "https://api.etherscan.io/api?module=account&action=tokentx&address=" + address + "&endblock=latest&apikey=" + ethKey;
-    console.log(url);
     //let url = "https://api.etherscan.io/api?module=account&action=tokentx&address=0xA484D878E8FA056D694fAFC0B8e15c28F5D97853&endblock=latest&apikey=" + ethKey;
     let checkRequest = await axios.get(url);
 
@@ -266,14 +264,9 @@ async function checkERCContractDeposit() {
 
       for (let j = 0; j < checkRequest.data.result.length; j++) {
         let item = checkRequest.data.result[j];
-        console.log(item);
 
-        console.log(address);
-        console.log(user_id);
         if(item.to.toUpperCase() != address) continue;
-        console.log("geçti");
         user = await User.findOne({ _id: user_id }).exec();
-        console.log(user);
         deposit = await Deposits.findOne({
           user_id: user_id,
           tx_id: checkRequest.data.result[j].hash,
@@ -508,7 +501,6 @@ async function OxhainTasks() {
           let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: depo.address });
           if (getTRXData.data.status == 'success') {
             let balance = getTRXData.data.data;
-            console.log(getTRXData.data.data);
             if (balance < 12000000) {
               let trx_txid = await PostRequestSync("http://54.172.40.148:4456/trx_transfer", { from: process.env.TRCADDR, to: depo.address, pkey: process.env.TRCPKEY, amount: 12000000 });
               console.log("TRX TXID", trx_txid.data);
