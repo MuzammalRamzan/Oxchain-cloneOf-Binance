@@ -1,24 +1,39 @@
 const CoinList = require("../../../models/CoinList");
 const Wallet = require("../../../models/Wallet");
 const FutureOrderModel = require("../../../models/FutureOrder");
+const axios = require("axios");
 
 const SpotFunds = async (ws, user_id) => {
-    let FutureOrders = await FutureOrderModel.find({
-        user_id: user_id,
-        method: "market",
-        status: 1
-    });
 
-    let assets = await calculate(user_id);
+    let CoinListFind = await CoinList.find({});
+
+    let prices = [];
+    for (var i = 0; i < CoinListFind.length; i++) {
+        let coinInfo = CoinListFind[i];
+        if (coinInfo.symbol == "USDT") continue;
+        if (coinInfo.symbol == "Margin") continue;
+        if (coinInfo.symbol == "SHIBA") {
+            coinInfo.symbol = "SHIB";
+        }
+        let findBinanceItem = await axios("http://18.130.193.166:8542/price?symbol=" + coinInfo.symbol + "USDT");
+
+        //create a price object
+        prices[coinInfo.symbol] = findBinanceItem.data.data.ask;
+    }
+
+
+    let assets = await calculate(user_id, prices);
     ws.send(JSON.stringify({ page: "spot", type: 'funds', content: assets }));
     FutureOrderModel.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
-        let assets = await calculate(user_id);
+        let assets = await calculate(user_id, prices);
         ws.send(JSON.stringify({ page: "spot", type: 'funds', content: assets }));
     });
 }
 
-async function calculate(user_id) {
+async function calculate(user_id, prices) {
 
+
+    console.log("prices", prices);
 
     let assets = [];
 
@@ -40,6 +55,19 @@ async function calculate(user_id) {
             pnl = FutureOrders.pnl;
 
         }
+        let btcPrice = 0;
+        let usdtPrice = 0;
+
+
+
+        if (coinInfo.symbol == "BTC") {
+            btcPrice = amountData;
+            usdtPrice = amountData * prices["BTC"];
+        }
+        else {
+            btcPrice = amountData * prices[coinInfo.symbol] / prices["BTC"];
+            usdtPrice = amountData * prices[coinInfo.symbol];
+        }
 
         assets.push(
             {
@@ -54,6 +82,8 @@ async function calculate(user_id) {
                 "positionMargin": 0.00,
                 "OrderMargin": 0.00,
                 "Bonus": 0.00,
+                "BtcPrice": btcPrice,
+                "UsdtPrice": usdtPrice,
             }
         );
     }
