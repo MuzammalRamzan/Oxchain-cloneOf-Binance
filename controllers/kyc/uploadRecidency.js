@@ -17,6 +17,8 @@ AWS.config.update(SESConfig);
 
 const UploadRecidency = async function (req, res) {
 
+    let timestamp = new Date().getTime();
+
     var user_id = req.body.user_id;
     var api_key_result = req.body.api_key;
     var result = await authFile.apiKeyChecker(api_key_result);
@@ -62,7 +64,7 @@ const UploadRecidency = async function (req, res) {
                 let params4 = {
                     params: {
                         Bucket: "oxhain",
-                        Key: 'Recidency/recidency1-' + user_id + '.' + req.body.recidencyFileExtension1,
+                        Key: 'Recidency/recidency1-' + timestamp + user_id + '.' + req.body.recidencyFileExtension1,
                         Body: file1New,
                         ContentType: "image/jpg",
                     },
@@ -86,7 +88,7 @@ const UploadRecidency = async function (req, res) {
                     let params4 = {
                         params: {
                             Bucket: "oxhain",
-                            Key: 'Recidency/recidency2-' + user_id + '.' + req.body.recidencyFileExtension2,
+                            Key: 'Recidency/recidency2-' + timestamp + user_id + '.' + req.body.recidencyFileExtension2,
                             Body: file2New,
                             ContentType: "image/jpg",
                         },
@@ -109,8 +111,8 @@ const UploadRecidency = async function (req, res) {
                 let verification = new RecidencyModel({
                     user_id: user_id,
                     status: 0,
-                    url: 'https://oxhain.s3.us-east-2.amazonaws.com/Recidency/recidency1-' + user_id + '.' + req.body.recidencyFileExtension1,
-                    url2: 'https://oxhain.s3.us-east-2.amazonaws.com/Recidency/recidency2-' + user_id + '.' + req.body.recidencyFileExtension2,
+                    url: 'https://oxhain.s3.us-east-2.amazonaws.com/Recidency/recidency1-' + timestamp + user_id + '.' + req.body.recidencyFileExtension1,
+                    url2: 'https://oxhain.s3.us-east-2.amazonaws.com/Recidency/recidency2-' + timestamp + user_id + '.' + req.body.recidencyFileExtension2,
                     country: country,
                 });
                 verification.save(function (err) {
@@ -132,8 +134,8 @@ const UploadRecidency = async function (req, res) {
                         },
                             {
                                 status: 0,
-                                url: 'https://oxhain.s3.us-east-2.amazonaws.com/Recidency/Recidency1-' + user_id + '.' + req.body.recidencyFileExtension1,
-                                url2: 'https://oxhain.s3.us-east-2.amazonaws.com/Recidency/Recidency2-' + user_id + '.' + req.body.recidencyFileExtension2,
+                                url: 'https://oxhain.s3.us-east-2.amazonaws.com/Recidency/Recidency1-' + timestamp + user_id + '.' + req.body.recidencyFileExtension1,
+                                url2: 'https://oxhain.s3.us-east-2.amazonaws.com/Recidency/Recidency2-' + timestamp + user_id + '.' + req.body.recidencyFileExtension2,
                                 country: country,
                             },
                         ).exec(function (err) {
