@@ -17,6 +17,11 @@ AWS.config.update(SESConfig);
 
 const UploadKYC = async function (req, res) {
 
+
+    let timestamp = new Date().getTime();
+
+
+
     var user_id = req.body.user_id;
     var api_key_result = req.body.api_key;
     var result = await authFile.apiKeyChecker(api_key_result);
@@ -65,7 +70,7 @@ const UploadKYC = async function (req, res) {
                 let params2 = {
                     params: {
                         Bucket: "oxhain",
-                        Key: 'KYC/front-' + user_id + '.' + file1extension,
+                        Key: 'KYC/front-' + timestamp + user_id + '.' + file1extension,
                         Body: file1New,
                         ContentType: "image/jpg",
                     },
@@ -88,7 +93,7 @@ const UploadKYC = async function (req, res) {
                 let params = {
                     params: {
                         Bucket: "oxhain",
-                        Key: 'KYC/back-' + user_id + '.' + file2extension,
+                        Key: 'KYC/back-' + timestamp + user_id + '.' + file2extension,
                         Body: file2New,
                         ContentType: "image/jpg",
                     },
@@ -110,7 +115,7 @@ const UploadKYC = async function (req, res) {
                 let params3 = {
                     params: {
                         Bucket: "oxhain",
-                        Key: 'KYC/selfie-' + user_id + '.' + file3extension,
+                        Key: 'KYC/selfie-' + timestamp + user_id + '.' + file3extension,
                         Body: file3New,
                         ContentType: "image/jpg",
                     },
@@ -133,9 +138,9 @@ const UploadKYC = async function (req, res) {
                 let verification = new VerificationModel({
                     user_id: user_id,
                     status: 0,
-                    url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/front-' + user_id + '.' + file1extension,
-                    url2: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/back-' + user_id + '.' + file2extension,
-                    url3: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/selfie-' + user_id + '.' + file3extension,
+                    url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/front-' + timestamp + user_id + '.' + file1extension,
+                    url2: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/back-' + timestamp + user_id + '.' + file2extension,
+                    url3: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/selfie-' + timestamp + user_id + '.' + file3extension,
                     country: country,
                 });
                 verification.save(function (err) {
@@ -157,9 +162,9 @@ const UploadKYC = async function (req, res) {
                         },
                             {
                                 status: 0,
-                                url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/front-' + user_id + '.' + file1extension,
-                                url2: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/back-' + user_id + '.' + file2extension,
-                                url3: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/selfie-' + user_id + '.' + file3extension,
+                                url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/front-' + timestamp + user_id + '.' + file1extension,
+                                url2: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/back-' + timestamp + user_id + '.' + file2extension,
+                                url3: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/selfie-' + timestamp + user_id + '.' + file3extension,
                                 country: country,
                             },
                         ).exec(function (err) {
