@@ -157,6 +157,7 @@ const addVerificationId = require("./controllers/verificationId/addVerificationI
 const getVerificationIds = require("./controllers/verificationId/getVerificationIds");
 const topReferralEarners = require("./controllers/referrals/topReferralEarners");
 const myReferralEarns = require("./controllers/referrals/myReferralEarns");
+const getKYCStatus = require("./controllers/kyc/getStatus");
 
 
 //only for testing purposes for emircan
@@ -220,6 +221,8 @@ route.all("/walletToWallet", walletToWallet);
 
 route.all("/getSiteNotificationSettings", getSiteNotificationSettings);
 route.all("/updateSiteNotificationSettings", updateSiteNotificationSettings);
+
+route.all("/getKYCStatus", getKYCStatus);
 
 route.post("/subscription", async (req, res) => {
   try {
