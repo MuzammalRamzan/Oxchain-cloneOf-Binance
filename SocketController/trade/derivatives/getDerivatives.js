@@ -15,10 +15,10 @@ const SpotFunds = async (ws, user_id) => {
         if (coinInfo.symbol == "SHIBA") {
             coinInfo.symbol = "SHIB";
         }
-        let findBinanceItem = await axios("http://18.130.193.166:8542/price?symbol=" + coinInfo.symbol + "USDT");
+        let findBinanceItem = await axios("https://api.binance.com/api/v3/ticker/price?symbol=" + coinInfo.symbol + "USDT");
 
         //create a price object
-        prices[coinInfo.symbol] = findBinanceItem.data.data.ask;
+        prices[coinInfo.symbol] = findBinanceItem.data.price;
     }
 
 
@@ -33,7 +33,6 @@ const SpotFunds = async (ws, user_id) => {
 async function calculate(user_id, prices) {
 
 
-    console.log("prices", prices);
 
     let assets = [];
 
