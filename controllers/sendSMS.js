@@ -36,8 +36,9 @@ const sendSMS = async function (req, res) {
         }
 
         let check = await SMSVerification.findOne({
-          user_id: user_id,
-          reason: "change_phone_new",
+          country_code: country_code,
+          phone_number: newPhone,
+          reason: "register_sms",
         }).exec();
 
 
