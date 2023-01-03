@@ -19,7 +19,7 @@ const sendSMS = async function (req, res) {
       status: 1,
     }).exec();
 
-    if (user != null) {
+    if (user != null || reason == "register_sms") {
       var pin = "000000";
 
       var pin2 = "000000";
@@ -56,12 +56,13 @@ const sendSMS = async function (req, res) {
 
         if (check != null) {
           await SMSVerification.findOneAndUpdate(
-            { user_id: user["_id"], reason: "register_sms" },
+            { country_code: country_code, phone_number: newPhone, reason: "register_sms" },
             { pin: pin2, status: "0" },
           );
         } else {
           newPin = new SMSVerification({
-            user_id: user["_id"],
+            country_code: country_code,
+            phone_number: newPhone,
             pin: pin2,
             reason: "register_sms",
             status: 0,
@@ -70,18 +71,6 @@ const sendSMS = async function (req, res) {
         }
 
 
-        mailer.sendSMS(
-          user["email"],
-          "Oxhain verification",
-          "Pin : " + pin,
-          function (err, data) {
-            if (err) {
-              console.log("Error " + err);
-            } else {
-              console.log("sms sent");
-            }
-          }
-        );
 
         res.json({ status: "success", data: "sms_send", showableMessage: "SMS send" });
       }

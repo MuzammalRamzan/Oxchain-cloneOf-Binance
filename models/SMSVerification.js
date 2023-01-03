@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const SMSVerificationSchema = new mongoose.Schema({
+  country_code: { type: String, required: false },
   phone_number: { type: String, required: false },
   pin: { type: String, required: false },
   reason: { type: String, required: false },

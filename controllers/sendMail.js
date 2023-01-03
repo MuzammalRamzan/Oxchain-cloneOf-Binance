@@ -30,7 +30,7 @@ const sendMail = async function (req, res) {
       status: 1,
     }).exec();
 
-    if (user != null) {
+    if (user != null || reason == "register_mail") {
       var pin = "000000";
 
       var pin2 = "000000";
@@ -57,12 +57,12 @@ const sendMail = async function (req, res) {
 
         if (check != null) {
           await MailVerification.findOneAndUpdate(
-            { user_id: user["_id"], reason: "register_mail" },
+            { email: newMail, reason: "register_mail" },
             { pin: pin, status: "0", }
           );
         } else {
           newPin = new MailVerification({
-            user_id: user["_id"],
+            email: newMail,
             pin: pin2,
             reason: "register_mail",
             status: 0,

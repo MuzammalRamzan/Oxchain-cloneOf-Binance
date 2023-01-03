@@ -23,7 +23,7 @@ const registerController = async (req, res) => {
   let newUser;
 
 
-  if (registerType == "email" && pin != '0') {
+  if (registerType == "email") {
     let checkEmailPin = await EmailVerification.findOne({
       email: data,
       pin: pin,
@@ -31,6 +31,7 @@ const registerController = async (req, res) => {
       status: 0
     }).exec();
 
+    console.log("11")
     if (checkEmailPin == null) {
       res.json({ status: "fail", message: "pin_not_match", showableMessage: "Pin not match" });
       return;
@@ -49,7 +50,7 @@ const registerController = async (req, res) => {
     }
   }
 
-  if (registerType == "phone" && pin !== '0') {
+  if (registerType == "phone") {
     let checkPhonePin = await SMSVerification.findOne({
       country_code: req.body.country_code,
       phone: data,
