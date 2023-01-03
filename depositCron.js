@@ -299,7 +299,7 @@ async function checkERCContractDeposit() {
   }
 }
 
-
+//checkSOLDeposit()
 
 async function checkSOLDeposit() {
   let networkId = "6358f354733321c968f40f6b";
@@ -356,8 +356,7 @@ async function checkSOLDeposit() {
   }
   res.json("cron_success");
 }
-
-
+checkSOLTransfer();
 async function checkSOLTransfer() {
   let networkID = "63638ae4372052a06ffaa0be";
   const coinID = "63625ff4372052a06ffaa0af";
@@ -368,12 +367,14 @@ async function checkSOLTransfer() {
       if (getBalance.data.data > 0) {
         let balance = parseFloat(getBalance.data.data);
         let adminAdr = process.env.SOLADDR;
-
+console.log(balance);
         let transfer = await PostRequestSync("http://3.144.178.156:4470/transfer", { from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
+        console.log(transfer.data);
         if (transfer.data.status == 'success') {
+          let add = parseFloat(balance) / 1000000000.0;
           await Wallet.findOneAndUpdate(
             { user_id: wallet.user_id, coin_id: coinID },
-            { $inc: { amount: balance } },
+            { $inc: { amount: add } },
           );
         }
       }
