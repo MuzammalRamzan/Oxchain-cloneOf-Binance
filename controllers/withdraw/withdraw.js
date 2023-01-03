@@ -56,6 +56,7 @@ const withdraw = async (req, res) => {
   }
 
   let transaction = null;
+  let tx_id = "";
   let coinInfo = null;
   switch (networkInfo.symbol) {
     case "TRC":
@@ -65,6 +66,7 @@ const withdraw = async (req, res) => {
         res.json({ status: "fail", msg: "unknow error" });
         return;
       }
+      tx_id = transaction.data.data;
       break;
     case "BSC":
       coinInfo = await CoinList.findOne({ _id: coin_id });
@@ -76,6 +78,7 @@ const withdraw = async (req, res) => {
           res.json({ status: "fail", msg: "unknow error" });
           return;
         }
+        tx_id = transaction.data.data;
       }
 
       break;
@@ -87,6 +90,7 @@ const withdraw = async (req, res) => {
         res.json({ status: "fail", msg: "unknow error" });
         return;
       }
+      tx_id = transaction.data.data;
       break;
     case "SEGWIT":
       transaction = await axios.request({
@@ -115,7 +119,7 @@ const withdraw = async (req, res) => {
     amount: amount,
     to: to,
     fee: 0.0,
-    tx_id: ""
+    tx_id: tx_id
   });
 
   await data.save();

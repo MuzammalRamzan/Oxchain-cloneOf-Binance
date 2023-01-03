@@ -97,6 +97,7 @@ async function checkTronDeposit() {
       for (let j = 0; j < dataset.length; j++) {
         let item = dataset[j];
         if (item.contractRet == 'SUCCESS' && item.confirmed == 1) {
+          if (item.fromAddress == process.env.TRCADDR) continue;
           if (item.toAddress != address) continue;
           let tokenAbbr = item.tokenInfo.tokenAbbr;
           let tokenId = item.tokenInfo.tokenId;
@@ -120,7 +121,7 @@ async function checkTronDeposit() {
                 amount / 1000000.0,
                 address,
                 tx_id,
-                getContractInfo.coin_id,
+                "62b053c444fd000839751741",
                 networkId
               );
             }
@@ -235,11 +236,9 @@ async function checkETHDeposit() {
           }
         }
       }
-    } else {
-      console.log("no address");
     }
   }
-  res.json("cron_success");
+
 }
 async function checkERCContractDeposit() {
   let networkId = "6358f354733321c968f40f6b";
@@ -265,7 +264,7 @@ async function checkERCContractDeposit() {
       for (let j = 0; j < checkRequest.data.result.length; j++) {
         let item = checkRequest.data.result[j];
 
-        if(item.to.toUpperCase() != address) continue;
+        if (item.to.toUpperCase() != address) continue;
         user = await User.findOne({ _id: user_id }).exec();
         deposit = await Deposits.findOne({
           user_id: user_id,
@@ -281,8 +280,8 @@ async function checkERCContractDeposit() {
           let digit = parseInt(numbers);
           amount = parseFloat(item.value) / parseFloat(digit);
 
-          let getCoinInfo = await CoinList.findOne({symbol : item.tokenSymbol});
-          if(getCoinInfo == null) continue;
+          let getCoinInfo = await CoinList.findOne({ symbol: item.tokenSymbol });
+          if (getCoinInfo == null) continue;
           utilities.addDeposit(
             user_id,
             getCoinInfo.symbol,
@@ -408,27 +407,63 @@ async function checkETHTransfer() {
   });
 }
 
-async function checkBNBTransfer() {
+
+async function checkBNBDeposit() {
+  let networkID = "6359169ee5f78e20c0bb809a";
+  const coinID = "62fb45483f8c1ffba43e4813";
+  let wallets = await WalletAddress.find({ network_id: networkID });
+  for(var i = 0; i < wallets.length; i++) {
+    let wallet = wallets[i];
+
+let url = "https://api.bscscan.com/api?module=account&action=txlist&address=" +wallet.wallet_address +"&endblock=latest&apikey=" +bscKey;
+
+    let checkRequest = await axios.get(
+      url
+    );
+
+    var amount = "";
+    var user = "";
+    var tx_id = "";
+    var deposit = "";
+    
+    if (checkRequest.data.message == "OK") {
+      
+    for (let j = 0; j < checkRequest.data.result.length; j++) {
+
+        amount = checkRequest.data.result[j].value / 1000000000000000000;
+        
+        user = await User.findOne({ _id: wallet.user_id }).exec();
+        deposit = await Deposits.findOne({
+          user_id: wallet.user_id,
+          tx_id: checkRequest.data.result[j].hash,
+        }).exec();
+
+        if (deposit === null) {
+          utilities.addDeposit(
+            wallet.user_id,
+            "BNB",
+            amount,
+            wallet.wallet_address,
+            checkRequest.data.result[0].hash,
+            "62fb45483f8c1ffba43e4813",
+            networkID
+          );
+
+          console.log("deposit added");
+        } else {
+          console.log("deposit exists");
+        }
+      }
+    }
+  
+  }
+}
+
+async function checkBNBTrabsfer() {
   let networkID = "6359169ee5f78e20c0bb809a";
   const coinID = "62fb45483f8c1ffba43e4813";
   let wallets = await WalletAddress.find({ network_id: networkID });
   wallets.forEach(async (wallet) => {
-    let getBalance = await PostRequestSync("http://44.203.2.70:4458/balance", { address: wallet.wallet_address });
-    if (getBalance.data.status == 'success') {
-      let balance = parseFloat(getBalance.data.data);
-      if (balance > 0.05) {
-        let adminAdr = process.env.BSCADDR;
-
-        let transfer = await PostRequestSync("http://44.203.2.70:4458/transfer", { from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
-
-        if (transfer.data.status == 'success') {
-          await Wallet.findOneAndUpdate(
-            { user_id: wallet.user_id, coin_id: coinID },
-            { $inc: { amount: balance } },
-          );
-        }
-      }
-    }
 
   });
 }
@@ -477,74 +512,93 @@ async function checkSOLUSDT() {
 
 }
 
-OxhainTasks(); 
+OxhainTasks();
 async function OxhainTasks() {
   await Connection.connection();
   console.log("db connected");
-  
 
+  let getWalletInfo = null;
   //ADMIN TRANSFER
-  schedule.scheduleJob('*/2 * * * *', async function () {
-    let deposits = await Deposits.find({ move_to_admin: false, netowrk_id: { $exists: true } });
-    deposits.reverse();
-    for (var i = 0; i < deposits.length; i++) {
-      let depo = deposits[i];
+  //schedule.scheduleJob('*/1 * * * *', async function () {
+  let deposits = await Deposits.find({ move_to_admin: false, netowrk_id: { $exists: true } });
+  
+  deposits.reverse();
+  for (var i = 0; i < deposits.length; i++) {
+    let depo = deposits[i];
 
-      switch (depo.netowrk_id.toString()) {
-        case "635916ade5f78e20c0bb809c":
-          //BTC
+    switch (depo.netowrk_id.toString()) {
+      case "635916ade5f78e20c0bb809c":
+        //BTC
 
-          break;
-        case "6358f17cbc20445270757291":
-          //TRC20
-          console.log(depo.address);
-          let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: depo.address });
-          if (getTRXData.data.status == 'success') {
-            let balance = getTRXData.data.data;
-            if (balance < 12000000) {
-              let trx_txid = await PostRequestSync("http://54.172.40.148:4456/trx_transfer", { from: process.env.TRCADDR, to: depo.address, pkey: process.env.TRCPKEY, amount: 12000000 });
-              console.log("TRX TXID", trx_txid.data);
-            }
-            let _amount = parseFloat(depo.amount) * 1000000
-            let getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
-            let usdt_transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { to: process.env.TRCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: _amount });
-            if (usdt_transaction.data.status == 'success') {
-              depo.move_to_admin = true;
-              depo.save();
-            }
+        break;
+      case "6358f17cbc20445270757291":
+        //TRC20
+        console.log(depo.address);
+        let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: depo.address });
+        if (getTRXData.data.status == 'success') {
+          let balance = getTRXData.data.data;
+          if (balance < 13000000) {
+            let trx_txid = await PostRequestSync("http://54.172.40.148:4456/trx_transfer", { from: process.env.TRCADDR, to: depo.address, pkey: process.env.TRCPKEY, amount: 13000000 });
+            console.log("TRX TXID", trx_txid.data);
+          }
+          let _amount = parseFloat(depo.amount) * 1000000
+          getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
+          let usdt_transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { to: process.env.TRCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: _amount });
+          if (usdt_transaction.data.status == 'success') {
+            depo.move_to_admin = true;
+            depo.save();
+          }
+        }
+
+        break;
+      case "6358f354733321c968f40f6b":
+        //ERC20
+        console.log("ERC DEPOSIT");
+
+        getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
+        if (depo.currency == 'ETH') {
+          let amount = parseFloat(depo.amount);
+          let transaction = await PostRequestSync("http://54.167.28.93:4455/transfer", { to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
+
+
+        } else {
+
+          let contractInfo = await ContractAddressSchema.findOne({ coin_id: depo.coin_id, network_id: depo.netowrk_id });
+          let amount = parseFloat(depo.amount);
+          let transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: depo.currency, to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
+
+          if (transaction.data.status == 'success') {
+            depo.move_to_admin = true;
+            depo.save();
           }
 
-          break;
-        case "6358f354733321c968f40f6b":
-          //ERC20
-          console.log("ERC DEPOSIT");
+        }
+        break;
 
-          let getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
-          if (depo.currency == 'ETH') {
-            let amount = parseFloat(depo.amount);
-            let transaction = await PostRequestSync("http://54.167.28.93:4455/transfer", { to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
+      case "63638ae4372052a06ffaa0be":
 
+        break;
 
-          } else {
+        case "6359169ee5f78e20c0bb809a" : 
+        //BEP20
+        getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
+        let amount = depo.amount;
+        console.log(getWalletInfo);
+        console.log({ to: process.env.BSCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
+        if(depo.currency == 'BNB') {
+          
+          let transaction = await PostRequestSync("http://44.203.2.70:4458/transfer", 
+          { to: process.env.BSCADDR, from: depo.address, pkey: getWalletInfo.private_key, amount: amount });
+          console.log(transaction.data);
+        } else {
 
-            let contractInfo = await ContractAddressSchema.findOne({ coin_id: depo.coin_id, network_id: depo.netowrk_id });
-            let amount = parseFloat(depo.amount);
-            let transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: depo.currency, to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
+        }
+        return;
+        break;
 
-            if (transaction.data.status == 'success') {
-              depo.move_to_admin = true;
-              depo.save();
-            }
-
-          }
-          break;
-
-        case "63638ae4372052a06ffaa0be":
-
-          break;
-      }
     }
-  });
+  }
+  //  });
 
   schedule.scheduleJob('*/2 * * * *', async function () {
     checkTronDeposit();
@@ -571,75 +625,10 @@ async function OxhainTasks() {
   });
 
   schedule.scheduleJob('*/2 * * * *', async function () {
-    checkBNBTransfer();
+    checkBNBDeposit();
   });
 
 }
-
-route.all("/bnbDepositCheck", async (req, res) => {
-  var api_key_result = req.body.api_key;
-  let result = await authFile.apiKeyChecker(api_key_result);
-
-  let networkId = "6359169ee5f78e20c0bb809a";
-  if (result === true) {
-    let wallet = await Wallet.find({
-      status: 1,
-      network_id: "6359169ee5f78e20c0bb809a",
-    }).exec();
-
-    for (let i = 0; i < wallet.length; i++) {
-      let address = wallet[i].wallet_address;
-      if (address == null || address == '') continue;
-      let user_id = wallet[i].user_id;
-
-      if (address.length > 0) {
-        let checkRequest = await axios.get(
-          "https://api.bscscan.com/api?module=account&action=txlist&address=" +
-          address +
-          "&endblock=latest&apikey=" +
-          bscKey
-        );
-
-        var amount = "";
-        var user = "";
-        var tx_id = "";
-        var deposit = "";
-
-        for (let j = 0; j < checkRequest.data.result.length; j++) {
-          if (checkRequest.data.message === "OK") {
-            amount = checkRequest.data.result[j].value / 1000000000000000000;
-            user = await User.findOne({ _id: user_id }).exec();
-            deposit = await Deposits.findOne({
-              user_id: user_id,
-              tx_id: checkRequest.data.result[j].hash,
-            }).exec();
-
-            if (deposit === null) {
-              utilities.addDeposit(
-                user_id,
-                "BNB",
-                amount,
-                address,
-                checkRequest.data.result[0].hash,
-                "62fb45483f8c1ffba43e4813",
-                networkId
-              );
-
-              console.log("deposit added");
-            } else {
-              console.log("deposit exists");
-            }
-          }
-        }
-      } else {
-        console.log("no address");
-      }
-    }
-    res.json("cron_success");
-  } else {
-    res.json("error");
-  }
-});
 
 route.all("/btcDepositCheck", async (req, res) => {
   //100 milyona böl
