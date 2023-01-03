@@ -31,9 +31,9 @@ const sendMail = async function (req, res) {
     }).exec();
 
     if (user != null) {
-      var pin = "0000";
+      var pin = "000000";
 
-      var pin2 = "0000";
+      var pin2 = "000000";
 
       if (reason == "register_mail") {
         let check = await MailVerification.findOne({
