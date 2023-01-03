@@ -1,7 +1,7 @@
 const User = require("../../models/User");
 const Referral = require("../../models/Referral");
-const RegisterMail = require("../../models/RegisterMail");
-const RegisterSMS = require("../../models/RegisterSMS");
+const SMSVerification = require("../../models/SMSVerification");
+const EmailVerification = require("../../models/MailVerification");
 const UserRef = require("../../models/UserRef");
 const utilities = require("../../utilities");
 
@@ -24,17 +24,19 @@ const registerController = async (req, res) => {
 
 
   if (registerType == "email" && pin != '0') {
-    let checkEmailPin = await RegisterMail.findOne({
+    let checkEmailPin = await EmailVerification.findOne({
       email: data,
       pin: pin,
+      reason: "register_mail",
+      status: 0
     }).exec();
 
     if (checkEmailPin == null) {
       res.json({ status: "fail", message: "pin_not_match", showableMessage: "Pin not match" });
       return;
     } else {
-      RegisterMail.findOneAndUpdate(
-        { email: data },
+      EmailVerification.findOneAndUpdate(
+        { email: data, reason: "register_mail" },
         { status: "1" },
         function (err, room) {
           if (err) {
@@ -48,17 +50,20 @@ const registerController = async (req, res) => {
   }
 
   if (registerType == "phone" && pin !== '0') {
-    let checkPhonePin = await RegisterSMS.findOne({
+    let checkPhonePin = await SMSVerification.findOne({
+      country_code: req.body.country_code,
       phone: data,
       pin: pin,
+      reason: "register_sms",
+      status: 0
     }).exec();
 
     if (checkPhonePin == null) {
       res.json({ status: "fail", message: "pin_not_match", showableMessage: "Pin not match" });
       return;
     } else {
-      RegisterSMS.findOneAndUpdate(
-        { phone: data },
+      SMSVerification.findOneAndUpdate(
+        { phone: data, reason: "register_sms" },
         { status: "1" },
         function (err, room) {
           if (err) {
