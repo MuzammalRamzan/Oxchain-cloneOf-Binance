@@ -71,7 +71,7 @@ const withdraw = async (req, res) => {
     case "BSC":
       coinInfo = await CoinList.findOne({ _id: coin_id });
       if (coinInfo.symbol == 'BNB') {
-        console.log({ from: process.env.BNBADDR, to: to, pkey: process.env.BNBPKEY, amount: amount });
+        console.log({ from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
         transaction = await PostRequestSync("http://44.203.2.70:4458/transfer", { from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
         console.log(transaction.data);
         if (transaction.data.status != 'success') {

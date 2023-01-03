@@ -93,6 +93,7 @@ async function checkTronDeposit() {
       let result = checkRequest.data;
       if (result.total == 0) continue;
       let dataset = result.data;
+      if(dataset == null) continue;
 
       for (let j = 0; j < dataset.length; j++) {
         let item = dataset[j];
@@ -211,7 +212,7 @@ async function checkETHDeposit() {
       if (checkRequest.data.message === "OK") {
 
         for (let j = 0; j < checkRequest.data.result.length; j++) {
-
+          if(checkRequest.data.result[j].to.toLowerCase() != wallet.wallet_address) continue;
           amount = checkRequest.data.result[j].value / 1000000000000000000;
           user = await User.findOne({ _id: user_id }).exec();
           deposit = await Deposits.findOne({
@@ -420,7 +421,6 @@ let url = "https://api.bscscan.com/api?module=account&action=txlist&address=" +w
     let checkRequest = await axios.get(
       url
     );
-
     var amount = "";
     var user = "";
     var tx_id = "";
@@ -429,7 +429,7 @@ let url = "https://api.bscscan.com/api?module=account&action=txlist&address=" +w
     if (checkRequest.data.message == "OK") {
       
     for (let j = 0; j < checkRequest.data.result.length; j++) {
-
+      if(checkRequest.data.result[j].to.toLowerCase() != wallet.wallet_address.toLowerCase()) continue;
         amount = checkRequest.data.result[j].value / 1000000000000000000;
         
         user = await User.findOne({ _id: wallet.user_id }).exec();
@@ -486,9 +486,7 @@ async function checkBTCTransfer() {
       return;
       if (balance > 0.05) {
         let adminAdr = process.env.BSCADDR;
-        console.log({ from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
         let transfer = await PostRequestSync("http://44.203.2.70:4458/transfer", { from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
-        console.log(transfer.data);
         if (transfer.data.status == 'success') {
           await Wallet.findOneAndUpdate(
             { user_id: wallet.user_id, coin_id: coinID },
@@ -511,7 +509,6 @@ async function checkSOLUSDT() {
   });
 
 }
-
 OxhainTasks();
 async function OxhainTasks() {
   await Connection.connection();
@@ -519,7 +516,7 @@ async function OxhainTasks() {
 
   let getWalletInfo = null;
   //ADMIN TRANSFER
-  //schedule.scheduleJob('*/1 * * * *', async function () {
+  schedule.scheduleJob('*/1 * * * *', async function () {
   let deposits = await Deposits.find({ move_to_admin: false, netowrk_id: { $exists: true } });
   
   deposits.reverse();
@@ -533,13 +530,11 @@ async function OxhainTasks() {
         break;
       case "6358f17cbc20445270757291":
         //TRC20
-        console.log(depo.address);
         let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: depo.address });
         if (getTRXData.data.status == 'success') {
           let balance = getTRXData.data.data;
           if (balance < 13000000) {
             let trx_txid = await PostRequestSync("http://54.172.40.148:4456/trx_transfer", { from: process.env.TRCADDR, to: depo.address, pkey: process.env.TRCPKEY, amount: 13000000 });
-            console.log("TRX TXID", trx_txid.data);
           }
           let _amount = parseFloat(depo.amount) * 1000000
           getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
@@ -583,13 +578,14 @@ async function OxhainTasks() {
         //BEP20
         getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
         let amount = depo.amount;
-        console.log(getWalletInfo);
-        console.log({ to: process.env.BSCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
         if(depo.currency == 'BNB') {
           
           let transaction = await PostRequestSync("http://44.203.2.70:4458/transfer", 
           { to: process.env.BSCADDR, from: depo.address, pkey: getWalletInfo.private_key, amount: amount });
-          console.log(transaction.data);
+          if(transaction.data.status == 'success') {
+            depo.move_to_admin = true;
+            depo.save();
+          }
         } else {
 
         }
@@ -598,7 +594,7 @@ async function OxhainTasks() {
 
     }
   }
-  //  });
+    });
 
   schedule.scheduleJob('*/2 * * * *', async function () {
     checkTronDeposit();
