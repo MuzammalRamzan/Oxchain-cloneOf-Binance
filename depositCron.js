@@ -38,8 +38,6 @@ const delay = (duration) => {
 };
 const { createHash } = require("crypto");
 var mongodbPass = process.env.MONGO_DB_PASS;
-var ethKey = process.env.ETH_API_KEY;
-var bscKey = process.env.BSC_API_KEY;
 
 
 var cors = require("cors");
@@ -54,6 +52,13 @@ const { exit } = require("process");
 
 const auth = require("./auth.js");
 const { ObjectID, ObjectId } = require("bson");
+const checkTRXDeposit = require("./CronController/checkTRXDeposit");
+const checkTronContractDeposit = require("./CronController/checkTronContractDeposit");
+const SOLTransfer = require("./CronController/SOLTransfer");
+const checkETHDeposit = require("./CronController/checkETHDeposit");
+const checkERCContractDeposit = require("./CronController/checkERCContractDeposit");
+const checkBNBDeposit = require("./CronController/checkBNBDeposit");
+const { PostRequestSync } = require("./utilities.js");
 
 const upload = multer();
 route.use(bodyParser.json());
@@ -63,411 +68,11 @@ route.get("/", (req, res) => {
   res.send("success");
 });
 
-function PostRequestSync(url, data) {
-  return new Promise((resolve, reject) => {
-    axios.post(url, data).then(response => resolve(response)).catch(error => reject(error));
-  });
-}
-
-async function checkTronDeposit() {
-  let networkId = "6358f17cbc20445270757291";
-  let wallet = await WalletAddress.find({
-    network_id: networkId,
-  }).exec();
-
-  let tx_id = "";
-  let user_id = "";
-  let amount = "";
-  let address = "";
-  let deposit = "";
-
-  for (let i = 0; i < wallet.length; i++) {
-    let address = wallet[i].wallet_address;
-
-    let user_id = wallet[i].user_id;
-    if (address.length > 1) {
-
-      let checkRequest = await axios.get(
-        "https://apilist.tronscan.org/api/transaction?sort=-timestamp&count=true&limit=20&start=0&address=" + address
-      );
-      let result = checkRequest.data;
-      if (result.total == 0) continue;
-      let dataset = result.data;
-      if(dataset == null) continue;
-
-      for (let j = 0; j < dataset.length; j++) {
-        let item = dataset[j];
-        if (item.contractRet == 'SUCCESS' && item.confirmed == 1) {
-          if (item.fromAddress == process.env.TRCADDR) continue;
-          if (item.toAddress != address) continue;
-          let tokenAbbr = item.tokenInfo.tokenAbbr;
-          let tokenId = item.tokenInfo.tokenId;
-          if (item.contractType == 1 && tokenAbbr == 'trx' && tokenId == '_') {
-            let contractData = item.contractData;
-
-            tx_id = item.hash;
-            amount = contractData.amount;
-
-            if (amount < 13000000) continue;
-
-            deposit = await Deposits.findOne({
-              user_id: user_id,
-              tx_id: tx_id,
-            }).exec();
-
-            if (deposit === null) {
-              utilities.addDeposit(
-                user_id,
-                "TRX",
-                amount / 1000000.0,
-                address,
-                tx_id,
-                "62b053c444fd000839751741",
-                networkId
-              );
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-async function checkTronContractDeposit() {
-  let networkId = "6358f17cbc20445270757291";
-  let wallet = await WalletAddress.find({
-    network_id: networkId,
-  }).exec();
-
-  let tx_id = "";
-  let user_id = "";
-  let amount = "";
-  let address = "";
-  let deposit = "";
-
-  for (let i = 0; i < wallet.length; i++) {
-    let address = wallet[i].wallet_address;
-
-    let user_id = wallet[i].user_id;
-    if (address.length > 1) {
-
-      let checkRequest = await axios.get(
-        "https://api.trongrid.io/v1/accounts/" +
-        address +
-        "/transactions/trc20?limit=30"
-      );
-
-      for (let j = 0; j < checkRequest.data.data.length; j++) {
-
-        tx_id = checkRequest.data.data[j].transaction_id;
-        amount = checkRequest.data.data[j].value / 1000000;
-
-        deposit = await Deposits.findOne({
-          user_id: user_id,
-          tx_id: tx_id,
-        }).exec();
-
-        if (deposit === null) {
-          let _contract = checkRequest.data.data[j].token_info.address;
-          let getContractInfo = await ContractAddressSchema.findOne({ contract: _contract });
-          if (getContractInfo == null) continue;
-          let coinInfo = await CoinList.findOne({ _id: getContractInfo.coin_id });
-          if (coinInfo == null) continue;
-          utilities.addDeposit(
-            user_id,
-            coinInfo.symbol,
-            amount,
-            address,
-            tx_id,
-            getContractInfo.coin_id,
-            networkId
-          );
-        }
-      }
-    }
-  }
-}
-
-async function checkETHDeposit() {
-  let networkId = "6358f354733321c968f40f6b";
-  let wallet = await WalletAddress.find({
-
-    network_id: networkId,
-  }).exec();
-
-  for (let i = 0; i < wallet.length; i++) {
-    let address = wallet[i].wallet_address;
-
-    if (address == null) continue;
-    let user_id = wallet[i].user_id;
-    if (address.length > 0) {
-      let url = "https://api.etherscan.io/api?module=account&action=txlist&address=" + address + "&endblock=latest&apikey=" + ethKey;
-      let checkRequest = await axios.get(url);
-
-      var amount = "";
-      var user = "";
-      var tx_id = "";
-      var deposit = "";
-
-      if (checkRequest.data.message === "OK") {
-
-        for (let j = 0; j < checkRequest.data.result.length; j++) {
-          if(checkRequest.data.result[j].to.toLowerCase() != wallet.wallet_address) continue;
-          amount = checkRequest.data.result[j].value / 1000000000000000000;
-          user = await User.findOne({ _id: user_id }).exec();
-          deposit = await Deposits.findOne({
-            user_id: user_id,
-            tx_id: checkRequest.data.result[j].hash,
-          }).exec();
-
-          if (deposit === null) {
-
-            utilities.addDeposit(
-              user_id,
-              "ETH",
-              amount,
-              address,
-              checkRequest.data.result[j].hash,
-              "62bc116eb65b02b777c97b3d",
-              networkId
-            );
-
-            console.log("deposit added");
-          } else {
-          }
-        }
-      }
-    }
-  }
-
-}
-async function checkERCContractDeposit() {
-  let networkId = "6358f354733321c968f40f6b";
-  let wallet = await WalletAddress.find({
-
-    network_id: networkId,
-  }).exec();
-  for (let i = 0; i < wallet.length; i++) {
-    let address = wallet[i].wallet_address;
-    if (address == null) continue;
-    let user_id = wallet[i].user_id;
-    let url = "https://api.etherscan.io/api?module=account&action=tokentx&address=" + address + "&endblock=latest&apikey=" + ethKey;
-    //let url = "https://api.etherscan.io/api?module=account&action=tokentx&address=0xA484D878E8FA056D694fAFC0B8e15c28F5D97853&endblock=latest&apikey=" + ethKey;
-    let checkRequest = await axios.get(url);
-
-    var amount = "";
-    var user = "";
-    var tx_id = "";
-    var deposit = "";
-
-    if (checkRequest.data.message === "OK") {
-
-      for (let j = 0; j < checkRequest.data.result.length; j++) {
-        let item = checkRequest.data.result[j];
-
-        if (item.to.toUpperCase() != address) continue;
-        user = await User.findOne({ _id: user_id }).exec();
-        deposit = await Deposits.findOne({
-          user_id: user_id,
-          tx_id: checkRequest.data.result[j].hash,
-        }).exec();
-
-        if (deposit === null) {
-          let digitNumber = parseInt(item.tokenDecimal);
-          let numbers = "1";
-          for (let u = 0; u < digitNumber; u++) {
-            numbers += "0";
-          }
-          let digit = parseInt(numbers);
-          amount = parseFloat(item.value) / parseFloat(digit);
-
-          let getCoinInfo = await CoinList.findOne({ symbol: item.tokenSymbol });
-          if (getCoinInfo == null) continue;
-          utilities.addDeposit(
-            user_id,
-            getCoinInfo.symbol,
-            amount,
-            address,
-            item.hash,
-            getCoinInfo._id,
-            networkId
-          );
-          console.log("deposit added");
-        }
-      }
-    }
-  }
-}
-
-//checkSOLDeposit()
-
-async function checkSOLDeposit() {
-  let networkId = "6358f354733321c968f40f6b";
-  let wallet = await WalletAddress.find({
-
-    network_id: networkId,
-  }).exec();
-
-  for (let i = 0; i < wallet.length; i++) {
-    let address = wallet[i].wallet_address;
-
-    if (address == null) continue;
-    let user_id = wallet[i].user_id;
-    if (address.length > 0) {
-      let url = "https://api.etherscan.io/api?module=account&action=txlist&address=" + address + "&endblock=latest&apikey=" + ethKey;
-      let checkRequest = await axios.get(url);
-
-      var amount = "";
-      var user = "";
-      var tx_id = "";
-      var deposit = "";
-
-      if (checkRequest.data.message === "OK") {
-
-        for (let j = 0; j < checkRequest.data.result.length; j++) {
-
-          amount = checkRequest.data.result[j].value / 1000000000000000000;
-          user = await User.findOne({ _id: user_id }).exec();
-          deposit = await Deposits.findOne({
-            user_id: user_id,
-            tx_id: checkRequest.data.result[j].hash,
-          }).exec();
-
-          if (deposit === null) {
-
-            utilities.addDeposit(
-              user_id,
-              "ETH",
-              amount,
-              address,
-              checkRequest.data.result[j].hash,
-              "62bc116eb65b02b777c97b3d",
-              networkId
-            );
-
-            console.log("deposit added");
-          } else {
-          }
-        }
-      }
-    } else {
-      console.log("no address");
-    }
-  }
-  res.json("cron_success");
-}
-checkSOLTransfer();
-async function checkSOLTransfer() {
-  let networkID = "63638ae4372052a06ffaa0be";
-  const coinID = "63625ff4372052a06ffaa0af";
-  let wallets = await WalletAddress.find({ network_id: networkID });
-  wallets.forEach(async (wallet) => {
-    let getBalance = await PostRequestSync("http://3.144.178.156:4470/balance", { address: wallet.wallet_address });
-    if (getBalance.data.status == 'success') {
-      if (getBalance.data.data > 0) {
-        let balance = parseFloat(getBalance.data.data);
-        let adminAdr = process.env.SOLADDR;
-console.log(balance);
-        let transfer = await PostRequestSync("http://3.144.178.156:4470/transfer", { from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
-        console.log(transfer.data);
-        if (transfer.data.status == 'success') {
-          let add = parseFloat(balance) / 1000000000.0;
-          await Wallet.findOneAndUpdate(
-            { user_id: wallet.user_id, coin_id: coinID },
-            { $inc: { amount: add } },
-          );
-        }
-      }
-    }
-
-  });
-}
-
-async function checkETHTransfer() {
-  const networkID = "6358f354733321c968f40f6b";
-  const coinID = "62b0324644fd00083973866b";
-  let wallets = await WalletAddress.find({ network_id: networkID });
-  wallets.forEach(async (wallet) => {
-    let getBalance = await PostRequestSync("http://54.167.28.93:4455/balance", { address: wallet.wallet_address });
-    if (getBalance.data.status == 'success') {
-      let balance = parseFloat(getBalance.data.data);
-      if (balance > 0.01) {
-        let adminAdr = process.env.ERCADDR;
-
-        let transfer = await PostRequestSync("http://54.167.28.93:4455/transfer", { from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
-
-        if (transfer.data.status == 'success') {
-
-          await Wallet.findOneAndUpdate(
-            { user_id: wallet.user_id, coin_id: coinID },
-            { $inc: { amount: balance } },
-          );
-        }
-      }
-    }
-
-  });
-}
 
 
-async function checkBNBDeposit() {
-  let networkID = "6359169ee5f78e20c0bb809a";
-  const coinID = "62fb45483f8c1ffba43e4813";
-  let wallets = await WalletAddress.find({ network_id: networkID });
-  for(var i = 0; i < wallets.length; i++) {
-    let wallet = wallets[i];
 
-let url = "https://api.bscscan.com/api?module=account&action=txlist&address=" +wallet.wallet_address +"&endblock=latest&apikey=" +bscKey;
 
-    let checkRequest = await axios.get(
-      url
-    );
-    var amount = "";
-    var user = "";
-    var tx_id = "";
-    var deposit = "";
-    
-    if (checkRequest.data.message == "OK") {
-      
-    for (let j = 0; j < checkRequest.data.result.length; j++) {
-      if(checkRequest.data.result[j].to.toLowerCase() != wallet.wallet_address.toLowerCase()) continue;
-        amount = checkRequest.data.result[j].value / 1000000000000000000;
-        
-        user = await User.findOne({ _id: wallet.user_id }).exec();
-        deposit = await Deposits.findOne({
-          user_id: wallet.user_id,
-          tx_id: checkRequest.data.result[j].hash,
-        }).exec();
 
-        if (deposit === null) {
-          utilities.addDeposit(
-            wallet.user_id,
-            "BNB",
-            amount,
-            wallet.wallet_address,
-            checkRequest.data.result[0].hash,
-            "62fb45483f8c1ffba43e4813",
-            networkID
-          );
-
-          console.log("deposit added");
-        } else {
-          console.log("deposit exists");
-        }
-      }
-    }
-  
-  }
-}
-
-async function checkBNBTrabsfer() {
-  let networkID = "6359169ee5f78e20c0bb809a";
-  const coinID = "62fb45483f8c1ffba43e4813";
-  let wallets = await WalletAddress.find({ network_id: networkID });
-  wallets.forEach(async (wallet) => {
-
-  });
-}
 async function checkBTCTransfer() {
   let networkID = "635916ade5f78e20c0bb809c";
   const coinID = "62aaf66c419ff12e16168c8e";
@@ -500,16 +105,7 @@ async function checkBTCTransfer() {
   });
 }
 
-async function checkSOLUSDT() {
-  let networkID = "63638ae4372052a06ffaa0be";
-  let wallets = await WalletAddress.find({ network_id: networkID });
-  wallets.forEach(async (wallet) => {
-    let getBalance = await PostRequestSync("http://3.144.178.156:4470/balance", { address: wallet.wallet_address });
 
-    return;
-  });
-
-}
 OxhainTasks();
 async function OxhainTasks() {
   await Connection.connection();
@@ -549,7 +145,7 @@ async function OxhainTasks() {
         break;
       case "6358f354733321c968f40f6b":
         //ERC20
-        console.log("ERC DEPOSIT");
+        
 
         getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
         if (depo.currency == 'ETH') {
@@ -598,227 +194,38 @@ async function OxhainTasks() {
     });
 
   schedule.scheduleJob('*/2 * * * *', async function () {
-    checkTronDeposit();
+    checkTRXDeposit();
+    
   });
   schedule.scheduleJob('*/2 * * * *', async function () {
     checkTronContractDeposit();
+    
   });
 
   schedule.scheduleJob('*/2 * * * *', async function () {
-    checkSOLTransfer();
+    SOLTransfer();
+    
   });
 
   schedule.scheduleJob('*/4 * * * *', async function () {
     checkETHDeposit();
+    
   });
 
 
   schedule.scheduleJob('*/4 * * * *', async function () {
     checkERCContractDeposit();
-  });
-
-  schedule.scheduleJob('*/2 * * * *', async function () {
-    checkETHTransfer();
+    
   });
 
   schedule.scheduleJob('*/2 * * * *', async function () {
     checkBNBDeposit();
+    
   });
 
 }
 
-route.all("/btcDepositCheck", async (req, res) => {
-  //100 milyona böl
 
-  //transaction
-
-  var api_key_result = req.body.api_key;
-  let result = await authFile.apiKeyChecker(api_key_result);
-
-  let networkId = "635916ade5f78e20c0bb809c";
-  if (result === true) {
-    let wallet = await Wallet.find({
-      status: 1,
-      network_id: "635916ade5f78e20c0bb809c",
-    }).exec();
-
-    for (let i = 0; i < wallet.length; i++) {
-      let address = wallet[i].wallet_address;
-      let user_id = wallet[i].user_id;
-      if (address == null) continue;
-      if (address.length > 0) {
-        let checkRequest = await axios.request({
-          method: "post",
-          url: "http://3.15.2.155",
-          data: "request=transactions&address=" + address,
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        });
-
-        var amount = "";
-        var user = "";
-        var tx_id = "";
-        var deposit = "";
-        for (let j = 0; j < checkRequest.data.data.length; j++) {
-          amount = checkRequest.data.data[j].value / 100000000;
-          user = await User.findOne({ _id: user_id }).exec();
-          deposit = await Deposits.findOne({
-            user_id: user_id,
-            tx_id: checkRequest.data.data[j].tx_hash,
-          }).exec();
-
-          if (deposit === null) {
-            utilities.addDeposit(
-              user_id,
-              "BTC",
-              amount,
-              address,
-              checkRequest.data.data[j].tx_hash,
-              "62aaf66c419ff12e16168c8e",
-              networkId
-            );
-
-            console.log("deposit added");
-          } else {
-          }
-        }
-      } else {
-        console.log("no address");
-      }
-    }
-    res.json("cron_success");
-  } else {
-    res.json("error");
-  }
-});
-
-route.all("/usdtDepositCheck", async (req, res) => {
-  var api_key_result = req.body.api_key;
-  let result = await authFile.apiKeyChecker(api_key_result);
-
-  let networkId = "6358f17cbc20445270757291";
-  if (result === true) {
-    let wallet = await WalletAddress.find({
-      network_id: "6358f17cbc20445270757291",
-    }).exec();
-
-    let tx_id = "";
-    let user_id = "";
-    let amount = "";
-    let address = "";
-    let deposit = "";
-
-    for (let i = 0; i < wallet.length; i++) {
-      let address = wallet[i].wallet_address;
-
-      let user_id = wallet[i].user_id;
-      if (address.length > 1) {
-        let checkRequest = await axios.get(
-          "https://api.trongrid.io/v1/accounts/" +
-          address +
-          "/transactions/trc20?limit=20&contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
-        );
-
-        for (let j = 0; j < checkRequest.data.data.length; j++) {
-          tx_id = checkRequest.data.data[j].transaction_id;
-          amount = checkRequest.data.data[j].value / 1000000;
-
-          deposit = await Deposits.findOne({
-            user_id: user_id,
-            tx_id: tx_id,
-          }).exec();
-
-          if (deposit === null) {
-            utilities.addDeposit(
-              user_id,
-              "USDT",
-              amount,
-              address,
-              tx_id,
-              "62bc116eb65b02b777c97b3d",
-              networkId
-            );
-            console.log("deposit added");
-          } else {
-          }
-        }
-      } else {
-        console.log("no address");
-      }
-    }
-    res.json("cron_success");
-  } else {
-    res.json("error");
-  }
-});
-
-
-
-route.all("/usdtDepositCheckERC", async (req, res) => {
-  var api_key_result = req.body.api_key;
-  let result = await authFile.apiKeyChecker(api_key_result);
-
-  console.log("başlıyor");
-
-  let networkId = "6358f354733321c968f40f6b";
-  if (result === true) {
-    let wallet = await WalletAddress.find({
-      status: 1,
-      network_id: networkId,
-    }).exec();
-
-    let tx_id = "";
-    let user_id = "";
-    let amount = "";
-    let address = "";
-    let deposit = "";
-
-    for (let i = 0; i < wallet.length; i++) {
-      let address = wallet[i].wallet_address;
-
-      let user_id = wallet[i].user_id;
-
-      if (address.length > 1) {
-        let checkRequest = await axios.get(
-          "https://api.etherscan.io/api?module=account&action=tokentx&address=" +
-          address +
-          "&startblock=0&endblock=99999999&page=1&offset=10&sort=asc&apikey=HH7FVKBY1U74K1VUYTUN1C4X973XN214FK&contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7"
-        );
-
-        if (checkRequest.data.result.length > 0) {
-          for (let j = 0; j < checkRequest.data.result.length; j++) {
-            tx_id = checkRequest.data.result[j].transaction_id;
-            amount = checkRequest.data.result[j].value / 1000000;
-
-            deposit = await Deposits.findOne({
-              user_id: user_id,
-              tx_id: tx_id,
-            }).exec();
-
-            if (deposit === null) {
-              utilities.addDeposit(
-                user_id,
-                "USDT",
-                amount,
-                address,
-                tx_id,
-                "62bc116eb65b02b777c97b3d",
-                networkId
-              );
-              console.log("deposit added");
-            } else {
-            }
-          }
-        }
-      } else {
-      }
-    }
-    res.json("cron_success");
-  } else {
-    res.json("errorRR");
-  }
-});
 
 route.listen(port, () => {
   console.log("server is running on port " + port);

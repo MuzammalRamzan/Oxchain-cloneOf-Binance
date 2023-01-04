@@ -3,10 +3,16 @@ const Deposits = require("./models/Deposits");
 const NotificationTokens = require("./models/NotificationTokens");
 var notifications = require("./notifications.js");
 const Wallet = require("./models/Wallet");
+const axios = require("axios");
 function hashData(string) {
   return createHash("sha256").update(string).digest("hex");
 }
-
+function PostRequestSync(url, data) {
+  
+  return new Promise((resolve, reject) => {
+    axios.post(url, data).then(response => resolve(response)).catch(error => reject(error));
+  });
+}
 function makeId(length) {
   var result = "";
   var characters =
@@ -90,4 +96,5 @@ module.exports = {
   hashData: hashData,
   makeId: makeId,
   addDeposit: addDeposit,
+  PostRequestSync : PostRequestSync
 };
