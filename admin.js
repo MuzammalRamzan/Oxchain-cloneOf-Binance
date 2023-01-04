@@ -36,6 +36,10 @@ const GetKyc = require("./adminController/GetKyc");
 const ApproveKyc = require("./adminController/ApproveKyc");
 const ApproveRecidency = require("./adminController/ApproveRecidency");
 const DenyKyc = require("./adminController/DenyKyc");
+const DenyRecidency = require("./adminController/DenyRecidency");
+
+const getRecidency = require("./adminController/GetRecidency");
+
 
 
 const upload = multer();
@@ -62,6 +66,9 @@ route.all("/ApproveKyc", upload.none(), ApproveKyc);
 route.all("/ApproveRecidency", upload.none(), ApproveRecidency);
 route.all("/DenyKyc", upload.none(), DenyKyc);
 route.all("/GetKyc", upload.none(), GetKyc);
+route.all("/GetRecidency", upload.none(), getRecidency);
+route.all("/DenyRecidency", upload.none(), DenyRecidency);
+
 
 route.all("/listAdmin", upload.none(), Admin.listAdmin);
 route.all("/getAdmin", upload.none(), Admin.getAdmin);
