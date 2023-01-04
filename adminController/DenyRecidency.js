@@ -29,7 +29,7 @@ const denyUser = async (req, res) => {
                 verification.status = 2;
                 await verification.save();
 
-                Mailer.sendMail(user.email, "Account Denied", "Your account has been denied. Please upload a valid ID");
+                Mailer.sendMail(user.email, "Account Denied", "Your account has been denied. Please upload a valid Recidency");
 
                 return res.json({
                     status: "success",
