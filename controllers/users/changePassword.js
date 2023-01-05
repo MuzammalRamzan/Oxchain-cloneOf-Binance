@@ -1,6 +1,7 @@
 const User = require("../../models/User");
 const RegisterMail = require("../../models/RegisterMail");
 const RegisterSMS = require("../../models/RegisterSMS");
+const SMSVerificationModel = require("../../models/SMSVerification");
 const MailVerification = require("../../models/MailVerification");
 var authFile = require("../../auth.js");
 var utilities = require("../../utilities.js");
@@ -51,7 +52,7 @@ const changePassword = async function (req, res) {
       }
 
       if (phone != undefined && phone != null && phone != "") {
-        check3 = await RegisterSMS.findOne
+        check3 = await SMSVerificationModel.findOne
           ({
             user_id: user_id,
             reason: "change_password",
