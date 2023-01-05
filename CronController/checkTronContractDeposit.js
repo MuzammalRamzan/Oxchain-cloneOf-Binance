@@ -6,7 +6,7 @@ const CoinList = require("../models/CoinList");
 const ContractAddressSchema = require("../models/ContractAddress");
 const Deposits = require("../models/Deposits");
 var authFile = require("../auth.js");
-const { PostRequestSync } = require("../utilities");
+const utilities = require("../utilities");
 require("dotenv").config();
 const checkTronContractDeposit = async() => {
 

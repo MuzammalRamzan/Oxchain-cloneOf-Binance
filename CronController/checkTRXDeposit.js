@@ -6,7 +6,8 @@ const CoinList = require("../models/CoinList");
 const ContractAddressSchema = require("../models/ContractAddress");
 const Deposits = require("../models/Deposits");
 var authFile = require("../auth.js");
-const { PostRequestSync } = require("../utilities");
+
+const utilities = require("../utilities");
 require("dotenv").config();
 const checkTRXDeposit = async () => {
 
@@ -38,7 +39,7 @@ const checkTRXDeposit = async () => {
         for (let j = 0; j < dataset.length; j++) {
           let item = dataset[j];
           if (item.contractRet == 'SUCCESS' && item.confirmed == 1) {
-            if (item.fromAddress == process.env.TRCADDR) continue;
+            if (item.ownerAddress == process.env.TRCADDR) continue;
             if (item.toAddress.toLocaleLowerCase() != address.toLocaleLowerCase()) continue;
             let tokenAbbr = item.tokenInfo.tokenAbbr;
             let tokenId = item.tokenInfo.tokenId;
@@ -56,6 +57,7 @@ const checkTRXDeposit = async () => {
               }).exec();
   
               if (deposit === null) {
+                
                 utilities.addDeposit(
                   user_id,
                   "TRX",

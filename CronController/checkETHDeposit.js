@@ -6,7 +6,8 @@ const CoinList = require("../models/CoinList");
 const ContractAddressSchema = require("../models/ContractAddress");
 const Deposits = require("../models/Deposits");
 var authFile = require("../auth.js");
-const { PostRequestSync } = require("../utilities");
+
+const utilities = require("../utilities");
 require("dotenv").config();
 var ethKey = process.env.ETH_API_KEY;
 
@@ -34,7 +35,7 @@ const checkETHDeposit = async() => {
       if (checkRequest.data.message === "OK") {
 
         for (let j = 0; j < checkRequest.data.result.length; j++) {
-          if(checkRequest.data.result[j].to.toLowerCase() != wallet.wallet_address.toLowerCase()) continue;
+          if(checkRequest.data.result[j].to.toLowerCase() != address.toLowerCase()) continue;
           amount = checkRequest.data.result[j].value / 1000000000000000000;
           user = await User.findOne({ _id: user_id }).exec();
           deposit = await Deposits.findOne({

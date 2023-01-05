@@ -6,7 +6,7 @@ const CoinList = require("../models/CoinList");
 const ContractAddressSchema = require("../models/ContractAddress");
 const Deposits = require("../models/Deposits");
 var authFile = require("../auth.js");
-const { PostRequestSync } = require("../utilities");
+const utilities = require("../utilities");
 require("dotenv").config();
 const checkBTCDeposit = async() => {
     let networkId = "635916ade5f78e20c0bb809c";
