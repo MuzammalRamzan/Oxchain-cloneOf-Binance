@@ -90,6 +90,8 @@ const getRegisteredAddresses = require("./controllers/registeredAddress/getRegis
 const googleAuth = require("./controllers/auth/googleAuth");
 const appleAuth = require("./controllers/auth/appleAuth");
 
+const DeleteRegisteredAddress = require("./controllers/registeredAddress/deleteRegisteredAddress");
+
 const securityActivities = require("./controllers/accountActivities/securityActivities");
 
 const removePhone = require("./controllers/users/removePhone");
@@ -324,6 +326,7 @@ route.all("/addOrders", upload.none(), addOrders);
 
 route.all("/addNewRegisteredAddress", upload.none(), addNewRegisteredAddress);
 route.all("/getRegisteredAddresses", upload.none(), getRegisteredAddresses);
+route.all("/deleteRegisteredAddress", upload.none(), DeleteRegisteredAddress);
 route.all(
   "/getRegisteredAddressList",
   upload.none(),
