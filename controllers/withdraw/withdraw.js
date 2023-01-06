@@ -50,7 +50,7 @@ const withdraw = async (req, res) => {
     return;
   }
   console.log("Balance : ", balance);
-  if (balance <= amount) {
+  if (balance < amount) {
     res.json({ status: "fail", message: "invalid_balance" });
     return;
   }
