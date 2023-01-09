@@ -9,7 +9,7 @@ var authFile = require("../auth.js");
 const utilities = require("../utilities");
 require("dotenv").config();
 const checkTronContractDeposit = async() => {
-
+ try {
   let networkId = "6358f17cbc20445270757291";
   let wallet = await WalletAddress.find({
     network_id: networkId,
@@ -27,11 +27,11 @@ const checkTronContractDeposit = async() => {
     let user_id = wallet[i].user_id;
     if (address.length > 1) {
 
-      let checkRequest = await axios.get(
-        "https://api.trongrid.io/v1/accounts/" +
-        address +
-        "/transactions/trc20?limit=30"
-      );
+      let checkRequest = await axios.get("https://api.trongrid.io/v1/accounts/" +address +"/transactions/trc20?limit=30", {
+        headers : {
+          "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+        }
+      });
 
       for (let j = 0; j < checkRequest.data.data.length; j++) {
         let item = checkRequest.data.data[j];
@@ -40,7 +40,6 @@ const checkTronContractDeposit = async() => {
         amount = checkRequest.data.data[j].value / 1000000;
 
         deposit = await Deposits.findOne({
-          user_id: user_id,
           tx_id: tx_id,
         }).exec();
 
@@ -63,6 +62,9 @@ const checkTronContractDeposit = async() => {
       }
     }
   }
+} catch(err) {
+  console.log("TRON Contract Deposit err : ", err.message);
+}
 }
 
 module.exports = checkTronContractDeposit;

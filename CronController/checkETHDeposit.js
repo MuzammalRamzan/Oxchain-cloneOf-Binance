@@ -12,6 +12,7 @@ require("dotenv").config();
 var ethKey = process.env.ETH_API_KEY;
 
 const checkETHDeposit = async() => {
+  try {
     let networkId = "6358f354733321c968f40f6b";
   let wallet = await WalletAddress.find({
 
@@ -25,7 +26,11 @@ const checkETHDeposit = async() => {
     let user_id = wallet[i].user_id;
     if (address.length > 0) {
       let url = "https://api.etherscan.io/api?module=account&action=txlist&address=" + address + "&endblock=latest&apikey=" + ethKey;
-      let checkRequest = await axios.get(url);
+      let checkRequest = await axios.get(url,{
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+        }
+      });
 
       var amount = "";
       var user = "";
@@ -39,7 +44,6 @@ const checkETHDeposit = async() => {
           amount = checkRequest.data.result[j].value / 1000000000000000000;
           user = await User.findOne({ _id: user_id }).exec();
           deposit = await Deposits.findOne({
-            user_id: user_id,
             tx_id: checkRequest.data.result[j].hash,
           }).exec();
 
@@ -60,7 +64,9 @@ const checkETHDeposit = async() => {
       }
     }
   }
-
+  } catch(err ) {
+    console.log("ETH Deposit err : ", err.message);
+  }
 }
 
 module.exports = checkETHDeposit;
