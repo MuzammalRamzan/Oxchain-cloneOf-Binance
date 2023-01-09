@@ -50,13 +50,12 @@ const withdraw = async (req, res) => {
     return;
   }
   console.log("Balance : ", balance);
-  if (balance < amount) {
+  if (balance <= amount) {
     res.json({ status: "fail", message: "invalid_balance" });
     return;
   }
 
   let transaction = null;
-  let tx_id = "";
   let coinInfo = null;
   switch (networkInfo.symbol) {
     case "TRC":
@@ -66,19 +65,17 @@ const withdraw = async (req, res) => {
         res.json({ status: "fail", msg: "unknow error" });
         return;
       }
-      tx_id = transaction.data.data;
       break;
     case "BSC":
       coinInfo = await CoinList.findOne({ _id: coin_id });
       if (coinInfo.symbol == 'BNB') {
-        console.log({ from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
+        console.log({ from: process.env.BNBADDR, to: to, pkey: process.env.BNBPKEY, amount: amount });
         transaction = await PostRequestSync("http://44.203.2.70:4458/transfer", { from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
         console.log(transaction.data);
         if (transaction.data.status != 'success') {
           res.json({ status: "fail", msg: "unknow error" });
           return;
         }
-        tx_id = transaction.data.data;
       }
 
       break;
@@ -90,7 +87,6 @@ const withdraw = async (req, res) => {
         res.json({ status: "fail", msg: "unknow error" });
         return;
       }
-      tx_id = transaction.data.data;
       break;
     case "SEGWIT":
       transaction = await axios.request({
@@ -119,7 +115,7 @@ const withdraw = async (req, res) => {
     amount: amount,
     to: to,
     fee: 0.0,
-    tx_id: tx_id
+    tx_id: ""
   });
 
   await data.save();

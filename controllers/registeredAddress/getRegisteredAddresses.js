@@ -10,20 +10,12 @@ const getRegisteredAddresses = async (req, res) => {
   const label = req.body.label;
   const origin = req.body.origin;
   const network = req.body.network;
-  const search = req.body.search;
-
-
 
 
   const result = await authFile.apiKeyChecker(api_key);
   if (result === true) {
 
     // Get all registered addresses for a user with filters if provided
-
-    //search will be used to search for label, address, type, origin, network
-    //if search is provided, it will override all other filters
-
-
     const registeredAddresses = await RegisteredAddressModel.find({
       user_id,
       ...(coin_id && { coin_id }),
@@ -32,7 +24,6 @@ const getRegisteredAddresses = async (req, res) => {
       ...(label && { label }),
       ...(origin && { origin }),
       ...(network && { network }),
-      ...(search && { $or: [{ label: { $regex: search, $options: "i" } }, { tag: { $regex: search, $options: "i" } }, { address: { $regex: search, $options: "i" } },] }),
     }).exec();
 
     res.json({

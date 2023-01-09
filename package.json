@@ -4,12 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@socket.io/mongo-adapter": "^0.2.1",
+    "@vonage/server-sdk": "^3.0.14",
     "apple-auth": "^1.0.7",
     "authenticator": "^1.1.5",
     "aws-sdk": "^2.1279.0",
@@ -34,6 +36,7 @@
     "node-fetch": "^3.2.6",
     "node-schedule": "^2.1.0",
     "nodemailer": "^6.7.8",
+    "nodemon": "^2.0.20",
     "sleep": "^6.3.0",
     "socket-io": "^1.0.0",
     "socket.io": "^4.5.1",

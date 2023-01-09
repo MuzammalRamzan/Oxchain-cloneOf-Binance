@@ -1,4 +1,5 @@
 var nodemailer = require("nodemailer");
+const { Vonage } = require("@vonage/server-sdk");
 
 async function sendNewMail(email, title, body) {
   var transporter = nodemailer.createTransport({
@@ -9,12 +10,17 @@ async function sendNewMail(email, title, body) {
     },
   });
 
-  let htmlTemplate = `<div style='width:500px; height:auto; background-color:white; border:1px solid #9932CC; border-radius:5px; margin:0 auto; text-align:center;'>
+  let htmlTemplate =
+    `<div style='width:500px; height:auto; background-color:white; border:1px solid #9932CC; border-radius:5px; margin:0 auto; text-align:center;'>
    
     <h1 style='color:gray'>Oxhain Exchange</h1>
     <img src='https://pbs.twimg.com/profile_images/1584899893746978817/1Rv7NKve_400x400.jpg' style='width:100px; height:100px; margin:0 auto;'>
-    <p style='margin:0 auto; margin-top:15px; font-size:18px;'><b>`+ title + `</b></p>
-    <p style='margin:0 auto; margin-top:5px; color:gray;'>`+ body + `</p></br>
+    <p style='margin:0 auto; margin-top:15px; font-size:18px;'><b>` +
+    title +
+    `</b></p>
+    <p style='margin:0 auto; margin-top:5px; color:gray;'>` +
+    body +
+    `</p></br>
 
     <div style='width:90%; height:1px; background-color:#9932CC; margin:0 auto;'></div></br>
     
@@ -58,8 +64,30 @@ async function sendNewMail(email, title, body) {
   });
 }
 
-async function sendNewSMS(phone, body) {
-  return "true";
+// async function sendNewSMS(phone, body) {
+//   return "true";
+// }
+
+// const Vonage = require("@vonage/server-sdk");
+const vonage = new Vonage({
+  apiKey: "7a0824e9",
+  apiSecret: "dKIx7aTAEr21jEDN",
+});
+async function sendNewSMS(mobileNumber, params) {
+  const from = "Vonage APIs";
+  const to = mobileNumber ;
+  const text = params;
+  await vonage.sms
+    .send({ to, from, text })
+    .then((resp) => {
+      console.log("Message sent successfully");
+      console.log(resp);
+    })
+    .catch((err) => {
+      console.log("There was an error sending the messages.");
+      console.error(err);
+    });
+  return true;
 }
 module.exports = {
   sendMail: sendNewMail,

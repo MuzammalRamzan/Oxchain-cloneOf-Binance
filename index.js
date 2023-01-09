@@ -10,11 +10,11 @@ var cors = require('cors');
 const uploadFile = require('./controllers/news/upload.js');
 
 //express-fileupload
-const fileUpload = require('express-fileupload');
+const fileUpload = require("express-fileupload");
 
-const { expressjwt: jwt } = require('express-jwt');
+const { expressjwt: jwt } = require("express-jwt");
 
-require('dotenv').config();
+require("dotenv").config();
 
 // controllers
 const login = require('./controllers/auth/login');
@@ -95,18 +95,18 @@ const createNews = require('./controllers/news/createNews.js');
 const searchNews = require('./controllers/news/searchNews.js');
 const securityActivities = require('./controllers/accountActivities/securityActivities');
 
-const removePhone = require('./controllers/users/removePhone');
-const removeEmail = require('./controllers/users/removeEmail');
+const removePhone = require("./controllers/users/removePhone");
+const removeEmail = require("./controllers/users/removeEmail");
 
-const addAvatar = require('./controllers/avatar/addAvatar');
-const getAvatar = require('./controllers/avatar/getAvatarList');
+const addAvatar = require("./controllers/avatar/addAvatar");
+const getAvatar = require("./controllers/avatar/getAvatarList");
 
-const addAnnouncement = require('./controllers/announcement/addAnnouncement');
-const getAnnouncement = require('./controllers/announcement/getAnnouncement');
-const getLocation = require('./controllers/users/getLocation');
+const addAnnouncement = require("./controllers/announcement/addAnnouncement");
+const getAnnouncement = require("./controllers/announcement/getAnnouncement");
+const getLocation = require("./controllers/users/getLocation");
 
-const getSiteNotificationSettings = require('./controllers/siteNotifications/get');
-const updateSiteNotificationSettings = require('./controllers/siteNotifications/update');
+const getSiteNotificationSettings = require("./controllers/siteNotifications/get");
+const updateSiteNotificationSettings = require("./controllers/siteNotifications/update");
 
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
@@ -116,66 +116,69 @@ const updateSiteNotificationSettings = require('./controllers/siteNotifications/
 Connection.connection();
 var route = express();
 const delay = (duration) => {
-	return new Promise((resolve) => setTimeout(resolve, duration));
+  return new Promise((resolve) => setTimeout(resolve, duration));
 };
 route.use(cors());
 var port = process.env.PORT;
 
+
 //set limit for request body for base64 image upload
-route.use(bodyParser.json({ limit: '50mb' }));
-route.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
-const Subscription = require('./models/Subscription.js');
-const topReferrals = require('./controllers/referrals/topReferrals.js');
-const getReferral = require('./controllers/referrals/getReferral.js');
-const addBonus = require('./controllers/bonus/addBonus.js');
-const addBonusType = require('./controllers/bonusTypes/addBonusType.js');
-const getBonusHistory = require('./controllers/bonus/getBonusHistory.js');
+route.use(bodyParser.json({ limit: "50mb" }));
+route.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
+const Subscription = require("./models/Subscription.js");
+const topReferrals = require("./controllers/referrals/topReferrals.js");
+const getReferral = require("./controllers/referrals/getReferral.js");
+const addBonus = require("./controllers/bonus/addBonus.js");
+const addBonusType = require("./controllers/bonusTypes/addBonusType.js");
+const getBonusHistory = require("./controllers/bonus/getBonusHistory.js");
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
-const session = require('express-session');
-const addMarginCrossOrder = require('./controllers/orders/addMarginCrossOrder.js');
-const addMarginIsolatedOrder = require('./controllers/orders/addMarginIsolatedOrder.js');
-const addFutureOrder = require('./controllers/orders/addFutureOrder.js');
-const cancelFutureLimit = require('./controllers/orders/cancelFutureLimit.js');
-const closeFutureOrder = require('./controllers/orders/closeFutureOrder.js');
-const AdjustMargin = require('./controllers/orders/adjust_margin.js');
-const editOneStepWithdraw = require('./controllers/withdraw/editOneStepWithdraw');
-const getOneStepWithdraw = require('./controllers/withdraw/getOneStepWithdraw');
-const editWithdrawalWhiteList = require('./controllers/withdraw/editWithdrawalWhiteList');
-const getWithdrawalWhiteList = require('./controllers/withdraw/getWithdrawalWhiteList');
-const UpdateStop = require('./controllers/orders/updateStop.js');
-const FuturePercentClose = require('./controllers/orders/futurePercentClose.js');
-const FutureAmountClose = require('./controllers/orders/futureAmountClose.js');
-const Settings = require('./controllers/settings');
-const SetFavoritePair = require('./controllers/pair/setFavoritePair.js');
-const GetFavoritePairs = require('./controllers/pair/getFavoritePairs.js');
-const myReferrals = require('./controllers/referrals/myReferrals');
-const getAdminSettings = require('./controllers/getAdminSettings');
-const referralRewards = require('./controllers/referrals/referralRewards');
-const readNotifications = require('./controllers/readNotifications');
-const clearNotifications = require('./controllers/clearNotifications');
-const addVerificationId = require('./controllers/verificationId/addVerificationId');
-const getVerificationIds = require('./controllers/verificationId/getVerificationIds');
-const topReferralEarners = require('./controllers/referrals/topReferralEarners');
-const myReferralEarns = require('./controllers/referrals/myReferralEarns');
-const getKYCStatus = require('./controllers/kyc/getStatus');
+const session = require("express-session");
+const addMarginCrossOrder = require("./controllers/orders/addMarginCrossOrder.js");
+const addMarginIsolatedOrder = require("./controllers/orders/addMarginIsolatedOrder.js");
+const addFutureOrder = require("./controllers/orders/addFutureOrder.js");
+const cancelFutureLimit = require("./controllers/orders/cancelFutureLimit.js");
+const closeFutureOrder = require("./controllers/orders/closeFutureOrder.js");
+const AdjustMargin = require("./controllers/orders/adjust_margin.js");
+const editOneStepWithdraw = require("./controllers/withdraw/editOneStepWithdraw");
+const getOneStepWithdraw = require("./controllers/withdraw/getOneStepWithdraw");
+const editWithdrawalWhiteList = require("./controllers/withdraw/editWithdrawalWhiteList");
+const getWithdrawalWhiteList = require("./controllers/withdraw/getWithdrawalWhiteList");
+const UpdateStop = require("./controllers/orders/updateStop.js");
+const FuturePercentClose = require("./controllers/orders/futurePercentClose.js");
+const FutureAmountClose = require("./controllers/orders/futureAmountClose.js");
+const Settings = require("./controllers/settings");
+const SetFavoritePair = require("./controllers/pair/setFavoritePair.js");
+const GetFavoritePairs = require("./controllers/pair/getFavoritePairs.js");
+const myReferrals = require("./controllers/referrals/myReferrals");
+const getAdminSettings = require("./controllers/getAdminSettings");
+const referralRewards = require("./controllers/referrals/referralRewards");
+const readNotifications = require("./controllers/readNotifications");
+const clearNotifications = require("./controllers/clearNotifications");
+const addVerificationId = require("./controllers/verificationId/addVerificationId");
+const getVerificationIds = require("./controllers/verificationId/getVerificationIds");
+const topReferralEarners = require("./controllers/referrals/topReferralEarners");
+const myReferralEarns = require("./controllers/referrals/myReferralEarns");
+const getKYCStatus = require("./controllers/kyc/getStatus");
+
 
 //only for testing purposes for emircan
 
-const clearKYCAndRecidency = require('./controllers/kyc/clearKYCAndRecidency.js');
+const clearKYCAndRecidency = require("./controllers/kyc/clearKYCAndRecidency.js");
 
-const UploadKYC = require('./controllers/kyc/UploadKYC');
-const UploadRecidency = require('./controllers/kyc/uploadRecidency');
 
-const marketingMailStatus = require('./controllers/marketingMails/mailStatus');
-const changeMarketingMailStatus = require('./controllers/marketingMails/changeStatus');
+const UploadKYC = require("./controllers/kyc/UploadKYC");
+const UploadRecidency = require("./controllers/kyc/uploadRecidency");
+
+const marketingMailStatus = require("./controllers/marketingMails/mailStatus");
+const changeMarketingMailStatus = require("./controllers/marketingMails/changeStatus");
 route.use(
-	session({
-		secret: 'oxhain_login_session',
-		resave: false,
-		saveUninitialized: true,
-	})
+  session({
+    secret: "oxhain_login_session",
+    resave: false,
+    saveUninitialized: true,
+  })
 );
 
 // route.use(
@@ -195,97 +198,101 @@ route.use(
 // );
 
 route.use(function (err, req, res, next) {
-	if (err.name === 'UnauthorizedError') {
-		res.status(401).send('Error: invalid token');
-	} else {
-		next(err);
-	}
+  if (err.name === "UnauthorizedError") {
+    res.status(401).send("Error: invalid token");
+  } else {
+    next(err);
+  }
 });
 
-route.get('/', (req, res) => {
-	res.send('success');
+route.get("/", (req, res) => {
+  res.send("success");
 });
 
-route.all('/addAnnouncement', addAnnouncement);
-route.all('/getAnnouncements', getAnnouncement);
-route.all('/getLocation', getLocation);
+route.all("/addAnnouncement", addAnnouncement);
+route.all("/getAnnouncements", getAnnouncement);
+route.all("/getLocation", getLocation);
 
-route.all('/getVerificationIds', upload.any(), getVerificationIds);
-route.all('/addVerificationId', upload.any(), addVerificationId);
+route.all("/getVerificationIds", upload.any(), getVerificationIds);
+route.all("/addVerificationId", upload.any(), addVerificationId);
 
-route.all('/addAvatar', addAvatar);
-route.all('/getAvatar', getAvatar);
+route.all("/addAvatar", addAvatar);
+route.all("/getAvatar", getAvatar);
 
-route.all('/securityActivities', securityActivities);
-route.all('/walletToWallet', walletToWallet);
+route.all("/securityActivities", securityActivities);
+route.all("/walletToWallet", walletToWallet);
 
-route.all('/getSiteNotificationSettings', getSiteNotificationSettings);
-route.all('/updateSiteNotificationSettings', updateSiteNotificationSettings);
+route.all("/getSiteNotificationSettings", getSiteNotificationSettings);
+route.all("/updateSiteNotificationSettings", updateSiteNotificationSettings);
 
-route.all('/getKYCStatus', getKYCStatus);
+route.all("/getKYCStatus", getKYCStatus);
 
-route.post('/subscription', async (req, res) => {
-	try {
-		if (
-			req.body.email == null ||
-			req.body.email == 'undefined' ||
-			req.body.email == ''
-		) {
-			res.json({ status: 'fail', code: 1 });
-		}
-		let item = new Subscription();
-		item.email = req.body.email;
-		await item.save();
-		res.json({ status: 'success' });
-	} catch (err) {
-		res.json({ status: 'fail', code: 2 });
-	}
+route.post("/subscription", async (req, res) => {
+  try {
+    if (
+      req.body.email == null ||
+      req.body.email == "undefined" ||
+      req.body.email == ""
+    ) {
+      res.json({ status: "fail", code: 1 });
+    }
+    let item = new Subscription();
+    item.email = req.body.email;
+    await item.save();
+    res.json({ status: "success" });
+  } catch (err) {
+    res.json({ status: "fail", code: 2 });
+  }
 });
 
 //DEPOSIT
 
 //BONUS & CREDIT
 
+
 //TESTING
-route.all('/clearKYCAndRecidency', upload.any(), clearKYCAndRecidency);
+route.all("/clearKYCAndRecidency", upload.any(), clearKYCAndRecidency);
 
-route.post('/addBonusType', addBonusType);
-route.post('/addBonus', addBonus);
-route.post('/getBonusHistory', getBonusHistory);
+route.post("/addBonusType", addBonusType);
+route.post("/addBonus", addBonus);
+route.post("/getBonusHistory", getBonusHistory);
 
-route.all('/UploadKYC', upload.any(), UploadKYC);
-route.all('/UploadRecidency', upload.any(), UploadRecidency);
+route.all("/UploadKYC", upload.any(), UploadKYC);
+route.all("/UploadRecidency", upload.any(), UploadRecidency);
 
 //AUTH
-route.all('/login', upload.none(), login);
-route.all('/sendMailPin', sendMailPin);
-route.all('/sendSMSPin', sendSMSPin);
-route.all('/register', upload.none(), register);
-route.all('/disableAccount', upload.none(), disableAccount);
-route.all('/deleteAccount', upload.none(), deleteAccount);
-route.all('/2fa', upload.none(), twoFactor);
-route.all('/update2fa', upload.none(), update2fa);
-route.all('/getActiveDevice', upload.none(), getActiveDevice);
-route.all('/deleteActiveDevice', upload.none(), deleteActiveDevice);
-route.all('/getVerificationMethod', upload.none(), getVerificationMethod);
+route.all("/login", upload.none(), login);
+route.all("/sendMailPin", sendMailPin);
+route.all("/sendSMSPin", sendSMSPin);
+route.all("/register", upload.none(), register);
+route.all("/disableAccount", upload.none(), disableAccount);
+route.all("/deleteAccount", upload.none(), deleteAccount);
+route.all("/2fa", upload.none(), twoFactor);
+route.all("/update2fa", upload.none(), update2fa);
+route.all("/getActiveDevice", upload.none(), getActiveDevice);
+route.all("/deleteActiveDevice", upload.none(), deleteActiveDevice);
+route.all("/getVerificationMethod", upload.none(), getVerificationMethod);
 
-route.all('/removePhone', upload.none(), removePhone);
-route.all('/removeEmail', upload.none(), removeEmail);
-route.post('/googleAuth', googleAuth);
-route.post('/appleAuth', appleAuth);
+route.all("/removePhone", upload.none(), removePhone);
+route.all("/removeEmail", upload.none(), removeEmail);
+route.post("/googleAuth", googleAuth);
+route.post("/appleAuth", appleAuth);
 
 //Wallet Modules
-route.post('/transfer', transfer);
-route.post('/withdraw', withdraw);
+route.post("/transfer", transfer);
+route.post("/withdraw", withdraw);
 
-route.post('/depositCoinList', depositCoinList);
-route.post('/depositCoinNetworkOptions', depositCoinNetworkOptions);
-route.post('/depositWalletAddress', depositWalletAddress);
+route.post("/depositCoinList", depositCoinList);
+route.post("/depositCoinNetworkOptions", depositCoinNetworkOptions);
+route.post("/depositWalletAddress", depositWalletAddress);
 
-route.all('/addCoinNetworkOption', addCoinNetworkOption);
-route.all('/addNetwork', addNetwork);
-route.all('/depositNetworkList', depositNetworkList);
-route.all('/addCoin', upload.none(), addCoin);
+route.all("/addCoinNetworkOption", addCoinNetworkOption);
+route.all("/addNetwork", addNetwork);
+route.all("/depositNetworkList", depositNetworkList);
+route.all("/addCoin", upload.none(), addCoin);
+
+route.all("/CopyLeaderRequest", upload.none(), copyLeaderRequest);
+route.all("/getUSDTBalance", upload.none(), getUSDTBalance);
 
 route.all('/CopyLeaderRequest', upload.none(), copyLeaderRequest);
 route.all('/getUSDTBalance', upload.none(), getUSDTBalance);
@@ -295,141 +302,137 @@ route.all('/getbalance', upload.none(), getWalletsBalance);
 route.post('/news/createNews', uploadFile.single('coverPhoto'), createNews);
 route.all('/news/searchNews', searchNews);
 //Trade Modules
-route.all('/getOrders', upload.none(), getOrders);
-route.post('/getClosedMarginOrders', getClosedMarginOrders);
-route.post('/getOpenMarginOrders', getOpenMarginOrders);
-route.post('/closeMarginOrder', closeMarginOrder);
-route.post('/addMarginOrder', addMarginOrder);
-route.post('/addMarginCrossOrder', addMarginCrossOrder);
-route.post('/addMarginIsolatedOrder', addMarginIsolatedOrder);
-route.post('/adjustMargin', AdjustMargin);
-route.post('/updateStop', UpdateStop);
-route.post('/futurePercentClose', FuturePercentClose);
-route.post('/futureAmountClose', FutureAmountClose);
+route.all("/getOrders", upload.none(), getOrders);
+route.post("/getClosedMarginOrders", getClosedMarginOrders);
+route.post("/getOpenMarginOrders", getOpenMarginOrders);
+route.post("/closeMarginOrder", closeMarginOrder);
+route.post("/addMarginOrder", addMarginOrder);
+route.post("/addMarginCrossOrder", addMarginCrossOrder);
+route.post("/addMarginIsolatedOrder", addMarginIsolatedOrder);
+route.post("/adjustMargin", AdjustMargin);
+route.post("/updateStop", UpdateStop);
+route.post("/futurePercentClose", FuturePercentClose);
+route.post("/futureAmountClose", FutureAmountClose);
 
-route.post('/addFutureOrder', addFutureOrder);
-route.post('/cancelFutureLimit', cancelFutureLimit);
-route.post('/closeFutureOrder', closeFutureOrder);
+route.post("/addFutureOrder", addFutureOrder);
+route.post("/cancelFutureLimit", cancelFutureLimit);
+route.post("/closeFutureOrder", closeFutureOrder);
 
-route.get('/getMarginOrders', getMarginOrders);
-route.post('/spotHistory', async (req, res) => {
-	var api_key_result = req.body.api_key;
+route.get("/getMarginOrders", getMarginOrders);
+route.post("/spotHistory", async (req, res) => {
+  var api_key_result = req.body.api_key;
 
-	let api_result = await authFile.apiKeyChecker(api_key_result);
-	if (api_result === false) {
-		res.json({ status: 'fail', message: 'Forbidden 403' });
-		return;
-	}
+  let api_result = await authFile.apiKeyChecker(api_key_result);
+  if (api_result === false) {
+    res.json({ status: "fail", message: "Forbidden 403" });
+    return;
+  }
 });
-route.post('/deleteLimit', deleteLimit);
-route.post('/deleteMarginLimit', deleteMarginLimit);
-route.all('/addOrders', upload.none(), addOrders);
+route.post("/deleteLimit", deleteLimit);
+route.post("/deleteMarginLimit", deleteMarginLimit);
+route.all("/addOrders", upload.none(), addOrders);
 
-route.all('/addNewRegisteredAddress', upload.none(), addNewRegisteredAddress);
-route.all('/getRegisteredAddresses', upload.none(), getRegisteredAddresses);
+route.all("/addNewRegisteredAddress", upload.none(), addNewRegisteredAddress);
+route.all("/getRegisteredAddresses", upload.none(), getRegisteredAddresses);
 route.all(
-	'/getRegisteredAddressList',
-	upload.none(),
-	async function (req, res) {
-		var api_key_result = req.body.api_key;
-	}
+  "/getRegisteredAddressList",
+  upload.none(),
+  async function (req, res) {
+    var api_key_result = req.body.api_key;
+  }
 );
 route.all(
-	'/enableWithdrawalWhiteList',
-	upload.none(),
-	async function (req, res) {}
+  "/enableWithdrawalWhiteList",
+  upload.none(),
+  async function (req, res) { }
 );
-route.post('/editOneStepWithdraw', editOneStepWithdraw);
-route.post('/getOneStepWithdraw', getOneStepWithdraw);
-route.post('/editWithdrawalWhiteList', editWithdrawalWhiteList);
-route.post('/getWithdrawalWhiteList', getWithdrawalWhiteList);
-route.all('/addNotification', upload.none(), addNotification);
-route.all('/getNotification', upload.none(), getNotification);
-route.all('/readNotifications', upload.none(), readNotifications);
-route.all('/clearNotifications', upload.none(), clearNotifications);
+route.post("/editOneStepWithdraw", editOneStepWithdraw);
+route.post("/getOneStepWithdraw", getOneStepWithdraw);
+route.post("/editWithdrawalWhiteList", editWithdrawalWhiteList);
+route.post("/getWithdrawalWhiteList", getWithdrawalWhiteList);
+route.all("/addNotification", upload.none(), addNotification);
+route.all("/getNotification", upload.none(), getNotification);
+route.all("/readNotifications", upload.none(), readNotifications);
+route.all("/clearNotifications", upload.none(), clearNotifications);
 
-route.all('/setFavoritePair', upload.none(), SetFavoritePair);
-route.all('/getFavoritePairs', upload.none(), GetFavoritePairs);
-route.all('/getPairs', upload.none(), getPairs);
-route.all('/addPair', upload.none(), addPair);
-route.all('/getDigits', upload.none(), getDigits);
-route.all('/getCoinList', upload.none(), getCoinList);
-route.all('/getCoinNetworks', upload.none(), depositCoinNetworkOptions);
-route.all('/getCoinInfo', upload.none(), getCoinInfo);
+route.all("/setFavoritePair", upload.none(), SetFavoritePair);
+route.all("/getFavoritePairs", upload.none(), GetFavoritePairs);
+route.all("/getPairs", upload.none(), getPairs);
+route.all("/addPair", upload.none(), addPair);
+route.all("/getDigits", upload.none(), getDigits);
+route.all("/getCoinList", upload.none(), getCoinList);
+route.all("/getCoinNetworks", upload.none(), depositCoinNetworkOptions);
+route.all("/getCoinInfo", upload.none(), getCoinInfo);
 
 //Referral Modules
-route.all('/getReferral', upload.none(), getReferral);
-route.all('/topReferrals', upload.none(), topReferrals);
-route.all('/myReferrals', upload.none(), myReferrals);
-route.all('/referralRewards', upload.none(), referralRewards);
-route.all('/topReferralEarners', upload.none(), topReferralEarners);
-route.all('/myReferralEarns', upload.none(), myReferralEarns);
+route.all("/getReferral", upload.none(), getReferral);
+route.all("/topReferrals", upload.none(), topReferrals);
+route.all("/myReferrals", upload.none(), myReferrals);
+route.all("/referralRewards", upload.none(), referralRewards);
+route.all("/topReferralEarners", upload.none(), topReferralEarners);
+route.all("/myReferralEarns", upload.none(), myReferralEarns);
 
-route.all('/getWallet', upload.none(), getWallet);
+route.all("/getWallet", upload.none(), getWallet);
 
-route.post('/cancelAllLimit', cancelAllLimit);
-route.post('/cancelAllStopLimit', cancelAllStopLimit);
-route.all('/cancelOrder', upload.none(), cancelOrder);
-route.all('/addSecurityKey', upload.none(), addSecurityKey);
-route.all('/updateSecurityKey', upload.none(), updateSecurityKey);
-route.all('/lastActivities', upload.none(), lastActivities);
-route.all('/activities', upload.none(), activities);
-route.all('/updatePhone', upload.none(), updatePhone);
-route.all('/resetPassword', upload.none(), resetPassword);
-route.all('/getLastLogin', upload.none(), getLastLogin);
-route.all('/changePassword', upload.none(), changePassword);
-route.all('/sendMail', upload.none(), sendMail);
-route.all('/sendSMS', upload.none(), sendSMS);
-route.all('/changeEmail', upload.none(), changeEmail);
-route.all('/changePhone', upload.none(), changePhone);
-route.all('/get2fa', upload.none(), get2fa);
-route.all('/getUserInfo', upload.none(), getUserInfo);
-route.all('/updateUserInfo', upload.none(), updateUserInfo);
-route.all('/testMail', upload.none(), async function (req, res) {
-	mailer.sendMail(
-		'volkansaka1@hotmail.com',
-		'Test Mail',
-		'Test Mail Body',
-		function (err, data) {
-			if (err) {
-				console.log('Error ' + err);
-			} else {
-				console.log('Email sent successfully');
-			}
-		}
-	);
+route.post("/cancelAllLimit", cancelAllLimit);
+route.post("/cancelAllStopLimit", cancelAllStopLimit);
+route.all("/cancelOrder", upload.none(), cancelOrder);
+route.all("/addSecurityKey", upload.none(), addSecurityKey);
+route.all("/updateSecurityKey", upload.none(), updateSecurityKey);
+route.all("/lastActivities", upload.none(), lastActivities);
+route.all("/activities", upload.none(), activities);
+route.all("/updatePhone", upload.none(), updatePhone);
+route.all("/resetPassword", upload.none(), resetPassword);
+route.all("/getLastLogin", upload.none(), getLastLogin);
+route.all("/changePassword", upload.none(), changePassword);
+route.all("/sendMail", upload.none(), sendMail);
+route.all("/sendSMS", upload.none(), sendSMS);
+route.all("/changeEmail", upload.none(), changeEmail);
+route.all("/changePhone", upload.none(), changePhone);
+route.all("/get2fa", upload.none(), get2fa);
+route.all("/getUserInfo", upload.none(), getUserInfo);
+route.all("/updateUserInfo", upload.none(), updateUserInfo);
+route.all("/testMail", upload.none(), async function (req, res) {
+  mailer.sendMail(
+    "volkansaka1@hotmail.com",
+    "Test Mail",
+    "Test Mail Body",
+    function (err, data) {
+      if (err) {
+        console.log("Error " + err);
+      } else {
+        console.log("Email sent successfully");
+      }
+    }
+  );
 });
 
-route.all('/getUserId', upload.none(), getUserId);
-route.all('/getSecurityKey', upload.none(), getSecurityKey);
-route.all('/checkSecurityKey', upload.none(), checkSecurityKey);
-route.all('/deleteSecurityKey', upload.none(), deleteSecurityKey);
-route.post('/settings', Settings);
-route.post('/getAdminSettings', getAdminSettings);
+route.all("/getUserId", upload.none(), getUserId);
+route.all("/getSecurityKey", upload.none(), getSecurityKey);
+route.all("/checkSecurityKey", upload.none(), checkSecurityKey);
+route.all("/deleteSecurityKey", upload.none(), deleteSecurityKey);
+route.post("/settings", Settings);
+route.post("/getAdminSettings", getAdminSettings);
 
-route.all('/changeAvatar', upload.none(), changeAvatar);
-route.all('/changeNickName', upload.none(), changeNickname);
+route.all("/changeAvatar", upload.none(), changeAvatar);
+route.all("/changeNickName", upload.none(), changeNickname);
 
-route.all('/addCopyTrade', upload.none(), (req, res) => {
-	res.json(CopyTrade.test());
+route.all("/addCopyTrade", upload.none(), (req, res) => {
+  res.json(CopyTrade.test());
 });
 
-route.all('/getMarketingMailStatus', upload.none(), marketingMailStatus);
-route.all(
-	'/changeMarketingMailStatus',
-	upload.none(),
-	changeMarketingMailStatus
-);
+route.all("/getMarketingMailStatus", upload.none(), marketingMailStatus);
+route.all("/changeMarketingMailStatus", upload.none(), changeMarketingMailStatus);
 
-route.all('/updateCopyTrade', upload.none(), (req, res) => {
-	res.json(CopyTrade.updateTrade());
+route.all("/updateCopyTrade", upload.none(), (req, res) => {
+  res.json(CopyTrade.updateTrade());
 });
-route.all('/addWithdraw', upload.none(), addWithdraw);
-route.all('/getDepositsUSDT', upload.none(), getDepositsUSDT);
-route.post('/createApplicant', upload.none(), createApplicant);
-route.post('/addDocument', upload.any(), addDocument);
-route.post('/getApplicantStatus', upload.none(), getApplicantStatus);
+route.all("/addWithdraw", upload.none(), addWithdraw);
+route.all("/getDepositsUSDT", upload.none(), getDepositsUSDT);
+route.post("/createApplicant", upload.none(), createApplicant);
+route.post("/addDocument", upload.any(), addDocument);
+route.post("/getApplicantStatus", upload.none(), getApplicantStatus);
 
 route.listen(port, () => {
-	console.log('Server Ayakta');
+  console.log("Server Ayakta");
 });
