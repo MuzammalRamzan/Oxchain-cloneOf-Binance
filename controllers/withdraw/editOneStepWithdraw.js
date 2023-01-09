@@ -2,7 +2,6 @@ const authFile = require("../../auth");
 const OneStepWithdrawModel = require("../../models/OneStepWithdraw");
 const SMSVerification = require("../../models/SMSVerification");
 const MailVerification = require("../../models/MailVerification");
-const UserModel = require("../../models/User");
 
 const editOneStepWithdraw = async (req, res) => {
   const apiKey = req.body.api_key;
@@ -27,26 +26,12 @@ const editOneStepWithdraw = async (req, res) => {
   });
 
   let verified = false;
-
-  let user = await UserModel.findOne({
-    _id: userId,
-  });
-
-  if (!user) {
-    return res.json({ status: "failed", message: "user_not_found" });
-  }
-
-  if (user.email != "" && user.email != undefined) {
-
-    if (email == undefined || email == "" || email == null) {
-      return res.json({ status: "failed", message: "verification_failed", showableMessage: "Mail pin is wrong" });
-    }
+  if (email != "" && email != undefined) {
 
     let mailVerification = await MailVerification.findOne({
       user_id: userId,
       reason: reason,
       pin: email,
-      status: 0,
     });
 
     if (mailVerification) {
@@ -56,17 +41,12 @@ const editOneStepWithdraw = async (req, res) => {
     }
   }
 
-  if (user.phone_number != "" && user.phone_number != undefined) {
-
-    if (phone == undefined || phone == "" || phone == null) {
-      return res.json({ status: "failed", message: "verification_failed", showableMessage: "Phone pin is wrong" });
-    }
+  if (phone != "" && phone != undefined) {
 
     let smsVerification = await SMSVerification.findOne({
       user_id: userId,
       reason: reason,
       pin: phone,
-      status: 0,
     });
 
     if (smsVerification) {

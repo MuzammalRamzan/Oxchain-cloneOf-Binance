@@ -19,12 +19,15 @@ const sendSMS = async function (req, res) {
       status: 1,
     }).exec();
 
-    if (user != null || reason == "register_sms") {
-      var pin = "000000";
+    if (user != null) {
+      var pin = "0000";
 
-      var pin2 = "000000";
+      var pin2 = "0000";
 
-      if (reason == "register_sms") {
+
+      if (reason == "change_phone_new" && newPhone != "") {
+
+
         let checkForPhone = await User.findOne({
           phone_number: newPhone,
           country_code: country_code,
@@ -36,9 +39,8 @@ const sendSMS = async function (req, res) {
         }
 
         let check = await SMSVerification.findOne({
-          country_code: country_code,
-          phone_number: newPhone,
-          reason: "register_sms",
+          user_id: user_id,
+          reason: "change_phone_new",
         }).exec();
 
 
@@ -57,125 +59,73 @@ const sendSMS = async function (req, res) {
 
         if (check != null) {
           await SMSVerification.findOneAndUpdate(
-            { country_code: country_code, phone_number: newPhone, reason: "register_sms" },
+            { user_id: user["_id"], reason: "change_phone_new" },
             { pin: pin2, status: "0" },
           );
         } else {
           newPin = new SMSVerification({
-            country_code: country_code,
-            phone_number: newPhone,
+            user_id: user["_id"],
             pin: pin2,
-            reason: "register_sms",
+            reason: "change_phone_new",
             status: 0,
           });
           newPin.save();
         }
 
 
+        mailer.sendSMS(
+          user["email"],
+          "Oxhain verification",
+          "Pin : " + pin,
+          function (err, data) {
+            if (err) {
+              console.log("Error " + err);
+            } else {
+              console.log("sms sent");
+            }
+          }
+        );
 
         res.json({ status: "success", data: "sms_send", showableMessage: "SMS send" });
       }
       else {
-        if (reason == "change_phone_new" && newPhone != "") {
 
 
-          let checkForPhone = await User.findOne({
-            phone_number: newPhone,
-            country_code: country_code,
-          }).exec();
 
+        let check2 = await SMSVerification.findOne({
+          user_id: user_id,
+          reason: reason,
+        }).exec();
 
-          if (checkForPhone != null) {
-            return res.json({ status: "fail", message: "phone_already_exist", showableMessage: "Phone already exist" });
-          }
-
-          let check = await SMSVerification.findOne({
-            user_id: user_id,
-            reason: "change_phone_new",
-          }).exec();
-
-
-          mailer.sendSMS(
-            newPhone,
-            "Oxhain verification",
-            "Pin : " + pin2,
-            function (err, data) {
-              if (err) {
-                console.log("Error " + err);
-              } else {
-                console.log("sms sent");
-              }
-            }
-          );
-
-          if (check != null) {
-            await SMSVerification.findOneAndUpdate(
-              { user_id: user["_id"], reason: "change_phone_new" },
-              { pin: pin2, status: "0" },
-            );
-          } else {
-            newPin = new SMSVerification({
-              user_id: user["_id"],
-              pin: pin2,
-              reason: "change_phone_new",
-              status: 0,
-            });
-            newPin.save();
-          }
-
-
-          mailer.sendSMS(
-            user["email"],
-            "Oxhain verification",
-            "Pin : " + pin,
-            function (err, data) {
-              if (err) {
-                console.log("Error " + err);
-              } else {
-                console.log("sms sent");
-              }
-            }
-          );
-
-          res.json({ status: "success", data: "sms_send", showableMessage: "SMS send" });
-        }
-        else {
-          let check2 = await SMSVerification.findOne({
-            user_id: user_id,
-            reason: reason,
-          }).exec();
-
-          if (check2 != null) {
-            SMSVerification.updateOne(
-              { user_id: user["_id"], reason: reason },
-              { pin: pin, status: "0" },
-              function (err, result) {
-                if (err) {
-                  res.json({ status: "fail", message: err });
-                } else {
-                  res.json({ status: "success", data: "sms_send" });
-                }
-              }
-            );
-          } else {
-            const newPin = new SMSVerification({
-              user_id: user["_id"],
-              pin: pin,
-              reason: reason,
-              status: 0,
-            });
-
-            newPin.save(function (err) {
+        if (check2 != null) {
+          SMSVerification.updateOne(
+            { user_id: user["_id"], reason: reason },
+            { pin: pin, status: "0" },
+            function (err, result) {
               if (err) {
                 res.json({ status: "fail", message: err });
               } else {
                 res.json({ status: "success", data: "sms_send" });
               }
-            });
-          }
+            }
+          );
+        } else {
+          const newPin = new SMSVerification({
+            user_id: user["_id"],
+            pin: pin,
+            reason: reason,
+            status: 0,
+          });
+
+          newPin.save(function (err) {
+            if (err) {
+              res.json({ status: "fail", message: err });
+            } else {
+              res.json({ status: "success", data: "sms_send" });
+            }
+          });
         }
       }
-
 
 
 

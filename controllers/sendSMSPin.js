@@ -8,7 +8,12 @@ const sendSMSPin = async (req, res) => {
   let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
-    var pin = "000000";
+    var pin;
+    if (process.env.NODE_ENV === "product") {
+      pin = "000000";
+    } else {
+      pin = Math.floor(100000 + Math.random() * 900000);
+    }
 
     const newPin = new RegisterSMS({
       phone_number: phone,
@@ -18,6 +23,7 @@ const sendSMSPin = async (req, res) => {
     let smsCheck = await RegisterSMS.findOne({ phone: phone }).exec();
     if (smsCheck == null) {
       if (newPin.save()) {
+        newPin.save();
         mailer.sendSMS(phone, "Your pin code is " + pin + ".");
         res.json({ status: "success", message: "pin_sent" });
       } else {
@@ -25,7 +31,6 @@ const sendSMSPin = async (req, res) => {
       }
     } else {
       RegisterSMS.findOneAndUpdate(
-        { phone_number: phone },
         { phone_number: phone },
         { pin: pin },
         function (err, room) {
