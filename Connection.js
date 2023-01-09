@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 async function connection() {
     console.log("mongodb://" +
         process.env.DOCUMENT_DB_UID
@@ -34,6 +34,7 @@ async function connection() {
 
     console.log("Connected");
 
+	console.log('Connected');
 }
 
 module.exports = { connection: connection };
