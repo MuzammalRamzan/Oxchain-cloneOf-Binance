@@ -1,10 +1,15 @@
 const mongoose = require("mongoose");
 async function connection() {
+    console.log("mongodb://" +
+        process.env.DOCUMENT_DB_UID
+        + ":" +
+        process.env.DOCUMENT_DB_PASS
+        + "@13.59.10.128:27017/?retryWrites=true&w=majority")
     await mongoose.connect("mongodb://" +
-    process.env.DOCUMENT_DB_UID
-    + ":" +
-    process.env.DOCUMENT_DB_PASS
-    + "@13.59.10.128:27017/?retryWrites=true&w=majority");
+        process.env.DOCUMENT_DB_UID
+        + ":" +
+        process.env.DOCUMENT_DB_PASS
+        + "@13.59.10.128:27017/?retryWrites=true&w=majority");
     console.log(mongoose.connection.readyState);
     console.log("DB Connected");
 
@@ -23,7 +28,7 @@ async function connection() {
             ssl: true,
             sslValidate: false,
             sslCA: "./rds-combined-ca-bundle.pem",
-            retryWrites:false
+            retryWrites: false
         });
     }
 

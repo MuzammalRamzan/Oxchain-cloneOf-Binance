@@ -7,9 +7,14 @@ const sendMailPin = async (req, res) => {
   var email = req.body.email;
   let result = await authFile.apiKeyChecker(api_key_result);
 
-  console.log(result);
   if (result === true) {
-    var pin = "000000";
+    var pin ;
+    if(process.env.NODE_ENV==="product"){
+      pin="000000";
+    }
+    else{
+      pin = Math.floor(100000 + Math.random() * 900000);
+    }
 
     const newPin = new RegisterMail({
       email: email,

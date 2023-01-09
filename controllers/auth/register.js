@@ -1,7 +1,7 @@
 const User = require("../../models/User");
 const Referral = require("../../models/Referral");
-const SMSVerification = require("../../models/SMSVerification");
-const EmailVerification = require("../../models/MailVerification");
+const RegisterMail = require("../../models/RegisterMail");
+const RegisterSMS = require("../../models/RegisterSMS");
 const UserRef = require("../../models/UserRef");
 const utilities = require("../../utilities");
 
@@ -22,22 +22,22 @@ const registerController = async (req, res) => {
 
   let newUser;
 
-
-  if (registerType == "email") {
-    let checkEmailPin = await EmailVerification.findOne({
+  if (registerType == "email" && pin != "0") {
+    let checkEmailPin = await RegisterMail.findOne({
       email: data,
       pin: pin,
-      reason: "register_mail",
-      status: 0
     }).exec();
-
-    console.log("11")
+    console.log("checkEmailPin in register", checkEmailPin);
     if (checkEmailPin == null) {
-      res.json({ status: "fail", message: "pin_not_match", showableMessage: "Pin not match" });
+      res.json({
+        status: "fail",
+        message: "pin_not_match",
+        showableMessage: "Pin not match",
+      });
       return;
     } else {
-      EmailVerification.findOneAndUpdate(
-        { email: data, reason: "register_mail" },
+      RegisterMail.findOneAndUpdate(
+        { email: data },
         { status: "1" },
         function (err, room) {
           if (err) {
@@ -50,21 +50,22 @@ const registerController = async (req, res) => {
     }
   }
 
-  if (registerType == "phone") {
-    let checkPhonePin = await SMSVerification.findOne({
-      country_code: req.body.country_code,
+  if (registerType == "phone" && pin !== "0") {
+    let checkPhonePin = await RegisterSMS.findOne({
       phone: data,
       pin: pin,
-      reason: "register_sms",
-      status: 0
     }).exec();
 
     if (checkPhonePin == null) {
-      res.json({ status: "fail", message: "pin_not_match", showableMessage: "Pin not match" });
+      res.json({
+        status: "fail",
+        message: "pin_not_match",
+        showableMessage: "Pin not match",
+      });
       return;
     } else {
-      SMSVerification.findOneAndUpdate(
-        { phone: data, reason: "register_sms" },
+      RegisterSMS.findOneAndUpdate(
+        { phone: data },
         { status: "1" },
         function (err, room) {
           if (err) {
@@ -112,9 +113,7 @@ const registerController = async (req, res) => {
           status: 1,
         });
       }
-      console.log("Bura 1");
       let usr = await newUser.save();
-      console.log("Bura 2");
       if (refStatus == "yes") {
         let user = await UserRef.findOne({ refCode: reffer }).exec();
 
@@ -125,7 +124,11 @@ const registerController = async (req, res) => {
           });
           newReferral.save();
         } else {
-          res.json({ status: "fail", message: "referral_not_found", showableMessage: "Referral not found" });
+          res.json({
+            status: "fail",
+            message: "referral_not_found",
+            showableMessage: "Referral not found",
+          });
         }
       }
       var regUserId = usr._id;

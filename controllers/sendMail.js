@@ -30,15 +30,18 @@ const sendMail = async function (req, res) {
       status: 1,
     }).exec();
 
-    if (user != null || reason == "register_mail") {
-      var pin = "000000";
+    if (user != null) {
+      console.log("mail",user)
+      var pin = "0000";
 
-      var pin2 = "000000";
+      var pin2 = "0000";
 
-      if (reason == "register_mail") {
+      if (reason == "change_email_new" && newMail != "") {
+
+
         let check = await MailVerification.findOne({
           user_id: user_id,
-          reason: "register_mail",
+          reason: "change_email_new",
         }).exec();
 
 
@@ -57,14 +60,14 @@ const sendMail = async function (req, res) {
 
         if (check != null) {
           await MailVerification.findOneAndUpdate(
-            { email: newMail, reason: "register_mail" },
+            { user_id: user["_id"], reason: "change_email_new" },
             { pin: pin, status: "0", }
           );
         } else {
           newPin = new MailVerification({
-            email: newMail,
+            user_id: user["_id"],
             pin: pin2,
-            reason: "register_mail",
+            reason: "change_email_new",
             status: 0,
           });
           newPin.save();
@@ -72,100 +75,62 @@ const sendMail = async function (req, res) {
 
         res.json({ status: "success", data: "mail_send", showableMessage: "Mail send" });
 
+
+
       }
       else {
-        if (reason == "change_email_new" && newMail != "") {
 
 
-          let check = await MailVerification.findOne({
-            user_id: user_id,
-            reason: "change_email_new",
-          }).exec();
 
 
-          mailer.sendMail(
-            newMail,
-            "Oxhain verification",
-            "Pin : " + pin2,
-            function (err, data) {
-              if (err) {
-                console.log("Error " + err);
-              } else {
-                console.log("sms sent");
-              }
+
+        mailer.sendMail(
+          user["email"],
+          "Oxhain verification",
+          "Pin : " + pin,
+          function (err, data) {
+            if (err) {
+              console.log("Error " + err);
+            } else {
+              console.log("sms sent");
             }
-          );
-
-          if (check != null) {
-            await MailVerification.findOneAndUpdate(
-              { user_id: user["_id"], reason: "change_email_new" },
-              { pin: pin, status: "0", }
-            );
-          } else {
-            newPin = new MailVerification({
-              user_id: user["_id"],
-              pin: pin2,
-              reason: "change_email_new",
-              status: 0,
-            });
-            newPin.save();
           }
+        );
 
-          res.json({ status: "success", data: "mail_send", showableMessage: "Mail send" });
+        let check = await MailVerification.findOne({
+          user_id: user_id,
+          reason: reason,
+        }).exec();
 
-
-
-        }
-        else {
-          mailer.sendMail(
-            user["email"],
-            "Oxhain verification",
-            "Pin : " + pin,
-            function (err, data) {
-              if (err) {
-                console.log("Error " + err);
-              } else {
-                console.log("sms sent");
-              }
-            }
-          );
-
-          let check = await MailVerification.findOne({
-            user_id: user_id,
-            reason: reason,
-          }).exec();
-
-          if (check != null) {
-            MailVerification.updateOne(
-              { user_id: user["_id"], reason: reason },
-              { pin: pin, status: "0" },
-              function (err, result) {
-                if (err) {
-                  res.json({ status: "fail", message: err });
-                } else {
-                  res.json({ status: "success", data: "mail_send" });
-                }
-              }
-            );
-          } else {
-            const newPin = new MailVerification({
-              user_id: user["_id"],
-              pin: pin,
-              reason: reason,
-              status: 0,
-            });
-
-            newPin.save(function (err) {
+        if (check != null) {
+          MailVerification.updateOne(
+            { user_id: user["_id"], reason: reason },
+            { pin: pin, status: "0" },
+            function (err, result) {
               if (err) {
                 res.json({ status: "fail", message: err });
               } else {
-                res.json({ status: "success", data: "mail_send" });
+                res.json({ status: "success", data: "mail_sendd" });
               }
-            });
-          }
+            }
+          );
+        } else {
+          const newPin = new MailVerification({
+            user_id: user["_id"],
+            pin: pin,
+            reason: reason,
+            status: 0,
+          });
+
+          newPin.save(function (err) {
+            if (err) {
+              res.json({ status: "fail", message: err });
+            } else {
+              res.json({ status: "success", data: "mail_send" });
+            }
+          });
         }
       }
-
     } else {
       res.json({ status: "fail", message: "user_not_found" });
     }
