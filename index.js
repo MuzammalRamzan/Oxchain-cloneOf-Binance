@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 const multer = require('multer');
 const express = require('express');
 var cors = require('cors');
+const uploadFile = require('./controllers/news/upload.js');
 
 //express-fileupload
 const fileUpload = require('express-fileupload');
@@ -90,7 +91,8 @@ const getRegisteredAddresses = require('./controllers/registeredAddress/getRegis
 const googleAuth = require('./controllers/auth/googleAuth');
 const appleAuth = require('./controllers/auth/appleAuth');
 const getWalletsBalance = require('./controllers/GetUserBalances/getWalletsBalances.js');
-
+const createNews = require('./controllers/news/createNews.js');
+const searchNews = require('./controllers/news/searchNews.js');
 const securityActivities = require('./controllers/accountActivities/securityActivities');
 
 const removePhone = require('./controllers/users/removePhone');
@@ -289,6 +291,9 @@ route.all('/CopyLeaderRequest', upload.none(), copyLeaderRequest);
 route.all('/getUSDTBalance', upload.none(), getUSDTBalance);
 //balance Modules
 route.all('/getbalance', upload.none(), getWalletsBalance);
+//news Modules
+route.post('/news/createNews', uploadFile.single('coverPhoto'), createNews);
+route.all('/news/searchNews', searchNews);
 //Trade Modules
 route.all('/getOrders', upload.none(), getOrders);
 route.post('/getClosedMarginOrders', getClosedMarginOrders);
