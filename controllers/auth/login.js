@@ -22,6 +22,8 @@ const WithdrawalWhiteListModel = require("../../models/WithdrawalWhiteList");
 const OneStepWithdrawModel = require("../../models/OneStepWithdraw");
 const SiteNotificationsModel = require("../../models/SiteNotifications");
 const VerificationIdModel = require("../../models/VerificationId");
+const ApiRequest = require("../../models/ApiRequests");
+const ApiKeysModel = require("../../models/ApiKeys");
 
 const { getToken } = require("../../auth");
 
@@ -63,9 +65,38 @@ const login = async (req, res) => {
   }
 
   var notificationToken = req.body.notificationToken;
-  let result = await authFile.apiKeyChecker(api_key_result);
 
-  if (result === true) {
+
+  let result = await authFile.apiKeyChecker(api_key_result);
+  let UserApiKey = false;
+
+  let checkApiKeys = "";
+  if (result === false) {
+
+    checkApiKeys = await ApiKeysModel.findOne({
+      api_key: api_key_result,
+    }).exec();
+
+    if (checkApiKeys != null) {
+      UserApiKey = true;
+    }
+  }
+
+  if (result === true || UserApiKey === true) {
+
+
+    if (UserApiKey === true) {
+
+      let newApiKeyRequest = new ApiRequest({
+        user_id: checkApiKeys.user_id,
+        request: "login",
+        ip: ip,
+        api_key: api_key_result,
+      });
+      newApiKeyRequest.save();
+    }
+
+
     let user = await User.findOne({
       [searchType]: req.body.user,
       password: utilities.hashData(req.body.password),

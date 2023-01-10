@@ -24,7 +24,7 @@ const changeEmail = async function (req, res) {
 
     if (user != null) {
       var email = user["email"];
-      var phone = user["phone"];
+      var phone = user["phone_number"];
 
 
       let check1 = "";

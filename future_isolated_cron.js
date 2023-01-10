@@ -11,6 +11,7 @@ const FutureOrder = require("./models/FutureOrder");
 const FutureWalletModel = require("./models/FutureWalletModel");
 const { default: axios } = require("axios");
 var mongodbPass = process.env.MONGO_DB_PASS;
+var mailer = require("./mailer");
 
 const io = new Server();
 
