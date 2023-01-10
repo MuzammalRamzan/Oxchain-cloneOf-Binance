@@ -164,6 +164,7 @@ const myReferralEarns = require('./controllers/referrals/myReferralEarns');
 const getKYCStatus = require('./controllers/kyc/getStatus');
 const getApiKeys = require('./controllers/api/getApiKeys');
 
+const newPrediction = require('./controllers/Prediction/addPrediction');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
 
 //only for testing purposes for emircan
@@ -231,6 +232,8 @@ route.all('/getKYCStatus', getKYCStatus);
 
 route.all('/addNewApiKey', addNewApiKey);
 route.all('/getApiKeys', getApiKeys);
+
+route.all('/newPrediction', newPrediction);
 
 route.post('/subscription', async (req, res) => {
 	try {
