@@ -94,9 +94,16 @@ const addNewApiKey = async function (req, res) {
     }
 
 
+    let newApiKey = "";
 
+    do {
+        newApiKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    } while (await ApiKeys.findOne({
+        api_key: newApiKey
+    }).exec());
 
     let NewApiKey = new ApiKeys({
+        api_key: newApiKey,
         user_id: user_id,
         trade: trade,
         deposit: deposit,
@@ -112,7 +119,6 @@ const addNewApiKey = async function (req, res) {
         if (err) {
             return res.json({ status: "fail", message: "Error", showableMessage: "Error" });
         }
-
         mailer.sendMail(email, "New API Key Created", "New API Key Created", "A new API key has been created for your account. If you did not create this API key, please contact support immediately.");
         return res.json({ status: "success", message: "Success", showableMessage: "API key added successfully" });
     });

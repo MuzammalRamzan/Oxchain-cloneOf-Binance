@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const ApiKeySchema = new mongoose.Schema({
+    api_key: { type: String, required: true },
     user_id: { type: String, required: true },
     trade: { type: String, required: true },
     deposit: { type: String, required: true },

@@ -162,6 +162,7 @@ const getVerificationIds = require('./controllers/verificationId/getVerification
 const topReferralEarners = require('./controllers/referrals/topReferralEarners');
 const myReferralEarns = require('./controllers/referrals/myReferralEarns');
 const getKYCStatus = require('./controllers/kyc/getStatus');
+const getApiKeys = require('./controllers/api/getApiKeys');
 
 const addNewApiKey = require('./controllers/api/addNewApiKey');
 
@@ -229,6 +230,7 @@ route.all('/updateSiteNotificationSettings', updateSiteNotificationSettings);
 route.all('/getKYCStatus', getKYCStatus);
 
 route.all('/addNewApiKey', addNewApiKey);
+route.all('/getApiKeys', getApiKeys);
 
 route.post('/subscription', async (req, res) => {
 	try {
