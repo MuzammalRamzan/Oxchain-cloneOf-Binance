@@ -39,6 +39,7 @@ const login = async (req, res) => {
   var deviceModel = "null";
   var user_id = req.body.user_id;
   var loginType = req.body.loginType;
+  var pin = req.body.pin;
   var city = "test";
   if (req.body.deviceName != undefined) {
     deviceName = req.body.deviceName;
@@ -69,18 +70,18 @@ const login = async (req, res) => {
       [searchType]: req.body.user,
       password: utilities.hashData(req.body.password),
     }).exec();
-
-
     let securityLevel = 0;
 
     if (user != null) {
       let emailVerifyCheck = await RegisterMail.findOne({
         email: user.email,
+        pin: pin,
         status: "1",
       });
 
       let smsVerifyCheck = await RegisterSMS.findOne({
         phone_number: user.phone_number,
+        pin: pin,
         status: "1",
       });
 
@@ -103,8 +104,6 @@ const login = async (req, res) => {
       if (req.body.city != undefined) {
         city = req.body.city;
       }
-
-
 
       let checkSiteNotifications = await SiteNotificationsModel.findOne({
         user_id: user._id,
@@ -135,8 +134,6 @@ const login = async (req, res) => {
 
       req.session.device_id = device_id;
 
-
-
       var twofaStatus = user["twofa"];
       if (twofaStatus) securityLevel = securityLevel + 1;
 
@@ -163,10 +160,8 @@ const login = async (req, res) => {
         .limit(1)
         .exec();
 
-
       if (userRef != null) refId = userRef["refCode"] ?? "";
       else refId = "";
-
 
       let VerificationCheck = await VerificationIdModel.findOne({
         user_id: user._id,
@@ -174,9 +169,7 @@ const login = async (req, res) => {
 
       let verificationStatus;
       if (VerificationCheck != null) {
-
         if (VerificationCheck.status == 1) {
-
           verificationStatus = "verified";
         }
 
@@ -187,11 +180,9 @@ const login = async (req, res) => {
         if (VerificationCheck.status == 2) {
           verificationStatus = "rejected";
         }
-      }
-      else {
+      } else {
         verificationStatus = "none";
       }
-
 
       var data = {
         response: "success",
@@ -215,249 +206,273 @@ const login = async (req, res) => {
         verificationStatus: verificationStatus,
       };
 
-      var status = user["status"];
-      if (status == 1) {
-        let coins = await CoinList.find({ status: 1 }).exec();
-
-        let networks = await Network.find({ status: 1 }).exec();
-
-        for (let x = 0; x < networks.length; x++) {
-          let walletAddressCheck = await WalletAddress.findOne({
-            user_id: user._id,
-            network_id: networks[x]._id,
-          }).exec();
-
-
-
-
-
-          if (walletAddressCheck == null) {
-            let privateKey = "";
-            let address = "";
-            console.log(networks[x].symbol);
-            if (networks[x].symbol === "ERC") {
-              console.log("Start ERC");
-              let url = "http://54.167.28.93:4455/create_address";
-              let walletTest = await axios.post(url);
-              privateKey = walletTest.data.data.privateKey;
-              address = walletTest.data.data.address;
-            }
-
-            if (networks[x].symbol === "BSC") {
-              console.log("Start BSC");
-              let url = "http://44.203.2.70:4458/create_address";
-              let walletTest = await axios.post(url);
-              privateKey = walletTest.data.data.privateKey;
-              address = walletTest.data.data.address;
-            }
-
-            if (networks[x].symbol === "TRC") {
-              console.log("Start TRC");
-              let url = "http://54.172.40.148:4456/create_address";
-              let walletTest = await axios.post(url);
-              privateKey = walletTest.data.data.privateKey;
-              address = walletTest.data.data.address.base58;
-            }
-
-            if (networks[x].symbol === "SEGWIT") {
-              console.log("Start BTCNetwork");
-              let createBTC = await axios.request({
-                method: "post",
-                url: "http://3.15.2.155",
-                data: "request=create_address",
-                headers: {
-                  "Content-Type": "application/x-www-form-urlencoded",
-                },
-              });
-
-              address = createBTC.data.message;
-            }
-
-            if (networks[x].symbol === "SOL") {
-              console.log("Start SOL");
-              let url = "http://3.144.178.156:4470/create_address";
-              let walletTest = await axios.post(url);
-              privateKey = JSON.stringify(walletTest.data.data.pKey);
-              address = walletTest.data.data.address;
-            }
-
-            let walletAddress = new WalletAddress({
-              user_id: user._id,
-              network_id: networks[x]._id,
-              address: address,
-              private_key: privateKey,
-              wallet_address: address,
-            });
-
-            await walletAddress.save();
-          }
-        }
-        for (let i = 0; i < coins.length; i++) {
-          let walletResult = await WalletAddress.findOne({
-            user_id: user._id,
-            coin_id: coins[i]._id,
-          }).exec();
-
-          if (walletResult === null) {
-          } else {
-            console.log("Cüzdan var");
-          }
-
-          //Margin Wallet Check
-          let margin_cross_check = await MarginCrossWallet.findOne({ user_id: user._id, coin_id: coins[i]._id });
-          if (margin_cross_check == null) {
-            let createWallet = new MarginCrossWallet({
-              user_id: user._id,
-              coin_id: coins[i]._id,
-              symbol: coins[i].symbol,
-              amount: 0.0,
-              type: "margin_cross",
-              pnl: 0.0,
-              totalBonus: 0.0,
-              status: 1
-            });
-            await createWallet.save();
-          }
-
-          let margin_isole_check = await MarginIsolatedWallet.findOne({ user_id: user._id, coin_id: coins[i]._id });
-          if (margin_isole_check == null) {
-            let createWallet = new MarginIsolatedWallet({
-              user_id: user._id,
-              coin_id: coins[i]._id,
-              symbol: coins[i].symbol,
-              amount: 0.0,
-              type: "margin_isolated",
-              pnl: 0.0,
-              totalBonus: 0.0,
-              status: 1
-            });
-            await createWallet.save();
-          }
-
-
-
-
-
-
-          //End check
-          const newWallet = new Wallet({
-            name: coins[i]["name"],
-            symbol: coins[i]["symbol"],
-            user_id: user["id"],
-            amount: 0,
-            coin_id: coins[i]["id"],
-            type: "spot",
-            status: 1,
-          });
-
-          let wallets = await Wallet.findOne({
-            user_id: user["_id"],
-            coin_id: coins[i]["id"],
-          }).exec();
-
-          if (wallets == null) {
-            newWallet.save();
-          } else {
-          }
-        }
-
-        //Future Wallet Check
-
-        let future_wallet_check = await FutureWalletModel.findOne({ user_id: user._id });
-        if (future_wallet_check == null) {
-          let createWallet = new FutureWalletModel({
-            user_id: user._id,
-            coin_id: MarginWalletId,
-            symbol: "USDT",
-            amount: 0.0,
-            type: "future",
-            pnl: 0.0,
-            totalBonus: 0.0,
-            status: 1
-          });
-          await createWallet.save();
-        }
-
-
-
-        const newUserLog = new LoginLogs({
-          user_id: user["_id"],
-          ip: ip,
-          deviceName: deviceName,
-          manufacturer: manufacturer,
-          model: deviceModel,
-          status: 'completed'
+      if (smsVerifyExist == "no" && emailVerifyExist == "no") {
+        res.json({
+          status: "fail",
+          message: "Invalid Credentials",
         });
+      } else {
+        var status = user["status"];
 
-        let room = await newUserLog.save();
-        newRegisteredId = room.id;
+        if (status == "1") {
+          let coins = await CoinList.find({ status: 1 }).exec();
 
-        if (logs != null) {
-          if (logs["trust"] == "yes") {
-            data.trust = "yes";
-            data.log_id = logs["_id"];
+          let networks = await Network.find({ status: 1 }).exec();
+
+          // for (let x = 0; x < networks.length; x++) {
+          //   let walletAddressCheck = await WalletAddress.findOne({
+          //     user_id: user._id,
+          //     network_id: networks[x]._id,
+          //   }).exec();
+
+          //   if (walletAddressCheck == null) {
+          //     let privateKey = "";
+          //     let address = "";
+          //     console.log(networks[x].symbol);
+          //     if (networks[x].symbol === "ERC") {
+          //       console.log("Start ERC");
+          //       let url = "http://54.167.28.93:4455/create_address";
+          //       let walletTest = await axios.post(url);
+          //       privateKey = walletTest.data.data.privateKey;
+          //       address = walletTest.data.data.address;
+          //     }
+
+          //     if (networks[x].symbol === "BSC") {
+          //       console.log("Start BSC");
+          //       let url = "http://44.203.2.70:4458/create_address";
+          //       let walletTest = await axios.post(url);
+          //       privateKey = walletTest.data.data.privateKey;
+          //       address = walletTest.data.data.address;
+          //     }
+
+          //     if (networks[x].symbol === "TRC") {
+          //       console.log("Start TRC");
+          //       let url = "http://54.172.40.148:4456/create_address";
+          //       let walletTest = await axios.post(url);
+          //       privateKey = walletTest.data.data.privateKey;
+          //       address = walletTest.data.data.address.base58;
+          //     }
+
+          //     if (networks[x].symbol === "SEGWIT") {
+          //       console.log("Start BTCNetwork");
+          //       let createBTC = await axios.request({
+          //         method: "post",
+          //         url: "http://3.15.2.155",
+          //         data: "request=create_address",
+          //         headers: {
+          //           "Content-Type": "application/x-www-form-urlencoded",
+          //         },
+          //       });
+
+          //       address = createBTC.data.message;
+          //     }
+
+          //     if (networks[x].symbol === "SOL") {
+          //       console.log("Start SOL");
+          //       let url = "http://3.144.178.156:4470/create_address";
+          //       let walletTest = await axios.post(url);
+          //       privateKey = JSON.stringify(walletTest.data.data.pKey);
+          //       address = walletTest.data.data.address;
+          //     }
+
+          //     let walletAddress = new WalletAddress({
+          //       user_id: user._id,
+          //       network_id: networks[x]._id,
+          //       address: address,
+          //       private_key: privateKey,
+          //       wallet_address: address,
+          //     });
+
+          //     await walletAddress.save();
+          //   }
+          // }
+          for (let i = 0; i < coins.length; i++) {
+            let walletResult = await WalletAddress.findOne({
+              user_id: user._id,
+              coin_id: coins[i]._id,
+            }).exec();
+
+            if (walletResult === null) {
+            } else {
+              console.log("Cüzdan var");
+            }
+
+            //Margin Wallet Check
+            let margin_cross_check = await MarginCrossWallet.findOne({
+              user_id: user._id,
+              coin_id: coins[i]._id,
+            });
+            if (margin_cross_check == null) {
+              let createWallet = new MarginCrossWallet({
+                user_id: user._id,
+                coin_id: coins[i]._id,
+                symbol: coins[i].symbol,
+                amount: 0.0,
+                type: "margin_cross",
+                pnl: 0.0,
+                totalBonus: 0.0,
+                status: 1,
+              });
+              await createWallet.save();
+            }
+
+            let margin_isole_check = await MarginIsolatedWallet.findOne({
+              user_id: user._id,
+              coin_id: coins[i]._id,
+            });
+            if (margin_isole_check == null) {
+              let createWallet = new MarginIsolatedWallet({
+                user_id: user._id,
+                coin_id: coins[i]._id,
+                symbol: coins[i].symbol,
+                amount: 0.0,
+                type: "margin_isolated",
+                pnl: 0.0,
+                totalBonus: 0.0,
+                status: 1,
+              });
+              await createWallet.save();
+            }
+
+            //End check
+            const newWallet = new Wallet({
+              name: coins[i]["name"],
+              symbol: coins[i]["symbol"],
+              user_id: user["id"],
+              amount: 0,
+              coin_id: coins[i]["id"],
+              type: "spot",
+              status: 1,
+            });
+
+            let wallets = await Wallet.findOne({
+              user_id: user["_id"],
+              coin_id: coins[i]["id"],
+            }).exec();
+
+            if (wallets == null) {
+              newWallet.save();
+            } else {
+            }
+          }
+
+          // Future Wallet Check
+
+          let future_wallet_check = await FutureWalletModel.findOne({
+            user_id: user._id,
+          });
+          if (future_wallet_check == null) {
+            let createWallet = new FutureWalletModel({
+              user_id: user._id,
+              coin_id: MarginWalletId,
+              symbol: "USDT",
+              amount: 0.0,
+              type: "future",
+              pnl: 0.0,
+              totalBonus: 0.0,
+              status: 1,
+            });
+            await createWallet.save();
+          }
+
+          const newUserLog = new LoginLogs({
+            user_id: user["_id"],
+            ip: ip,
+            deviceName: deviceName,
+            manufacturer: manufacturer,
+            model: deviceModel,
+            status: "completed",
+          });
+          console.log("newUserLognewUserLog", newUserLog);
+          let room = await newUserLog.save();
+          newRegisteredId = room.id;
+
+          if (logs != null) {
+            if (logs["trust"] == "yes") {
+              data.trust = "yes";
+              data.log_id = logs["_id"];
+            } else {
+              data.trust = "no";
+              data.log_id = logs["_id"];
+            }
           } else {
             data.trust = "no";
-            data.log_id = logs["_id"];
+            data.log_id = newRegisteredId;
           }
-        } else {
-          data.trust = "no";
-          data.log_id = newRegisteredId;
-        }
 
-        const withdrawalWhiteList = await WithdrawalWhiteListModel.findOne({
-          user_id: user._id,
-        }).lean();
-        data.withdrawalWhiteList = !!withdrawalWhiteList?.status;
-        const oneStepWithdraw = await OneStepWithdrawModel.findOne({
-          user_id: user._id,
-        }).lean();
-        data.oneStepWithdraw = !!oneStepWithdraw?.status;
+          const withdrawalWhiteList = await WithdrawalWhiteListModel.findOne({
+            user_id: user._id,
+          }).lean();
+          data.withdrawalWhiteList = !!withdrawalWhiteList?.status;
+          const oneStepWithdraw = await OneStepWithdrawModel.findOne({
+            user_id: user._id,
+          }).lean();
+          data.oneStepWithdraw = !!oneStepWithdraw?.status;
 
-        if (user.applicantId) {
-          const applicantData = await getApplicantStatus(user.applicantId);
-          const applicantStatus =
-            applicantData?.reviewResult?.reviewAnswer == "GREEN" ? 1 : 0;
-          await User.updateOne({ _id: user_id }, { $set: { applicantStatus } });
-        }
+          if (user.applicantId) {
+            const applicantData = await getApplicantStatus(user.applicantId);
+            const applicantStatus =
+              applicantData?.reviewResult?.reviewAnswer == "GREEN" ? 1 : 0;
+            await User.updateOne(
+              { _id: user_id },
+              { $set: { applicantStatus } }
+            );
+          }
 
-        if (loginType == "mobile") {
-          let response = await NotificationTokens.findOne({
-            user_id: user["_id"],
-            token_id: notificationToken,
-          });
-
-          if (response == null) {
-            const newNotificationToken = new NotificationTokens({
+          if (loginType == "mobile") {
+            let response = await NotificationTokens.findOne({
               user_id: user["_id"],
               token_id: notificationToken,
             });
-            newNotificationToken.save(function (err, room) {
-              if (err) {
-                throw err;
-              } else {
-                res.json({ status: "success", data: data });
-              }
-            });
+
+            if (response == null) {
+              const newNotificationToken = new NotificationTokens({
+                user_id: user["_id"],
+                token_id: notificationToken,
+              });
+              newNotificationToken.save(function (err, room) {
+                if (err) {
+                  throw err;
+                } else {
+                  res.json({ status: "success", data: data });
+                }
+              });
+            } else {
+              res.json({ status: "success", data: data });
+            }
           } else {
             res.json({ status: "success", data: data });
           }
-        } else {
-          res.json({ status: "success", data: data });
+        }
+        if (status == "0") {
+          res.json({
+            status: "fail",
+            message: "account_not_active",
+            showableMessage: "Account not active",
+          });
+        }
+
+        if (status == "5") {
+          res.json({
+            status: "fail",
+            message: "account_disabled",
+            showableMessage: "Account is disabled",
+          });
         }
       }
-      if (status == "0") {
-        res.json({ status: "fail", message: "account_not_active", showableMessage: "Account not active" });
-      }
-
-      if (status == "5") {
-        res.json({ status: "fail", message: "account_disabled", showableMessage: "Account is disabled" });
-      }
     } else {
-      res.json({ status: "fail", message: "user_not_found", showableMessage: "User not Found" });
+      res.json({
+        status: "fail",
+        message: "user_not_found",
+        showableMessage: "User not Found",
+      });
     }
   } else {
-    res.json({ status: "fail", message: "Forbidden 403", showableMessage: "Forbidden 403" });
+    res.json({
+      status: "fail",
+      message: "Forbidden 403",
+      showableMessage: "Forbidden 403",
+    });
   }
 };
 

@@ -1,5 +1,5 @@
 var nodemailer = require("nodemailer");
-const { Vonage } = require("@vonage/server-sdk");
+// const { Vonage } = require("@vonage/server-sdk");
 
 async function sendNewMail(email, title, body) {
   var transporter = nodemailer.createTransport({
@@ -64,31 +64,31 @@ async function sendNewMail(email, title, body) {
   });
 }
 
-// async function sendNewSMS(phone, body) {
-//   return "true";
-// }
+async function sendNewSMS(phone, body) {
+  return "true";
+}
 
 // const Vonage = require("@vonage/server-sdk");
-const vonage = new Vonage({
-  apiKey: "7a0824e9",
-  apiSecret: "dKIx7aTAEr21jEDN",
-});
-async function sendNewSMS(mobileNumber, params) {
-  const from = "Vonage APIs";
-  const to = mobileNumber ;
-  const text = params;
-  await vonage.sms
-    .send({ to, from, text })
-    .then((resp) => {
-      console.log("Message sent successfully");
-      console.log(resp);
-    })
-    .catch((err) => {
-      console.log("There was an error sending the messages.");
-      console.error(err);
-    });
-  return true;
-}
+// const vonage = new Vonage({
+//   apiKey: "7a0824e9",
+//   apiSecret: "dKIx7aTAEr21jEDN",
+// });
+// async function sendNewSMS(mobileNumber, params) {
+//   const from = "Vonage APIs";
+//   const to = mobileNumber ;
+//   const text = params;
+//   await vonage.sms
+//     .send({ to, from, text })
+//     .then((resp) => {
+//       console.log("Message sent successfully");
+//       console.log(resp);
+//     })
+//     .catch((err) => {
+//       console.log("There was an error sending the messages.");
+//       console.error(err);
+//     });
+//   return true;
+// }
 module.exports = {
   sendMail: sendNewMail,
   sendSMS: sendNewSMS,

@@ -90,7 +90,7 @@ const walletToWallet = require('./controllers/transfer/index');
 const getRegisteredAddresses = require('./controllers/registeredAddress/getRegisteredAddresses');
 const googleAuth = require('./controllers/auth/googleAuth');
 const appleAuth = require('./controllers/auth/appleAuth');
-const getWalletsBalance = require('./controllers/GetUserBalances/getWalletsBalances.js');
+// const getWalletsBalance = require('./controllers/GetUserBalances/getWalletsBalances.js');
 const createNews = require('./controllers/news/createNews.js');
 const searchNews = require('./controllers/news/searchNews.js');
 const securityActivities = require('./controllers/accountActivities/securityActivities');
@@ -297,7 +297,7 @@ route.all("/getUSDTBalance", upload.none(), getUSDTBalance);
 route.all('/CopyLeaderRequest', upload.none(), copyLeaderRequest);
 route.all('/getUSDTBalance', upload.none(), getUSDTBalance);
 //balance Modules
-route.all('/getbalance', upload.none(), getWalletsBalance);
+// route.all('/getbalance', upload.none(), getWalletsBalance);
 //news Modules
 route.post('/news/createNews', uploadFile.single('coverPhoto'), createNews);
 route.all('/news/searchNews', searchNews);
