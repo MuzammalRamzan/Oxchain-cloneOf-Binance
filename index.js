@@ -163,6 +163,8 @@ const topReferralEarners = require('./controllers/referrals/topReferralEarners')
 const myReferralEarns = require('./controllers/referrals/myReferralEarns');
 const getKYCStatus = require('./controllers/kyc/getStatus');
 
+const addNewApiKey = require('./controllers/api/addNewApiKey');
+
 //only for testing purposes for emircan
 
 const clearKYCAndRecidency = require('./controllers/kyc/clearKYCAndRecidency.js');
@@ -225,6 +227,8 @@ route.all('/getSiteNotificationSettings', getSiteNotificationSettings);
 route.all('/updateSiteNotificationSettings', updateSiteNotificationSettings);
 
 route.all('/getKYCStatus', getKYCStatus);
+
+route.all('/addNewApiKey', addNewApiKey);
 
 route.post('/subscription', async (req, res) => {
 	try {
@@ -433,17 +437,17 @@ route.post('/createApplicant', upload.none(), createApplicant);
 route.post('/addDocument', upload.any(), addDocument);
 route.post('/getApplicantStatus', upload.none(), getApplicantStatus);
 
-if(process.env.NODE_ENV == 'product') {
-https
-	.createServer({
-		key: fs.readFileSync("./oxhain.key"),
-		cert: fs.readFileSync("./oxhain_com.crt"),
-	}, route)
-	.listen(port, () => {
-		console.log('Server Ayakta');
-	});
+if (process.env.NODE_ENV == 'product') {
+	https
+		.createServer({
+			key: fs.readFileSync("./oxhain.key"),
+			cert: fs.readFileSync("./oxhain_com.crt"),
+		}, route)
+		.listen(port, () => {
+			console.log('Server Ayakta');
+		});
 } else {
 	route.listen(port, () => {
 		console.log('Server Ayakta');
-	  });
+	});
 }

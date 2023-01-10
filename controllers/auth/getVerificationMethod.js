@@ -18,7 +18,7 @@ const getVerificationMethod = async function (req, res) {
       var twofa = user["twofa"];
       var twofa_status = user["twofa_status"];
       var email = user["email"];
-      var phone = user["phone"];
+      var phone = user["phone_number"];
 
       if (email != null && phone != null) {
         res.json({

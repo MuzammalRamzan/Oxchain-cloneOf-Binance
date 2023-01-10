@@ -2,6 +2,7 @@ const User = require("../../models/User");
 const RegisterMail = require("../../models/RegisterMail");
 const RegisterSMS = require("../../models/RegisterSMS");
 const MailVerification = require("../../models/MailVerification");
+const SMSVerification = require("../../models/SMSVerification");
 var authFile = require("../../auth.js");
 var utilities = require("../../utilities.js");
 const ChangeLogsModel = require("../../models/ChangeLogs");
@@ -28,7 +29,7 @@ const changePassword = async function (req, res) {
       if (user.password != utilities.hashData(old_password)) return res.json({ status: "fail", message: "wrong_password", showableMessage: "Wrong Password" });
 
       var email = user["email"];
-      var phone = user["phone"];
+      var phone = user["phone_number"];
 
       let check1 = "";
       let check3 = "";
@@ -51,7 +52,7 @@ const changePassword = async function (req, res) {
       }
 
       if (phone != undefined && phone != null && phone != "") {
-        check3 = await RegisterSMS.findOne
+        check3 = await SMSVerification.findOne
           ({
             user_id: user_id,
             reason: "change_password",

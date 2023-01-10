@@ -23,7 +23,7 @@ const changePhone = async function (req, res) {
 
     if (user != null) {
       var email = user["email"];
-      var phone = user["phone"];
+      var phone = user["phone_number"];
 
       let checkForPhone = await User.findOne({
         phone_number: newPhone,
