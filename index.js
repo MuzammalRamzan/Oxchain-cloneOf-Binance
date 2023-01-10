@@ -126,7 +126,7 @@ var port = process.env.PORT;
 //set limit for request body for base64 image upload
 route.use(bodyParser.json({ limit: '50mb' }));
 route.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
-const Subscription = require('./models/Subscription.js');
+
 const topReferrals = require('./controllers/referrals/topReferrals.js');
 const getReferral = require('./controllers/referrals/getReferral.js');
 const addBonus = require('./controllers/bonus/addBonus.js');
@@ -178,6 +178,7 @@ const UploadRecidency = require('./controllers/kyc/uploadRecidency');
 
 const marketingMailStatus = require('./controllers/marketingMails/mailStatus');
 const changeMarketingMailStatus = require('./controllers/marketingMails/changeStatus');
+const Subscription = require('./models/Subscription.js');
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -246,7 +247,9 @@ route.post('/subscription', async (req, res) => {
 			req.body.email == ''
 		) {
 			res.json({ status: 'fail', code: 1 });
+			return;
 		}
+		
 		let item = new Subscription();
 		item.email = req.body.email;
 		await item.save();
