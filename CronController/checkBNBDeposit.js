@@ -36,6 +36,8 @@ const checkBNBDeposit = async () => {
 
         for (let j = 0; j < checkRequest.data.result.length; j++) {
           if (checkRequest.data.result[j].to.toLowerCase() != wallet.wallet_address.toLowerCase()) continue;
+          console.log(checkRequest.data.result[j].to.toLowerCase() ," | ", wallet.wallet_address.toLowerCase());
+          return;
           amount = checkRequest.data.result[j].value / 1000000000000000000;
 
           user = await User.findOne({ _id: wallet.user_id }).exec();

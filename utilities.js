@@ -25,7 +25,8 @@ async function addDeposit(
   address,
   txid,
   coin_id,
-  networkId
+  networkId,
+  fromAddress = ""
 ) {
   const newDeposit = new Deposits({
     user_id: user_id,
@@ -35,7 +36,8 @@ async function addDeposit(
     address: address,
     status: 1,
     currency: coin_name,
-    netowrk_id : networkId
+    netowrk_id : networkId,
+    fromAddress: fromAddress
   });
 
   NotificationTokens.findOne({
