@@ -8,11 +8,10 @@ const sendMailPin = async (req, res) => {
   let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
-    var pin ;
-    if(process.env.NODE_ENV==="product"){
-      pin="000000";
-    }
-    else{
+    var pin;
+    if (process.env.NODE_ENV === "product") {
+      pin = "000000";
+    } else {
       pin = Math.floor(100000 + Math.random() * 900000);
     }
 

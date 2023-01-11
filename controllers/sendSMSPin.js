@@ -4,7 +4,7 @@ var mailer = require("../mailer.js");
 
 const sendSMSPin = async (req, res) => {
   var api_key_result = req.body.api_key;
-  var phone = req.body.phone;
+  var phone_number = req.body.phone;
   let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
@@ -16,28 +16,29 @@ const sendSMSPin = async (req, res) => {
     }
 
     const newPin = new RegisterSMS({
-      phone_number: phone,
+      phone_number: phone_number,
       pin: pin,
     });
 
-    let smsCheck = await RegisterSMS.findOne({ phone: phone }).exec();
+    let smsCheck = await RegisterSMS.findOne({
+      phone_number: phone_number,
+    }).exec();
     if (smsCheck == null) {
       if (newPin.save()) {
-        newPin.save();
-        mailer.sendSMS(phone, "Your pin code is " + pin + ".");
+        mailer.sendSMS(phone_number, "Your pin code is " + pin + ".");
         res.json({ status: "success", message: "pin_sent" });
       } else {
         res.json({ status: "fail", message: "an_error_occured" });
       }
     } else {
       RegisterSMS.findOneAndUpdate(
-        { phone_number: phone },
+        { phone_number: phone_number },
         { pin: pin },
         function (err, room) {
           if (err) {
             console.log(err);
           } else {
-            mailer.sendSMS(phone, "Your pin code is " + pin + ".");
+            mailer.sendSMS(phone_number, "Your pin code is " + pin + ".");
             res.json({ status: "success", message: "pin_sent" });
           }
         }

@@ -23,39 +23,47 @@ const registerController = async (req, res) => {
   let newUser;
 
   if (registerType == "email" && pin != "0") {
-    let checkEmailPin = await RegisterMail.findOne({
-      email: data,
-      pin: pin,
-    }).exec();
-    console.log("checkEmailPin in register", checkEmailPin);
-    if (checkEmailPin == null) {
+    const checkEmail = data.includes("@");
+    if (checkEmail == true) {
+      let checkEmailPin = await RegisterMail.findOne({
+        email: data,
+        pin: pin,
+      }).exec();
+      console.log("checkEmailPin in register", checkEmailPin);
+      if (checkEmailPin == null) {
+        res.json({
+          status: "fail",
+          message: "pin_not_match",
+          showableMessage: "Pin not match",
+        });
+        return;
+      } else {
+        RegisterMail.findOneAndUpdate(
+          { email: data },
+          { status: "1" },
+          function (err, room) {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log("pin status updated");
+            }
+          }
+        );
+      }
+    } else {
       res.json({
         status: "fail",
-        message: "pin_not_match",
-        showableMessage: "Pin not match",
+        message: "Invalid Email",
       });
-      return;
-    } else {
-      RegisterMail.findOneAndUpdate(
-        { email: data },
-        { status: "1" },
-        function (err, room) {
-          if (err) {
-            console.log(err);
-          } else {
-            console.log("pin status updated");
-          }
-        }
-      );
     }
   }
 
   if (registerType == "phone" && pin !== "0") {
     let checkPhonePin = await RegisterSMS.findOne({
-      phone: data,
+      phone_number: data,
       pin: pin,
     }).exec();
-
+    console.log("checkPhonePin", checkPhonePin);
     if (checkPhonePin == null) {
       res.json({
         status: "fail",
@@ -88,7 +96,7 @@ const registerController = async (req, res) => {
       let phoneC = await User.findOne({
         phone_number: req.body.data,
       }).exec();
-      console.log(phoneC);
+      console.log(phoneC, "phone is found");
       if (phoneC != null) {
         phoneUnique = "false";
       }
@@ -97,7 +105,7 @@ const registerController = async (req, res) => {
 
   async function register() {
     if (emailUnique == "true" && phoneUnique == "true") {
-      if (registerType == "email") {
+      if (registerType == "email" && checkEmail == true) {
         newUser = new User({
           email: data,
           password: utilities.hashData(req.body.password),
@@ -106,7 +114,7 @@ const registerController = async (req, res) => {
         });
       } else {
         newUser = new User({
-          country_code: "90",
+          country_code: req.body.country_code,
           phone_number: req.body.data,
           password: utilities.hashData(req.body.password),
           api_key_result: req.body.api_key,

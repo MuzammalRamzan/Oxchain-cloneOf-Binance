@@ -92,7 +92,6 @@ const walletToWallet = require('./controllers/transfer/index');
 const getRegisteredAddresses = require('./controllers/registeredAddress/getRegisteredAddresses');
 const googleAuth = require('./controllers/auth/googleAuth');
 const appleAuth = require('./controllers/auth/appleAuth');
-
 const createNews = require('./controllers/news/createNews.js');
 const searchNews = require('./controllers/news/searchNews.js');
 const securityActivities = require('./controllers/accountActivities/securityActivities');
