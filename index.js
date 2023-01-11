@@ -448,10 +448,13 @@ route.post('/addDocument', upload.any(), addDocument);
 route.post('/getApplicantStatus', upload.none(), getApplicantStatus);
 
 if (process.env.NODE_ENV == 'product') {
+	let sslKEY = fs.readFileSync("./oxhain.key");
+	let sslCERT = fs.readFileSync("./oxhain_com.crt");
+
 	https
 		.createServer({
-			key: fs.readFileSync("./oxhain.key"),
-			cert: fs.readFileSync("./oxhain_com.crt"),
+			key: sslKEY,
+			cert: sslCERT,
 		}, route)
 		.listen(port, () => {
 			console.log('Server Ayakta');
