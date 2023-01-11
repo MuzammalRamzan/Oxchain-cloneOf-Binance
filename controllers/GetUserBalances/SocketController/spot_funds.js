@@ -3,7 +3,7 @@ const MarginOrder = require('../../../models/MarginOrder');
 const Wallet = require('../../../models/Wallet');
 const CoinListModel = require('../../../models/CoinList');
 const axios = require('axios');
-
+const cryptoConvert=require('./cryptoConvert.js')
 const SpotFunds = async (user_id) => {
 	let CoinListFind = await CoinListModel.find({});
 
@@ -15,14 +15,8 @@ const SpotFunds = async (user_id) => {
 		if (coinInfo.symbol == 'SHIBA') {
 			coinInfo.symbol = 'SHIB';
 		}
-		let findBinanceItem = await axios(
-			'https://api.binance.com/api/v3/ticker/price?symbol=' +
-				coinInfo.symbol +
-				'USDT'
-		);
-
 		//create a price object
-		prices[coinInfo.symbol] = findBinanceItem.data.price;
+		prices[coinInfo.symbol] = await cryptoConvert(coinInfo.symbol,'USDT')
 	}
 
 	let wallets = await Wallet.find({ user_id: user_id, status: 1 });
