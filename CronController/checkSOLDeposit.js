@@ -15,7 +15,6 @@ const checkSOLDeposit = async () => {
 
         for (var i = 0; i < wallets.length; i++) {
             let w = wallets[i];
-            console.log(w);
             let post = await axios.get("https://api.solscan.io/account/transaction?address=" + w.wallet_address + "&cluster=", {
                 headers: {
                     "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
