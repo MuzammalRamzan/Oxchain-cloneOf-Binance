@@ -18,7 +18,7 @@ require('dotenv').config();
 
 // controllers
 const fs = require('fs');
-const https = require("https");
+const https = require('https');
 const login = require('./controllers/auth/login');
 const transfer = require('./controllers/wallet/transfer');
 const sendMailPin = require('./controllers/sendMailPin');
@@ -95,7 +95,7 @@ const appleAuth = require('./controllers/auth/appleAuth');
 const createNews = require('./controllers/news/createNews.js');
 const searchNews = require('./controllers/news/searchNews.js');
 const securityActivities = require('./controllers/accountActivities/securityActivities');
-
+const getWalletsBalance = require('./controllers/GetUserBalances/getWalletsbalances.js');
 const removePhone = require('./controllers/users/removePhone');
 const removeEmail = require('./controllers/users/removeEmail');
 
@@ -166,7 +166,6 @@ const getApiKeys = require('./controllers/api/getApiKeys');
 const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
-
 
 //only for testing purposes for emircan
 
@@ -248,7 +247,7 @@ route.post('/subscription', async (req, res) => {
 			res.json({ status: 'fail', code: 1 });
 			return;
 		}
-		
+
 		let item = new Subscription();
 		item.email = req.body.email;
 		await item.save();
@@ -307,7 +306,7 @@ route.all('/CopyLeaderRequest', upload.none(), copyLeaderRequest);
 route.all('/getUSDTBalance', upload.none(), getUSDTBalance);
 //balance Modules
 
-//route.all('/getbalance', upload.none(), getWalletsBalance);
+route.all('/getbalance', upload.none(), getWalletsBalance);
 //news Modules
 route.post('/news/createNews', uploadFile.single('coverPhoto'), createNews);
 route.all('/news/searchNews', searchNews);
@@ -354,7 +353,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) { }
+	async function (req, res) {}
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
@@ -448,14 +447,21 @@ route.post('/addDocument', upload.any(), addDocument);
 route.post('/getApplicantStatus', upload.none(), getApplicantStatus);
 
 if (process.env.NODE_ENV == 'product') {
-	let sslKEY = fs.readFileSync("/etc/letsencrypt/live/api.oxhain.com/privkey.pem");
-	let sslCERT = fs.readFileSync("/etc/letsencrypt/live/api.oxhain.com/fullchain.pem");
+	let sslKEY = fs.readFileSync(
+		'/etc/letsencrypt/live/api.oxhain.com/privkey.pem'
+	);
+	let sslCERT = fs.readFileSync(
+		'/etc/letsencrypt/live/api.oxhain.com/fullchain.pem'
+	);
 
 	https
-		.createServer({
-			key: sslKEY,
-			cert: sslCERT,
-		}, route)
+		.createServer(
+			{
+				key: sslKEY,
+				cert: sslCERT,
+			},
+			route
+		)
 		.listen(port, () => {
 			console.log('Server Ayakta');
 		});
