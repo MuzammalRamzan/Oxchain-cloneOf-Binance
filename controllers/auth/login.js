@@ -237,12 +237,7 @@ const login = async (req, res) => {
         verificationStatus: verificationStatus,
       };
 
-      if (smsVerifyExist == "no" && emailVerifyExist == "no") {
-        res.json({
-          status: "fail",
-          message: "Invalid Credentials",
-        });
-      } else {
+      
         var status = user["status"];
 
         if (status == "1") {
@@ -250,73 +245,73 @@ const login = async (req, res) => {
 
           let networks = await Network.find({ status: 1 }).exec();
 
-          // for (let x = 0; x < networks.length; x++) {
-          //   let walletAddressCheck = await WalletAddress.findOne({
-          //     user_id: user._id,
-          //     network_id: networks[x]._id,
-          //   }).exec();
+          for (let x = 0; x < networks.length; x++) {
+            let walletAddressCheck = await WalletAddress.findOne({
+              user_id: user._id,
+              network_id: networks[x]._id,
+            }).exec();
 
-          //   if (walletAddressCheck == null) {
-          //     let privateKey = "";
-          //     let address = "";
-          //     console.log(networks[x].symbol);
-          //     if (networks[x].symbol === "ERC") {
-          //       console.log("Start ERC");
-          //       let url = "http://54.167.28.93:4455/create_address";
-          //       let walletTest = await axios.post(url);
-          //       privateKey = walletTest.data.data.privateKey;
-          //       address = walletTest.data.data.address;
-          //     }
+            if (walletAddressCheck == null) {
+              let privateKey = "";
+              let address = "";
+              console.log(networks[x].symbol);
+              if (networks[x].symbol === "ERC") {
+                console.log("Start ERC");
+                let url = "http://54.167.28.93:4455/create_address";
+                let walletTest = await axios.post(url);
+                privateKey = walletTest.data.data.privateKey;
+                address = walletTest.data.data.address;
+              }
 
-          //     if (networks[x].symbol === "BSC") {
-          //       console.log("Start BSC");
-          //       let url = "http://44.203.2.70:4458/create_address";
-          //       let walletTest = await axios.post(url);
-          //       privateKey = walletTest.data.data.privateKey;
-          //       address = walletTest.data.data.address;
-          //     }
+              if (networks[x].symbol === "BSC") {
+                console.log("Start BSC");
+                let url = "http://44.203.2.70:4458/create_address";
+                let walletTest = await axios.post(url);
+                privateKey = walletTest.data.data.privateKey;
+                address = walletTest.data.data.address;
+              }
 
-          //     if (networks[x].symbol === "TRC") {
-          //       console.log("Start TRC");
-          //       let url = "http://54.172.40.148:4456/create_address";
-          //       let walletTest = await axios.post(url);
-          //       privateKey = walletTest.data.data.privateKey;
-          //       address = walletTest.data.data.address.base58;
-          //     }
+              if (networks[x].symbol === "TRC") {
+                console.log("Start TRC");
+                let url = "http://54.172.40.148:4456/create_address";
+                let walletTest = await axios.post(url);
+                privateKey = walletTest.data.data.privateKey;
+                address = walletTest.data.data.address.base58;
+              }
 
-          //     if (networks[x].symbol === "SEGWIT") {
-          //       console.log("Start BTCNetwork");
-          //       let createBTC = await axios.request({
-          //         method: "post",
-          //         url: "http://3.15.2.155",
-          //         data: "request=create_address",
-          //         headers: {
-          //           "Content-Type": "application/x-www-form-urlencoded",
-          //         },
-          //       });
+              if (networks[x].symbol === "SEGWIT") {
+                console.log("Start BTCNetwork");
+                let createBTC = await axios.request({
+                  method: "post",
+                  url: "http://3.15.2.155",
+                  data: "request=create_address",
+                  headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                  },
+                });
 
-          //       address = createBTC.data.message;
-          //     }
+                address = createBTC.data.message;
+              }
 
-          //     if (networks[x].symbol === "SOL") {
-          //       console.log("Start SOL");
-          //       let url = "http://3.144.178.156:4470/create_address";
-          //       let walletTest = await axios.post(url);
-          //       privateKey = JSON.stringify(walletTest.data.data.pKey);
-          //       address = walletTest.data.data.address;
-          //     }
+              if (networks[x].symbol === "SOL") {
+                console.log("Start SOL");
+                let url = "http://3.144.178.156:4470/create_address";
+                let walletTest = await axios.post(url);
+                privateKey = JSON.stringify(walletTest.data.data.pKey);
+                address = walletTest.data.data.address;
+              }
 
-          //     let walletAddress = new WalletAddress({
-          //       user_id: user._id,
-          //       network_id: networks[x]._id,
-          //       address: address,
-          //       private_key: privateKey,
-          //       wallet_address: address,
-          //     });
+              let walletAddress = new WalletAddress({
+                user_id: user._id,
+                network_id: networks[x]._id,
+                address: address,
+                private_key: privateKey,
+                wallet_address: address,
+              });
 
-          //     await walletAddress.save();
-          //   }
-          // }
+              await walletAddress.save();
+            }
+          }
           for (let i = 0; i < coins.length; i++) {
             let walletResult = await WalletAddress.findOne({
               user_id: user._id,
@@ -491,7 +486,7 @@ const login = async (req, res) => {
           });
         }
       }
-    } else {
+     else {
       res.json({
         status: "fail",
         message: "user_not_found",
