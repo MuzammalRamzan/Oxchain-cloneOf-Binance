@@ -448,8 +448,8 @@ route.post('/addDocument', upload.any(), addDocument);
 route.post('/getApplicantStatus', upload.none(), getApplicantStatus);
 
 if (process.env.NODE_ENV == 'product') {
-	let sslKEY = fs.readFileSync("./oxhain.key");
-	let sslCERT = fs.readFileSync("./oxhain_com.crt");
+	let sslKEY = fs.readFileSync("/etc/letsencrypt/live/api.oxhain.com/privkey.pem");
+	let sslCERT = fs.readFileSync("/etc/letsencrypt/live/api.oxhain.com/fullchain.pem");
 
 	https
 		.createServer({
