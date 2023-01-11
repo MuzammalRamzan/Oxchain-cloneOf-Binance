@@ -5,17 +5,41 @@ const axios = require("axios");
 var authFile = require("../../auth.js");
 const CopyTradeModel = require("../../models/CopyTrade");
 const setFeeCredit = require("../bonus/setFeeCredit");
+const ApiRequest = require("../../models/ApiRequests");
+const ApiKeysModel = require("../../models/ApiKeys");
 
 const addOrders = async function (req, res) {
   try {
-    
+
     var api_key_result = req.body.api_key;
 
     let api_result = await authFile.apiKeyChecker(api_key_result);
+    let apiRequest = "";
+
     if (api_result === false) {
-      res.json({ status: "fail", message: "Forbidden 403" });
-      return;
+      let checkApiKeys = "";
+
+      checkApiKeys = await ApiKeysModel.findOne({
+        api_key: api_key_result,
+        trade: "1"
+      }).exec();
+
+      if (checkApiKeys != null) {
+
+        apiRequest = new ApiRequest({
+          api_key: api_key_result,
+          request: "addOrders",
+          ip: req.body.ip ?? req.connection.remoteAddress,
+          user_id: checkApiKeys.user_id,
+        });
+        await apiRequest.save();
+      }
+      else {
+        res.json({ status: "fail", message: "Forbidden 403" });
+        return;
+      }
     }
+
     let percent = req.body.percent;
     let amount = req.body.amount;
 
@@ -42,8 +66,9 @@ const addOrders = async function (req, res) {
     let url =
       'http://18.130.193.166:8542/price?symbol=' + urlPair;
     let result = await axios(url);
+    console.log(result.data);
     var price = result.data.data.ask;
-    
+
     console.log(price);
     let target_price = req.body.target_price ?? 0.0;
     let stop_limit = req.body.stop_limit ?? 0.0;
@@ -125,6 +150,10 @@ const addOrders = async function (req, res) {
         if (saved) {
           toWalelt.amount = toWalelt.amount - total;
           await toWalelt.save();
+          if (api_result === false) {
+            apiRequest.status = 1;
+            await apiRequest.save();
+          }
           res.json({ status: "success", message: saved });
         }
       }
@@ -161,13 +190,19 @@ const addOrders = async function (req, res) {
         if (saved) {
           toWalelt.amount = toWalelt.amount - total;
           await toWalelt.save();
+          if (api_result === false) {
+            apiRequest.status = 1;
+            await apiRequest.save();
+          }
           res.json({ status: "success", message: saved });
         }
       } else if (req.body.type == "market") {
         let total = amount * price;
+        console.log("to wallet", toWalelt);
         let balance = toWalelt.amount;
 
         if (balance < total) {
+          console.log(balance, " | ", total);
           res.json({ status: "fail", message: "Invalid  balance" });
           return;
         }
@@ -192,6 +227,10 @@ const addOrders = async function (req, res) {
 
             await fromWalelt.save();
             await toWalelt.save();
+            if (api_result === false) {
+              apiRequest.status = 1;
+              await apiRequest.save();
+            }
             res.json({ status: "success", message: saved });
           }
         } else {
@@ -251,6 +290,10 @@ const addOrders = async function (req, res) {
         if (saved) {
           fromWalelt.amount = fromWalelt.amount - amount;
           await fromWalelt.save();
+          if (api_result === false) {
+            apiRequest.status = 1;
+            await apiRequest.save();
+          }
           res.json({ status: "success", message: saved });
         }
       }
@@ -280,6 +323,10 @@ const addOrders = async function (req, res) {
         if (saved) {
           fromWalelt.amount = fromWalelt.amount - amount;
           await fromWalelt.save();
+          if (api_result === false) {
+            apiRequest.status = 1;
+            await apiRequest.save();
+          }
           res.json({ status: "success", message: saved });
         }
       } else if (req.body.type == "market") {
@@ -306,6 +353,10 @@ const addOrders = async function (req, res) {
             await fromWalelt.save();
             await toWalelt.save();
 
+            if (api_result === false) {
+              apiRequest.status = 1;
+              await apiRequest.save();
+            }
             res.json({ status: "success", message: saved });
           }
         } else {

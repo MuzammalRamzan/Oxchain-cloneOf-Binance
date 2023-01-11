@@ -5,6 +5,8 @@ var authFile = require("../../auth.js");
 const FutureWalletId = "62ff3c742bebf06a81be98fd";
 const FutureOrder = require("../../models/FutureOrder");
 const FutureWalletModel = require("../../models/FutureWalletModel");
+const ApiRequest = require("../../models/ApiRequests");
+const ApiKeysModel = require("../../models/ApiKeys");
 
 function splitLengthNumber(q) {
     return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
@@ -13,10 +15,30 @@ function splitLengthNumber(q) {
 
 const addFutureOrder = async (req, res) => {
     var api_key_result = req.body.api_key;
-    let result = await authFile.apiKeyChecker(api_key_result);
-    if (result !== true) {
-        res.json({ status: "fail", message: "Forbidden 403" });
-        return;
+    let apiResult = await authFile.apiKeyChecker(api_key_result);
+    let apiRequest = "";
+    if (apiResult === false) {
+        let checkApiKeys = "";
+
+        checkApiKeys = await ApiKeysModel.findOne({
+            api_key: api_key_result,
+            futures: "1"
+        }).exec();
+
+        if (checkApiKeys != null) {
+
+            apiRequest = new ApiRequest({
+                api_key: api_key_result,
+                request: "addFutureOrder",
+                ip: req.body.ip ?? req.connection.remoteAddress,
+                user_id: checkApiKeys.user_id,
+            });
+            await apiRequest.save();
+        }
+        else {
+            res.json({ status: "fail", message: "Forbidden 403" });
+            return;
+        }
     }
     let future_type = req.body.future_type;
     let user_id = req.body.user_id;
@@ -118,6 +140,10 @@ const addFutureOrder = async (req, res) => {
             const fee = (amount * getPair.tradeFee) / 100;
             await setFeeCredit(user_id, getPair._id, fee);
 
+            if (apiResult === false) {
+                apiRequest.status = 1;
+                await apiRequest.save();
+            }
             res.json({ status: "success", data: order });
             return;
         } else if (method == "stop_limit") {
@@ -203,6 +229,10 @@ const addFutureOrder = async (req, res) => {
             await order.save();
             const fee = (amount * getPair.tradeFee) / 100;
             await setFeeCredit(user_id, getPair._id, fee);
+            if (apiResult === false) {
+                apiRequest.status = 1;
+                await apiRequest.save();
+            }
             res.json({ status: "success", data: order });
             return;
         } else if (req.body.method == "market") {
@@ -249,6 +279,10 @@ const addFutureOrder = async (req, res) => {
                     await userBalance.save();
 
                     await reverseOreders.save();
+                    if (apiResult === false) {
+                        apiRequest.status = 1;
+                        await apiRequest.save();
+                    }
                     res.json({ status: "success", data: reverseOreders });
                     return;
                 } else {
@@ -268,6 +302,10 @@ const addFutureOrder = async (req, res) => {
                             reverseOreders.usedUSDT;
                         await userBalance.save();
                         await reverseOreders.save();
+                        if (apiResult === false) {
+                            apiRequest.status = 1;
+                            await apiRequest.save();
+                        }
                         res.json({ status: "success", data: reverseOreders });
                         return;
                     }
@@ -286,6 +324,10 @@ const addFutureOrder = async (req, res) => {
                         userBalance.amount = splitLengthNumber(userBalance.amount + usedUSDT);
                         await userBalance.save();
                         await reverseOreders.save();
+                        if (apiResult === false) {
+                            apiRequest.status = 1;
+                            await apiRequest.save();
+                        }
                         res.json({ status: "success", data: reverseOreders });
                         return;
                     } else {
@@ -318,6 +360,10 @@ const addFutureOrder = async (req, res) => {
                         reverseOreders.amount = splitLengthNumber((writeUsedUSDT * leverage) / price);
                         await reverseOreders.save();
 
+                        if (apiResult === false) {
+                            apiRequest.status = 1;
+                            await apiRequest.save();
+                        }
                         res.json({ status: "success", data: reverseOreders });
                         return;
                     }
@@ -349,6 +395,10 @@ const addFutureOrder = async (req, res) => {
                 await order.save();
                 const fee = (amount * getPair.tradeFee) / 100;
                 await setFeeCredit(user_id, getPair._id, fee);
+                if (apiResult === false) {
+                    apiRequest.status = 1;
+                    await apiRequest.save();
+                }
                 res.json({ status: "success", data: order });
                 return;
             }
@@ -390,6 +440,10 @@ const addFutureOrder = async (req, res) => {
             await order.save();
             const fee = (amount * getPair.tradeFee) / 100;
             await setFeeCredit(user_id, getPair._id, fee);
+            if (apiResult === false) {
+                apiRequest.status = 1;
+                await apiRequest.save();
+            }
             res.json({ status: "success", data: order });
             return;
         } else if (method == "stop_limit") {
@@ -476,6 +530,10 @@ const addFutureOrder = async (req, res) => {
             await order.save();
             const fee = (amount * getPair.tradeFee) / 100;
             await setFeeCredit(user_id, getPair._id, fee);
+            if (apiResult === false) {
+                apiRequest.status = 1;
+                await apiRequest.save();
+            }
             res.json({ status: "success", data: order });
             return;
         } else if (req.body.method == "market") {
@@ -520,6 +578,10 @@ const addFutureOrder = async (req, res) => {
                     await userBalance.save();
 
                     await reverseOreders.save();
+                    if (apiResult === false) {
+                        apiRequest.status = 1;
+                        await apiRequest.save();
+                    }
                     res.json({ status: "success", data: reverseOreders });
                     return;
                 } else {
@@ -538,6 +600,10 @@ const addFutureOrder = async (req, res) => {
                             reverseOreders.usedUSDT;
                         await userBalance.save();
                         await reverseOreders.save();
+                        if (apiResult === false) {
+                            apiRequest.status = 1;
+                            await apiRequest.save();
+                        }
                         res.json({ status: "success", data: reverseOreders });
                         return;
                     }
@@ -555,6 +621,10 @@ const addFutureOrder = async (req, res) => {
                         userBalance.amount = splitLengthNumber(userBalance.amount + usedUSDT);
                         await userBalance.save();
                         await reverseOreders.save();
+                        if (apiResult === false) {
+                            apiRequest.status = 1;
+                            await apiRequest.save();
+                        }
                         res.json({ status: "success", data: reverseOreders });
                         return;
                     } else {
@@ -585,7 +655,10 @@ const addFutureOrder = async (req, res) => {
                         //reverseOreders.amount = ((((reverseOreders.usedUSDT + reverseOreders.pnl) * leverage) - (usedUSDT * leverage)) / price);
                         reverseOreders.amount = splitLengthNumber((writeUsedUSDT * leverage) / price);
                         await reverseOreders.save();
-
+                        if (apiResult === false) {
+                            apiRequest.status = 1;
+                            await apiRequest.save();
+                        }
                         res.json({ status: "success", data: reverseOreders });
                         return;
                     }
@@ -618,6 +691,10 @@ const addFutureOrder = async (req, res) => {
                 await order.save();
                 const fee = (amount * getPair.tradeFee) / 100;
                 await setFeeCredit(req.body.user_id, getPair._id, fee);
+                if (apiResult === false) {
+                    apiRequest.status = 1;
+                    await apiRequest.save();
+                }
                 res.json({ status: "success", data: order });
                 return;
             }
