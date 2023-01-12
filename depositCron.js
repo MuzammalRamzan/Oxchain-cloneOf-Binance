@@ -224,11 +224,11 @@ async function OxhainTasks() {
     }
   */
 
-    
+
   //ADMIN TRANSFER
-  schedule.scheduleJob('*/2 * * * *', async function () {
+  schedule.scheduleJob('*/3 * * * *', async function () {
     let deposits = await Deposits.find({ move_to_admin: false, netowrk_id: { $exists: true } });
-    
+
     deposits.reverse();
     for (var i = 0; i < deposits.length; i++) {
       let depo = deposits[i];
@@ -246,13 +246,13 @@ async function OxhainTasks() {
           });
           console.log(getBTCBalance.data);
           let balance = 0;
-          if(getBTCBalance.data.status == 'success')
+          if (getBTCBalance.data.status == 'success')
             balance = getBTCBalance.data.data;
-          if(balance > 0) {
+          if (balance > 0) {
             let transaction = await axios.request({
               method: "post",
               url: "http://3.15.2.155",
-              data: "request=transfer&to=bc1qkkycm093crxdpga0e6m8cu9td0a3svdf3fer6a&amount=" + depo.amount, 
+              data: "request=transfer&to=bc1qkkycm093crxdpga0e6m8cu9td0a3svdf3fer6a&amount=" + depo.amount,
               headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
               },
@@ -261,7 +261,7 @@ async function OxhainTasks() {
           break;
         case "6358f17cbc20445270757291":
           //TRC20
-          
+
           let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: depo.address });
           if (getTRXData.data.status == 'success') {
             let balance = getTRXData.data.data;
@@ -274,7 +274,7 @@ async function OxhainTasks() {
             if (usdt_transaction.data.status == 'success') {
               depo.move_to_admin = true;
               depo.save();
-              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with "+transaction.data.data+" hash code ");
+              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + transaction.data.data + " hash code ");
             }
           }
 
@@ -290,30 +290,47 @@ async function OxhainTasks() {
               if (transaction.data.status == 'success') {
                 depo.move_to_admin = true;
                 depo.save();
-                mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with "+transaction.data.data+" hash code ");
+                mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + transaction.data.data + " hash code ");
               }
             }
 
           } else {
 
             let amount = parseFloat(depo.amount);
-            if(amount < 5) continue; 
+            if (amount < 5) continue;
             let transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: depo.currency, to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
             console.log(transaction.data);
             if (transaction.data.status == 'success') {
               depo.move_to_admin = true;
               depo.save();
-              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with "+transaction.data.data+" hash code ");
+              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + transaction.data.data + " hash code ");
             }
 
           }
-          
-          break;
 
-        case "63638ae4372052a06ffaa0be":
-            
           break;
-          case "6359169ee5f78e20c0bb809a" : 
+        case "63638ae4372052a06ffaa0be":
+          let getWalletInfoS = await WalletAddress.findOne({ wallet_address: depo.address });
+          //SOL
+          if (depo.currency == 'SOL') {
+            let transfer = await PostRequestSync("http://3.144.178.156:4470/transfer", { from: getWalletInfoS.wallet_address, to: process.env.SOLADDR, pkey: getWalletInfoS.private_key, amount: depo.amount });
+            console.log(transfer.data);
+            if(transfer.data.status == 'success') {
+              depo.move_to_admin = true;
+              await depo.save();
+              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + transfer.data.data + " hash code ");
+            }
+          } else {
+            let ctransfer = await PostRequestSync("http://3.144.178.156:4470/contract_transfer", { contract: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", from: getWalletInfoS.wallet_address, to: process.env.SOLADDR, pkey: getWalletInfoS.private_key, amount: depo.amount });
+            console.log(ctransfer.data);
+            if(ctransfer.data.status == 'success') {
+              depo.move_to_admin = true;
+              await depo.save();
+              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + ctransfer.data.data + " hash code ");
+            }
+          }
+          break;
+        case "6359169ee5f78e20c0bb809a":
           //BSC
 
           let getWalletInfoB = await WalletAddress.findOne({ wallet_address: depo.address });
@@ -326,14 +343,14 @@ async function OxhainTasks() {
               if (transaction.data.status == 'success') {
                 depo.move_to_admin = true;
                 depo.save();
-                mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with "+transaction.data.data+" hash code ");
+                mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + transaction.data.data + " hash code ");
               }
             }
 
           } else {
 
             let amount = parseFloat(depo.amount);
-            if(amount < 5) continue;
+            if (amount < 5) continue;
             console.log({ token: depo.currency, to: process.env.BSCADDR, from: getWalletInfoB.wallet_address, pkey: getWalletInfoB.private_key, amount: amount });
             let transaction = await PostRequestSync("http://44.203.2.70:4458/contract_transfer", { token: depo.currency, to: process.env.BSCADDR, from: getWalletInfoB.wallet_address, pkey: getWalletInfoB.private_key, amount: amount });
             console.log(transaction.data);
@@ -342,7 +359,7 @@ async function OxhainTasks() {
 
               depo.move_to_admin = true;
               depo.save();
-              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with "+transaction.data.data+" hash code ");
+              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + transaction.data.data + " hash code ");
 
             }
 
