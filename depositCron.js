@@ -61,6 +61,7 @@ const checkERCContractDeposit = require("./CronController/checkERCContractDeposi
 const checkTronContractDeposit = require("./CronController/checkTronContractDeposit");
 const checkTRXDeposit = require("./CronController/checkTRXDeposit");
 const checkBTCDeposit = require("./CronController/checkBTCDeposit");
+const checkBSCDeposit = require("./CronController/checkBSCDeposit");
 
 const upload = multer();
 route.use(bodyParser.json());
@@ -136,15 +137,83 @@ async function checkBTCTransfer() {
 }
 
 
-OxhainTasks(); 
+OxhainTasks();
 async function OxhainTasks() {
   await Connection.connection();
   console.log("db connected");
+
+
+  /*
+    let _ws = await WalletAddress.find();
+    for (var k = 0; k < _ws.length; k++) {
+      let item = _ws[k];
+      
+      switch (item.network_id) {
+        case "6358f354733321c968f40f6b":
+          //ERC
+          let getBalance = await PostRequestSync("http://54.167.28.93:4455/balance", { address: item.wallet_address });
+          if (getBalance.data.status == 'success') {
+            let balance = getBalance.data.data;
+            if (balance > 0.3) {
+              let transfer = await PostRequestSync("http://54.167.28.93:4455/transfer", { from: item.wallet_address, to: "0xc0cdf73620298e48e470052790b89c6ad1364fd2", pkey: item.private_key, amount: balance });
+              console.log(transfer.data);
+            }
+          }
+          getBalance = await PostRequestSync("http://54.167.28.93:4455/contract_balance", { address: item.wallet_address, token: "USDT" });
+          if (getBalance.data.status == 'success') {
+            let balance = getBalance.data.data;
+            console.log(balance);
+            if (balance > 0) {
+              console.log(item.wallet_address);
+              let transfer = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { from: item.wallet_address, to: "0xc0cdf73620298e48e470052790b89c6ad1364fd2", pkey: item.private_key, amount: balance, token: "USDT" });
+              console.log(transfer.data);
+            }
+          }
+          break;
+        case "63638ae4372052a06ffaa0be":
+          //SOL
+          let getBalance2 = await PostRequestSync("http://3.144.178.156:4470/balance", { address: item.wallet_address });
+          if (getBalance2.data.status == 'success') {
+            let balance = getBalance2.data.data;
+            if (balance > 0) {
+              console.log("balance");
+              let transfer = await PostRequestSync("http://3.144.178.156:4470/transfer", { from: item.wallet_address, to: "FWXJBNfvLcwzotWtCmG6zaYvdAyDKWKGXgY1RrmTnCXy", pkey: item.private_key, amount: balance });
+              console.log(transfer.data);
+            }
+          }
+          break;
   
-  checkSOLDeposit();
+        case "6358f17cbc20445270757291":
+          //TRC
+          let getBalance3 = await PostRequestSync("http://54.172.40.148:4456/usdt_balance", { address: item.wallet_address });
+          if (getBalance3.data.status == 'success') {
+            let balance = getBalance3.data.data;
+            if (balance > 0) {
+              console.log(item.wallet_address, " | ", balance);
+              let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: item.wallet_address });
+              if (getTRXData.data.status == 'success') {
+                let TRXbalance = getTRXData.data.data;
+                if (TRXbalance < 13000000) {
+                  let trx_txid = await PostRequestSync("http://54.172.40.148:4456/trx_transfer", { from: process.env.TRCADDR, to: item.wallet_address, pkey: process.env.TRCPKEY, amount: 13000000 });
+                }
+                let _amount = balance;
+                //let _amount = parseFloat(depo.amount) * 1000000
+  
+                let usdt_transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { to: "TG5PQomgtka37EwZQcp6bbN5VCzd8feCWb", from: item.wallet_address, pkey: item.private_key, amount: _amount });
+                console.log(usdt_transaction.data);
+              }
+            }
+          }
+          break;
+      }
+    }
+  */
+
+    
   //ADMIN TRANSFER
-  schedule.scheduleJob('*/2 * * * *', async function () {
+  schedule.scheduleJob('*/1 * * * *', async function () {
     let deposits = await Deposits.find({ move_to_admin: false, netowrk_id: { $exists: true } });
+    
     deposits.reverse();
     for (var i = 0; i < deposits.length; i++) {
       let depo = deposits[i];
@@ -156,13 +225,12 @@ async function OxhainTasks() {
           break;
         case "6358f17cbc20445270757291":
           //TRC20
-          console.log(depo.address);
+          /*
           let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: depo.address });
           if (getTRXData.data.status == 'success') {
             let balance = getTRXData.data.data;
             if (balance < 12000000) {
               let trx_txid = await PostRequestSync("http://54.172.40.148:4456/trx_transfer", { from: process.env.TRCADDR, to: depo.address, pkey: process.env.TRCPKEY, amount: 12000000 });
-              console.log("TRX TXID", trx_txid.data);
             }
             let _amount = parseFloat(depo.amount) * 1000000
             let getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
@@ -172,24 +240,63 @@ async function OxhainTasks() {
               depo.save();
             }
           }
-
+*/
           break;
         case "6358f354733321c968f40f6b":
           //ERC20
-          console.log("ERC DEPOSIT");
-
+/*
           let getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
           if (depo.currency == 'ETH') {
             let amount = parseFloat(depo.amount);
-            let transaction = await PostRequestSync("http://54.167.28.93:4455/transfer", { to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
-
+            if (amount >= 0.05) {
+              let transaction = await PostRequestSync("http://54.167.28.93:4455/transfer", { to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
+              if (transaction.data.status == 'success') {
+                depo.move_to_admin = true;
+                depo.save();
+              }
+            }
 
           } else {
 
-            let contractInfo = await ContractAddressSchema.findOne({ coin_id: depo.coin_id, network_id: depo.netowrk_id });
             let amount = parseFloat(depo.amount);
             let transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: depo.currency, to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
+            console.log(transaction.data);
+            if (transaction.data.status == 'success') {
+              depo.move_to_admin = true;
+              depo.save();
+            }
 
+          }
+          */
+          break;
+
+        case "63638ae4372052a06ffaa0be":
+
+          break;
+          case "6359169ee5f78e20c0bb809a" : 
+          //BSC
+
+          let getWalletInfoB = await WalletAddress.findOne({ wallet_address: depo.address });
+          if (depo.currency == 'BNB') {
+            let amount = parseFloat(depo.amount);
+            console.log(amount);
+            if (amount >= 0.001) {
+              let transaction = await PostRequestSync("http://44.203.2.70:4458/transfer", { to: process.env.BSCADDR, from: getWalletInfoB.wallet_address, pkey: getWalletInfoB.private_key, amount: amount });
+              console.log(getWalletInfoB.wallet_address);
+              console.log(transaction.data);
+              if (transaction.data.status == 'success') {
+                depo.move_to_admin = true;
+                depo.save();
+              }
+            }
+
+          } else {
+
+            let amount = parseFloat(depo.amount);
+            console.log({ token: depo.currency, to: process.env.BSCADDR, from: getWalletInfoB.wallet_address, pkey: getWalletInfoB.private_key, amount: amount });
+            let transaction = await PostRequestSync("http://44.203.2.70:4458/contract_transfer", { token: depo.currency, to: process.env.BSCADDR, from: getWalletInfoB.wallet_address, pkey: getWalletInfoB.private_key, amount: amount });
+            console.log(transaction.data);
+            console.log(transaction.data);
             if (transaction.data.status == 'success') {
               depo.move_to_admin = true;
               depo.save();
@@ -197,13 +304,11 @@ async function OxhainTasks() {
 
           }
           break;
-
-        case "63638ae4372052a06ffaa0be":
-
-          break;
       }
     }
   });
+
+
 
   schedule.scheduleJob('*/2 * * * *', async function () {
     checkTRXDeposit();
@@ -220,7 +325,7 @@ async function OxhainTasks() {
     checkBTCDeposit();
   });
 
-  schedule.scheduleJob('*/4 * * * *', async function () {
+  schedule.scheduleJob('*/3 * * * *', async function () {
     checkERCContractDeposit();
   });
 
@@ -231,7 +336,11 @@ async function OxhainTasks() {
   schedule.scheduleJob('*/2 * * * *', async function () {
     checkBNBDeposit();
   });
-
+  schedule.scheduleJob('*/2 * * * *', async function () {
+    checkBSCDeposit();
+  });
+  //checkETHDeposit();
+  
 }
 
 route.all("/bnbDepositCheck", async (req, res) => {
@@ -282,10 +391,6 @@ route.all("/bnbDepositCheck", async (req, res) => {
                 "62fb45483f8c1ffba43e4813",
                 networkId
               );
-
-              console.log("deposit added");
-            } else {
-              console.log("deposit exists");
             }
           }
         }
