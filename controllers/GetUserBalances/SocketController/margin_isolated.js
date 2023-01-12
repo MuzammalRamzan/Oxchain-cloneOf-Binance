@@ -1,6 +1,8 @@
 const CoinList = require('../../../models/CoinList');
 const MarginIsolated = require('../../../models/MarginIsolatedWallet');
 const axios = require('axios');
+const cryptoConvert=require('./cryptoConvert.js')
+
 
 const marginIsolatedFunds = async (user_id) => {
 	let CoinListFind = await CoinList.find({});
@@ -12,14 +14,9 @@ const marginIsolatedFunds = async (user_id) => {
 		if (coinInfo.symbol == 'SHIBA') {
 			coinInfo.symbol = 'SHIB';
 		}
-		let findBinanceItem = await axios(
-			'https://api.binance.com/api/v3/ticker/price?symbol=' +
-				coinInfo.symbol +
-				'USDT'
-		);
 
 		//create a price object
-		prices[coinInfo.symbol] = findBinanceItem.data.price;
+		prices[coinInfo.symbol] = await cryptoConvert(coinInfo.symbol,'USDT')
 	}
 
 	let wallets = await MarginIsolated.find({ user_id: user_id });

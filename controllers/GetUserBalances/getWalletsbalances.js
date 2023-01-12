@@ -98,7 +98,6 @@ const getWalletsBalance = async (req, res) => {
 
 	data.push({
 		totalBalanceInUSDT: totalUsd,
-		totalBalanceInBTC: totalUsd,
 		balances: accountData,
 	});
 
