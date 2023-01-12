@@ -70,6 +70,7 @@ async function calculate(wallets, prices) {
                 'inOrder': 0.00,
                 'btcValue': btcPrice,
                 'usdtValue': usdtPrice,
+                'coin_id': coinInfo._id,
             }
         );
     }

@@ -6,6 +6,8 @@ var authFile = require("../../auth.js");
 const axios = require("axios");
 const Network = require("../../models/Network");
 const CoinList = require("../../models/CoinList");
+const ContractAddress = require("../../models/ContractAddress");
+const { ObjectId } = require("mongodb");
 
 function PostRequestSync(url, data) {
   return new Promise((resolve, reject) => {
@@ -57,6 +59,7 @@ const withdraw = async (req, res) => {
 
   let transaction = null;
   let coinInfo = null;
+  
   switch (networkInfo.symbol) {
     case "TRC":
       transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000).toString() });
@@ -76,16 +79,33 @@ const withdraw = async (req, res) => {
           res.json({ status: "fail", msg: "unknow error" });
           return;
         }
+      } else {
+        console.log({ token: coinInfo.symbol, from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
+        transaction = await PostRequestSync("http://44.203.2.70:4458/contract_transfer", { token: coinInfo.symbol, from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
+        console.log(transaction.data);
+        if (transaction.data.status != 'success') {
+          res.json({ status: "fail", msg: "unknow error" });
+          return;
+        }
       }
 
       break;
     case "ERC":
       coinInfo = await CoinList.findOne({ _id: coin_id });
-      transaction = await PostRequestSync("http://54.167.28.93:4455/transfer", {  from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
-      console.log(transaction.data);
-      if (transaction.data.status != 'success') {
-        res.json({ status: "fail", msg: "unknow error" });
-        return;
+      console.log(coinInfo);
+      if (coinInfo.symbol == 'ETH') {
+        transaction = await PostRequestSync("http://54.167.28.93:4455/transfer", { from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
+        if (transaction.data.status != 'success') {
+          res.json({ status: "fail", msg: "unknow error" });
+          return;
+        }
+      } else {
+        transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: coinInfo.symbol, from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
+        if (transaction.data.status != 'success') {
+          res.json({ status: "fail", msg: "unknow error" });
+          return;
+        }
+        
       }
       break;
     case "SEGWIT":

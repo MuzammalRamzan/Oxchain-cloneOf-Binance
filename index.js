@@ -37,6 +37,7 @@ const addOrders = require('./controllers/orders/addOrders');
 const disableAccount = require('./controllers/accountActivities/disableAccount');
 const deleteAccount = require('./controllers/users/deleteAccount');
 const addNewRegisteredAddress = require('./controllers/registeredAddress/addNewRegisteredAddress');
+const deleteRegisteredAddress = require('./controllers/registeredAddress/deleteRegisteredAddress');
 const addNotification = require('./controllers/addNotification');
 const getNotification = require('./controllers/getNotification');
 const getOrders = require('./controllers/orders/getOrders');
@@ -342,6 +343,7 @@ route.post('/deleteMarginLimit', deleteMarginLimit);
 route.all('/addOrders', upload.none(), addOrders);
 
 route.all('/addNewRegisteredAddress', upload.none(), addNewRegisteredAddress);
+route.all('/deleteRegisteredAddress', upload.none(), deleteRegisteredAddress);
 route.all('/getRegisteredAddresses', upload.none(), getRegisteredAddresses);
 route.all(
 	'/getRegisteredAddressList',
@@ -353,7 +355,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) {}
+	async function (req, res) { }
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);

@@ -64,8 +64,8 @@ const checkSOLDeposit = async () => {
                          
                         }
                     } else if(mainActions.action == 'sol-transfer') {
-                        
-                        if(mainActions.data.source == w.wallet_address) {
+                        console.log(mainActions.data.source, " | ", w.wallet_address)
+                        if(mainActions.data.destination == w.wallet_address) {
                             const coinID = "63625ff4372052a06ffaa0af";
                             let amount = mainActions.data.amount / 1000000000;
                             utilities.addDeposit(

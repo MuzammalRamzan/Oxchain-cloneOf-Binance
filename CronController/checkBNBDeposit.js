@@ -36,10 +36,7 @@ const checkBNBDeposit = async () => {
 
         for (let j = 0; j < checkRequest.data.result.length; j++) {
           if (checkRequest.data.result[j].to.toLowerCase() != wallet.wallet_address.toLowerCase()) continue;
-          console.log(checkRequest.data.result[j].to.toLowerCase() ," | ", wallet.wallet_address.toLowerCase());
-          return;
           amount = checkRequest.data.result[j].value / 1000000000000000000;
-
           user = await User.findOne({ _id: wallet.user_id }).exec();
           deposit = await Deposits.findOne({
             tx_id: checkRequest.data.result[j].hash,
@@ -51,9 +48,10 @@ const checkBNBDeposit = async () => {
               "BNB",
               amount,
               wallet.wallet_address,
-              checkRequest.data.result[0].hash,
+              checkRequest.data.result[j].hash,
               "62fb45483f8c1ffba43e4813",
-              networkID
+              networkID,
+              checkRequest.data.result[j].from
             );
 
           } else {
