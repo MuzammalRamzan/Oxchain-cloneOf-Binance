@@ -80,7 +80,9 @@ const withdraw = async (req, res) => {
           return;
         }
       } else {
-        transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: coinInfo.symbol, from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
+        console.log({ token: coinInfo.symbol, from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
+        transaction = await PostRequestSync("http://44.203.2.70:4458/contract_transfer", { token: coinInfo.symbol, from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
+        console.log(transaction.data);
         if (transaction.data.status != 'success') {
           res.json({ status: "fail", msg: "unknow error" });
           return;

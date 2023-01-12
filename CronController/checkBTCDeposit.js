@@ -11,7 +11,7 @@ require("dotenv").config();
 const checkBTCDeposit = async() => {
     let networkId = "635916ade5f78e20c0bb809c";
 
-    let wallet = await Wallet.find({
+    let wallet = await WalletAddress.find({
         network_id: networkId,
       }).exec();
   
@@ -33,9 +33,11 @@ const checkBTCDeposit = async() => {
           var user = "";
           var tx_id = "";
           var deposit = "";
+          if(checkRequest.data.status == 'error') continue;
           for (let j = 0; j < checkRequest.data.data.length; j++) {
             console.log(checkRequest.data.data);
             amount = checkRequest.data.data[j].value / 100000000;
+            console.log(amount);
             user = await User.findOne({ _id: user_id }).exec();
             deposit = await Deposits.findOne({
               user_id: user_id,

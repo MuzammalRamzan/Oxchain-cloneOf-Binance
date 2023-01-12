@@ -62,6 +62,7 @@ const checkTronContractDeposit = require("./CronController/checkTronContractDepo
 const checkTRXDeposit = require("./CronController/checkTRXDeposit");
 const checkBTCDeposit = require("./CronController/checkBTCDeposit");
 const checkBSCDeposit = require("./CronController/checkBSCDeposit");
+const mailer = require("./mailer");
 
 const upload = multer();
 route.use(bodyParser.json());
@@ -221,11 +222,31 @@ async function OxhainTasks() {
       switch (depo.netowrk_id.toString()) {
         case "635916ade5f78e20c0bb809c":
           //BTC
-
+          let getBTCBalance = await axios.request({
+            method: "post",
+            url: "http://3.15.2.155",
+            data: "request=balance&address=" + depo.address,
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+          });
+          let balance = 0;
+          if(getBTCBalance.data.status == 'success')
+            balance = getBTCBalance.data.data;
+          if(balance > 0) {
+            let transaction = await axios.request({
+              method: "post",
+              url: "http://3.15.2.155",
+              data: "request=transfer&to=bc1qkkycm093crxdpga0e6m8cu9td0a3svdf3fer6a&amount=" + depo.amount, 
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+            });
+          }
           break;
         case "6358f17cbc20445270757291":
           //TRC20
-          /*
+          
           let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: depo.address });
           if (getTRXData.data.status == 'success') {
             let balance = getTRXData.data.data;
@@ -238,13 +259,14 @@ async function OxhainTasks() {
             if (usdt_transaction.data.status == 'success') {
               depo.move_to_admin = true;
               depo.save();
+              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with "+transaction.data.data+" hash code ");
             }
           }
-*/
+
           break;
         case "6358f354733321c968f40f6b":
           //ERC20
-/*
+
           let getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
           if (depo.currency == 'ETH') {
             let amount = parseFloat(depo.amount);
@@ -253,6 +275,7 @@ async function OxhainTasks() {
               if (transaction.data.status == 'success') {
                 depo.move_to_admin = true;
                 depo.save();
+                mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with "+transaction.data.data+" hash code ");
               }
             }
 
@@ -264,10 +287,11 @@ async function OxhainTasks() {
             if (transaction.data.status == 'success') {
               depo.move_to_admin = true;
               depo.save();
+              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with "+transaction.data.data+" hash code ");
             }
 
           }
-          */
+          
           break;
 
         case "63638ae4372052a06ffaa0be":
@@ -287,6 +311,7 @@ async function OxhainTasks() {
               if (transaction.data.status == 'success') {
                 depo.move_to_admin = true;
                 depo.save();
+                mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with "+transaction.data.data+" hash code ");
               }
             }
 
@@ -298,8 +323,11 @@ async function OxhainTasks() {
             console.log(transaction.data);
             console.log(transaction.data);
             if (transaction.data.status == 'success') {
+
               depo.move_to_admin = true;
               depo.save();
+              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with "+transaction.data.data+" hash code ");
+
             }
 
           }
@@ -307,7 +335,6 @@ async function OxhainTasks() {
       }
     }
   });
-
 
 
   schedule.scheduleJob('*/2 * * * *', async function () {
@@ -340,69 +367,7 @@ async function OxhainTasks() {
     checkBSCDeposit();
   });
   //checkETHDeposit();
-  
 }
-
-route.all("/bnbDepositCheck", async (req, res) => {
-  var api_key_result = req.body.api_key;
-  let result = await authFile.apiKeyChecker(api_key_result);
-
-  let networkId = "6359169ee5f78e20c0bb809a";
-  if (result === true) {
-    let wallet = await Wallet.find({
-      status: 1,
-      network_id: "6359169ee5f78e20c0bb809a",
-    }).exec();
-
-    for (let i = 0; i < wallet.length; i++) {
-      let address = wallet[i].wallet_address;
-      if (address == null || address == '') continue;
-      let user_id = wallet[i].user_id;
-
-      if (address.length > 0) {
-        let checkRequest = await axios.get(
-          "https://api.bscscan.com/api?module=account&action=txlist&address=" +
-          address +
-          "&endblock=latest&apikey=" +
-          bscKey
-        );
-
-        var amount = "";
-        var user = "";
-        var tx_id = "";
-        var deposit = "";
-
-        for (let j = 0; j < checkRequest.data.result.length; j++) {
-          if (checkRequest.data.message === "OK") {
-            amount = checkRequest.data.result[j].value / 1000000000000000000;
-            user = await User.findOne({ _id: user_id }).exec();
-            deposit = await Deposits.findOne({
-              user_id: user_id,
-              tx_id: checkRequest.data.result[j].hash,
-            }).exec();
-
-            if (deposit === null) {
-              utilities.addDeposit(
-                user_id,
-                "BNB",
-                amount,
-                address,
-                checkRequest.data.result[0].hash,
-                "62fb45483f8c1ffba43e4813",
-                networkId
-              );
-            }
-          }
-        }
-      } else {
-        console.log("no address");
-      }
-    }
-    res.json("cron_success");
-  } else {
-    res.json("error");
-  }
-});
 
 route.all("/btcDepositCheck", async (req, res) => {
   //100 milyona böl
@@ -467,133 +432,6 @@ route.all("/btcDepositCheck", async (req, res) => {
     res.json("cron_success");
   } else {
     res.json("error");
-  }
-});
-
-route.all("/usdtDepositCheck", async (req, res) => {
-  var api_key_result = req.body.api_key;
-  let result = await authFile.apiKeyChecker(api_key_result);
-
-  let networkId = "6358f17cbc20445270757291";
-  if (result === true) {
-    let wallet = await WalletAddress.find({
-      network_id: "6358f17cbc20445270757291",
-    }).exec();
-
-    let tx_id = "";
-    let user_id = "";
-    let amount = "";
-    let address = "";
-    let deposit = "";
-
-    for (let i = 0; i < wallet.length; i++) {
-      let address = wallet[i].wallet_address;
-
-      let user_id = wallet[i].user_id;
-      if (address.length > 1) {
-        let checkRequest = await axios.get(
-          "https://api.trongrid.io/v1/accounts/" +
-          address +
-          "/transactions/trc20?limit=20&contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
-        );
-
-        for (let j = 0; j < checkRequest.data.data.length; j++) {
-          tx_id = checkRequest.data.data[j].transaction_id;
-          amount = checkRequest.data.data[j].value / 1000000;
-
-          deposit = await Deposits.findOne({
-            user_id: user_id,
-            tx_id: tx_id,
-          }).exec();
-
-          if (deposit === null) {
-            utilities.addDeposit(
-              user_id,
-              "USDT",
-              amount,
-              address,
-              tx_id,
-              "62bc116eb65b02b777c97b3d",
-              networkId
-            );
-            console.log("deposit added");
-          } else {
-          }
-        }
-      } else {
-        console.log("no address");
-      }
-    }
-    res.json("cron_success");
-  } else {
-    res.json("error");
-  }
-});
-
-
-
-route.all("/usdtDepositCheckERC", async (req, res) => {
-  var api_key_result = req.body.api_key;
-  let result = await authFile.apiKeyChecker(api_key_result);
-
-  console.log("başlıyor");
-
-  let networkId = "6358f354733321c968f40f6b";
-  if (result === true) {
-    let wallet = await WalletAddress.find({
-      status: 1,
-      network_id: networkId,
-    }).exec();
-
-    let tx_id = "";
-    let user_id = "";
-    let amount = "";
-    let address = "";
-    let deposit = "";
-
-    for (let i = 0; i < wallet.length; i++) {
-      let address = wallet[i].wallet_address;
-
-      let user_id = wallet[i].user_id;
-
-      if (address.length > 1) {
-        let checkRequest = await axios.get(
-          "https://api.etherscan.io/api?module=account&action=tokentx&address=" +
-          address +
-          "&startblock=0&endblock=99999999&page=1&offset=10&sort=asc&apikey=HH7FVKBY1U74K1VUYTUN1C4X973XN214FK&contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7"
-        );
-
-        if (checkRequest.data.result.length > 0) {
-          for (let j = 0; j < checkRequest.data.result.length; j++) {
-            tx_id = checkRequest.data.result[j].transaction_id;
-            amount = checkRequest.data.result[j].value / 1000000;
-
-            deposit = await Deposits.findOne({
-              user_id: user_id,
-              tx_id: tx_id,
-            }).exec();
-
-            if (deposit === null) {
-              utilities.addDeposit(
-                user_id,
-                "USDT",
-                amount,
-                address,
-                tx_id,
-                "62bc116eb65b02b777c97b3d",
-                networkId
-              );
-              console.log("deposit added");
-            } else {
-            }
-          }
-        }
-      } else {
-      }
-    }
-    res.json("cron_success");
-  } else {
-    res.json("errorRR");
   }
 });
 
