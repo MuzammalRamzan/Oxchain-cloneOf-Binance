@@ -3,6 +3,9 @@ const Deposits = require("./models/Deposits");
 const NotificationTokens = require("./models/NotificationTokens");
 var notifications = require("./notifications.js");
 const Wallet = require("./models/Wallet");
+const mailer = require("./mailer");
+const User = require("./models/User");
+const Network = require("./models/Network");
 function hashData(string) {
   return createHash("sha256").update(string).digest("hex");
 }
@@ -42,9 +45,9 @@ async function addDeposit(
 
   NotificationTokens.findOne({
     user_id: user_id,
-  }).then((response) => {
+  }).then(async (response) => {
     if (response == null) {
-      newDeposit.save(function (err, room) {
+      newDeposit.save(async function (err, room) {
         if (err) {
           console.log(err);
         } else {
@@ -57,6 +60,15 @@ async function addDeposit(
               }
             }
           );
+          let userInfo = await User.findOne({_id : user_id});
+          let networkInfo = await Network.findOne({_id : networkId}); 
+          let html = "<p>New deposit added</p>\n<b>User :</b> " + userInfo.email + "</b><br>";
+          html += "<b>Coin : </b> " + coin_name + " (" + networkInfo.symbol + ")<br>";
+          html += "<b>Amount : </b> " + amount + "<br>";
+          html += "<b>Hash : </b> " + txid + "<br>";
+          
+          mailer.sendMail("support@oxhain.com", "New Deposit ("+coin_name+")", html);
+          mailer.sendMail("f.damar@hotmail.com", "New Deposit ("+coin_name+")", html);
         }
       });
     } else {

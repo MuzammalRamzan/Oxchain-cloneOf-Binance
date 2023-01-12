@@ -9,7 +9,7 @@ const axios = require("axios");
 const SpotFunds = async (ws, user_id) => {
 
     let CoinListFind = await CoinListModel.find({});
-
+/*
     let prices = [];
     for (var i = 0; i < CoinListFind.length; i++) {
         let coinInfo = CoinListFind[i];
@@ -21,26 +21,27 @@ const SpotFunds = async (ws, user_id) => {
         let findBinanceItem = await axios("https://api.binance.com/api/v3/ticker/price?symbol=" + coinInfo.symbol + "USDT");
 
         //create a price object
-        prices[coinInfo.symbol] = findBinanceItem.data.price;
+        prices[coinInfo.symbol] = global.MarketData[coinInfo.symbol];
     }
+    */
+
 
 
     let wallets = await Wallet.find({ user_id: user_id, status: 1 });
-    let assets = await calculate(wallets, prices);
+    let assets = await calculate(wallets);
     ws.send(JSON.stringify({ page: "spot", type: 'funds', content: assets }));
 
     Wallet.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
         let wallets = await Wallet.find({ user_id: user_id, status: 1 });
-        let assets = await calculate(wallets, prices);
+        let assets = await calculate(wallets);
         ws.send(JSON.stringify({ page: "spot", type: 'funds', content: assets }));
     });
 }
 
-async function calculate(wallets, prices) {
+async function calculate(wallets) {
     let assets = [];
     for (var i = 0; i < wallets.length; i++) {
         let wallet = wallets[i];
-        if (wallet.address == null || wallet.address == '') continue;
         let coinInfo = await CoinList.findOne({ _id: wallet.coin_id });
 
 
@@ -52,11 +53,11 @@ async function calculate(wallets, prices) {
 
         if (coinInfo.symbol == "BTC") {
             btcPrice = amountData;
-            usdtPrice = amountData * prices["BTC"];
+            usdtPrice = amountData * global.MarketData["BTCUSDT"];
         }
         else {
-            btcPrice = amountData * prices[coinInfo.symbol] / prices["BTC"];
-            usdtPrice = amountData * prices[coinInfo.symbol];
+            btcPrice = amountData * global.MarketData[coinInfo.symbol + "USDT"] / global.MarketData["BTCUSDT"];
+            usdtPrice = amountData * global.MarketData[coinInfo.symbol + "USDT"];
         }
 
 
@@ -70,6 +71,7 @@ async function calculate(wallets, prices) {
                 'inOrder': 0.00,
                 'btcValue': btcPrice,
                 'usdtValue': usdtPrice,
+                'coin_id': coinInfo._id,
             }
         );
     }

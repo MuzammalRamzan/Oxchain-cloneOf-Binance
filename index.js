@@ -33,6 +33,7 @@ const addOrders = require('./controllers/orders/addOrders');
 const disableAccount = require('./controllers/accountActivities/disableAccount');
 const deleteAccount = require('./controllers/users/deleteAccount');
 const addNewRegisteredAddress = require('./controllers/registeredAddress/addNewRegisteredAddress');
+const deleteRegisteredAddress = require('./controllers/registeredAddress/deleteRegisteredAddress');
 const addNotification = require('./controllers/addNotification');
 const getNotification = require('./controllers/getNotification');
 const getOrders = require('./controllers/orders/getOrders');
@@ -163,6 +164,8 @@ const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
 
+const Delete2fa = require('./controllers/auth/delete2fa');
+
 //only for testing purposes for emircan
 
 const clearKYCAndRecidency = require('./controllers/kyc/clearKYCAndRecidency.js');
@@ -208,6 +211,9 @@ route.use(function (err, req, res, next) {
 route.get('/', (req, res) => {
 	res.send('success');
 });
+
+
+route.all('/delete2fa', Delete2fa);
 
 route.all('/addAnnouncement', addAnnouncement);
 route.all('/getAnnouncements', getAnnouncement);
@@ -338,6 +344,7 @@ route.post('/deleteMarginLimit', deleteMarginLimit);
 route.all('/addOrders', upload.none(), addOrders);
 
 route.all('/addNewRegisteredAddress', upload.none(), addNewRegisteredAddress);
+route.all('/deleteRegisteredAddress', upload.none(), deleteRegisteredAddress);
 route.all('/getRegisteredAddresses', upload.none(), getRegisteredAddresses);
 route.all(
 	'/getRegisteredAddressList',
@@ -349,7 +356,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) {}
+	async function (req, res) { }
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
