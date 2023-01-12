@@ -168,6 +168,8 @@ const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
 
+const Delete2fa = require('./controllers/auth/delete2fa');
+
 //only for testing purposes for emircan
 
 const clearKYCAndRecidency = require('./controllers/kyc/clearKYCAndRecidency.js');
@@ -213,6 +215,9 @@ route.use(function (err, req, res, next) {
 route.get('/', (req, res) => {
 	res.send('success');
 });
+
+
+route.all('/delete2fa', Delete2fa);
 
 route.all('/addAnnouncement', addAnnouncement);
 route.all('/getAnnouncements', getAnnouncement);
