@@ -101,11 +101,21 @@ const registerController = async (req, res) => {
     checkPhone.status = 1;
   }
 
+
+  do {
+    var showableUserIdData = Math.floor(10000000 + Math.random() * 90000000);
+    var checkShowableUserId = await User.findOne({
+      showableUserId: showableUserIdData,
+    }).exec();
+  } while (checkShowableUserId != null);
+
+
   if (registerType == "email") {
     newUser = new User({
       email: data,
       password: utilities.hashData(req.body.password),
       api_key_result: req.body.api_key,
+      showableUserId: showableUserIdData,
       status: 1,
     });
   } else {
@@ -114,6 +124,7 @@ const registerController = async (req, res) => {
       phone_number: req.body.data,
       password: utilities.hashData(req.body.password),
       api_key_result: req.body.api_key,
+      showableUserId: showableUserIdData,
       status: 1,
     });
   }

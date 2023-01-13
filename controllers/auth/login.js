@@ -252,6 +252,7 @@ const login = async (req, res) => {
         token: getToken({ user: user_id }),
         name: user.name,
         nickname: user.nickname,
+        showableUserId: user.showableUserId,
         last_login: logs,
         verificationStatus: verificationStatus,
       };
