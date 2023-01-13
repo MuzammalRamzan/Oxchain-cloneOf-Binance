@@ -201,15 +201,14 @@ const login = async (req, res) => {
       //change created at to istanbul time
 
       let createdAt = "";
-      if (logs[0]["createdAt"] != undefined) {
+      if (logs.length > 0) {
 
         createdAt = moment(logs[0]["createdAt"]).add(3, "hours");
-      }
-      else {
-        createdAt = moment(dateNow).add(3, "hours");
+        logs[0]["createdAt"] = createdAt;
+
       }
 
-      logs[0]["createdAt"] = createdAt;
+
 
       if (userRef != null) refId = userRef["refCode"] ?? "";
       else refId = "";
