@@ -48,8 +48,8 @@ var route = express();
 var wss = null;
 if (process.env.NODE_ENV == 'product') {
     var options = {
-        key: fs.readFileSync('/etc/letsencrypt/live/api.oxhain.com/privkey.pem'),
-        cert: fs.readFileSync('/etc/letsencrypt/live/api.oxhain.com/cert.pem')
+        key: fs.readFileSync('/etc/letsencrypt/live/socket.oxhain.com-0001/privkey.pem'),
+        cert: fs.readFileSync('/etc/letsencrypt/live/socket.oxhain.com-0001/cert.pem')
     };
 
     var server = https.createServer(options);
