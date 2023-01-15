@@ -3,7 +3,6 @@ const WebSocket = require("ws");
 const WebSocketServer = require("ws").Server;
 var https = require('https');
 var fs = require('fs');
-var wss = new WebSocketServer({ port: 7010 });
 const MarginOrder = require("../models/MarginOrder");
 const Wallet = require("../models/Wallet");
 const mongoose = require("mongoose");
@@ -46,6 +45,7 @@ const BinanceAPI = require("../BinanceAPI");
 const CheckLogoutDevice = require("./device/check_logout_device");
 var route = express();
 
+var wss = null;
 if (process.env.NODE_ENV == 'product') {
     var options = {
         key: fs.readFileSync('/etc/letsencrypt/live/api.oxhain.com/privkey.pem'),
@@ -54,9 +54,11 @@ if (process.env.NODE_ENV == 'product') {
 
     var server = https.createServer(options);
     server.listen(7010);
-    wss = new WebSocketServer({ httpServer: server, port : 7010 });
+    wss = new WebSocketServer({ port: 7010, httpServer: server });
 }
-
+else {
+    wss = new WebSocketServer({ port: 7010 });
+}
 
 
 route.use(cors());
