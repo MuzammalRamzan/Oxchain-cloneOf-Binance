@@ -54,7 +54,7 @@ if (process.env.NODE_ENV == 'product') {
 
     var server = https.createServer(options);
     server.listen(7010);
-    wss = new WebSocketServer({ port: 7010, httpServer: server });
+    wss = new WebSocketServer({ httpServer: server });
 }
 else {
     wss = new WebSocketServer({ port: 7010 });
