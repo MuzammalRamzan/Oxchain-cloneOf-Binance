@@ -1,4 +1,5 @@
 const User = require("../../models/User");
+const mailer = require("./mailer");
 var authFile = require("../../auth.js");
 const changeAvatar = async function (req, res) {
   var user_id = req.body.user_id;
@@ -22,6 +23,7 @@ const changeAvatar = async function (req, res) {
         if (err) {
           res.json({ status: "fail", message: err });
         } else {
+          mailer.sendMail(user.email, "Avatar changed", "Avatar changed", "Your avatar has been changed. If you did not do this, please contact us immediately.");
           res.json({ status: "success", data: "update_success" });
         }
       });

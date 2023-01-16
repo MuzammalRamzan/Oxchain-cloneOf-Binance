@@ -1,5 +1,7 @@
 const User = require("../../models/User");
 var authFile = require("../../auth.js");
+const mailer = require("./mailer");
+
 
 const updatePhone = async function (req, res) {
   var user_id = req.body.user_id;
@@ -27,13 +29,14 @@ const updatePhone = async function (req, res) {
         };
         let doc = await User.findOneAndUpdate(filter, update).exec();
 
-        res.json({ status: "success", data: "update_success" });
+        mailer.sendMail(user.email, "Phone number changed", "Phone number changed", "Your phone number has been changed. If you did not do this, please contact us immediately.");
+        return res.json({ status: "success", data: "update_success" });
       } else {
-        res.json({ status: "fail", message: "2fa_failed", showableMessage: "2FA Failed" });
+        return res.json({ status: "fail", message: "2fa_failed", showableMessage: "2FA Failed" });
       }
     }
   } else {
-    res.json({ status: "fail", message: "403 Forbidden", showableMessage: "403 Forbidden" });
+    return res.json({ status: "fail", message: "403 Forbidden", showableMessage: "403 Forbidden" });
   }
 };
 

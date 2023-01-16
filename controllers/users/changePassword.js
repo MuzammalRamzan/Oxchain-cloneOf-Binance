@@ -6,6 +6,8 @@ const SMSVerification = require("../../models/SMSVerification");
 var authFile = require("../../auth.js");
 var utilities = require("../../utilities.js");
 const ChangeLogsModel = require("../../models/ChangeLogs");
+const mailer = require("./mailer");
+
 
 const changePassword = async function (req, res) {
   var user_id = req.body.user_id;
@@ -90,6 +92,7 @@ const changePassword = async function (req, res) {
       });
       changeLog.save();
 
+      mailer.sendMail(user.email, "Password Changed", "Password Changed", "Your password has been changed. If you did not do this, please contact us immediately.");
       res.json({ status: "success", message: "password_changed", showableMessage: "Password Changed" });
 
     } else {
