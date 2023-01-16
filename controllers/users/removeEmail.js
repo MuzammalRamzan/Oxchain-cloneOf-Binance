@@ -1,7 +1,6 @@
 const UserModel = require('../../models/User');
-const mailer = require("./mailer");
-
 var authFile = require('../../auth');
+const mailer = require('../../mailer');
 
 const removeEmail = async (req, res) => {
 

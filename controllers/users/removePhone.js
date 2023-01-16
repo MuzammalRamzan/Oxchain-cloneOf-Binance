@@ -1,7 +1,8 @@
 const UserModel = require('../../models/User');
 
 var authFile = require('../../auth');
-const mailer = require("./mailer");
+const mailer = require('../../mailer');
+
 
 
 const removePhone = async (req, res) => {

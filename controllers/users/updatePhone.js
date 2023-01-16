@@ -1,6 +1,7 @@
 const User = require("../../models/User");
 var authFile = require("../../auth.js");
-const mailer = require("./mailer");
+const mailer = require("../../mailer");
+
 
 
 const updatePhone = async function (req, res) {

@@ -6,7 +6,7 @@ const SMSVerification = require("../../models/SMSVerification");
 var authFile = require("../../auth.js");
 var utilities = require("../../utilities.js");
 const ChangeLogsModel = require("../../models/ChangeLogs");
-const mailer = require("./mailer");
+const mailer = require("../../mailer");
 
 
 const changePassword = async function (req, res) {

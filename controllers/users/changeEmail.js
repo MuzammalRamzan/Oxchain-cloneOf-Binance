@@ -3,11 +3,13 @@ var authFile = require("../../auth.js");
 const SMSVerification = require("../../models/SMSVerification");
 const EmailVerification = require("../../models/MailVerification");
 const ChangeLogsModel = require("../../models/ChangeLogs");
-const mailer = require("./mailer");
+const mailer = require("../../mailer");
+
 
 
 
 const changeEmail = async function (req, res) {
+  
   var user_id = req.body.user_id;
 
   var newEmail = req.body.new_email;

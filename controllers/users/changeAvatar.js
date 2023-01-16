@@ -1,7 +1,9 @@
 const User = require("../../models/User");
-const mailer = require("./mailer");
+
 var authFile = require("../../auth.js");
+const mailer = require("../../mailer");
 const changeAvatar = async function (req, res) {
+  
   var user_id = req.body.user_id;
   var avatar = req.body.avatar;
 
