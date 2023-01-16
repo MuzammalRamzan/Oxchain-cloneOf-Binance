@@ -51,6 +51,7 @@ const getStatus = async (req, res) => {
             recidencyStatus = 0;
         }
     }
+    
 
     return res.json({
         status: "success",
