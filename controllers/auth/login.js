@@ -99,11 +99,22 @@ const login = async (req, res) => {
       newApiKeyRequest.save();
     }
 
+    let user = "";
 
-    let user = await User.findOne({
-      [searchType]: req.body.user,
-      password: utilities.hashData(req.body.password),
-    }).exec();
+    if (searchType == "email") {
+
+      user = await User.findOne({
+        email: req.body.user,
+        password: utilities.hashData(req.body.password),
+      }).exec();
+    }
+    else {
+      user = await User.findOne({
+        phone_number: req.body.user,
+        password: utilities.hashData(req.body.password),
+      }).exec();
+    }
+
     let securityLevel = 0;
 
     if (user != null) {
@@ -507,14 +518,14 @@ const login = async (req, res) => {
       }
     }
     else {
-      res.json({
+      return res.json({
         status: "fail",
         message: "user_not_found",
         showableMessage: "User not Found",
       });
     }
   } else {
-    res.json({
+    return res.json({
       status: "fail",
       message: "Forbidden 403",
       showableMessage: "Forbidden 403",
