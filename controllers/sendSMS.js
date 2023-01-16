@@ -98,6 +98,24 @@ const sendSMS = async function (req, res) {
         }).exec();
 
         if (check2 != null) {
+
+
+          let sendSMSResponse = await mailer.sendSMS(
+            user.country_code,
+            user.phone_number,
+            "Pin : " + pin,
+            function (err, data) {
+              if (err) {
+                console.log("Error " + err);
+              } else {
+                console.log("sms sent");
+              }
+            }
+          );
+
+          console.log("response", sendSMSResponse);
+
+
           SMSVerification.updateOne(
             { user_id: user["_id"], reason: reason },
             { pin: pin, status: "0" },
@@ -116,7 +134,6 @@ const sendSMS = async function (req, res) {
             reason: reason,
             status: 0,
           });
-
           newPin.save(function (err) {
             if (err) {
               res.json({ status: "fail", message: err });

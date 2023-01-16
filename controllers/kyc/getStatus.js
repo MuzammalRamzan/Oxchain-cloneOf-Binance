@@ -6,8 +6,6 @@ var authFile = require('../../auth.js');
 
 const getStatus = async (req, res) => {
 
-
-
     var api_key_result = req.body.api_key;
 
     let result = await authFile.apiKeyChecker(api_key_result);
@@ -17,7 +15,6 @@ const getStatus = async (req, res) => {
     else {
         return res.json({ status: "fail", message: "403 Forbidden", showableMessage: "Forbidden 403" });
     }
-
 
     let user_id = req.body.user_id;
 
@@ -29,8 +26,8 @@ const getStatus = async (req, res) => {
         { user_id: user_id }
     );
 
-    let verificationStatus = 0;
-    let recidencyStatus = 0;
+    let verificationStatus = -1;
+    let recidencyStatus = -1;
 
     if (verification) {
         if (verification.status == 1) {
@@ -38,6 +35,8 @@ const getStatus = async (req, res) => {
         }
         else if (verification.status == 2) {
             verificationStatus = 2;
+        } else if (verification.status == 0) {
+            verificationStatus = 0;
         }
     }
 
@@ -47,6 +46,9 @@ const getStatus = async (req, res) => {
         }
         else if (recidency.status == 2) {
             recidencyStatus = 2;
+        }
+        else if (recidency.status == 0) {
+            recidencyStatus = 0;
         }
     }
 
