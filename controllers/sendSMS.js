@@ -44,10 +44,10 @@ const sendSMS = async function (req, res) {
         }).exec();
 
 
-        mailer.sendSMS(
-          newPhone,
-          "Oxhain verification",
-          "Pin : " + pin2,
+        let sendSMSResponse = await mailer.sendSMS(
+          user.country_code,
+          user.phone_number,
+          "Pin : " + pin,
           function (err, data) {
             if (err) {
               console.log("Error " + err);
@@ -56,6 +56,8 @@ const sendSMS = async function (req, res) {
             }
           }
         );
+
+        console.log("response", sendSMSResponse);
 
         if (check != null) {
           await SMSVerification.findOneAndUpdate(
@@ -72,20 +74,6 @@ const sendSMS = async function (req, res) {
           newPin.save();
         }
 
-
-        mailer.sendSMS(
-          user["email"],
-          "Oxhain verification",
-          "Pin : " + pin,
-          function (err, data) {
-            if (err) {
-              console.log("Error " + err);
-            } else {
-              console.log("sms sent");
-            }
-          }
-        );
-
         res.json({ status: "success", data: "sms_send", showableMessage: "SMS send" });
       }
       else {
@@ -97,24 +85,23 @@ const sendSMS = async function (req, res) {
           reason: reason,
         }).exec();
 
-        if (check2 != null) {
 
-
-          let sendSMSResponse = await mailer.sendSMS(
-            user.country_code,
-            user.phone_number,
-            "Pin : " + pin,
-            function (err, data) {
-              if (err) {
-                console.log("Error " + err);
-              } else {
-                console.log("sms sent");
-              }
+        let sendSMSResponse = await mailer.sendSMS(
+          user.country_code,
+          user.phone_number,
+          "Pin : " + pin,
+          function (err, data) {
+            if (err) {
+              console.log("Error " + err);
+            } else {
+              console.log("sms sent");
             }
-          );
+          }
+        );
 
-          console.log("response", sendSMSResponse);
+        console.log("response", sendSMSResponse);
 
+        if (check2 != null) {
 
           SMSVerification.updateOne(
             { user_id: user["_id"], reason: reason },
