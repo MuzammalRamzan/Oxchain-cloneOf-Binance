@@ -33,7 +33,7 @@ require("dotenv").config();
 
 var server = null;
 if (process.env.NODE_ENV == 'product') {
-    https.createServer({
+    server = https.createServer({
         key: fs.readFileSync('/etc/letsencrypt/live/socket.oxhain.com-0001/privkey.pem'),
         cert: fs.readFileSync('/etc/letsencrypt/live/socket.oxhain.com-0001/cert.pem')
     });
@@ -48,7 +48,6 @@ const io = new socketio.Server(server, {
 
 io.on("connection", async (socket) => {
     await Connection.connection();
-    console.log("Şuan yerde");
     socket.on('spot_open_orders', (user_id) => {
         checkRoomOrJoin(socket, user_id);
         SpotOpenOrders(io.sockets, user_id);
