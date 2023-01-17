@@ -40,12 +40,15 @@ const UploadKYC = async function (req, res) {
     //base64 string to file
     var base64Data = file1.replace(/^data:image\/(png|jpeg);base64,/, "");
     let file1New = new Buffer.from(base64Data, 'base64');
+    console.log("file1New", file1New, base64Data)
 
     var base64Data2 = file2.replace(/^data:image\/(png|jpeg);base64,/, "");
     let file2New = new Buffer.from(base64Data2, 'base64');
+    console.log("file2New", file2New, base64Data2)
 
     var base64Data3 = file3.replace(/^data:image\/(png|jpeg);base64,/, "");
     let file3New = new Buffer.from(base64Data3, 'base64');
+    console.log("file3New", file3New, base64Data3)
 
 
     if (result === true) {
@@ -61,7 +64,7 @@ const UploadKYC = async function (req, res) {
                 }).exec();
 
 
-
+            console.log("verification", verification)
             if (verification == null) {
                 let country = User.country || null;
 
@@ -75,17 +78,18 @@ const UploadKYC = async function (req, res) {
                         ContentType: "image/jpg",
                     },
                 };
+                console.log("params2", params2)
 
-                var upload2 = new AWS.S3.ManagedUpload(params2);
-                var promise = upload2.promise();
-                promise.then(
-                    function (data) {
-                        console.log('Successfully uploaded photo.');
-                    },
-                    function (err) {
-                        console.error('There was an error uploading: ', err.message);
-                    }
-                );
+                // var upload2 = new AWS.S3.ManagedUpload(params2);
+                // var promise = upload2.promise();
+                // promise.then(
+                //     function (data) {
+                //         console.log('Successfully uploaded front photo.');
+                //     },
+                //     function (err) {
+                //         console.error('There was an error uploading: ', err.message);
+                //     }
+                // );
 
                 //second photo  
 
@@ -99,16 +103,16 @@ const UploadKYC = async function (req, res) {
                     },
                 };
 
-                var upload = new AWS.S3.ManagedUpload(params);
-                var promise = upload.promise();
-                promise.then(
-                    function (data) {
-                        console.log('Successfully uploaded photo.');
-                    },
-                    function (err) {
-                        console.error('There was an error uploading: ', err.message);
-                    }
-                );
+                // var upload = new AWS.S3.ManagedUpload(params);
+                // var promise = upload.promise();
+                // promise.then(
+                //     function (data) {
+                //         console.log('Successfully uploaded back photo.');
+                //     },
+                //     function (err) {
+                //         console.error('There was an error uploading: ', err.message);
+                //     }
+                // );
 
 
                 //upload file to aws s3
@@ -121,19 +125,21 @@ const UploadKYC = async function (req, res) {
                     },
                 };
 
-                var upload = new AWS.S3.ManagedUpload(params3);
-                var promise = upload.promise();
-                promise.then(
-                    function (data) {
-                        console.log('Successfully uploaded photo.');
-                    },
-                    function (err) {
-                        console.error('There was an error uploading: ', err.message);
-                    }
-                );
+                // var upload = new AWS.S3.ManagedUpload(params3);
+                // var promise = upload.promise();
+                // promise.then(
+                //     function (data) {
+                //         console.log('Successfully uploaded selfie photo.');
+                //     },
+                //     function (err) {
+                //         console.error('There was an error uploading: ', err.message);
+                //     }
+                // );
 
 
-
+                console.log('https://oxhain.s3.us-east-2.amazonaws.com/KYC/front-' + timestamp + user_id + '.' + file1extension)
+                console.log('https://oxhain.s3.us-east-2.amazonaws.com/KYC/back-' + timestamp + user_id + '.' + file2extension)
+                console.log('https://oxhain.s3.us-east-2.amazonaws.com/KYC/selfie-' + timestamp + user_id + '.' + file3extension)
 
                 let verification = new VerificationModel({
                     user_id: user_id,

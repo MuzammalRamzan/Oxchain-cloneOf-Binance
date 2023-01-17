@@ -11,12 +11,9 @@ const mailer = require("../../mailer");
 
 const changePassword = async function (req, res) {
   var user_id = req.body.user_id;
-  var twofapin = req.body.twofapin;
   var password = req.body.password;
   var old_password = req.body.old_password;
-
   var api_key_result = req.body.api_key;
-
   let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
@@ -40,10 +37,10 @@ const changePassword = async function (req, res) {
         check1 = await MailVerification.findOne({
           user_id: user_id,
           reason: "change_password",
-          pin: req.body.mailPin,
-          status: 0,
+          pin: req.body.pin,
+          status: 1,
         }).exec();
-
+        console.log("check1", check1)
         if (!check1)
           return res.json({
             status: "fail",
@@ -58,7 +55,7 @@ const changePassword = async function (req, res) {
           ({
             user_id: user_id,
             reason: "change_password",
-            pin: req.body.smsPin,
+            pin: req.body.pin,
             status: 0,
           }).exec();
 
