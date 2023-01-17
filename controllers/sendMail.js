@@ -31,10 +31,10 @@ const sendMail = async function (req, res) {
     }).exec();
 
     if (user != null) {
-      console.log("mail",user)
-      var pin = "0000";
+      console.log("mail", user)
+      var pin = Math.floor(100000 + Math.random() * 900000);
 
-      var pin2 = "0000";
+      var pin2 = Math.floor(100000 + Math.random() * 900000);
 
       if (reason == "change_email_new" && newMail != "") {
 
@@ -48,7 +48,7 @@ const sendMail = async function (req, res) {
         mailer.sendMail(
           newMail,
           "Oxhain verification",
-          "Pin : " + pin2,
+          "Pin : " + pin,
           function (err, data) {
             if (err) {
               console.log("Error " + err);
@@ -66,7 +66,7 @@ const sendMail = async function (req, res) {
         } else {
           newPin = new MailVerification({
             user_id: user["_id"],
-            pin: pin2,
+            pin: pin,
             reason: "change_email_new",
             status: 0,
           });
@@ -80,10 +80,6 @@ const sendMail = async function (req, res) {
       }
       else {
 
-
-
-
-
         mailer.sendMail(
           user["email"],
           "Oxhain verification",
@@ -96,12 +92,10 @@ const sendMail = async function (req, res) {
             }
           }
         );
-
         let check = await MailVerification.findOne({
           user_id: user_id,
           reason: reason,
         }).exec();
-
         if (check != null) {
           MailVerification.updateOne(
             { user_id: user["_id"], reason: reason },
