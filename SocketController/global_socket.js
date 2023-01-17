@@ -103,7 +103,7 @@ async function GlobalSocket() {
                 } else if (json.page == "all_prices") {
                     GetAllPrices(ws);
                 }
-                else if (json.page == 'devices') {
+                else if (json.page == 'check_logout') {
                     CheckLogoutDevice(ws, json.user_id);
                 }
             });
