@@ -37,6 +37,8 @@ const login = async (req, res) => {
   var api_key_result = req.body.api_key;
   var deviceName = "null";
   var deviceToken = "null";
+  var deviceOs = "null";
+  var deviceVersion = "null";
   var deviceType = "null";
   var manufacturer = "null";
   var ip = req.body.ip;
@@ -52,6 +54,12 @@ const login = async (req, res) => {
 
   if (req.body.deviceModel != undefined) {
     deviceModel = req.body.deviceModel;
+  }
+  if (req.body.deviceVersion != undefined) {
+    deviceVersion = req.body.deviceVersion;
+  }
+  if (req.body.deviceOs != undefined) {
+    deviceOs = req.body.deviceOs;
   }
 
   if (req.body.deviceType != undefined) {
@@ -169,6 +177,8 @@ const login = async (req, res) => {
         user_id: user._id,
         deviceName: deviceName,
         deviceType: deviceType,
+        deviceOs : deviceOs,
+        deviceVersion : deviceVersion,
         loginTime: Date.now(),
         ip: ip,
         city: city,

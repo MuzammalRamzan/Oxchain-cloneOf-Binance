@@ -69,36 +69,36 @@ async function sendNewSMS(country_code, phone, body) {
 
   let resData = "";
   let resError = "";
-  await axios.post(
-    "https://rest.messagebird.com/messages",
-    {
-      headers: {
-        Authorization: "AccessKey Ccq2VsSFHn0xsUdmmT33ZUvgw",
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      data: {
-        recipients: country_code + phone,
-        originator: "oxhain",
+
+  await axios
+    .post(
+      "https://rest.messagebird.com/messages",
+      {
+        originator: "Oxhain",
+        recipients: [country_code + phone],
         body: body,
       },
-    }).then((res) => {
+      {
+        headers: {
+          Authorization: "AccessKey Ccq2VsSFHn0xsUdmmT33ZUvgw",
+        },
+      }
+    )
+    .then((res) => {
       resData = res.data;
-    }
-    ).catch((err) => {
+    })
+    .catch((err) => {
       resError = err;
-    }
-    );
+    });
+
 
   return new Promise((resolve) => {
-
     if (resData) {
       resolve(resData);
     } else {
       resolve(resError);
     }
-
   });
-
 }
 
 // const Vonage = require("@vonage/server-sdk");

@@ -54,11 +54,20 @@ const sendSMSPin = async (req, res) => {
       newPin.save();
     }
 
-    let mail = mailer.sendSMS(country_code, phone_number, "Pin Code", "Your pin code is " + pin + ".");
-    
-    mail.then(function (result) {
-      console.log(result);
-    });
+    let sendSMSResponse = await mailer.sendSMS(
+      country_code,
+      phone_number,
+      "Pin : " + pin,
+      function (err, data) {
+        if (err) {
+          console.log("Error " + err);
+        } else {
+          console.log("sms sent");
+        }
+      }
+    );
+
+    console.log("response", sendSMSResponse);
     return res.json({
       status: "success",
       message: "pin_sent",
