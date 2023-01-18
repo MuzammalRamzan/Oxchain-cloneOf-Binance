@@ -80,6 +80,7 @@ const login = async (req, res) => {
 
   let result = await authFile.apiKeyChecker(api_key_result);
   let UserApiKey = false;
+  console.log("body params", req.body)
 
   let checkApiKeys = "";
   if (result === false) {
