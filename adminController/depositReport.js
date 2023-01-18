@@ -1,8 +1,7 @@
-const CoinList = require('../../../models/CoinList');
-const Wallet = require('../../../models/Wallet');
-const CoinListModel = require('../../../models/CoinList');
-const cryptoConvert = require('./cryptoConvert.js');
-const SpotFunds = async (user_id) => {
+const DepositModel = require('../models/Deposits');
+const CoinListModel = require('../models/CoinList');
+const cryptoConvert = require('../controllers/GetUserBalances/SocketController/cryptoConvert');
+const depositReport = async (status) => {
 	let CoinListFind = await CoinListModel.find({});
 
 	let prices = [];
@@ -17,7 +16,7 @@ const SpotFunds = async (user_id) => {
 		prices[coinInfo.symbol] = await cryptoConvert(coinInfo.symbol, 'USDT');
 	}
 
-	let wallets = await Wallet.find({ user_id: user_id, status: 1 });
+	let wallets = await DepositModel.find({});
 	let assets = await calculate(wallets, prices);
 	return assets;
 };
@@ -26,8 +25,7 @@ async function calculate(wallets, prices) {
 	let assets = [];
 	for (var i = 0; i < wallets.length; i++) {
 		let wallet = wallets[i];
-		if (wallet.address == null || wallet.address == '') continue;
-		let coinInfo = await CoinList.findOne({ _id: wallet.coin_id });
+		let coinInfo = await CoinListModel.findOne({ _id: wallet.coin_id });
 
 		let btcPrice = 0;
 		let usdtPrice = 0;
@@ -51,8 +49,9 @@ async function calculate(wallets, prices) {
 			inOrder: 0.0,
 			btcValue: btcPrice,
 			usdtValue: usdtPrice,
+			date: wallet.createdAt,
 		});
 	}
 	return assets;
 }
-module.exports = SpotFunds;
+module.exports = depositReport;
