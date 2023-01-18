@@ -105,7 +105,8 @@ const getLocation = require('./controllers/users/getLocation');
 
 const getSiteNotificationSettings = require('./controllers/siteNotifications/get');
 const updateSiteNotificationSettings = require('./controllers/siteNotifications/update');
-
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oidc');
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
 //console.log(authenticator.verifyToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse", "260180"));
@@ -175,6 +176,7 @@ const UploadRecidency = require('./controllers/kyc/uploadRecidency');
 
 const marketingMailStatus = require('./controllers/marketingMails/mailStatus');
 const changeMarketingMailStatus = require('./controllers/marketingMails/changeStatus');
+
 const Subscription = require('./models/Subscription.js');
 route.use(
 	session({
@@ -271,6 +273,7 @@ route.post('/addBonus', addBonus);
 route.post('/getBonusHistory', getBonusHistory);
 
 route.all('/UploadKYC', upload.any(), UploadKYC);
+route.all("/idverification", upload.any(), UploadKYC)
 route.all('/UploadRecidency', upload.any(), UploadRecidency);
 
 //AUTH
@@ -290,7 +293,7 @@ route.all('/removePhone', upload.none(), removePhone);
 route.all('/removeEmail', upload.none(), removeEmail);
 route.post('/googleAuth', googleAuth);
 route.post('/appleAuth', appleAuth);
-
+// route.post('/login/federated/google', passport.authenticate('google'));
 //Wallet Modules
 route.post('/transfer', transfer);
 route.post('/withdraw', withdraw);

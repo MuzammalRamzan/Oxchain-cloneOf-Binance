@@ -12,7 +12,6 @@ const getOneStepWithdraw = async function (req, res) {
     let oneStepWithdraw = await OneStepWithdrawModel.findOne({
       user_id: user_id,
     }).exec();
-
     if (oneStepWithdraw != null) {
       res.json({
         status: "success",

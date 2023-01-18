@@ -2,15 +2,15 @@ const CoinList = require("../../../models/CoinList");
 const MarginOrder = require("../../../models/MarginOrder");
 const Wallet = require("../../../models/Wallet")
 
-const IsolatedFunds = async (ws, user_id) => {
+const IsolatedFunds = async (sockets, user_id) => {
     let wallets = await Wallet.find({ user_id: user_id, status: 1 });
     let assets = await calculate(wallets,user_id);
-    ws.send(JSON.stringify({ page:"isolated", type: 'funds', content: assets }));
-
+    
+    sockets.in(user_id).emit("isolated",{ page:"isolated", type: 'funds', content: assets });
     Wallet.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
         let wallets = await Wallet.find({ user_id: user_id, status: 1 });
         let assets = await calculate(wallets, user_id);
-        ws.send(JSON.stringify({page:"isolated", type: 'funds', content: assets }));
+        sockets.in(user_id).emit("isolated",{ page:"isolated", type: 'funds', content: assets });
     });
 }
 

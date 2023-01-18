@@ -1,6 +1,9 @@
 const UserModel = require('../../models/User');
 
 var authFile = require('../../auth');
+const mailer = require('../../mailer');
+
+
 
 const removePhone = async (req, res) => {
 
@@ -34,6 +37,7 @@ const removePhone = async (req, res) => {
             user.phone_number = null;
             user.country_code = null;
             user.save();
+            mailer.sendMail(user.email, "Phone number removed", "Phone number removed", "Your phone number has been removed. If you did not do this, please contact us immediately.");
             return res.json({ status: "success", message: "phone number removed", showableMessage: "Phone number removed" });
         }
     }

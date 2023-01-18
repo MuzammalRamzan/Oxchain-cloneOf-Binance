@@ -1,6 +1,7 @@
 const RegisterMail = require("../models/RegisterMail");
 var authFile = require("../auth.js");
 var mailer = require("../mailer.js");
+let UserModel = require("../models/User");
 
 const sendMailPin = async (req, res) => {
   var api_key_result = req.body.api_key;
@@ -8,42 +9,53 @@ const sendMailPin = async (req, res) => {
   let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
-    var pin;
-    if (process.env.NODE_ENV === "product") {
-      pin = "000000";
-    } else {
-      pin = Math.floor(100000 + Math.random() * 900000);
+
+    if (!email || email == undefined || email == null || email == "") {
+      return res.json({
+        status: "fail",
+        message: "email_required",
+        showableMessage: "Email is required",
+      });
     }
 
-    const newPin = new RegisterMail({
+    let userCheck = await UserModel.findOne({
       email: email,
-      pin: pin,
-    });
+    }).exec();
 
-    let mailCheck = await RegisterMail.findOne({ email: email }).exec();
-    if (mailCheck == null) {
-      if (newPin.save()) {
-        mailer.sendMail(email, "Pin Code", "Your pin code is " + pin + ".");
-        res.json({ status: "success", message: "pin_sent" });
-      } else {
-        res.json({ status: "fail", message: "an_error_occured" });
-      }
-    } else {
-      RegisterMail.findOneAndUpdate(
-        { email: email },
-        { pin: pin },
-        function (err, room) {
-          if (err) {
-            console.log(err);
-          } else {
-            mailer.sendMail(email, "Pin Code", "Your pin code is " + pin + ".");
-            res.json({ status: "success", message: "pin_sent" });
-          }
-        }
-      );
+    if (userCheck) {
+      return res.json({
+        status: "fail",
+        message: "email_already_registered",
+        showableMessage: "Email already registered",
+      });
     }
+    let check = await RegisterMail.findOne({
+      email: email,
+    }).exec();
+
+    let pin = Math.floor(100000 + Math.random() * 900000);
+    if (check) {
+      check.pin = pin;
+      check.status = 0;
+      check.save();
+    }
+    if (check == null) {
+      const newPin = new RegisterMail({
+        email: email,
+        pin: pin,
+        status: 0,
+      });
+      newPin.save();
+    }
+    mailer.sendMail(email, "Pin Code", "Your pin code is " + pin + ".");
+
+    return res.json({
+      status: "success",
+      message: "pin_sent",
+      showableMessage: "Pin sent",
+    });
   } else {
-    res.json({ status: "fail", message: "Forbidden 403" });
+    return res.json({ status: "fail", message: "Forbidden 403", showableMessage: "Forbidden 403" });
   }
 };
 

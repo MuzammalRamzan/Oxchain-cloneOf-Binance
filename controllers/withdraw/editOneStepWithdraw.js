@@ -14,8 +14,10 @@ const editOneStepWithdraw = async (req, res) => {
 
   let reason = "oneStepWithdraw";
 
-
+  // var result = await authFile.apiKeyChecker(apiKey);
+  // console.log("result", result)
   if (!apiKey) return res.json({ status: "error", message: "Api key is null" });
+
   const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
   if (!apiKeyCheck)
     return res.json({ status: "error", message: "Api key is wrong" });
@@ -24,17 +26,24 @@ const editOneStepWithdraw = async (req, res) => {
   let oneStepChecker = await OneStepWithdrawModel.findOne({
     user_id: userId,
   });
-
+  console.log("oneStepChecker", oneStepChecker)
   let verified = false;
   if (email != "" && email != undefined) {
-
+  
     let mailVerification = await MailVerification.findOne({
       user_id: userId,
       reason: reason,
       pin: email,
-    });
+      status: 0
 
+    });
     if (mailVerification) {
+      await MailVerification.findOneAndUpdate(mailVerification._id, {
+        user_id: userId,
+        reason: reason,
+        pin: email,
+        status: 1
+      });
     }
     else {
       return res.json({ status: "failed", message: "verification_failed", showableMessage: "Mail pin is wrong" });
@@ -47,10 +56,16 @@ const editOneStepWithdraw = async (req, res) => {
       user_id: userId,
       reason: reason,
       pin: phone,
+      status: 0
     });
 
     if (smsVerification) {
-
+      await SMSVerification.findOneAndUpdate(smsVerification._id, {
+        user_id: userId,
+        reason: reason,
+        pin: phone,
+        status: 1
+      });
     }
     else {
       return res.json({ status: "failed", message: "verification_failed", showableMessage: "Phone pin is wrong" });
