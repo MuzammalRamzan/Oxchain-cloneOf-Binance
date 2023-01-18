@@ -1,15 +1,16 @@
 const MarginOrder = require("../../../models/MarginOrder");
 
-const CrossPositions = async (ws, user_id) => {
+const CrossPositions = async (sockets, user_id) => {
 
     let orders = await MarginOrder.find({ user_id: user_id, margin_type: "cross", method: 'market', status: 0 });
     let assets = calculate(orders);
-    ws.send(JSON.stringify({ page: "cross", type: 'positions', content: assets }));
+    sockets.in(user_id).emit("cross", { page: "cross", type: 'positions', content: assets });
 
     MarginOrder.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
         let orders = await MarginOrder.find({ user_id: user_id, margin_type: "cross", method: 'market', status: 0 });
         let assets = calculate(orders);
-        ws.send(JSON.stringify({ page: "cross", type: 'positions', content: assets }));
+        
+        sockets.in(user_id).emit("cross", { page: "cross", type: 'positions', content: assets });
     });
 
 }

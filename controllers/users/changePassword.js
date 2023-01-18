@@ -22,7 +22,7 @@ const changePassword = async function (req, res) {
       _id: user_id,
       status: 1,
     }).exec();
-
+    console.log("user", user)
     if (user != null) {
 
       if (user.password != utilities.hashData(old_password)) return res.json({ status: "fail", message: "wrong_password", showableMessage: "Wrong Password" });
@@ -38,7 +38,7 @@ const changePassword = async function (req, res) {
           user_id: user_id,
           reason: "change_password",
           pin: req.body.pin,
-          status: 1,
+          status: 0,
         }).exec();
         console.log("check1", check1)
         if (!check1)

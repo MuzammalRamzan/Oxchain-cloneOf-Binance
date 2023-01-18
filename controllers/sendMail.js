@@ -34,7 +34,7 @@ const sendMail = async function (req, res) {
       console.log("mail bbb", user)
       var pin = "0000";
 
-      var pin2 = "0000";
+      var pin2 = Math.floor(100000 + Math.random() * 900000);
 
       if (reason == "change_email_new" && newMail != "") {
 
@@ -66,7 +66,7 @@ const sendMail = async function (req, res) {
         } else {
           newPin = new MailVerification({
             user_id: user["_id"],
-            pin: pin2,
+            pin: pin,
             reason: "change_email_new",
             status: 0,
           });
@@ -80,10 +80,6 @@ const sendMail = async function (req, res) {
       }
       else {
 
-
-
-
-
         mailer.sendMail(
           user["email"],
           "Oxhain verification",
@@ -96,7 +92,6 @@ const sendMail = async function (req, res) {
             }
           }
         );
-
         let check = await MailVerification.findOne({
           user_id: user_id,
           reason: reason,
