@@ -61,7 +61,6 @@ const UploadKYC = async function (req, res) {
                 }).exec();
 
 
-
             if (verification == null) {
                 let country = User.country || null;
 
@@ -80,7 +79,7 @@ const UploadKYC = async function (req, res) {
                 var promise = upload2.promise();
                 promise.then(
                     function (data) {
-                        console.log('Successfully uploaded photo.');
+                        console.log('Successfully uploaded front photo.');
                     },
                     function (err) {
                         console.error('There was an error uploading: ', err.message);
@@ -103,7 +102,7 @@ const UploadKYC = async function (req, res) {
                 var promise = upload.promise();
                 promise.then(
                     function (data) {
-                        console.log('Successfully uploaded photo.');
+                        console.log('Successfully uploaded back photo.');
                     },
                     function (err) {
                         console.error('There was an error uploading: ', err.message);
@@ -125,13 +124,12 @@ const UploadKYC = async function (req, res) {
                 var promise = upload.promise();
                 promise.then(
                     function (data) {
-                        console.log('Successfully uploaded photo.');
+                        console.log('Successfully uploaded selfie photo.');
                     },
                     function (err) {
                         console.error('There was an error uploading: ', err.message);
                     }
                 );
-
 
 
 

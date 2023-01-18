@@ -9,7 +9,7 @@ const getStatus = async (req, res) => {
     var api_key_result = req.body.api_key;
 
     let result = await authFile.apiKeyChecker(api_key_result);
-
+    console.log("result", result)
     if (result === true) {
     }
     else {
@@ -51,7 +51,7 @@ const getStatus = async (req, res) => {
             recidencyStatus = 0;
         }
     }
-    
+
 
     return res.json({
         status: "success",

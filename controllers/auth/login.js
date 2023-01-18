@@ -80,6 +80,7 @@ const login = async (req, res) => {
 
   let result = await authFile.apiKeyChecker(api_key_result);
   let UserApiKey = false;
+  console.log("body params", req.body)
 
   let checkApiKeys = "";
   if (result === false) {
@@ -124,7 +125,13 @@ const login = async (req, res) => {
     }
 
     let securityLevel = 0;
-
+    if (user.deleted) {
+      return res.json({
+        status: "fail",
+        message: "user deleted",
+        showableMessage: "User deleted",
+      });
+    }
     if (user != null) {
       let emailVerifyCheck = await RegisterMail.findOne({
         email: user.email,
@@ -177,8 +184,8 @@ const login = async (req, res) => {
         user_id: user._id,
         deviceName: deviceName,
         deviceType: deviceType,
-        deviceOs : deviceOs,
-        deviceVersion : deviceVersion,
+        deviceOs: deviceOs,
+        deviceVersion: deviceVersion,
         loginTime: Date.now(),
         ip: ip,
         city: city,
