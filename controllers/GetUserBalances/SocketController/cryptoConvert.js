@@ -15,7 +15,6 @@ const cryptoConvert = async (firstCoinSymbol, secondCoinSymbol) => {
 		let findBinanceItem = await axios(
 			developmentURL + firstCoinSymbol + secondCoinSymbol
 		);
-		console.log(findBinanceItem.data.price);
 		return findBinanceItem.data.price;
 	} else {
 		let findBinanceItem = await axios(
