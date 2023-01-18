@@ -1,7 +1,7 @@
 const FutureOrder = require("../../../models/FutureOrder");
 const MarginOrder = require("../../../models/MarginOrder");
 
-const FutureTradeHistory = async (ws, user_id, filter) => {
+const FutureTradeHistory = async (sockets, user_id, filter) => {
 
     let request = { user_id: user_id, method: "market" };
     if (filter['symbol'] != null) {
@@ -20,12 +20,12 @@ const FutureTradeHistory = async (ws, user_id, filter) => {
 
     let orders = await FutureOrder.find(request);
     let assets = FillTable(orders);
-    ws.send(JSON.stringify({ page: "future", type: 'trade_history', content: assets }));
-
+    
+    sockets.in(user_id).emit("future",{ page: "future", type: 'trade_history', content: assets });
     FutureOrder.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
         let orders = await FutureOrder.find(request);
         let assets = FillTable(orders);
-        ws.send(JSON.stringify({ page: "future", type: 'trade_history', content: assets }));
+        sockets.in(user_id).emit("future",{ page: "future", type: 'trade_history', content: assets });
     });
 
 }

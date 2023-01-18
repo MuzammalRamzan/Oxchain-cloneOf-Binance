@@ -4,16 +4,15 @@ const MarginWalletId = "62ff3c742bebf06a81be98fd";
 
 console.log();
 
-const FuturePositions = async (ws, user_id) => {
+const FuturePositions = async (sockets, user_id) => {
   let orders = await FutureOrder.find({
     user_id: user_id,
     method: "market",
     status: 0,
   });
   let assets = await GetFutureLiqPrice(orders);
-  ws.send(
-    JSON.stringify({ page: "future", type: "positions", content: assets })
-  );
+  sockets.in(user_id).emit("future",{ page: "future", type: "positions", content: assets });
+  
 
   FutureOrder.watch([
     {
@@ -28,9 +27,7 @@ const FuturePositions = async (ws, user_id) => {
       status: 0,
     });
     let assets = await GetFutureLiqPrice(orders);
-    ws.send(
-      JSON.stringify({ page: "future", type: "positions", content: assets })
-    );
+    sockets.in(user_id).emit("future",{ page: "future", type: "positions", content: assets });
   });
 };
 async function GetFutureLiqPrice(orders) {

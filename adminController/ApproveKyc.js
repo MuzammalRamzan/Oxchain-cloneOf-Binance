@@ -27,7 +27,9 @@ const approveUser = async (req, res) => {
                 verification.status = 1;
                 await verification.save();
 
-                Mailer.sendMail(user.email, "Account Approved", "Your account has been approved");
+                if (user.email != null) {
+                    Mailer.sendMail(user.email, "Account Approved", "Your account has been approved");
+                }
 
                 return res.json({
                     status: "success",

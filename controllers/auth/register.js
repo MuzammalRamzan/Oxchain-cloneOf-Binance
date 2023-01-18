@@ -10,8 +10,7 @@ const registerController = async (req, res) => {
   var data = req.body.data;
   var pin = req.body.pin;
 
-  var emailUnique = "true";
-  var phoneUnique = "true";
+
   var refStatus = "false";
   var reffer = req.body.reffer;
   if (reffer) {
@@ -22,146 +21,147 @@ const registerController = async (req, res) => {
 
   let newUser;
 
-  if (registerType == "email" && pin != "0") {
-    const checkEmail = data.includes("@");
-    if (checkEmail == true) {
-      let checkEmailPin = await RegisterMail.findOne({
-        email: data,
-        pin: pin,
-      }).exec();
-      console.log("checkEmailPin in register", checkEmailPin);
-      if (checkEmailPin == null) {
-        res.json({
-          status: "fail",
-          message: "pin_not_match",
-          showableMessage: "Pin not match",
-        });
-        return;
-      } else {
-        RegisterMail.findOneAndUpdate(
-          { email: data },
-          { status: "1" },
-          function (err, room) {
-            if (err) {
-              console.log(err);
-            } else {
-              console.log("pin status updated");
-            }
-          }
-        );
-      }
-    } else {
-      res.json({
+  let checkEmail = "";
+  if (registerType == "email") {
+
+    if (!data || data == undefined || data == null || data == "" || !pin || pin == undefined || pin == null || pin == "") {
+      return res.json({
         status: "fail",
-        message: "Invalid Email",
+        message: "email_pin_required",
+        showableMessage: "Email and Pin is required",
       });
     }
-  }
 
-  if (registerType == "phone" && pin !== "0") {
-    let checkPhonePin = await RegisterSMS.findOne({
-      phone_number: data,
+    checkEmail = await RegisterMail.findOne({
+      email: data,
       pin: pin,
+      status: 0,
     }).exec();
-    console.log("checkPhonePin", checkPhonePin);
-    if (checkPhonePin == null) {
-      res.json({
+
+    if (checkEmail == null) {
+      return res.json({
         status: "fail",
-        message: "pin_not_match",
-        showableMessage: "Pin not match",
+        message: "pin_not_found",
+        showableMessage: "Pin not found",
       });
-      return;
-    } else {
-      RegisterSMS.findOneAndUpdate(
-        { phone: data },
-        { status: "1" },
-        function (err, room) {
-          if (err) {
-            console.log(err);
-          } else {
-            console.log("pin status updated");
-          }
-        }
-      );
     }
+
+    let checkEmailUnique = await User.findOne({
+      email: data,
+    }).exec();
+
+    if (checkEmailUnique) {
+      return res.json({
+        status: "fail",
+        message: "email_already_registered",
+        showableMessage: "Email already registered",
+      });
+    }
+    checkEmail.status = 1;
   }
 
-  async function uniqueChecker() {
-    if (registerType == "email") {
-      let emailC = await User.findOne({ email: req.body.data }).exec();
-      if (emailC != null) {
-        emailUnique = "false";
-      }
-    } else {
-      let phoneC = await User.findOne({
-        phone_number: req.body.data,
-      }).exec();
-      console.log(phoneC, "phone is found");
-      if (phoneC != null) {
-        phoneUnique = "false";
-      }
+  let checkPhone = "";
+  if (registerType == "phone") {
+
+    if (!req.body.country_code || req.body.country_code == undefined || req.body.country_code == null || req.body.country_code == "" || !req.body.data || req.body.data == undefined || req.body.data == null || req.body.data == "" || !req.body.pin || req.body.pin == undefined || req.body.pin == null || req.body.pin == "") {
+      return res.json({
+        status: "fail",
+        message: "phone and country code required",
+        showableMessage: "Phone and Country Code is required",
+      });
     }
+    checkPhone = await RegisterSMS.findOne({
+      country_code: req.body.country_code,
+      phone_number: req.body.data,
+      pin: pin,
+      status: 0,
+    }).exec();
+
+    if (checkPhone == null) {
+      return res.json({
+        status: "fail",
+        message: "pin_not_found",
+        showableMessage: "Pin not found",
+      });
+    }
+
+    let checkPhoneUnique = await User.findOne({
+      country_code: req.body.country_code,
+      phone_number: req.body.data,
+    }).exec();
+
+    if (checkPhoneUnique) {
+      return res.json({
+        status: "fail",
+        message: "phone_already_registered",
+        showableMessage: "Phone already registered",
+      });
+
+    }
+    checkPhone.status = 1;
   }
 
-  async function register() {
-    if (emailUnique == "true" && phoneUnique == "true") {
-      if (registerType == "email" && checkEmail == true) {
-        newUser = new User({
-          email: data,
-          password: utilities.hashData(req.body.password),
-          api_key_result: req.body.api_key,
-          status: 1,
-        });
-      } else {
-        newUser = new User({
-          country_code: req.body.country_code,
-          phone_number: req.body.data,
-          password: utilities.hashData(req.body.password),
-          api_key_result: req.body.api_key,
-          status: 1,
-        });
-      }
-      let usr = await newUser.save();
-      if (refStatus == "yes") {
-        let user = await UserRef.findOne({ refCode: reffer }).exec();
 
-        if (user != null) {
-          var newReferral = new Referral({
-            user_id: usr._id,
-            reffer: reffer,
-          });
-          newReferral.save();
-        } else {
-          res.json({
-            status: "fail",
-            message: "referral_not_found",
-            showableMessage: "Referral not found",
-          });
-        }
-      }
-      var regUserId = usr._id;
-      // make unique control
-      var refCode = utilities.makeId(10);
-      const newRef = new UserRef({
-        user_id: regUserId,
-        refCode: refCode,
-      });
-      await newRef.save();
-      res.json({ status: "success", data: newRef });
-    } else {
-      var uniqueArray = [];
-      uniqueArray.push({
-        emailUnique: emailUnique,
-        phoneUnique: phoneUnique,
-        response: "not_unique",
-      });
-      res.json({ status: "fail", message: uniqueArray[0] });
-    }
+  do {
+    var showableUserIdData = Math.floor(10000000 + Math.random() * 90000000);
+    var checkShowableUserId = await User.findOne({
+      showableUserId: showableUserIdData,
+    }).exec();
+  } while (checkShowableUserId != null);
+
+
+  if (registerType == "email") {
+    newUser = new User({
+      email: data,
+      password: utilities.hashData(req.body.password),
+      api_key_result: req.body.api_key,
+      showableUserId: showableUserIdData,
+      status: 1,
+    });
+  } else {
+    newUser = new User({
+      country_code: req.body.country_code,
+      phone_number: req.body.data,
+      password: utilities.hashData(req.body.password),
+      api_key_result: req.body.api_key,
+      showableUserId: showableUserIdData,
+      status: 1,
+    });
   }
 
-  uniqueChecker().then(() => {
-    register();
+  let usr = await newUser.save();
+  if (refStatus == "yes") {
+    let user = await UserRef.findOne({ refCode: reffer }).exec();
+
+    if (user != null) {
+      var newReferral = new Referral({
+        user_id: usr._id,
+        reffer: reffer,
+      });
+      newReferral.save();
+    } else {
+      return res.json({
+        status: "fail",
+        message: "referral_not_found",
+        showableMessage: "Referral not found",
+      });
+    }
+  }
+  var regUserId = usr._id;
+  var refCode = utilities.makeId(10);
+  const newRef = new UserRef({
+    user_id: regUserId,
+    refCode: refCode,
   });
+  await newRef.save();
+
+  if (registerType == "email") {
+    checkEmail.save();
+  } else {
+    checkPhone.save();
+  }
+  return res.json({ status: "success", data: newRef });
+
 };
 
 module.exports = registerController;

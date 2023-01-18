@@ -93,9 +93,11 @@ const getApplicantStatus = async (applicantId) => {
   config.url = url;
   config.headers = headers;
   config.data = null;
-
+  console.log("config", config)
   const response = await axios(config);
-  return response.data;
+  console.log("response", response)
+
+  // return response.data;
 };
 
 const resetApplicant = async (applicantId) => {

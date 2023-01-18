@@ -1,5 +1,6 @@
 var nodemailer = require("nodemailer");
 // const { Vonage } = require("@vonage/server-sdk");
+var axios = require("axios");
 
 async function sendNewMail(email, title, body) {
   var transporter = nodemailer.createTransport({
@@ -64,8 +65,40 @@ async function sendNewMail(email, title, body) {
   });
 }
 
-async function sendNewSMS(phone, body) {
-  return "true";
+async function sendNewSMS(country_code, phone, body) {
+
+  let resData = "";
+  let resError = "";
+
+  await axios
+    .post(
+      "https://rest.messagebird.com/messages",
+      {
+        originator: "Oxhain",
+        recipients: [country_code + phone],
+        body: body,
+      },
+      {
+        headers: {
+          Authorization: "AccessKey Ccq2VsSFHn0xsUdmmT33ZUvgw",
+        },
+      }
+    )
+    .then((res) => {
+      resData = res.data;
+    })
+    .catch((err) => {
+      resError = err;
+    });
+
+
+  return new Promise((resolve) => {
+    if (resData) {
+      resolve(resData);
+    } else {
+      resolve(resError);
+    }
+  });
 }
 
 // const Vonage = require("@vonage/server-sdk");

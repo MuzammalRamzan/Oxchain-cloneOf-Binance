@@ -27,7 +27,9 @@ const approveUser = async (req, res) => {
                 Recidency.status = 1;
                 await Recidency.save();
 
-                Mailer.sendMail(user.email, "Account Approved", "Your recidency has been approved");
+                if (user.email != null) {
+                    Mailer.sendMail(user.email, "Account Approved", "Your recidency has been approved");
+                }
 
                 return res.json({
                     status: "success",

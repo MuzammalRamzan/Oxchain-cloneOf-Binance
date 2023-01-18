@@ -1,6 +1,6 @@
 const UserModel = require('../../models/User');
-
 var authFile = require('../../auth');
+const mailer = require('../../mailer');
 
 const removeEmail = async (req, res) => {
 
@@ -31,6 +31,7 @@ const removeEmail = async (req, res) => {
       else {
         user.email = null;
         user.save();
+        mailer.sendMail(user.email, "Email removed", "Email removed", "Your email has been removed. If you did not do this, please contact us immediately.");
         return res.json({ status: "success", message: "email removed", showableMessage: "Email removed" });
       }
     }

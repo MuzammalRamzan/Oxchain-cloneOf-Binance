@@ -1,6 +1,6 @@
 const Orders = require("../../../models/Orders");
 
-const SpotOrderHistory = async (ws, user_id) => {
+const SpotOrderHistory = async (sockets, user_id) => {
     let orders = await Orders.find({
         user_id: user_id, $or: [
             {
@@ -15,7 +15,8 @@ const SpotOrderHistory = async (ws, user_id) => {
 
         ]
     });
-    ws.send(JSON.stringify({ page: "spot", type: 'order_history', content: orders }));
+    
+    sockets.in(user_id).emit("spot", { page: "spot", type: 'order_history', content: orders });
     Orders.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
 
         let orders = await Orders.find({
@@ -32,7 +33,8 @@ const SpotOrderHistory = async (ws, user_id) => {
 
             ]
         });
-        ws.send(JSON.stringify({ page: "spot", type: 'order_history', content: orders }));
+        sockets.in(user_id).emit("spot", { page: "spot", type: 'order_history', content: orders });
+        
     });
 
 }

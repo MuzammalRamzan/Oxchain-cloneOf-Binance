@@ -1,6 +1,6 @@
 const FutureOrder = require("../../../models/FutureOrder");
 
-const FutureOrderHistory = async (ws, user_id, filter) => {
+const FutureOrderHistory = async (sockets, user_id, filter) => {
     let request = { user_id: user_id };
     if (filter['symbol'] != null) {
         request['pair_name'] = filter['symbol'];
@@ -32,12 +32,12 @@ const FutureOrderHistory = async (ws, user_id, filter) => {
     }
 
     let orders = await FutureOrder.find(request);
-    ws.send(JSON.stringify({ page: "future", type: 'order_history', content: orders }));
-
+    
+    sockets.in(user_id).emit("future",{ page: "future", type: 'order_history', content: orders });
     FutureOrder.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
         let orders = await FutureOrder.find(request);
         if (orders.length > 0)
-            ws.send(JSON.stringify({ page: "future", type: 'order_history', content: orders }));
+        sockets.in(user_id).emit("future",{ page: "future", type: 'order_history', content: orders });
     });
 
 }

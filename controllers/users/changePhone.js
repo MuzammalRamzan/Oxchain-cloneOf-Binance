@@ -3,6 +3,8 @@ var authFile = require("../../auth.js");
 const SMSVerification = require("../../models/SMSVerification");
 const EmailVerification = require("../../models/MailVerification");
 const ChangeLogsModel = require("../../models/ChangeLogs");
+const mailer = require("../../mailer");
+
 
 const changePhone = async function (req, res) {
   var user_id = req.body.user_id;
@@ -121,6 +123,8 @@ const changePhone = async function (req, res) {
           city: req.body.city ?? "Unknown",
         });
         changeLog.save();
+
+        mailer.sendMail(user.email, "PHONE Number Changed", "Phone Number Changed", "Your phone number changed. If you did not do this, please contact us immediately.");
 
         res.json({ status: "success", data: "update_success" });
       } else {

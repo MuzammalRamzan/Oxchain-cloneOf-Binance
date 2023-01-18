@@ -1,51 +1,81 @@
 const RegisterSMS = require("../models/RegisterSMS");
 var authFile = require("../auth.js");
 var mailer = require("../mailer.js");
+let UserModel = require("../models/User");
 
 const sendSMSPin = async (req, res) => {
   var api_key_result = req.body.api_key;
+  var country_code = req.body.country_code;
   var phone_number = req.body.phone;
   let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
-    var pin;
-    if (process.env.NODE_ENV === "product") {
-      pin = "000000";
-    } else {
-      pin = Math.floor(100000 + Math.random() * 900000);
+
+    if (!country_code || country_code == undefined || country_code == null || country_code == "" || !phone_number || phone_number == undefined || phone_number == null || phone_number == "") {
+      return res.json({
+        status: "fail",
+        message: "phone and country code required",
+        showableMessage: "Phone is required",
+      });
     }
 
-    const newPin = new RegisterSMS({
-      phone_number: phone_number,
-      pin: pin,
-    });
-
-    let smsCheck = await RegisterSMS.findOne({
+    let userCheck = await UserModel.findOne({
+      country_code: country_code,
       phone_number: phone_number,
     }).exec();
-    if (smsCheck == null) {
-      if (newPin.save()) {
-        mailer.sendSMS(phone_number, "Your pin code is " + pin + ".");
-        res.json({ status: "success", message: "pin_sent" });
-      } else {
-        res.json({ status: "fail", message: "an_error_occured" });
-      }
-    } else {
-      RegisterSMS.findOneAndUpdate(
-        { phone_number: phone_number },
-        { pin: pin },
-        function (err, room) {
-          if (err) {
-            console.log(err);
-          } else {
-            mailer.sendSMS(phone_number, "Your pin code is " + pin + ".");
-            res.json({ status: "success", message: "pin_sent" });
-          }
-        }
-      );
+
+    if (userCheck) {
+      return res.json({
+        status: "fail",
+        message: "phone_already_registered",
+        showableMessage: "Phone already registered",
+      });
     }
+
+    let check = await RegisterSMS.findOne({
+      country_code: country_code,
+      phone_number: phone_number,
+    }).exec();
+
+
+    let pin = "000000";
+
+    if (check) {
+      check.pin = pin;
+      check.status = 0;
+      check.save();
+    } else {
+      const newPin = new RegisterSMS({
+        country_code: country_code,
+        phone_number: phone_number,
+        pin: pin,
+        status: 0,
+      });
+      newPin.save();
+    }
+
+    let sendSMSResponse = await mailer.sendSMS(
+      country_code,
+      phone_number,
+      "Pin : " + pin,
+      function (err, data) {
+        if (err) {
+          console.log("Error " + err);
+        } else {
+          console.log("sms sent");
+        }
+      }
+    );
+
+    console.log("response", sendSMSResponse);
+    return res.json({
+      status: "success",
+      message: "pin_sent",
+      showableMessage: "Pin sent",
+    });
+
   } else {
-    res.json({ status: "fail", message: "Forbidden 403" });
+    return res.json({ status: "fail", message: "Forbidden 403" });
   }
 };
 

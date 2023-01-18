@@ -2,16 +2,16 @@ const CoinList = require("../../../models/CoinList");
 const FutureOrder = require("../../../models/FutureOrder");
 const FutureWalletModel = require("../../../models/FutureWalletModel");
 
-const FutureAssets = async (ws, user_id) => {
+const FutureAssets = async (sockets, user_id) => {
     
     let wallets = await FutureWalletModel.find({ user_id: user_id, status: 1 });
     let assets = await calculate(wallets,user_id);
-    ws.send(JSON.stringify({ page:"future", type: 'assets', content: assets }));
-
+    
+    sockets.in(user_id).emit("future",{ page:"future", type: 'assets', content: assets });
     FutureWalletModel.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
         let wallets = await FutureWalletModel.find({ user_id: user_id, status: 1 });
         let assets = await calculate(wallets, user_id);
-        ws.send(JSON.stringify({page:"future", type: 'assets', content: assets }));
+        sockets.in(user_id).emit("future",{ page:"future", type: 'assets', content: assets });
     });
 }
 

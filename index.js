@@ -33,6 +33,7 @@ const addOrders = require('./controllers/orders/addOrders');
 const disableAccount = require('./controllers/accountActivities/disableAccount');
 const deleteAccount = require('./controllers/users/deleteAccount');
 const addNewRegisteredAddress = require('./controllers/registeredAddress/addNewRegisteredAddress');
+const deleteRegisteredAddress = require('./controllers/registeredAddress/deleteRegisteredAddress');
 const addNotification = require('./controllers/addNotification');
 const getNotification = require('./controllers/getNotification');
 const getOrders = require('./controllers/orders/getOrders');
@@ -104,7 +105,8 @@ const getLocation = require('./controllers/users/getLocation');
 
 const getSiteNotificationSettings = require('./controllers/siteNotifications/get');
 const updateSiteNotificationSettings = require('./controllers/siteNotifications/update');
-
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oidc');
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
 //console.log(authenticator.verifyToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse", "260180"));
@@ -163,6 +165,8 @@ const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
 
+const Delete2fa = require('./controllers/auth/delete2fa');
+
 //only for testing purposes for emircan
 
 const clearKYCAndRecidency = require('./controllers/kyc/clearKYCAndRecidency.js');
@@ -172,6 +176,7 @@ const UploadRecidency = require('./controllers/kyc/uploadRecidency');
 
 const marketingMailStatus = require('./controllers/marketingMails/mailStatus');
 const changeMarketingMailStatus = require('./controllers/marketingMails/changeStatus');
+
 const Subscription = require('./models/Subscription.js');
 route.use(
 	session({
@@ -208,6 +213,9 @@ route.use(function (err, req, res, next) {
 route.get('/', (req, res) => {
 	res.send('success');
 });
+
+
+route.all('/delete2fa', Delete2fa);
 
 route.all('/addAnnouncement', addAnnouncement);
 route.all('/getAnnouncements', getAnnouncement);
@@ -265,6 +273,7 @@ route.post('/addBonus', addBonus);
 route.post('/getBonusHistory', getBonusHistory);
 
 route.all('/UploadKYC', upload.any(), UploadKYC);
+route.all("/idverification", upload.any(), UploadKYC)
 route.all('/UploadRecidency', upload.any(), UploadRecidency);
 
 //AUTH
@@ -284,7 +293,7 @@ route.all('/removePhone', upload.none(), removePhone);
 route.all('/removeEmail', upload.none(), removeEmail);
 route.post('/googleAuth', googleAuth);
 route.post('/appleAuth', appleAuth);
-
+// route.post('/login/federated/google', passport.authenticate('google'));
 //Wallet Modules
 route.post('/transfer', transfer);
 route.post('/withdraw', withdraw);
@@ -338,6 +347,7 @@ route.post('/deleteMarginLimit', deleteMarginLimit);
 route.all('/addOrders', upload.none(), addOrders);
 
 route.all('/addNewRegisteredAddress', upload.none(), addNewRegisteredAddress);
+route.all('/deleteRegisteredAddress', upload.none(), deleteRegisteredAddress);
 route.all('/getRegisteredAddresses', upload.none(), getRegisteredAddresses);
 route.all(
 	'/getRegisteredAddressList',
@@ -349,7 +359,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) {}
+	async function (req, res) { }
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
