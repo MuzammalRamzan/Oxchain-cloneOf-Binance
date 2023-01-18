@@ -7,6 +7,8 @@ const CopyTradeModel = require("../../models/CopyTrade");
 const setFeeCredit = require("../bonus/setFeeCredit");
 const ApiRequest = require("../../models/ApiRequests");
 const ApiKeysModel = require("../../models/ApiKeys");
+const TradeVolumeModel = require("../../models/TradeVolumeModel");
+const SetTradeVolumeAndRefProgram = require("./setTradeVolumeAndRefProgram");
 
 const addOrders = async function (req, res) {
   try {
@@ -53,7 +55,6 @@ const addOrders = async function (req, res) {
       user_id: req.body.user_id,
     }).exec();
 
-    console.log(fromWalelt);
 
     if (amount <= 0 || percent <= 0) {
       res.json({ status: "fail", message: "invalid_amount" });
@@ -66,15 +67,12 @@ const addOrders = async function (req, res) {
     let url =
       'http://18.130.193.166:8542/price?symbol=' + urlPair;
     let result = await axios(url);
-    console.log(result.data);
     var price = result.data.data.ask;
 
-    console.log(price);
     let target_price = req.body.target_price ?? 0.0;
     let stop_limit = req.body.stop_limit ?? 0.0;
     var coins = req.body.pair_name.split("/");
 
-    console.log(req.body.user_id);
     let followerList = await CopyTradeModel.find({
       traderId: req.body.user_id,
       status: "1",
@@ -93,15 +91,12 @@ const addOrders = async function (req, res) {
       });
     }
 
-    console.log("Followers:" + followerList);
 
     if (req.body.method == "buy") {
       if (req.body.type == "stop_limit") {
-        console.log("Stop limit : ", stop_limit);
         let total = amount * stop_limit;
         let balance = toWalelt.amount;
 
-        console.log(balance, " | ", total);
         if (balance < total) {
           res.json({ status: "fail", message: "Invalid  balance" });
           return;
@@ -114,7 +109,6 @@ const addOrders = async function (req, res) {
           });
           return;
         }
-        console.log(target_price, " | ", stop_limit);
         if (stop_limit < target_price) {
           res.json({
             status: "fail",
@@ -146,7 +140,6 @@ const addOrders = async function (req, res) {
         });
 
         let saved = await orders.save();
-        console.log(saved);
         if (saved) {
           toWalelt.amount = toWalelt.amount - total;
           await toWalelt.save();
@@ -198,11 +191,9 @@ const addOrders = async function (req, res) {
         }
       } else if (req.body.type == "market") {
         let total = amount * price;
-        console.log("to wallet", toWalelt);
         let balance = toWalelt.amount;
 
         if (balance < total) {
-          console.log(balance, " | ", total);
           res.json({ status: "fail", message: "Invalid  balance" });
           return;
         }
@@ -231,7 +222,9 @@ const addOrders = async function (req, res) {
               apiRequest.status = 1;
               await apiRequest.save();
             }
+            SetTradeVolumeAndRefProgram({ order_id: saved._id, user_id: req.body.user_id, trade_from: "spot", trade_type: "buy", amount: amount, totalUSDT: splitLengthNumber(total) })
             res.json({ status: "success", message: saved });
+
           }
         } else {
           res.json({ status: "fail", message: "not_enougth_balance" });
@@ -242,7 +235,6 @@ const addOrders = async function (req, res) {
     if (req.body.method == "sell") {
       let balance = fromWalelt.amount;
       amount = (fromWalelt.amount * percent) / 100;
-      console.log(balance, " | ", amount);
       if (balance < amount) {
         res.json({ status: "fail", message: "Invalid  balance" });
         return;
@@ -357,6 +349,7 @@ const addOrders = async function (req, res) {
               apiRequest.status = 1;
               await apiRequest.save();
             }
+            await SetTradeVolumeAndRefProgram({ order_id: saved._id, user_id: req.body.user_id, trade_from: "spot", trade_type: "sell", amount: amount, totalUSDT: splitLengthNumber(total) });
             res.json({ status: "success", message: saved });
           }
         } else {
@@ -375,5 +368,8 @@ const addOrders = async function (req, res) {
     res.json({ status: "fail", message: "unknow_error" });
   }
 };
+function splitLengthNumber(q) {
+  return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
+}
 
 module.exports = addOrders;

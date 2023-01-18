@@ -26,7 +26,6 @@ const setFeeCredit = async function (user_id, pair_id, amount) {
 
         let insertAmount = amount * percentAmount / 100.0;
         if(insertAmount < 0) continue;
-        console.log(parentReferralCounter, " | ", percentAmount, " | ", insertAmount);
         let getWallet = await Wallet.findOne({ user_id: getRefferUser.user_id, coin_id: pair_id });
         if(getWallet == null) {
             parentReferralCounter++;
@@ -53,7 +52,6 @@ const setFeeCredit = async function (user_id, pair_id, amount) {
         
         parentReferralCounter++;
     }
-    console.log("Success");
     return ;
     let getSubReferrals = await Referral.find({ reffer: getUserRefCode.refCode }).sort({ createdAt: -1 });
     let counter = 1;
