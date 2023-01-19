@@ -52,6 +52,7 @@ const enableAccount = async function (req, res) {
                         pin: req.body.smsPin,
                         status: 0,
                     }).exec();
+                    
 
                 if (!check3)
                     return res.json({
