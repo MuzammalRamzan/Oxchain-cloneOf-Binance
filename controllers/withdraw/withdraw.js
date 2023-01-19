@@ -11,6 +11,8 @@ const { ObjectId } = require("mongodb");
 const MailVerification = require("../../models/MailVerification");
 const SMSVerification = require("../../models/SMSVerification");
 const UserModel = require("../../models/User");
+const ApiKeysModel = require("../../models/ApiKeys");
+const ApiRequestModel = require("../../models/ApiRequests");
 
 const OneStepWithdrawModel = require("../../models/OneStepWithdraw");
 
@@ -22,6 +24,37 @@ function PostRequestSync(url, data) {
 }
 
 const withdraw = async (req, res) => {
+
+
+  var api_key_result = req.body.api_key;
+
+  let api_result = await authFile.apiKeyChecker(api_key_result);
+  let apiRequest = "";
+
+  if (api_result === false) {
+    let checkApiKeys = "";
+
+    checkApiKeys = await ApiKeysModel.findOne({
+      api_key: api_key_result,
+      withdraw: "1"
+    }).exec();
+
+    if (checkApiKeys != null) {
+
+      apiRequest = new ApiRequestModel({
+        api_key: api_key_result,
+        request: "withdraw",
+        ip: req.body.ip ?? req.connection.remoteAddress,
+        user_id: checkApiKeys.user_id,
+      });
+      await apiRequest.save();
+    }
+    else {
+      res.json({ status: "fail", message: "Forbidden 403" });
+      return;
+    }
+  }
+
   var user_id = req.body.user_id;
   var coin_id = req.body.coin_id;
   var network_id = req.body.network_id;
