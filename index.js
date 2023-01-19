@@ -7,12 +7,8 @@ var bodyParser = require('body-parser');
 const multer = require('multer');
 const express = require('express');
 var cors = require('cors');
-const uploadFile = require('./controllers/news/upload.js');
 
 //express-fileupload
-const fileUpload = require('express-fileupload');
-
-const { expressjwt: jwt } = require('express-jwt');
 
 require('dotenv').config();
 
@@ -319,7 +315,7 @@ route.all('/getUSDTBalance', upload.none(), getUSDTBalance);
 
 route.all('/getbalance', upload.none(), getWalletsBalance);
 //news Modules
-route.post('/news/createNews', uploadFile.single('coverPhoto'), createNews);
+route.post('/news/createNews', upload.none(), createNews);
 route.all('/news/searchNews', searchNews);
 //Trade Modules
 route.all('/getOrders', upload.none(), getOrders);
