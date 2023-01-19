@@ -7,17 +7,16 @@ const getApplicantStatus = async (req, res) => {
   const user_id = req.body.user_id;
   const result = await authFile.apiKeyChecker(api_key_result);
   if (!result) res.json({ status: "fail", message: "Forbidden 403" });
-
   try {
     const user = await User.findById(user_id).lean();
-    console.log("user", user)
+
     const data = await getKYCStatus(user?.applicantId);
     const applicantStatus = data?.reviewResult?.reviewAnswer == "GREEN" ? 1 : 0;
     await User.updateOne(
       { _id: user_id },
       { $set: { applicantStatus } }
     );
-    res.json({ status: "success" });
+    res.json({ status: "success", data: user });
   } catch (err) {
     throw err;
   }

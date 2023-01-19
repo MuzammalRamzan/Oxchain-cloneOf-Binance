@@ -5,7 +5,7 @@ const utilities = require("../utilities.js");
 const addAdmin = async (req, res) => {
   //api key kontrolü yapılacak
 
-  var apiKey = req.body.apiKey;
+  var apiKey = req.body.api_key;
 
   if (apiKey == null) {
     return res.json({
@@ -36,7 +36,7 @@ const addAdmin = async (req, res) => {
   }
 
   var admin = await Admin.findOne({ email: email });
-
+  console.log("admin", admin)
   if (admin != null) {
     return res.json({
       status: "error",
@@ -52,6 +52,7 @@ const addAdmin = async (req, res) => {
     password: utilities.hashData(password),
     phone: phone,
   });
+  console.log("admin", admin)
 
   await admin.save();
 

@@ -33,7 +33,7 @@ const changeEmail = async function (req, res) {
 
 
       let check1 = "";
-      let check2 = "";
+      // let check2 = "";
       let check3 = "";
 
       if (email != undefined && email != null && email != "") {
@@ -41,7 +41,7 @@ const changeEmail = async function (req, res) {
         check1 = await EmailVerification.findOne({
           user_id: user_id,
           reason: "change_email",
-          pin: req.body.mailPin,
+          pin: req.body.newMailPin,
           status: 0
         }).exec();
 
@@ -63,14 +63,14 @@ const changeEmail = async function (req, res) {
 
       }
 
-      check2 = await EmailVerification.findOne({
-        user_id: user_id,
-        reason: "change_email_new",
-        pin: newMailPin,
-        status: 0
-      }).exec();
+      // check2 = await EmailVerification.findOne({
+      //   user_id: user_id,
+      //   reason: "change_email_new",
+      //   pin: newMailPin,
+      //   status: 0
+      // }).exec();
 
-      if (!check2) return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong New Mail Pin" });
+      // if (!check2) return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong New Mail Pin" });
 
 
       if (check1 != "") {
@@ -78,10 +78,10 @@ const changeEmail = async function (req, res) {
         check1.save();
       }
 
-      if (check2 != "") {
-        check2.status = 1;
-        check2.save();
-      }
+      // if (check2 != "") {
+      //   check2.status = 1;
+      //   check2.save();
+      // }
 
       if (check3 != "") {
         check3.status = 1;

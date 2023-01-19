@@ -20,8 +20,6 @@ const disableAccount = async function (req, res) {
 
             var email = user["email"];
             var phone = user["phone_number"];
-            console.log("email", email);
-            console.log("phone", phone);
 
             let check1 = "";
             let check3 = "";
@@ -49,7 +47,7 @@ const disableAccount = async function (req, res) {
                     ({
                         user_id: user_id,
                         reason: "disable_account",
-                        pin: req.body.smsPin,
+                        pin: req.body.pin,
                         status: 0,
                     }).exec();
 

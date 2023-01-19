@@ -67,7 +67,6 @@ const sendSMSPin = async (req, res) => {
       }
     );
 
-    console.log("response", sendSMSResponse);
     return res.json({
       status: "success",
       message: "pin_sent",

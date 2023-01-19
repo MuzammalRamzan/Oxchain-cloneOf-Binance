@@ -24,11 +24,8 @@ const settings = async (req, res) => {
 
 const getSettings = async ({ userId }) => {
   let userSettings = await SettingsModel.findOne({ userId });
-  console.log("userSettings", userSettings)
   if (!userSettings) {
     userSettings = new SettingsModel({ userId });
-    console.log("userSettings ins't", userSettings)
-
     await userSettings.save();
   }
   return userSettings;

@@ -76,12 +76,8 @@ const login = async (req, res) => {
   }
 
   var notificationToken = req.body.notificationToken;
-
-
   let result = await authFile.apiKeyChecker(api_key_result);
   let UserApiKey = false;
-  console.log("body params", req.body)
-
   let checkApiKeys = "";
   if (result === false) {
 
@@ -125,7 +121,7 @@ const login = async (req, res) => {
     }
 
     let securityLevel = 0;
-    if (user.deleted) {
+    if (user?.deleted) {
       return res.json({
         status: "fail",
         message: "user deleted",
