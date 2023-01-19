@@ -4,7 +4,7 @@ const DevicesModel = require("../../models/Device");
 
 const ChangeLogsModel = require("../../models/ChangeLogs");
 
-const activities = async function (req, res) {
+const securityActivities = async function (req, res) {
 
 
     var user_id = req.body.user_id;
@@ -15,6 +15,7 @@ const activities = async function (req, res) {
         let user = await UserModel.findOne({
             _id: user_id,
         }).exec();
+
 
         let dayCount = req.body.dayCount ?? 0;
 
@@ -111,4 +112,4 @@ const activities = async function (req, res) {
     }
 };
 
-module.exports = activities;
+module.exports = securityActivities;

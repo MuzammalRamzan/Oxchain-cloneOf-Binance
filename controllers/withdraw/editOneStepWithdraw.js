@@ -13,9 +13,6 @@ const editOneStepWithdraw = async (req, res) => {
   const phone = req.body.phonePin;
 
   let reason = "oneStepWithdraw";
-
-  // var result = await authFile.apiKeyChecker(apiKey);
-  // console.log("result", result)
   if (!apiKey) return res.json({ status: "error", message: "Api key is null" });
 
   const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
@@ -26,10 +23,9 @@ const editOneStepWithdraw = async (req, res) => {
   let oneStepChecker = await OneStepWithdrawModel.findOne({
     user_id: userId,
   });
-  console.log("oneStepChecker", oneStepChecker)
   let verified = false;
   if (email != "" && email != undefined) {
-  
+
     let mailVerification = await MailVerification.findOne({
       user_id: userId,
       reason: reason,

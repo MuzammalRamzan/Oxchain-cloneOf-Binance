@@ -25,7 +25,7 @@ const sendSMS = async function (req, res) {
       var pin2 = "0000";
 
 
-      if (reason == "change_phone_new" && newPhone != "") {
+      if (reason == "change_phone_new" && newPhone != "" && newPhone != undefined) {
 
 
         let checkForPhone = await User.findOne({
@@ -57,18 +57,17 @@ const sendSMS = async function (req, res) {
           }
         );
 
-        console.log("response", sendSMSResponse);
 
         if (check != null) {
           await SMSVerification.findOneAndUpdate(
-            { user_id: user["_id"], reason: "change_phone_new" },
+            { user_id: user["_id"] },
             { pin: pin2, status: "0" },
           );
         } else {
           newPin = new SMSVerification({
             user_id: user["_id"],
             pin: pin2,
-            reason: "change_phone_new",
+            reason: "change_phone",
             status: 0,
           });
           newPin.save();
@@ -82,7 +81,7 @@ const sendSMS = async function (req, res) {
 
         let check2 = await SMSVerification.findOne({
           user_id: user_id,
-          reason: reason,
+          // reason: reason,
         }).exec();
 
 
@@ -99,18 +98,17 @@ const sendSMS = async function (req, res) {
           }
         );
 
-        console.log("response", sendSMSResponse);
 
         if (check2 != null) {
 
-          SMSVerification.updateOne(
-            { user_id: user["_id"], reason: reason },
-            { pin: pin, status: "0" },
+          SMSVerification.findOneAndUpdate(
+            { user_id: user["_id"] },
+            { pin: pin, status: "0", reason: reason, },
             function (err, result) {
               if (err) {
                 res.json({ status: "fail", message: err });
               } else {
-                res.json({ status: "success", data: "sms_send" });
+                res.json({ status: "success", data: "sms_send_d" });
               }
             }
           );

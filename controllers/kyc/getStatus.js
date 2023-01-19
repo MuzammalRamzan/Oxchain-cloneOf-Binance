@@ -4,12 +4,11 @@ const RecidencyModel = require('../../models/RecidencyModel');
 
 var authFile = require('../../auth.js');
 
-const getStatus = async (req, res) => {
+const getKYCStatus = async (req, res) => {
 
     var api_key_result = req.body.api_key;
 
     let result = await authFile.apiKeyChecker(api_key_result);
-    console.log("result", result)
     if (result === true) {
     }
     else {
@@ -66,4 +65,4 @@ const getStatus = async (req, res) => {
 
 }
 
-module.exports = getStatus;
+module.exports = getKYCStatus;

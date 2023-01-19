@@ -4,7 +4,7 @@ const authFile = require("../auth.js");
 const utilities = require("../utilities");
 
 const Login = async (req, res) => {
-  var apiKey = req.body.apiKey;
+  var apiKey = req.body.api_key;
 
   if (apiKey == null) {
     return res.json({
@@ -32,7 +32,7 @@ const Login = async (req, res) => {
       message: "Email or password is null",
     });
   }
-
+  console.log("pass", utilities.hashData(password))
   var admin = await Admin.findOne({
     email: email,
     password: utilities.hashData(password),

@@ -178,6 +178,8 @@ const marketingMailStatus = require('./controllers/marketingMails/mailStatus');
 const changeMarketingMailStatus = require('./controllers/marketingMails/changeStatus');
 
 const Subscription = require('./models/Subscription.js');
+const { addAdmin } = require('./adminController/Admin.js');
+const Login = require('./adminController/Login.js');
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -428,7 +430,8 @@ route.all('/checkSecurityKey', upload.none(), checkSecurityKey);
 route.all('/deleteSecurityKey', upload.none(), deleteSecurityKey);
 route.post('/settings', Settings);
 route.post('/getAdminSettings', getAdminSettings);
-
+route.post("/addAdmin", addAdmin)
+route.post("/adminLogin", Login)
 route.all('/changeAvatar', upload.none(), changeAvatar);
 route.all('/changeNickName', upload.none(), changeNickname);
 
