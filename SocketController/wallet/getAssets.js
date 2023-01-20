@@ -58,8 +58,8 @@ async function calculate(sockets, user_id, wallets) {
         }
         totalBtcValue = totalUsdValue / btcPrice;
 
-        sockets.in(user_id).emit("spot_assets", {
-            page: "spot_assets", type: 'assets', content: {
+        sockets.in(user_id).emit("assets", {
+            page: "assets", type: 'assets', content: {
                 wallets: walletData,
                 totalUSD: totalUsdValue,
                 totalBTC: totalBtcValue,
