@@ -1,3 +1,4 @@
+const MarginCrossWallet = require("../../models/MarginCrossWallet");
 const SendCrossWallet = require("./sendCrossWallet");
 
 const GetCrossWallet = async(sockets, user_id) => {
