@@ -1,17 +1,15 @@
 const DepositModel = require('../models/Deposits');
 const authFile = require('../auth.js');
 const User = require('../models/User');
-const depositFund = require('./depositFund');
+const { depositFund, depositFundOfuser } = require('./depositFund');
 const depositReport = require('./depositReport');
 const userDeposits = async (req, res) => {
-	const apiKey = req.body.apiKey;
-	const userId = req.body.userId;
-
+	const { apiKey, userId } = req.body;
 	if (!apiKey) return res.json({ status: 'error', message: 'Api key is null' });
+	if (!userId) return res.json({ status: 'error', message: 'userId is null' });
 	const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
 	if (!apiKeyCheck)
 		return res.json({ status: 'error', message: 'Api key is wrong' });
-
 	const deposits = await DepositModel.find({ user_id: userId }).lean();
 
 	for (let i = 0; i < deposits.length; i++) {
@@ -20,7 +18,39 @@ const userDeposits = async (req, res) => {
 	}
 	return res.json({ status: 'success', data: deposits });
 };
+const filterDeposits = async (req, res) => {
+	const {
+		apiKey,
+		userId,
+		recordPerPage,
+		dateFrom,
+		dateTo,
+		status,
+		type,
+		coin_id,
+	} = req.body;
+	if (!apiKey) return res.json({ status: 'error', message: 'Api key is null' });
+	if (!userId) return res.json({ status: 'error', message: 'userId is null' });
+	const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
+	if (!apiKeyCheck)
+		return res.json({ status: 'error', message: 'Api key is wrong' });
 
+	// Build the filter object
+	const filter = {};
+	if (coin_id) filter.coin_id = coin_id;
+	if (userId) filter.user_id = userId;
+	if (status) filter.status = status;
+	if (type) filter.type = type;
+	if (dateFrom) filter.createdAt = { $gte: dateFrom };
+	if (dateTo) filter.createdAt = { ...filter.createdAt, $lte: dateTo };
+	const deposits = await DepositModel.find(filter).limit(recordPerPage).lean();
+
+	for (let i = 0; i < deposits.length; i++) {
+		let userData = await User.findOne({ _id: deposits[i].user_id });
+		deposits[i].user = userData;
+	}
+	return res.json({ status: 'success', data: deposits });
+};
 const listDeposits = async (req, res) => {
 	const apiKey = req.body.apiKey;
 
@@ -93,4 +123,5 @@ module.exports = {
 	listDeposits,
 	totalDeposits,
 	totalDepositGraphData,
+	filterDeposits,
 };
