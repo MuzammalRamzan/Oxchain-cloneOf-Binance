@@ -79,7 +79,7 @@ io.on("connection", async (socket) => {
         checkRoomOrJoin(socket, user_id);
         DerivativesFunds(io.sockets, user_id);
     });
-    socket.on('cross', (user_id) => {
+    socket.on('margin_balance', (user_id) => {
         checkRoomOrJoin(socket, user_id);
         GetCrossWallet(io.sockets, user_id);
     });
