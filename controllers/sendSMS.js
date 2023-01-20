@@ -81,7 +81,7 @@ const sendSMS = async function (req, res) {
 
         let check2 = await SMSVerification.findOne({
           user_id: user_id,
-          // reason: reason,
+          reason: reason,
         }).exec();
 
 
@@ -100,6 +100,8 @@ const sendSMS = async function (req, res) {
 
 
         if (check2 != null) {
+
+          console.log(check2);
 
           SMSVerification.findOneAndUpdate(
             { user_id: user["_id"] },

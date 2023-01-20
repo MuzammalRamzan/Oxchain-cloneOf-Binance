@@ -29,7 +29,7 @@ const disableAccount = async function (req, res) {
                 check1 = await MailVerification.findOne({
                     user_id: user_id,
                     reason: "disable_account",
-                    pin: req.body.pin,
+                    pin: req.body.mailPin,
                     status: 0,
                 }).exec();
 
@@ -47,7 +47,7 @@ const disableAccount = async function (req, res) {
                     ({
                         user_id: user_id,
                         reason: "disable_account",
-                        pin: req.body.pin,
+                        pin: req.body.smsPin,
                         status: 0,
                     }).exec();
 
