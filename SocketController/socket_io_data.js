@@ -28,6 +28,7 @@ const FutureOrderHistory = require("./trade/future/order_history");
 const FutureTradeHistory = require("./trade/future/trade_history");
 const FutureTransactionHistory = require("./trade/future/transaction_history");
 const FutureAssets = require("./trade/future/future_funds");
+const GetSpotWallet = require("./wallet/getSpotWallet");
 
 require("dotenv").config();
 
@@ -48,10 +49,16 @@ const io = new socketio.Server(server, {
 
 io.on("connection", async (socket) => {
     await Connection.connection();
+    socket.on('wallets', (user_id) => {
+        checkRoomOrJoin(socket, user_id);
+        GetSpotWallet(io.sockets, user_id);
+    });
+    
     socket.on('spot_open_orders', (user_id) => {
         checkRoomOrJoin(socket, user_id);
         SpotOpenOrders(io.sockets, user_id);
     });
+    
     socket.on('spot_order_history', (user_id) => {
         checkRoomOrJoin(socket, user_id);
         SpotOrderHistory(io.sockets, user_id);
