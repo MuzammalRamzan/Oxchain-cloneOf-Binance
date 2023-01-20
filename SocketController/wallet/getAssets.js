@@ -27,6 +27,7 @@ async function calculate(sockets, user_id, wallets) {
 
             let getCoinInfo = coinList.filter((x) => x._id == key.coin_id)[0];
             walletData[getCoinInfo.symbol] = {
+                id: getCoinInfo.id,
                 symbol: getCoinInfo.symbol,
                 name: getCoinInfo.name,
                 network: getCoinInfo.network,
