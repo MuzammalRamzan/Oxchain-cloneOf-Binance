@@ -17,6 +17,6 @@ const SendCrossWallet = async (sockets, _wallets, user_id) => {
             symbolName: pairInfo.name,
         });
     }
-    sockets.in(user_id).emit("margin", { page: "margin", type: "cross_wallet", content: wallets });
+    sockets.in(user_id).emit("margin_balane", { page: "margin", type: "margin_balance", content: wallets });
 }
 module.exports = SendCrossWallet;
