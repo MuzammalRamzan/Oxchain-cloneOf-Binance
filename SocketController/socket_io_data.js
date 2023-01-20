@@ -32,6 +32,7 @@ const FutureTransactionHistory = require("./trade/future/transaction_history");
 const FutureAssets = require("./trade/future/future_funds");
 const GetSpotWallet = require("./wallet/getSpotWallet");
 const CoinList = require("../models/CoinList");
+const GetAssets = require("./wallet/getAssets");
 
 require("dotenv").config();
 
@@ -74,9 +75,9 @@ io.on("connection", async (socket) => {
         checkRoomOrJoin(socket, user_id);
         SpotFunds(io.sockets, user_id);
     });
-    socket.on('spot_assets', (user_id) => {
+    socket.on('assets', (user_id) => {
         checkRoomOrJoin(socket, user_id);
-        SpotFunds(io.sockets, user_id);
+        GetAssets(io.sockets, user_id);
     });
     socket.on('derivatives_wallet', (user_id) => {
         checkRoomOrJoin(socket, user_id);
