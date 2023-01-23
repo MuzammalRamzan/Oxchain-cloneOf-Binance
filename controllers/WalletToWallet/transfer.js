@@ -169,6 +169,7 @@ const Transfer = async (req, res) => {
 
         if (userCheck.email) {
 
+            
             mailer.sendMail(
                 userCheck.email,
                 "Transfer Successful",
