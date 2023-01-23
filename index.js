@@ -96,6 +96,7 @@ const securityActivities = require('./controllers/accountActivities/securityActi
 const getWalletsBalance = require('./controllers/GetUserBalances/getWalletsbalances.js');
 const removePhone = require('./controllers/users/removePhone');
 const removeEmail = require('./controllers/users/removeEmail');
+const walletTowalletBetweenUsers = require('./controllers/WalletToWallet/transfer');
 
 const addAvatar = require('./controllers/avatar/addAvatar');
 const getAvatar = require('./controllers/avatar/getAvatarList');
@@ -243,6 +244,8 @@ route.all('/getApiKeys', getApiKeys);
 
 route.all('/newPrediction', newPrediction);
 route.all('/getPrediction', getPrediction);
+
+route.all('/walletToWalletBetweenUsers', walletTowalletBetweenUsers);
 
 route.post('/subscription', async (req, res) => {
 	try {
