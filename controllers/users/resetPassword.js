@@ -5,20 +5,14 @@ const MailVerification = require("../../models/MailVerification");
 const SMSVerification = require("../../models/SMSVerification");
 
 const resetPassword = async function (req, res) {
-  var user_id = req.body.user_id;
   var password = utilities.hashData(req.body.password);
 
+  var type = req.body.type;
   var api_key_result = req.body.api_key;
 
   var result = await authFile.apiKeyChecker(api_key_result);
 
-  if (user_id == undefined || user_id == null || user_id == "") {
-    return res.json({
-      status: "fail",
-      message: "user_id_required",
-      showableMessage: "User ID is required",
-    });
-  }
+
 
   if (password == undefined || password == null || password == "") {
 
@@ -29,14 +23,41 @@ const resetPassword = async function (req, res) {
     });
   }
 
-  if (user_id.length != 24) return res.json({ status: "fail", message: "user_id_invalid", showableMessage: "User ID is invalid" });
 
 
+  let user = "";
   if (result === true) {
-    let user = await User.findOne({
-      _id: user_id,
-      status: 1,
-    }).exec();
+
+
+    if (type == "email") {
+
+      if (req.body.email == undefined || req.body.email == null || req.body.email == "") {
+        return res.json({
+          status: "fail",
+          message: "email_required",
+          showableMessage: "Email is required",
+        });
+      }
+
+      user = await User.findOne({
+        email: req.body.email,
+      }).exec();
+    }
+    if (type == "phone") {
+
+      if (req.body.country_code == undefined || req.body.country_code == null || req.body.country_code == "" || req.body.phone_number == undefined || req.body.phone_number == null || req.body.phone_number == "") {
+        return res.json({
+          status: "fail",
+          message: "phone_required",
+          showableMessage: "Phone is required",
+        });
+      }
+      
+      user = await User.findOne({
+        country_code: req.body.country_code,
+        phone_number: req.body.phone_number,
+      }).exec();
+    }
 
     if (user != null) {
 
@@ -47,12 +68,9 @@ const resetPassword = async function (req, res) {
       let check3 = "";
 
 
-      
-
-      
       if (email != undefined && email != null && email != "") {
         check1 = await MailVerification.findOne({
-          user_id: user_id,
+          user_id: user._id,
           reason: "reset_password",
           pin: req.body.mailPin,
           status: 0,
@@ -70,7 +88,7 @@ const resetPassword = async function (req, res) {
       if (phone != undefined && phone != null && phone != "") {
         check3 = await SMSVerification.findOne
           ({
-            user_id: user_id,
+            user_id: user._id,
             reason: "reset_password",
             pin: req.body.smsPin,
             status: 0,
