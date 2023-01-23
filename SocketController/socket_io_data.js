@@ -90,9 +90,13 @@ io.on("connection", async (socket) => {
         checkRoomOrJoin(socket, user_id);
         DerivativesFunds(io.sockets, user_id);
     });
-    socket.on('margin_balance', (user_id) => {
+    socket.on('margin_cross_balance', (user_id) => {
         checkRoomOrJoin(socket, user_id);
         GetCrossWallet(io.sockets, user_id);
+    });
+    socket.on('margin_isolated_balance', (user_id) => {
+        checkRoomOrJoin(socket, user_id);
+        GetIsolatedWallet(io.sockets, user_id);
     });
     socket.on('cross_open_orders', (user_id) => {
         checkRoomOrJoin(socket, user_id);
