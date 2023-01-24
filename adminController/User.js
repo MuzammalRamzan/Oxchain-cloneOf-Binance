@@ -1,6 +1,7 @@
 var authFile = require('../auth.js');
 var UserModel = require('../models/User');
-
+const { depositFundOfuser } = require('./depositFund.js');
+const { withdrawFundOfuser } = require('./withdrawFund.js');
 const BanUser = async (req, res) => {
 	//burada banlanacak kullanıcı id'si alınacak
 
@@ -157,7 +158,6 @@ const denyApplicant = async (req, res) => {
 };
 const filterUser = async (req, res) => {
 	const apiKey = req.body.apiKey;
-
 	if (!apiKey) return res.json({ status: 'error', message: 'Api key is null' });
 	const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
 	if (!apiKeyCheck)
@@ -176,10 +176,35 @@ const filterUser = async (req, res) => {
 	if (dateTo) filter.createdAt = { ...filter.createdAt, $lte: dateTo };
 
 	// Execute the query
-	UserModel.find(filter)
-		.limit(recordPerPage)
-		.then((users) => res.json({ status: 'success', data: users }))
-		.catch((err) => res.status(500).json({ error: err.message }));
+	let users = await UserModel.find(filter).limit(recordPerPage).exec();
+	for (i = 0; i < users.length; i++) {
+		let totalUSDDeposited = 0;
+		let totalUsdWithdrawn = 0;
+		const data = await depositFundOfuser(users[i]._id.toString());
+		for (let i = 0; i < data.length; i++) {
+			if (data[i].symbol === 'Margin') continue;
+			if (data[i].symbol === 'USDT') {
+				totalUSDDeposited += parseFloat(data[i].availableBalance);
+			} else {
+				totalUSDDeposited += parseFloat(data[i].usdtValue);
+			}
+		}
+		const data1 = await withdrawFundOfuser(users[i]._id.toString());
+		for (let i = 0; i < data1.length; i++) {
+			if (data1[i].symbol === 'Margin') continue;
+			if (data1[i].symbol === 'USDT') {
+				totalUsdWithdrawn += parseFloat(data1[i].availableBalance);
+			} else {
+				totalUsdWithdrawn += parseFloat(data1[i].usdtValue);
+			}
+		}
+		users = {
+			...users,
+			totalUSDDeposited: totalUSDDeposited,
+			totalUsdWithdrawn: totalUsdWithdrawn,
+		};
+	}
+	return res.json({ status: 'success', users });
 };
 module.exports = {
 	BanUser,
