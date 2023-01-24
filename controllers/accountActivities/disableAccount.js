@@ -1,3 +1,4 @@
+
 const UserModel = require('../../models/User');
 const authFile = require('../../auth.js');
 const MailVerification = require('../../models/MailVerification');
@@ -73,7 +74,7 @@ const disableAccount = async function (req, res) {
             user.status = 5;
             user.save();
 
-            res.json({
+            return res.json({
                 status: "success",
                 message: "Account disabled successfully",
                 showableMessage: "Account disabled successfully",
@@ -81,7 +82,7 @@ const disableAccount = async function (req, res) {
         }
         else {
 
-            res.json({
+            return res.json({
                 status: "error",
                 message: "User does not exist",
                 showableMessage: "User does not exist",
@@ -92,7 +93,7 @@ const disableAccount = async function (req, res) {
     }
     else {
 
-        res.json({
+        return res.json({
             status: "error",
             message: "Invalid API Key",
             showableMessage: "Invalid API Key",
@@ -102,4 +103,5 @@ const disableAccount = async function (req, res) {
 }
 
 module.exports = disableAccount;
+
 

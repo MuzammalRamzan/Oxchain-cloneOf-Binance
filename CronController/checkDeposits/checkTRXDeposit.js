@@ -1,13 +1,13 @@
 const axios = require('axios');
-const User = require('../models/User');
-const Wallet = require('../models/Wallet');
-const WalletAddress = require('../models/WalletAddress');
-const CoinList = require('../models/CoinList');
-const ContractAddressSchema = require('../models/ContractAddress');
-const Deposits = require('../models/Deposits');
-var authFile = require('../auth.js');
+const User = require('../../models/User');
+const Wallet = require('../../models/Wallet');
+const WalletAddress = require('../../models/WalletAddress');
+const CoinList = require('../../models/CoinList');
+const ContractAddressSchema = require('../../models/ContractAddress');
+const Deposits = require('../../models/Deposits');
+var authFile = require('../../auth.js');
 
-const utilities = require('../utilities');
+const utilities = require('../../utilities');
 require('dotenv').config();
 const checkTRXDeposit = async () => {
 	try {

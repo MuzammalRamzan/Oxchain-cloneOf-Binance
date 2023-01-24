@@ -160,6 +160,7 @@ const withdraw = async (req, res) => {
     let check1 = "";
     let check3 = "";
 
+    /*
     if (email != undefined && email != null && email != "") {
       check1 = await MailVerification.findOne({
         user_id: user_id,
@@ -175,8 +176,10 @@ const withdraw = async (req, res) => {
           showableMessage: "Wrong Mail Pin",
         });
 
-    }
-
+    } 
+    //test 
+    */
+/*
     if (phone != undefined && phone != null && phone != "") {
       check3 = await SMSVerification.findOne
         ({
@@ -194,6 +197,7 @@ const withdraw = async (req, res) => {
         });
     }
 
+    */
     if (check1 != "") {
       check1.status = 1;
       check1.save();

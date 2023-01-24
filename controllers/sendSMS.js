@@ -1,3 +1,4 @@
+
 const User = require("../models/User");
 const SMSVerification = require("../models/SMSVerification");
 var authFile = require("../auth.js");
@@ -14,12 +15,19 @@ const sendSMS = async function (req, res) {
   var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
+
+
     let user = await User.findOne({
       _id: user_id,
-      status: 1,
     }).exec();
 
     if (user != null) {
+
+      if (user.status == "1" || user.status == "5") {
+      }
+      else {
+        return res.json({ status: "fail", message: "user_not_found", showableMessage: "User not found" });
+      }
       var pin = "0000";
 
       var pin2 = "0000";
@@ -146,3 +154,4 @@ const sendSMS = async function (req, res) {
 };
 
 module.exports = sendSMS;
+

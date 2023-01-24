@@ -31,6 +31,7 @@ const deleteLimit = require('./controllers/orders/deleteLimit');
 const deleteMarginLimit = require('./controllers/orders/deleteMarginLimit');
 const addOrders = require('./controllers/orders/addOrders');
 const disableAccount = require('./controllers/accountActivities/disableAccount');
+const enableAccount = require('./controllers/accountActivities/enableAccount');
 const deleteAccount = require('./controllers/users/deleteAccount');
 const addNewRegisteredAddress = require('./controllers/registeredAddress/addNewRegisteredAddress');
 const deleteRegisteredAddress = require('./controllers/registeredAddress/deleteRegisteredAddress');
@@ -95,6 +96,7 @@ const securityActivities = require('./controllers/accountActivities/securityActi
 const getWalletsBalance = require('./controllers/GetUserBalances/getWalletsbalances.js');
 const removePhone = require('./controllers/users/removePhone');
 const removeEmail = require('./controllers/users/removeEmail');
+const walletTowalletBetweenUsers = require('./controllers/WalletToWallet/transfer');
 
 const addAvatar = require('./controllers/avatar/addAvatar');
 const getAvatar = require('./controllers/avatar/getAvatarList');
@@ -180,6 +182,7 @@ const changeMarketingMailStatus = require('./controllers/marketingMails/changeSt
 const Subscription = require('./models/Subscription.js');
 const { addAdmin } = require('./adminController/Admin.js');
 const Login = require('./adminController/Login.js');
+const CampusRequestJoin = require('./controllers/campusAmbassador/request_join.js');
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -243,6 +246,8 @@ route.all('/getApiKeys', getApiKeys);
 route.all('/newPrediction', newPrediction);
 route.all('/getPrediction', getPrediction);
 
+route.all('/walletToWalletBetweenUsers', walletTowalletBetweenUsers);
+
 route.post('/subscription', async (req, res) => {
 	try {
 		if (
@@ -284,6 +289,7 @@ route.all('/sendMailPin', sendMailPin);
 route.all('/sendSMSPin', sendSMSPin);
 route.all('/register', upload.none(), register);
 route.all('/disableAccount', upload.none(), disableAccount);
+route.all('/enableAccount', upload.none(), enableAccount);
 route.all('/deleteAccount', upload.none(), deleteAccount);
 route.all('/2fa', upload.none(), twoFactor);
 route.all('/update2fa', upload.none(), update2fa);
@@ -388,7 +394,7 @@ route.all('/myReferrals', upload.none(), myReferrals);
 route.all('/referralRewards', upload.none(), referralRewards);
 route.all('/topReferralEarners', upload.none(), topReferralEarners);
 route.all('/myReferralEarns', upload.none(), myReferralEarns);
-
+route.all('/request_campus', upload.none(), CampusRequestJoin)
 route.all('/getWallet', upload.none(), getWallet);
 
 route.post('/cancelAllLimit', cancelAllLimit);

@@ -17,6 +17,6 @@ const SendIsolatedWallet = async (ws, _wallets, user_id)  => {
             symbolName: pairInfo.name,
         });
     }
-    sockets.in(user_id).emit("margin", { page: "margin", type: "isolated_wallet", content: wallets });
+    sockets.in(user_id).emit("margin_isolated_balance", { page: "margin", type: "isolated_wallet", content: wallets });
 }
 module.exports = SendIsolatedWallet;

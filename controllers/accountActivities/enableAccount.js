@@ -1,3 +1,4 @@
+
 const UserModel = require('../../models/User');
 const authFile = require('../../auth.js');
 const MailVerification = require('../../models/MailVerification');
@@ -31,7 +32,7 @@ const enableAccount = async function (req, res) {
                 check1 = await MailVerification.findOne({
                     user_id: user_id,
                     reason: "enable_account",
-                    pin: req.body.pin,
+                    pin: req.body.mailPin,
                     status: 0,
                 }).exec();
 
@@ -52,7 +53,7 @@ const enableAccount = async function (req, res) {
                         pin: req.body.smsPin,
                         status: 0,
                     }).exec();
-                    
+
 
                 if (!check3)
                     return res.json({
@@ -76,7 +77,7 @@ const enableAccount = async function (req, res) {
             user.status = 1;
             user.save();
 
-            res.json({
+            return res.json({
                 status: "success",
                 message: "Account enabled successfully",
                 showableMessage: "Account enabled successfully",
@@ -84,7 +85,7 @@ const enableAccount = async function (req, res) {
         }
         else {
 
-            res.json({
+            return res.json({
                 status: "error",
                 message: "User does not exist",
                 showableMessage: "User does not exist",
@@ -95,7 +96,7 @@ const enableAccount = async function (req, res) {
     }
     else {
 
-        res.json({
+        return res.json({
             status: "error",
             message: "Invalid API Key",
             showableMessage: "Invalid API Key",
@@ -105,4 +106,3 @@ const enableAccount = async function (req, res) {
 }
 
 module.exports = enableAccount;
-

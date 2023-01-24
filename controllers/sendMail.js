@@ -1,3 +1,4 @@
+
 const User = require("../models/User");
 const MailVerification = require("../models/MailVerification");
 var authFile = require("../auth.js");
@@ -27,11 +28,15 @@ const sendMail = async function (req, res) {
   if (result === true) {
     let user = await User.findOne({
       _id: user_id,
-      status: 1,
     }).exec();
 
     if (user != null) {
-      var pin = "0000";
+      if (user.status == "1" || user.status == "5") {
+      }
+      else {
+        return res.json({ status: "fail", message: "user_not_found", showableMessage: "User not found" });
+      }
+      var pin = Math.floor(100000 + Math.random() * 900000);
 
       var pin2 = Math.floor(100000 + Math.random() * 900000);
 
