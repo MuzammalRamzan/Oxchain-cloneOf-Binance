@@ -182,6 +182,7 @@ const changeMarketingMailStatus = require('./controllers/marketingMails/changeSt
 const Subscription = require('./models/Subscription.js');
 const { addAdmin } = require('./adminController/Admin.js');
 const Login = require('./adminController/Login.js');
+const CampusRequestJoin = require('./controllers/campusAmbassador/request_join.js');
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -393,7 +394,7 @@ route.all('/myReferrals', upload.none(), myReferrals);
 route.all('/referralRewards', upload.none(), referralRewards);
 route.all('/topReferralEarners', upload.none(), topReferralEarners);
 route.all('/myReferralEarns', upload.none(), myReferralEarns);
-
+route.all('/request_campus', upload.none(), CampusRequestJoin)
 route.all('/getWallet', upload.none(), getWallet);
 
 route.post('/cancelAllLimit', cancelAllLimit);
