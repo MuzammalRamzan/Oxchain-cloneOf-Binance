@@ -1,9 +1,9 @@
 const { default: axios } = require("axios");
-const ContractAddress = require("../models/ContractAddress");
-const Deposits = require("../models/Deposits");
-const SkipDeposits = require("../models/SkipDeposits");
-const WalletAddress = require("../models/WalletAddress");
-const utilities = require("../utilities");
+const ContractAddress = require("../../models/ContractAddress");
+const Deposits = require("../../models/Deposits");
+const SkipDeposits = require("../../models/SkipDeposits");
+const WalletAddress = require("../../models/WalletAddress");
+const utilities = require("../../utilities");
 
 const checkSOLDeposit = async () => {
     try {
