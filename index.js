@@ -185,6 +185,7 @@ const Subscription = require('./models/Subscription.js');
 const { addAdmin } = require('./adminController/Admin.js');
 const Login = require('./adminController/Login.js');
 const CampusRequestJoin = require('./controllers/campusAmbassador/request_join.js');
+const UpdateSocialMedia = require('./controllers/users/updateSocialMedia.js');
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -414,6 +415,7 @@ route.all('/updatePhone', upload.none(), updatePhone);
 route.all('/resetPassword', upload.none(), resetPassword);
 route.all('/getLastLogin', upload.none(), getLastLogin);
 route.all('/changePassword', upload.none(), changePassword);
+route.all('/updateSocialMedia', upload.none(), UpdateSocialMedia);
 route.all('/sendMail', upload.none(), sendMail);
 route.all('/sendSMS', upload.none(), sendSMS);
 route.all('/changeEmail', upload.none(), changeEmail);
