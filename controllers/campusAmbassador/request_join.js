@@ -1,11 +1,15 @@
 const IBModel = require("../../models/IBModel");
+const Referral = require("../../models/Referral");
 const SocialMediaPostModel = require("../../models/SocialMediaPostModel");
+const TradeVolumeModel = require("../../models/TradeVolumeModel");
 const User = require("../../models/User");
+const UserRef = require("../../models/UserRef");
 
 const CampusRequestJoin = async (req, res) => {
     try {
         let uid = req.body.user_id;
         let errors = [];
+        
         let userInfo = await User.findOne({ _id: uid });
         let userRefCode = await UserRef.findOne({ user_id: uid });
         let subUsers = await Referral.find({ reffer: userRefCode.refCode });
@@ -17,14 +21,16 @@ const CampusRequestJoin = async (req, res) => {
             subUsers.push(uid);
         }
 
-        if (userInfo.twitter_username == null) {
+        
+
+        if (userInfo.twitter_username == "") {
             errors.push("twitter_account_not_found");
         }
 
-        if (userInfo.instagram_username == null) {
+        if (userInfo.instagram_username == "") {
             errors.push("instagram_account_not_found");
         }
-        if (userInfo.facebook_username == null) {
+        if (userInfo.facebook_username == "") {
             errors.push("facebook_account_not_found");
         }
 
