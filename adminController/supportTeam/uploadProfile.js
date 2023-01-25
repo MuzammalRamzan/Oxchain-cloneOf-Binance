@@ -1,8 +1,6 @@
 require('dotenv').config();
 var fs = require('fs');
 const AWS = require('aws-sdk');
-const { v4: uuidv4 } = require('uuid');
-
 const SESConfig = {
 	apiVersion: '2010-12-01',
 	httpOptions: { timeout: 30000, connectTimeout: 5000 },
@@ -13,7 +11,7 @@ const SESConfig = {
 };
 AWS.config.update(SESConfig);
 
-const uploadImage = async (file, fileExtension) => {
+const uploadSupportProfileImage = async (file, fileExtension) => {
 	try {
 		let timestamp = new Date().getTime();
 
@@ -25,7 +23,7 @@ const uploadImage = async (file, fileExtension) => {
 		let params2 = {
 			params: {
 				Bucket: 'oxhain',
-				Key: 'news/cover-' + timestamp + '.' + fileExtension,
+				Key: 'support/profile-' + timestamp + '.' + fileExtension,
 				Body: fileNew,
 				ContentType: 'image/jpg',
 			},
@@ -34,17 +32,12 @@ const uploadImage = async (file, fileExtension) => {
 		var upload2 = new AWS.S3.ManagedUpload(params2);
 		var promise = upload2.promise();
 		return promise.then(function (data) {
-			return {
-				status: true,
-				data: data.Location,
-			};
+			return data.Location;
 		});
 	} catch (error) {
-		return {
-			status: false,
-			error,
-		};
+		console.log('error', error);
+		throw new Error(error.message);
 	}
 };
 
-module.exports = uploadImage;
+module.exports = uploadSupportProfileImage;
