@@ -1,63 +1,113 @@
 const { default: axios } = require("axios");
-const CoinList = require("../../models/CoinList");
+const Pairs = require("../../models/Pairs");
 
+var authFile = require("../../auth.js");
 
 const Calculate = async (req, res) => {
 
+    var api_key_result = req.body.api_key;
 
-    //get trending coins from binance api which is listed on CoinList
-    let coinList = await CoinList.find({}).exec();
-    let coinListArray = [];
-    coinList.forEach(coin => {
-        coinListArray.push(coin.symbol);
+    var result = await authFile.apiKeyChecker(api_key_result);
+
+    if (result != true) {
+        return res.json({ status: "fail", message: "api_key_not_valid", showableMessage: "Api key not valid" });
     }
-    );
 
-    let trendingCoins = await axios.get("https://api.binance.com/api/v3/ticker/24hr");
+
+    let binanceData = await axios.get("https://api.binance.com/api/v3/ticker/24hr");
+
+    let PairsData = await Pairs.find({});
+
+    //get max trending from binance api which is listed on Pairs
     let trendingCoinsArray = [];
-    trendingCoins.data.forEach(coin => {
-        if (coinListArray.includes(coin.symbol)) {
-            trendingCoinsArray.push(coin);
-        }
-    }
-    );
-
-    //get max volumes from binance api which is listed on CoinList
-    let maxVolumes = await axios.get("https://api.binance.com/api/v3/ticker/24hr");
     let maxVolumesArray = [];
-    maxVolumes.data.forEach(coin => {
-        if (coinListArray.includes(coin.symbol)) {
-            maxVolumesArray.push(coin);
-        }
-    }
-    );
-
-    //get max losses from binance api which is listed on CoinList
-    let maxLosses = await axios.get("https://api.binance.com/api/v3/ticker/24hr");
     let maxLossesArray = [];
-    maxLosses.data.forEach(coin => {
-        if (coinListArray.includes(coin.symbol)) {
-            maxLossesArray.push(coin);
-        }
-    }
-    );
-
-    //get max gains from binance api which is listed on CoinList
-    let maxGains = await axios.get("https://api.binance.com/api/v3/ticker/24hr");
     let maxGainsArray = [];
-    maxGains.data.forEach(coin => {
-        if (coinListArray.includes(coin.symbol)) {
-            maxGainsArray.push(coin);
-        }
-    }
-    );
+    let newestCoinsArray = [];
+
+
+
+    PairsData.forEach(coin => {
+        binanceData.data.forEach(binanceCoin => {
+            if (coin.name.replace("/", "") === binanceCoin.symbol) {
+
+                trendingCoinsArray.push({
+                    name: coin.name,
+                    priceChangePercent: binanceCoin.priceChangePercent,
+                    priceChange: binanceCoin.priceChange,
+                    lastPrice: binanceCoin.lastPrice,
+                    volume: binanceCoin.volume,
+                    quoteVolume: binanceCoin.quoteVolume,
+                    openPrice: binanceCoin.openPrice,
+                    highPrice: binanceCoin.highPrice,
+                    lowPrice: binanceCoin.lowPrice,
+                    closeTime: binanceCoin.closeTime,
+                });
+
+                maxVolumesArray.push({
+                    name: coin.name,
+                    volume: binanceCoin.volume,
+                    quoteVolume: binanceCoin.quoteVolume,
+                });
+
+                maxLossesArray.push({
+                    name: coin.name,
+                    priceChangePercent: binanceCoin.priceChangePercent,
+                    priceChange: binanceCoin.priceChange,
+                });
+
+                maxGainsArray.push({
+                    name: coin.name,
+                    priceChangePercent: binanceCoin.priceChangePercent,
+                    priceChange: binanceCoin.priceChange,
+                });
+
+                newestCoinsArray.push({
+                    name: coin.name,
+                    createdAt: coin.createdAt,
+                    priceChangePercent: binanceCoin.priceChangePercent,
+                    priceChange: binanceCoin.priceChange,
+                    lastPrice: binanceCoin.lastPrice,
+                });
+            }
+        })
+    });
+
+
+    //change the array direction to descending by priceChangePercent
+    trendingCoinsArray.sort((a, b) => {
+        return b.priceChangePercent - a.priceChangePercent;
+    });
+
+
+    //change the array direction to descending by volume
+    maxVolumesArray.sort((a, b) => {
+        return b.volume - a.volume;
+    });
+
+    //change the array direction to descending by priceChangePercent
+    maxLossesArray.sort((a, b) => {
+        return a.priceChangePercent - b.priceChangePercent;
+    });
+
+    //change the array direction to descending by priceChangePercent
+    maxGainsArray.sort((a, b) => {
+        return b.priceChangePercent - a.priceChangePercent;
+    });
+
+    //change the array direction to descending by createdAt
+    newestCoinsArray.sort((a, b) => {
+        return b.createdAt - a.createdAt;
+    });
 
     return res.json({
         status: "success",
         trendingCoins: trendingCoinsArray,
         maxVolumes: maxVolumesArray,
         maxLosses: maxLossesArray,
-        maxGains: maxGainsArray
+        maxGains: maxGainsArray,
+        newestCoins: newestCoinsArray,
+
     });
 
 }
