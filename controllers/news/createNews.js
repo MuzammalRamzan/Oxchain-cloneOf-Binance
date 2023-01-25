@@ -39,7 +39,7 @@ const createNews = async (req, res) => {
 		title: req.body.title,
 		content: req.body.content,
 		author: req.body.author,
-		coverPhoto: path,
+		coverPhoto: result.data,
 	});
 
 	// Save news article to database

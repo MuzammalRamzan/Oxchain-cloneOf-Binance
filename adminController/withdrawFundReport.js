@@ -3,7 +3,6 @@ const CoinListModel = require('../models/CoinList');
 const cryptoConvert = require('../controllers/GetUserBalances/SocketController/cryptoConvert');
 const withdrawReport = async (status) => {
 	let CoinListFind = await CoinListModel.find({});
-
 	let prices = [];
 	for (var i = 0; i < CoinListFind.length; i++) {
 		let coinInfo = CoinListFind[i];

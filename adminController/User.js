@@ -1,12 +1,12 @@
 var authFile = require('../auth.js');
 var UserModel = require('../models/User');
+const BlockedUserModel = require('../models/blockedUser.js');
 const { depositFundOfuser } = require('./depositFund.js');
 const { withdrawFundOfuser } = require('./withdrawFund.js');
 const BanUser = async (req, res) => {
 	//burada banlanacak kullanıcı id'si alınacak
 
-	var apiKey = req.body.apiKey;
-	var userId = req.body.userId;
+	const { apiKey, userId, reason } = req.body;
 
 	if (apiKey == null || userId == null) {
 		return res.json({
@@ -23,16 +23,18 @@ const BanUser = async (req, res) => {
 			message: 'Api key is wrong',
 		});
 	}
-
-	var user = await UserModel.findOne({ _id: userId });
-
+	let user = await UserModel.findOne({ _id: userId });
 	if (user == null) {
 		return res.json({
 			status: 'error',
 			message: 'User not found',
 		});
 	}
-
+	const blockeduser = new BlockedUserModel({
+		user_id: userId,
+		reason: reason,
+	});
+	await blockeduser.save();
 	user.status = '5';
 
 	await user.save();
@@ -42,7 +44,49 @@ const BanUser = async (req, res) => {
 		message: 'User banned',
 	});
 };
+const getAllBannedUser = async (req, res) => {
+	try {
+		var apiKey = req.body.apiKey;
 
+		if (apiKey == null) {
+			return res.json({
+				status: 'error',
+				message: 'Api key or user id is null',
+			});
+		}
+
+		var apiKeyControl = await authFile.apiKeyChecker(apiKey);
+
+		if (apiKeyControl == false) {
+			return res.json({
+				status: 'error',
+				message: 'Api key is wrong',
+			});
+		}
+		var blockedUsers = await BlockedUserModel.find()
+			.populate({
+				path: 'user_id',
+				model: 'User',
+				select: 'name surname status',
+			})
+			.lean();
+		if (!blockedUsers.length) {
+			return res.json({
+				status: 'error',
+				message: 'No Blocked User found',
+			});
+		}
+		return res.json({
+			status: 'success',
+			result: blockedUsers,
+		});
+	} catch (error) {
+		return res.json({
+			status: 'error',
+			message: error.message,
+		});
+	}
+};
 const ReBanUser = async (req, res) => {
 	var apiKey = req.body.apiKey;
 	var userId = req.body.userId;
@@ -71,7 +115,7 @@ const ReBanUser = async (req, res) => {
 			message: 'User not found',
 		});
 	}
-
+	await BlockedUserModel.deleteOne({ user_id: userId });
 	user.status = '1';
 
 	await user.save();
@@ -214,4 +258,5 @@ module.exports = {
 	userList,
 	denyApplicant,
 	filterUser,
+	getAllBannedUser,
 };
