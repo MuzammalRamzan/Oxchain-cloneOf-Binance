@@ -163,6 +163,8 @@ const myReferralEarns = require('./controllers/referrals/myReferralEarns');
 const getKYCStatus = require('./controllers/kyc/getStatus');
 const getApiKeys = require('./controllers/api/getApiKeys');
 
+const getDashboard = require('./controllers/dashboard/getDashboard');
+
 const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
@@ -225,6 +227,10 @@ route.all('/delete2fa', Delete2fa);
 route.all('/addAnnouncement', addAnnouncement);
 route.all('/getAnnouncements', getAnnouncement);
 route.all('/getLocation', getLocation);
+
+
+route.all('/getDashboard', getDashboard);
+
 
 route.all('/getVerificationIds', upload.any(), getVerificationIds);
 route.all('/addVerificationId', upload.any(), addVerificationId);

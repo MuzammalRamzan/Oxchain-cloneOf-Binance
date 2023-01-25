@@ -160,7 +160,7 @@ const withdraw = async (req, res) => {
     let check1 = "";
     let check3 = "";
 
-    /*
+
     if (email != undefined && email != null && email != "") {
       check1 = await MailVerification.findOne({
         user_id: user_id,
@@ -176,10 +176,8 @@ const withdraw = async (req, res) => {
           showableMessage: "Wrong Mail Pin",
         });
 
-    } 
-    //test 
-    */
-/*
+    }
+
     if (phone != undefined && phone != null && phone != "") {
       check3 = await SMSVerification.findOne
         ({
@@ -197,7 +195,7 @@ const withdraw = async (req, res) => {
         });
     }
 
-    */
+
     if (check1 != "") {
       check1.status = 1;
       check1.save();
@@ -215,7 +213,7 @@ const withdraw = async (req, res) => {
       transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000).toString() });
       console.log(transaction.data);
       if (transaction.data.status != 'success') {
-        res.json({ status: "fail", msg: "unknow error" });
+        res.json({ status: "fail", message: "unknow error" });
         return;
       }
       break;
@@ -226,7 +224,7 @@ const withdraw = async (req, res) => {
         transaction = await PostRequestSync("http://44.203.2.70:4458/transfer", { from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
         console.log(transaction.data);
         if (transaction.data.status != 'success') {
-          res.json({ status: "fail", msg: "unknow error" });
+          res.json({ status: "fail", message: "unknow error" });
           return;
         }
       } else {
@@ -234,7 +232,7 @@ const withdraw = async (req, res) => {
         transaction = await PostRequestSync("http://44.203.2.70:4458/contract_transfer", { token: coinInfo.symbol, from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
         console.log(transaction.data);
         if (transaction.data.status != 'success') {
-          res.json({ status: "fail", msg: "unknow error" });
+          res.json({ status: "fail", message: "unknow error" });
           return;
         }
       }
@@ -246,13 +244,13 @@ const withdraw = async (req, res) => {
       if (coinInfo.symbol == 'ETH') {
         transaction = await PostRequestSync("http://54.167.28.93:4455/transfer", { from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
         if (transaction.data.status != 'success') {
-          res.json({ status: "fail", msg: "unknow error" });
+          res.json({ status: "fail", message: "unknow error" });
           return;
         }
       } else {
         transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: coinInfo.symbol, from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
         if (transaction.data.status != 'success') {
-          res.json({ status: "fail", msg: "unknow error" });
+          res.json({ status: "fail", message: "unknow error" });
           return;
         }
 
@@ -269,12 +267,12 @@ const withdraw = async (req, res) => {
       });
       console.log(transaction.data);
       if (transaction.data.status != 'success') {
-        res.json({ status: "fail", msg: transaction.data.message });
+        res.json({ status: "fail", message: transaction.data.message });
         return;
       }
       break;
     default:
-      res.json({ status: "fail", msg: "Invalid network" });
+      res.json({ status: "fail", message: "Invalid network" });
       break;
   }
 
