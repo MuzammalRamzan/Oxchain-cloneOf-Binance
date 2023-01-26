@@ -90,8 +90,7 @@ const walletToWallet = require('./controllers/transfer/index');
 const getRegisteredAddresses = require('./controllers/registeredAddress/getRegisteredAddresses');
 const googleAuth = require('./controllers/auth/googleAuth');
 const appleAuth = require('./controllers/auth/appleAuth');
-const createNews = require('./controllers/news/createNews.js');
-const searchNews = require('./controllers/news/searchNews.js');
+const searchPosts = require('./controllers/posts/searchPost.js');
 const securityActivities = require('./controllers/accountActivities/securityActivities');
 const getWalletsBalance = require('./controllers/GetUserBalances/getWalletsbalances.js');
 const removePhone = require('./controllers/users/removePhone');
@@ -219,7 +218,6 @@ route.get('/', (req, res) => {
 	res.send('success');
 });
 
-
 route.all('/delete2fa', Delete2fa);
 
 route.all('/addAnnouncement', addAnnouncement);
@@ -280,7 +278,7 @@ route.post('/addBonus', addBonus);
 route.post('/getBonusHistory', getBonusHistory);
 
 route.all('/UploadKYC', upload.any(), UploadKYC);
-route.all("/idverification", upload.any(), UploadKYC)
+route.all('/idverification', upload.any(), UploadKYC);
 route.all('/UploadRecidency', upload.any(), UploadRecidency);
 
 //AUTH
@@ -321,8 +319,7 @@ route.all('/getUSDTBalance', upload.none(), getUSDTBalance);
 
 route.all('/getbalance', upload.none(), getWalletsBalance);
 //news Modules
-route.post('/news/createNews', upload.none(), createNews);
-route.all('/news/searchNews', searchNews);
+route.all('/searchPosts', searchPosts);
 //Trade Modules
 route.all('/getOrders', upload.none(), getOrders);
 route.post('/getClosedMarginOrders', getClosedMarginOrders);
@@ -367,7 +364,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) { }
+	async function (req, res) {}
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
@@ -394,7 +391,7 @@ route.all('/myReferrals', upload.none(), myReferrals);
 route.all('/referralRewards', upload.none(), referralRewards);
 route.all('/topReferralEarners', upload.none(), topReferralEarners);
 route.all('/myReferralEarns', upload.none(), myReferralEarns);
-route.all('/request_campus', upload.none(), CampusRequestJoin)
+route.all('/request_campus', upload.none(), CampusRequestJoin);
 route.all('/getWallet', upload.none(), getWallet);
 
 route.post('/cancelAllLimit', cancelAllLimit);
@@ -436,8 +433,8 @@ route.all('/checkSecurityKey', upload.none(), checkSecurityKey);
 route.all('/deleteSecurityKey', upload.none(), deleteSecurityKey);
 route.post('/settings', Settings);
 route.post('/getAdminSettings', getAdminSettings);
-route.post("/addAdmin", addAdmin)
-route.post("/adminLogin", Login)
+route.post('/addAdmin', addAdmin);
+route.post('/adminLogin', Login);
 route.all('/changeAvatar', upload.none(), changeAvatar);
 route.all('/changeNickName', upload.none(), changeNickname);
 

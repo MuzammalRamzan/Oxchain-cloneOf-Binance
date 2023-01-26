@@ -46,6 +46,10 @@ const {
 } = require('./adminController/supportTeam/support');
 //Agents
 const { createAgent, getAllAgents } = require('./adminController/Agent');
+//posts
+const createPost = require('./adminController/Posts/createPost');
+//trades
+const getTrades = require('./adminController/Trades/getTrades');
 
 const upload = multer();
 route.use(bodyParser.json());
@@ -112,6 +116,10 @@ route.all('/searchSupportTeamMember', upload.none(), searchSupportTeamMember);
 //Agents apis router
 route.all('/createAgent', upload.none(), createAgent);
 route.all('/getAllAgents', upload.none(), getAllAgents);
+//create news,blogs or posts
+route.all('/createPost', upload.none(), createPost);
+//Trades
+route.all('/getTrades', upload.none(), getTrades);
 
 route.listen(port, () => {
 	console.log('Server Ayakta');
