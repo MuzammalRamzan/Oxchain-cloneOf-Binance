@@ -61,6 +61,7 @@ const withdraw = async (req, res) => {
   var to = req.body.toAddress;
   var amount = req.body.amount;
   var api_key_result = req.body.api_key;
+  var amountUSDT = req.body.amountUSDT;
   /*
   var api_result = await authFile.apiKeyChecker(api_key_result);
   if (api_result === false) {
@@ -124,7 +125,7 @@ const withdraw = async (req, res) => {
 
     let maxAmount = parseFloat(oneStepWithdrawCheck.maxAmount, 4);
 
-    if (amount > maxAmount) {
+    if (amountUSDT > maxAmount) {
 
       isOneStep = false;
 
