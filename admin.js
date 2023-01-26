@@ -46,6 +46,11 @@ const {
 } = require('./adminController/supportTeam/support');
 //Agents
 const { createAgent, getAllAgents } = require('./adminController/Agent');
+//Faqs
+const {
+	createFAQMember,
+	getAllFAQMembers,
+} = require('./adminController/FAQTeam');
 //posts
 const createPost = require('./adminController/Posts/createPost');
 //trades
@@ -120,7 +125,9 @@ route.all('/getAllAgents', upload.none(), getAllAgents);
 route.all('/createPost', upload.none(), createPost);
 //Trades
 route.all('/getTrades', upload.none(), getTrades);
-
+//FAQS apis router
+route.all('/createFAQMember', upload.none(), createFAQMember);
+route.all('/getAllFAQMembers', upload.none(), getAllFAQMembers);
 route.listen(port, () => {
 	console.log('Server Ayakta');
 });
