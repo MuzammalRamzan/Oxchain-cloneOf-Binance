@@ -14,7 +14,7 @@ const Calculate = async (req, res) => {
     }
 
 
-    let binanceData = await axios.get("https://api.binance.com/api/v3/ticker/24hr");
+    let binanceData = await axios.get("http://socket.oxhain.com:8542/24hr");
 
     let PairsData = await Pairs.find({});
 
