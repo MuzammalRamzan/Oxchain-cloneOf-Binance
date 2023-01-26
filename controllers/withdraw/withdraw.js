@@ -62,7 +62,7 @@ const withdraw = async (req, res) => {
   var to = req.body.toAddress;
   var amount = req.body.amount;
   var api_key_result = req.body.api_key;
-  
+
   /*
   var api_result = await authFile.apiKeyChecker(api_key_result);
   if (api_result === false) {
@@ -136,14 +136,21 @@ const withdraw = async (req, res) => {
 
 
 
+    let price = 0;
 
 
-    let getPrice = await axios(
-      "http://18.130.193.166:8542/price?symbol=" +
-      checkCoin.symbol + "USDT"
-    );
 
-    let price = getPrice.data.data.ask;
+
+    if (CoinList.symbol == "USDT") {
+      price = 1;
+    }
+    else {
+      let getPrice = await axios(
+        "http://18.130.193.166:8542/price?symbol=" +
+        checkCoin.symbol + "USDT"
+      );
+      price = getPrice.data.data.ask;
+    }
 
 
     let amountUSDT = parseFloat(amount) * parseFloat(price);
