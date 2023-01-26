@@ -14,6 +14,7 @@ const UserModel = require("../../models/User");
 const ApiKeysModel = require("../../models/ApiKeys");
 const ApiRequestModel = require("../../models/ApiRequests");
 
+
 const OneStepWithdrawModel = require("../../models/OneStepWithdraw");
 
 function PostRequestSync(url, data) {
@@ -61,7 +62,7 @@ const withdraw = async (req, res) => {
   var to = req.body.toAddress;
   var amount = req.body.amount;
   var api_key_result = req.body.api_key;
-  var amountUSDT = req.body.amountUSDT;
+  
   /*
   var api_result = await authFile.apiKeyChecker(api_key_result);
   if (api_result === false) {
@@ -88,6 +89,13 @@ const withdraw = async (req, res) => {
     res.json({ status: "fail", message: "user_not_found", showableMessage: "User not found" });
     return;
   }
+
+  const checkCoin = await CoinList.findOne({ _id: coin_id }).exec();
+  if (checkCoin == null) {
+    res.json({ status: "fail", message: "Coin not found" });
+    return;
+  }
+
 
   amount = parseFloat(amount);
   var fromWalelt = await Wallet.findOne({
@@ -124,6 +132,21 @@ const withdraw = async (req, res) => {
     isOneStep = true;
 
     let maxAmount = parseFloat(oneStepWithdrawCheck.maxAmount, 4);
+
+
+
+
+
+
+    let getPrice = await axios(
+      "http://18.130.193.166:8542/price?symbol=" +
+      checkCoin.symbol + "USDT"
+    );
+
+    let price = getPrice.data.data.ask;
+
+
+    let amountUSDT = parseFloat(amount) * parseFloat(price);
 
     if (amountUSDT > maxAmount) {
 
