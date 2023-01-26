@@ -1,6 +1,6 @@
 const Pairs = require("../../models/Pairs");
 
-const SendIsolatedWallet = async (ws, _wallets, user_id)  => {
+const SendIsolatedWallet = async (sockets, _wallets, user_id)  => {
     var wallets = new Array();
     
     for (var i = 0; i < _wallets.length; i++) {

@@ -162,6 +162,8 @@ const myReferralEarns = require('./controllers/referrals/myReferralEarns');
 const getKYCStatus = require('./controllers/kyc/getStatus');
 const getApiKeys = require('./controllers/api/getApiKeys');
 
+const getDashboard = require('./controllers/dashboard/getDashboard');
+
 const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
@@ -182,6 +184,9 @@ const Subscription = require('./models/Subscription.js');
 const { addAdmin } = require('./adminController/Admin.js');
 const Login = require('./adminController/Login.js');
 const CampusRequestJoin = require('./controllers/campusAmbassador/request_join.js');
+const UpdateSocialMedia = require('./controllers/users/updateSocialMedia.js');
+const checkTwitterAccount = require('./Functions/checkTwitterAccount.js');
+const { default: axios } = require('axios');
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -223,6 +228,10 @@ route.all('/delete2fa', Delete2fa);
 route.all('/addAnnouncement', addAnnouncement);
 route.all('/getAnnouncements', getAnnouncement);
 route.all('/getLocation', getLocation);
+
+
+route.all('/getDashboard', getDashboard);
+
 
 route.all('/getVerificationIds', upload.any(), getVerificationIds);
 route.all('/addVerificationId', upload.any(), addVerificationId);
@@ -405,6 +414,9 @@ route.all('/updatePhone', upload.none(), updatePhone);
 route.all('/resetPassword', upload.none(), resetPassword);
 route.all('/getLastLogin', upload.none(), getLastLogin);
 route.all('/changePassword', upload.none(), changePassword);
+route.all('/updateSocialMedia', upload.none(), UpdateSocialMedia);
+route.all('/checkTwitterAccount', upload.none(), checkTwitterAccount);
+
 route.all('/sendMail', upload.none(), sendMail);
 route.all('/sendSMS', upload.none(), sendSMS);
 route.all('/changeEmail', upload.none(), changeEmail);
@@ -457,6 +469,20 @@ route.all('/getDepositsUSDT', upload.none(), getDepositsUSDT);
 route.post('/createApplicant', upload.none(), createApplicant);
 route.post('/addDocument', upload.any(), addDocument);
 route.post('/getApplicantStatus', upload.none(), getApplicantStatus);
+
+route.get('/price', async function(req,res)  {
+	let symbol = req.query.symbol;
+	if(symbol == null || symbol == "")  {
+		return res.json({status : "fail", message: "symbol not found"});
+	}
+	let priceData = await axios("http://18.130.193.166:8542/price?symbol=" + symbol);
+	console.log(priceData.data);
+	if(priceData.data.status == 'success') {
+		return res.json({status : "succes", data: priceData.data.data});
+	}
+	
+	return res.json({status : "fail", message: "unknow error"});
+});
 
 if (process.env.NODE_ENV == 'product') {
 	let sslKEY = fs.readFileSync(
