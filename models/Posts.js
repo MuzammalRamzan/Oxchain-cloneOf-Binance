@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const newsSchema = new mongoose.Schema({
+const postSchema = new mongoose.Schema({
 	title: {
 		type: String,
 		required: true,
@@ -17,10 +17,15 @@ const newsSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
+	category: {
+		type: String,
+		enum: ['news', 'dashboardNews', 'blogs'],
+		required: true,
+	},
 	status: {
 		type: Number,
 		default: 1,
 	},
 });
-
-module.exports = mongoose.model('News', newsSchema);
+postSchema.index({ title: 'text', content: 'text', author: 'text' });
+module.exports = mongoose.model('Posts', postSchema);
