@@ -473,16 +473,18 @@ route.post('/createApplicant', upload.none(), createApplicant);
 route.post('/addDocument', upload.any(), addDocument);
 route.post('/getApplicantStatus', upload.none(), getApplicantStatus);
 
-route.post('/price', upload.none(), async function(req,res)  {
-	let symbol = req.body.symbol;
+route.get('/price', async function(req,res)  {
+	let symbol = req.query.symbol;
 	if(symbol == null || symbol == "")  {
 		return res.json({status : "fail", message: "symbol not found"});
 	}
 	let priceData = await axios("http://18.130.193.166:8542/price?symbol=" + symbol);
+	console.log(priceData.data);
 	if(priceData.data.status == 'success') {
-		return res.json({status : "fail", message: "unknow error"});
+		return res.json({status : "succes", data: priceData.data.data});
 	}
-	return res.json({status : "succes", data: priceData.data.data});
+	
+	return res.json({status : "fail", message: "unknow error"});
 });
 
 if (process.env.NODE_ENV == 'product') {
