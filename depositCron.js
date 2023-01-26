@@ -54,14 +54,14 @@ const { exit } = require("process");
 
 const auth = require("./auth.js");
 const { ObjectID, ObjectId } = require("bson");
-const checkSOLDeposit = require("./CronController/checkSOLDeposit");
-const checkBNBDeposit = require("./CronController/checkBNBDeposit");
-const checkETHDeposit = require("./CronController/checkETHDeposit");
-const checkERCContractDeposit = require("./CronController/checkERCContractDeposit");
-const checkTronContractDeposit = require("./CronController/checkTronContractDeposit");
-const checkTRXDeposit = require("./CronController/checkTRXDeposit");
-const checkBTCDeposit = require("./CronController/checkBTCDeposit");
-const checkBSCDeposit = require("./CronController/checkBSCDeposit");
+const checkSOLDeposit = require("./CronController/checkDeposits/checkSOLDeposit");
+const checkBNBDeposit = require("./CronController/checkDeposits/checkBNBDeposit");
+const checkETHDeposit = require("./CronController/checkDeposits/checkETHDeposit");
+const checkERCContractDeposit = require("./CronController/checkDeposits/checkERCContractDeposit");
+const checkTronContractDeposit = require("./CronController/checkDeposits/checkTronContractDeposit");
+const checkTRXDeposit = require("./CronController/checkDeposits/checkTRXDeposit");
+const checkBTCDeposit = require("./CronController/checkDeposits/checkBTCDeposit");
+const checkBSCDeposit = require("./CronController/checkDeposits/checkBSCDeposit");
 const mailer = require("./mailer");
 
 const upload = multer();
@@ -232,7 +232,7 @@ async function OxhainTasks() {
     deposits.reverse();
     for (var i = 0; i < deposits.length; i++) {
       let depo = deposits[i];
-
+      try {
       switch (depo.netowrk_id.toString()) {
         case "635916ade5f78e20c0bb809c":
           //BTC
@@ -274,7 +274,8 @@ async function OxhainTasks() {
             if (usdt_transaction.data.status == 'success') {
               depo.move_to_admin = true;
               depo.save();
-              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + transaction.data.data + " hash code ");
+              
+              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + usdt_transaction.data.data + " hash code ");
             }
           }
 
@@ -366,6 +367,9 @@ async function OxhainTasks() {
           }
           break;
       }
+    } catch(err) {
+      
+    }
     }
   });
 

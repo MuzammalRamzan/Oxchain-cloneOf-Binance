@@ -43,6 +43,7 @@ const MarginCrossWallet = require("../models/MarginCrossWallet");
 const MarginIsolatedWallet = require("../models/MarginIsolatedWallet");
 const BinanceAPI = require("../BinanceAPI");
 const CheckLogoutDevice = require("./device/check_logout_device");
+const { default: axios } = require("axios");
 var route = express();
 
 var wss = null;
@@ -74,6 +75,10 @@ route.get("/price", (req, res) => {
     res.json({ 'status': 'success', 'data': data });
 });
 
+route.get('/24hr', async (req,res) => {
+    let data = await axios("https://api.binance.com/api/v3/ticker/24hr");
+    return res.json(data.data);
+})
 
 route.listen(8542, () => {
     console.log("Server Ayakta");

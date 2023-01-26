@@ -34,6 +34,7 @@ const GetSpotWallet = require("./wallet/getSpotWallet");
 const CoinList = require("../models/CoinList");
 const GetAssets = require("./wallet/getAssets");
 const GetAssetsOverView = require("./wallet/getAssetsOverview");
+const GetDerivatives = require("./wallet/getDerivatives");
 
 require("dotenv").config();
 
@@ -65,6 +66,11 @@ io.on("connection", async (socket) => {
     socket.on('assets_overview', (user_id) => {
         checkRoomOrJoin(socket, user_id);
         GetAssetsOverView(io.sockets, user_id);
+    });
+
+    socket.on('derivatives', (user_id) => {
+        checkRoomOrJoin(socket, user_id);
+        GetDerivatives(io.sockets, user_id);
     });
 
     
