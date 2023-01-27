@@ -90,8 +90,7 @@ const walletToWallet = require('./controllers/transfer/index');
 const getRegisteredAddresses = require('./controllers/registeredAddress/getRegisteredAddresses');
 const googleAuth = require('./controllers/auth/googleAuth');
 const appleAuth = require('./controllers/auth/appleAuth');
-const createNews = require('./controllers/news/createNews.js');
-const searchNews = require('./controllers/news/searchNews.js');
+const searchPosts = require('./controllers/posts/searchPost.js');
 const securityActivities = require('./controllers/accountActivities/securityActivities');
 const getWalletsBalance = require('./controllers/GetUserBalances/getWalletsbalances.js');
 const removePhone = require('./controllers/users/removePhone');
@@ -163,6 +162,8 @@ const myReferralEarns = require('./controllers/referrals/myReferralEarns');
 const getKYCStatus = require('./controllers/kyc/getStatus');
 const getApiKeys = require('./controllers/api/getApiKeys');
 
+const getDashboard = require('./controllers/dashboard/getDashboard');
+
 const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
@@ -184,6 +185,11 @@ const Subscription = require('./models/Subscription.js');
 const { addAdmin } = require('./adminController/Admin.js');
 const Login = require('./adminController/Login.js');
 const CampusRequestJoin = require('./controllers/campusAmbassador/request_join.js');
+const UpdateSocialMedia = require('./controllers/users/updateSocialMedia.js');
+const checkTwitterAccount = require('./Functions/checkTwitterAccount.js');
+const { default: axios } = require('axios');
+const GetDepositHistory = require('./controllers/deposit/getDepositHistory.js');
+const GetWithdrawHistory = require('./controllers/withdraw/getWithdrawHistory.js');
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -220,12 +226,13 @@ route.get('/', (req, res) => {
 	res.send('success');
 });
 
-
 route.all('/delete2fa', Delete2fa);
 
 route.all('/addAnnouncement', addAnnouncement);
 route.all('/getAnnouncements', getAnnouncement);
 route.all('/getLocation', getLocation);
+
+route.all('/getDashboard', getDashboard);
 
 route.all('/getVerificationIds', upload.any(), getVerificationIds);
 route.all('/addVerificationId', upload.any(), addVerificationId);
@@ -281,7 +288,7 @@ route.post('/addBonus', addBonus);
 route.post('/getBonusHistory', getBonusHistory);
 
 route.all('/UploadKYC', upload.any(), UploadKYC);
-route.all("/idverification", upload.any(), UploadKYC)
+route.all('/idverification', upload.any(), UploadKYC);
 route.all('/UploadRecidency', upload.any(), UploadRecidency);
 
 //AUTH
@@ -322,8 +329,7 @@ route.all('/getUSDTBalance', upload.none(), getUSDTBalance);
 
 route.all('/getbalance', upload.none(), getWalletsBalance);
 //news Modules
-route.post('/news/createNews', upload.none(), createNews);
-route.all('/news/searchNews', searchNews);
+route.all('/searchPosts', searchPosts);
 //Trade Modules
 route.all('/getOrders', upload.none(), getOrders);
 route.post('/getClosedMarginOrders', getClosedMarginOrders);
@@ -368,7 +374,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) { }
+	async function (req, res) {}
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
@@ -395,7 +401,7 @@ route.all('/myReferrals', upload.none(), myReferrals);
 route.all('/referralRewards', upload.none(), referralRewards);
 route.all('/topReferralEarners', upload.none(), topReferralEarners);
 route.all('/myReferralEarns', upload.none(), myReferralEarns);
-route.all('/request_campus', upload.none(), CampusRequestJoin)
+route.all('/request_campus', upload.none(), CampusRequestJoin);
 route.all('/getWallet', upload.none(), getWallet);
 
 route.post('/cancelAllLimit', cancelAllLimit);
@@ -409,6 +415,9 @@ route.all('/updatePhone', upload.none(), updatePhone);
 route.all('/resetPassword', upload.none(), resetPassword);
 route.all('/getLastLogin', upload.none(), getLastLogin);
 route.all('/changePassword', upload.none(), changePassword);
+route.all('/updateSocialMedia', upload.none(), UpdateSocialMedia);
+route.all('/checkTwitterAccount', upload.none(), checkTwitterAccount);
+
 route.all('/sendMail', upload.none(), sendMail);
 route.all('/sendSMS', upload.none(), sendSMS);
 route.all('/changeEmail', upload.none(), changeEmail);
@@ -437,8 +446,8 @@ route.all('/checkSecurityKey', upload.none(), checkSecurityKey);
 route.all('/deleteSecurityKey', upload.none(), deleteSecurityKey);
 route.post('/settings', Settings);
 route.post('/getAdminSettings', getAdminSettings);
-route.post("/addAdmin", addAdmin)
-route.post("/adminLogin", Login)
+route.post('/addAdmin', addAdmin);
+route.post('/adminLogin', Login);
 route.all('/changeAvatar', upload.none(), changeAvatar);
 route.all('/changeNickName', upload.none(), changeNickname);
 
@@ -458,10 +467,31 @@ route.all('/updateCopyTrade', upload.none(), (req, res) => {
 });
 route.all('/addWithdraw', upload.none(), addWithdraw);
 route.all('/getDepositsUSDT', upload.none(), getDepositsUSDT);
+
+route.all('/depositHistory', upload.none(), GetDepositHistory);
+route.all('/withdrawHistory', upload.none(), GetWithdrawHistory);
+
 route.post('/createApplicant', upload.none(), createApplicant);
 route.post('/addDocument', upload.any(), addDocument);
 route.post('/getApplicantStatus', upload.none(), getApplicantStatus);
 route.post('/getAllFAQS', upload.none(), getAllFaqs);
+
+route.get('/price', async function (req, res) {
+	let symbol = req.query.symbol;
+	if (symbol == null || symbol == '') {
+		return res.json({ status: 'fail', message: 'symbol not found' });
+	}
+	let priceData = await axios(
+		'http://18.130.193.166:8542/price?symbol=' + symbol
+	);
+	console.log(priceData.data);
+	if (priceData.data.status == 'success') {
+		return res.json({ status: 'succes', data: priceData.data.data });
+	}
+
+	return res.json({ status: 'fail', message: 'unknow error' });
+});
+
 if (process.env.NODE_ENV == 'product') {
 	let sslKEY = fs.readFileSync(
 		'/etc/letsencrypt/live/api.oxhain.com/privkey.pem'

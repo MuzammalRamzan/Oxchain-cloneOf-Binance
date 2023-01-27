@@ -1,3 +1,4 @@
+const FutureOrder = require("../../models/FutureOrder");
 const FutureWalletModel = require("../../models/FutureWalletModel");
 
 const GetFutureWallet = async(sockets, user_id) => {
@@ -25,6 +26,7 @@ const GetFutureWallet = async(sockets, user_id) => {
 
 async function CalculateFutureBalance(user_id) {
     let totalPNL = 0.0;
+    
 
     let getOpenOrders = await FutureOrder.aggregate([
         {

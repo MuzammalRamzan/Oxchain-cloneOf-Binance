@@ -39,13 +39,12 @@ const sendMail = async function (req, res) {
       var pin = Math.floor(100000 + Math.random() * 900000);
 
       var pin2 = Math.floor(100000 + Math.random() * 900000);
-
-      if (reason == "change_email" && newMail != "") {
+      if (reason == "change_email_new" && newMail != "") {
 
 
         let check = await MailVerification.findOne({
           user_id: user_id,
-          reason: "change_email",
+          reason: "change_email_new",
         }).exec();
 
 
@@ -64,23 +63,25 @@ const sendMail = async function (req, res) {
 
         if (check != null) {
           await MailVerification.findOneAndUpdate(
-            { user_id: user["_id"] },
-            { pin: pin, status: "0", reason: reason, }
+            { user_id: user["_id"], reason: "change_email_new" },
+            { pin: pin2, status: "0", }
           );
         } else {
           newPin = new MailVerification({
             user_id: user["_id"],
-            pin: pin,
-            reason: "change_email",
+            pin: pin2,
+            reason: "change_email_new",
             status: 0,
           });
           newPin.save();
         }
 
         res.json({ status: "success", data: "mail_send", showableMessage: "Mail send" });
+
+
+
       }
       else {
-
         mailer.sendMail(
           user["email"],
           "Oxhain verification",
@@ -93,10 +94,12 @@ const sendMail = async function (req, res) {
             }
           }
         );
+
         let check = await MailVerification.findOne({
           user_id: user_id,
           reason: reason,
         }).exec();
+
         if (check != null) {
           MailVerification.updateOne(
             { user_id: user["_id"], reason: reason },
@@ -105,7 +108,7 @@ const sendMail = async function (req, res) {
               if (err) {
                 res.json({ status: "fail", message: err });
               } else {
-                res.json({ status: "success", data: "mail_sendd" });
+                res.json({ status: "success", data: "mail_send", showableMessage: "Mail send" });
               }
             }
           );
@@ -116,15 +119,17 @@ const sendMail = async function (req, res) {
             reason: reason,
             status: 0,
           });
+
           newPin.save(function (err) {
             if (err) {
-              res.json({ status: "fail", message: err });
+              res.json({ status: "fail", message: err, showableMessage: "Mail not send" });
             } else {
-              res.json({ status: "success", data: "mail_send" });
+              res.json({ status: "success", data: "mail_send", showableMessage: "Mail send" });
             }
           });
         }
       }
+
     } else {
       res.json({ status: "fail", message: "user_not_found" });
     }

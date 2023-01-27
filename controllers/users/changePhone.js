@@ -35,10 +35,10 @@ const changePhone = async function (req, res) {
       }
 
       let check1 = "";
-      // let check2 = "";
+      let check2 = "";
       let check3 = "";
 
-      if (email != undefined && email != null && email != "") {
+      if (email != undefined && email != null && email != "" && req.body?.reason == "change_phone") {
         check1 = await EmailVerification.findOne({
           user_id: user_id,
           reason: "change_phone",
@@ -75,30 +75,30 @@ const changePhone = async function (req, res) {
       }
 
 
-      // check2 = await SMSVerification.findOne({
-      //   user_id: user_id,
-      //   reason: "change_phone_new",
-      //   pin: req.body.newSmsPin,
-      //   status: 0,
-      // }).exec();
+      check2 = await SMSVerification.findOne({
+        user_id: user_id,
+        reason: "change_phone_new",
+        pin: req.body.newSmsPin,
+        status: 0,
+      }).exec();
 
-      // if (!check2) {
-      //   return res.json({
-      //     status: "fail",
-      //     message: "verification_failed",
-      //     showableMessage: "Wrong New Pin",
-      //   });
-      // }
+      if (!check2) {
+        return res.json({
+          status: "fail",
+          message: "verification_failed",
+          showableMessage: "Wrong New Pin",
+        });
+      }
 
       if (check1 != "") {
         check1.status = 1;
         check1.save();
       }
 
-      // if (check2 != "") {
-      //   check2.status = 1;
-      //   check2.save();
-      // }
+      if (check2 != "") {
+        check2.status = 1;
+        check2.save();
+      }
 
       if (check3 != "") {
         check3.status = 1;

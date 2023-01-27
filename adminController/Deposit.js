@@ -17,6 +17,7 @@ const userDeposits = async (req, res) => {
 
 	for (let i = 0; i < deposits.length; i++) {
 		let userData = await User.findOne({ _id: deposits[i].user_id });
+
 		deposits[i].user = userData;
 	}
 	return res.json({ status: 'success', data: deposits });
@@ -77,7 +78,7 @@ const exportDepositsData = async (req, res) => {
 					coinData.symbol === 'USDT'
 						? transaction.amount
 						: (await cryptoConvert(coinData.symbol, 'USDT')) *
-						  transaction.amount;
+						transaction.amount;
 			}
 
 			return { ...transaction, userData, amountInUsd, symbol };
