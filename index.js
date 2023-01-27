@@ -187,6 +187,7 @@ const CampusRequestJoin = require('./controllers/campusAmbassador/request_join.j
 const UpdateSocialMedia = require('./controllers/users/updateSocialMedia.js');
 const checkTwitterAccount = require('./Functions/checkTwitterAccount.js');
 const { default: axios } = require('axios');
+const GetDepositHistory = require('./controllers/deposit/getDepositHistory.js');
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -466,6 +467,9 @@ route.all('/updateCopyTrade', upload.none(), (req, res) => {
 });
 route.all('/addWithdraw', upload.none(), addWithdraw);
 route.all('/getDepositsUSDT', upload.none(), getDepositsUSDT);
+
+route.all('/depositHistory', upload.none(), GetDepositHistory);
+
 route.post('/createApplicant', upload.none(), createApplicant);
 route.post('/addDocument', upload.any(), addDocument);
 route.post('/getApplicantStatus', upload.none(), getApplicantStatus);
