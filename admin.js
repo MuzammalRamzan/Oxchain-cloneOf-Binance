@@ -45,8 +45,6 @@ const {
 } = require('./adminController/supportTeam/support');
 //Agents
 const { createAgent, getAllAgents } = require('./adminController/Agent');
-<<<<<<< Updated upstream
-=======
 //Faqs
 const {
 	createFAQMember,
@@ -59,7 +57,6 @@ const deleteFAQs = require('./adminController/FAQS/deleteFAQs');
 const createPost = require('./adminController/Posts/createPost');
 //trades
 const getTrades = require('./adminController/Trades/getTrades');
->>>>>>> Stashed changes
 
 const upload = multer();
 route.use(bodyParser.json());
@@ -126,9 +123,6 @@ route.all('/searchSupportTeamMember', upload.none(), searchSupportTeamMember);
 //Agents apis router
 route.all('/createAgent', upload.none(), createAgent);
 route.all('/getAllAgents', upload.none(), getAllAgents);
-<<<<<<< Updated upstream
-
-=======
 //create news,blogs or posts
 route.all('/createPost', upload.none(), createPost);
 //Trades
@@ -139,7 +133,6 @@ route.all('/getAllFAQMembers', upload.none(), getAllFAQMembers);
 route.all('/FAQS/create', upload.none(), createFAQs);
 route.all('/FAQS/update/:id', upload.none(), updateFAQs);
 route.all('/FAQS/delete/:id', upload.none(), deleteFAQs);
->>>>>>> Stashed changes
 route.listen(port, () => {
 	console.log('Server Ayakta');
 });
