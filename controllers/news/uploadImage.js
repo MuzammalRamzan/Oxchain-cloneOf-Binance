@@ -34,16 +34,11 @@ const uploadImage = async (file, fileExtension) => {
 		var upload2 = new AWS.S3.ManagedUpload(params2);
 		var promise = upload2.promise();
 		return promise.then(function (data) {
-			return {
-				status: true,
-				data: data.Location,
-			};
+			return data.Location;
 		});
 	} catch (error) {
-		return {
-			status: false,
-			error,
-		};
+		console.log('error', error);
+		throw new Error(error.message);
 	}
 };
 

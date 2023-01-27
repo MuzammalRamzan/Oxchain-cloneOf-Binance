@@ -168,6 +168,7 @@ const getPrediction = require('./controllers/Prediction/getPrediction');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
 
 const Delete2fa = require('./controllers/auth/delete2fa');
+const getAllFaqs = require('./controllers/FAQ/getFAQs.js');
 
 //only for testing purposes for emircan
 
@@ -460,7 +461,7 @@ route.all('/getDepositsUSDT', upload.none(), getDepositsUSDT);
 route.post('/createApplicant', upload.none(), createApplicant);
 route.post('/addDocument', upload.any(), addDocument);
 route.post('/getApplicantStatus', upload.none(), getApplicantStatus);
-
+route.post('/getAllFAQS', upload.none(), getAllFaqs);
 if (process.env.NODE_ENV == 'product') {
 	let sslKEY = fs.readFileSync(
 		'/etc/letsencrypt/live/api.oxhain.com/privkey.pem'
