@@ -108,7 +108,7 @@ const sendMail = async function (req, res) {
               if (err) {
                 res.json({ status: "fail", message: err });
               } else {
-                res.json({ status: "success", data: "mail_send" });
+                res.json({ status: "success", data: "mail_send", showableMessage: "Mail send" });
               }
             }
           );
@@ -122,9 +122,9 @@ const sendMail = async function (req, res) {
 
           newPin.save(function (err) {
             if (err) {
-              res.json({ status: "fail", message: err });
+              res.json({ status: "fail", message: err, showableMessage: "Mail not send" });
             } else {
-              res.json({ status: "success", data: "mail_send" });
+              res.json({ status: "success", data: "mail_send", showableMessage: "Mail send" });
             }
           });
         }
