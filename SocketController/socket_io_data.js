@@ -233,4 +233,6 @@ function checkRoomOrJoin(socket, id) {
 }
 
 
-server.listen(7011);
+server.listen(7011, () => {
+    console.log("server is on")
+});

@@ -20,7 +20,6 @@ const sendSMS = async function (req, res) {
     let user = await User.findOne({
       _id: user_id,
     }).exec();
-
     if (user != null) {
 
       if (user.status == "1" || user.status == "5") {
@@ -51,10 +50,9 @@ const sendSMS = async function (req, res) {
           reason: "change_phone_new",
         }).exec();
 
-
         let sendSMSResponse = await mailer.sendSMS(
-          user.country_code,
-          user.phone_number,
+          country_code,
+          newPhone,
           "Pin : " + pin,
           function (err, data) {
             if (err) {
@@ -75,7 +73,7 @@ const sendSMS = async function (req, res) {
           newPin = new SMSVerification({
             user_id: user["_id"],
             pin: pin2,
-            reason: "change_phone",
+            reason: "change_phone_new",
             status: 0,
           });
           newPin.save();
