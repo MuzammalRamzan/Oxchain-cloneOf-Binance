@@ -35,7 +35,7 @@ const changePassword = async function (req, res) {
         check1 = await MailVerification.findOne({
           user_id: user_id,
           reason: "change_password",
-          pin: req.body.pin,
+          pin: req.body.mailPin,
           status: 0,
         }).exec();
         if (!check1)
@@ -52,7 +52,7 @@ const changePassword = async function (req, res) {
           ({
             user_id: user_id,
             reason: "change_password",
-            pin: req.body.pin,
+            pin: req.body.smsPin,
             status: 0,
           }).exec();
 

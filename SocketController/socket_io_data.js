@@ -1,5 +1,7 @@
 const http = require("http");
 const https = require("https");
+const WebSocket = require("ws");
+const WebSocketServer = require("ws").Server;
 const socketio = require("socket.io");
 var fs = require('fs');
 const CheckLogoutDevice = require("./device/check_logout_device");
@@ -28,6 +30,11 @@ const FutureOrderHistory = require("./trade/future/order_history");
 const FutureTradeHistory = require("./trade/future/trade_history");
 const FutureTransactionHistory = require("./trade/future/transaction_history");
 const FutureAssets = require("./trade/future/future_funds");
+const GetSpotWallet = require("./wallet/getSpotWallet");
+const CoinList = require("../models/CoinList");
+const GetAssets = require("./wallet/getAssets");
+const GetAssetsOverView = require("./wallet/getAssetsOverview");
+const GetDerivatives = require("./wallet/getDerivatives");
 
 require("dotenv").config();
 
@@ -48,10 +55,30 @@ const io = new socketio.Server(server, {
 
 io.on("connection", async (socket) => {
     await Connection.connection();
+    socket.on('wallets', (user_id) => {
+        checkRoomOrJoin(socket, user_id);
+        GetSpotWallet(io.sockets, user_id);
+    });
+    socket.on('assets', (user_id) => {
+        checkRoomOrJoin(socket, user_id);
+        GetAssets(io.sockets, user_id);
+    });
+    socket.on('assets_overview', (user_id) => {
+        checkRoomOrJoin(socket, user_id);
+        GetAssetsOverView(io.sockets, user_id);
+    });
+
+    socket.on('derivatives', (user_id) => {
+        checkRoomOrJoin(socket, user_id);
+        GetDerivatives(io.sockets, user_id);
+    });
+
+    
     socket.on('spot_open_orders', (user_id) => {
         checkRoomOrJoin(socket, user_id);
         SpotOpenOrders(io.sockets, user_id);
     });
+    
     socket.on('spot_order_history', (user_id) => {
         checkRoomOrJoin(socket, user_id);
         SpotOrderHistory(io.sockets, user_id);
@@ -64,17 +91,18 @@ io.on("connection", async (socket) => {
         checkRoomOrJoin(socket, user_id);
         SpotFunds(io.sockets, user_id);
     });
-    socket.on('spot_assets', (user_id) => {
-        checkRoomOrJoin(socket, user_id);
-        SpotFunds(io.sockets, user_id);
-    });
+    
     socket.on('derivatives_wallet', (user_id) => {
         checkRoomOrJoin(socket, user_id);
         DerivativesFunds(io.sockets, user_id);
     });
-    socket.on('cross', (user_id) => {
+    socket.on('margin_cross_balance', (user_id) => {
         checkRoomOrJoin(socket, user_id);
         GetCrossWallet(io.sockets, user_id);
+    });
+    socket.on('margin_isolated_balance', (user_id) => {
+        checkRoomOrJoin(socket, user_id);
+        GetIsolatedWallet(io.sockets, user_id);
     });
     socket.on('cross_open_orders', (user_id) => {
         checkRoomOrJoin(socket, user_id);
@@ -160,13 +188,48 @@ io.on("connection", async (socket) => {
 
 });
 
+global.MarketData = {};
+async function fillMarketPrices() {
+    
+    let coinList = await CoinList.find({});
+        
+        var b_ws = new WebSocket("wss://stream.binance.com/stream");
+        for (var k = 0; k < coinList.length; k++) {
+            global.MarketData[coinList[k].symbol + "USDT"] = { bid: 0.0, ask: 0.0 };
+        }
 
+        const initSocketMessage = {
+            method: "SUBSCRIBE",
+            params: ["!ticker@arr"],
+            // params: ["!miniTicker@arr"],
+            id: 1,
+        };
+
+        b_ws.onopen = (event) => {
+            b_ws.send(JSON.stringify(initSocketMessage));
+        };
+
+        // Reconnect connection when disconnect connection
+        b_ws.onclose = () => {
+            b_ws.send(JSON.stringify(initSocketMessage));
+        };
+        b_ws.onmessage = function (event) {
+            const data = JSON.parse(event.data).data;
+            if (data != null && data != "undefined") {
+                for (var m = 0; m < data.length; m++) {
+                    let x = data[m];
+                    global.MarketData[x.s] = { bid: x.b, ask: x.a };
+                }
+            }
+        };
+}
+
+fillMarketPrices();
 
 function checkRoomOrJoin(socket, id) {
     if (socket.rooms.has(id) == false) {
         socket.join(id);
     }
-    console.log(socket.rooms);
 }
 
 

@@ -24,6 +24,9 @@ const UserSchema = new mongoose.Schema({
   showableUserId: { type: String, required: false, default: null },
   deleted: { type: Boolean, default: false },
   reason: { type: String, required: false },
+  twitter_username: {type: String, default: ""},
+  facebook_username: {type: String, default: ""},
+  instagram_username: {type: String, default: ""},
   createdAt: {
     type: Date,
     default: Date.now,

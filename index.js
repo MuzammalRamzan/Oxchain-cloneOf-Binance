@@ -31,6 +31,7 @@ const deleteLimit = require('./controllers/orders/deleteLimit');
 const deleteMarginLimit = require('./controllers/orders/deleteMarginLimit');
 const addOrders = require('./controllers/orders/addOrders');
 const disableAccount = require('./controllers/accountActivities/disableAccount');
+const enableAccount = require('./controllers/accountActivities/enableAccount');
 const deleteAccount = require('./controllers/users/deleteAccount');
 const addNewRegisteredAddress = require('./controllers/registeredAddress/addNewRegisteredAddress');
 const deleteRegisteredAddress = require('./controllers/registeredAddress/deleteRegisteredAddress');
@@ -89,12 +90,12 @@ const walletToWallet = require('./controllers/transfer/index');
 const getRegisteredAddresses = require('./controllers/registeredAddress/getRegisteredAddresses');
 const googleAuth = require('./controllers/auth/googleAuth');
 const appleAuth = require('./controllers/auth/appleAuth');
-const createNews = require('./controllers/news/createNews.js');
-const searchNews = require('./controllers/news/searchNews.js');
+const searchPosts = require('./controllers/posts/searchPost.js');
 const securityActivities = require('./controllers/accountActivities/securityActivities');
 const getWalletsBalance = require('./controllers/GetUserBalances/getWalletsbalances.js');
 const removePhone = require('./controllers/users/removePhone');
 const removeEmail = require('./controllers/users/removeEmail');
+const walletTowalletBetweenUsers = require('./controllers/WalletToWallet/transfer');
 
 const addAvatar = require('./controllers/avatar/addAvatar');
 const getAvatar = require('./controllers/avatar/getAvatarList');
@@ -161,6 +162,8 @@ const myReferralEarns = require('./controllers/referrals/myReferralEarns');
 const getKYCStatus = require('./controllers/kyc/getStatus');
 const getApiKeys = require('./controllers/api/getApiKeys');
 
+const getDashboard = require('./controllers/dashboard/getDashboard');
+
 const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
@@ -180,6 +183,10 @@ const changeMarketingMailStatus = require('./controllers/marketingMails/changeSt
 const Subscription = require('./models/Subscription.js');
 const { addAdmin } = require('./adminController/Admin.js');
 const Login = require('./adminController/Login.js');
+const CampusRequestJoin = require('./controllers/campusAmbassador/request_join.js');
+const UpdateSocialMedia = require('./controllers/users/updateSocialMedia.js');
+const checkTwitterAccount = require('./Functions/checkTwitterAccount.js');
+const { default: axios } = require('axios');
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -216,12 +223,15 @@ route.get('/', (req, res) => {
 	res.send('success');
 });
 
-
 route.all('/delete2fa', Delete2fa);
 
 route.all('/addAnnouncement', addAnnouncement);
 route.all('/getAnnouncements', getAnnouncement);
 route.all('/getLocation', getLocation);
+
+
+route.all('/getDashboard', getDashboard);
+
 
 route.all('/getVerificationIds', upload.any(), getVerificationIds);
 route.all('/addVerificationId', upload.any(), addVerificationId);
@@ -242,6 +252,8 @@ route.all('/getApiKeys', getApiKeys);
 
 route.all('/newPrediction', newPrediction);
 route.all('/getPrediction', getPrediction);
+
+route.all('/walletToWalletBetweenUsers', walletTowalletBetweenUsers);
 
 route.post('/subscription', async (req, res) => {
 	try {
@@ -275,7 +287,7 @@ route.post('/addBonus', addBonus);
 route.post('/getBonusHistory', getBonusHistory);
 
 route.all('/UploadKYC', upload.any(), UploadKYC);
-route.all("/idverification", upload.any(), UploadKYC)
+route.all('/idverification', upload.any(), UploadKYC);
 route.all('/UploadRecidency', upload.any(), UploadRecidency);
 
 //AUTH
@@ -284,6 +296,7 @@ route.all('/sendMailPin', sendMailPin);
 route.all('/sendSMSPin', sendSMSPin);
 route.all('/register', upload.none(), register);
 route.all('/disableAccount', upload.none(), disableAccount);
+route.all('/enableAccount', upload.none(), enableAccount);
 route.all('/deleteAccount', upload.none(), deleteAccount);
 route.all('/2fa', upload.none(), twoFactor);
 route.all('/update2fa', upload.none(), update2fa);
@@ -315,8 +328,7 @@ route.all('/getUSDTBalance', upload.none(), getUSDTBalance);
 
 route.all('/getbalance', upload.none(), getWalletsBalance);
 //news Modules
-route.post('/news/createNews', upload.none(), createNews);
-route.all('/news/searchNews', searchNews);
+route.all('/searchPosts', searchPosts);
 //Trade Modules
 route.all('/getOrders', upload.none(), getOrders);
 route.post('/getClosedMarginOrders', getClosedMarginOrders);
@@ -361,7 +373,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) { }
+	async function (req, res) {}
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
@@ -388,7 +400,7 @@ route.all('/myReferrals', upload.none(), myReferrals);
 route.all('/referralRewards', upload.none(), referralRewards);
 route.all('/topReferralEarners', upload.none(), topReferralEarners);
 route.all('/myReferralEarns', upload.none(), myReferralEarns);
-
+route.all('/request_campus', upload.none(), CampusRequestJoin);
 route.all('/getWallet', upload.none(), getWallet);
 
 route.post('/cancelAllLimit', cancelAllLimit);
@@ -402,6 +414,9 @@ route.all('/updatePhone', upload.none(), updatePhone);
 route.all('/resetPassword', upload.none(), resetPassword);
 route.all('/getLastLogin', upload.none(), getLastLogin);
 route.all('/changePassword', upload.none(), changePassword);
+route.all('/updateSocialMedia', upload.none(), UpdateSocialMedia);
+route.all('/checkTwitterAccount', upload.none(), checkTwitterAccount);
+
 route.all('/sendMail', upload.none(), sendMail);
 route.all('/sendSMS', upload.none(), sendSMS);
 route.all('/changeEmail', upload.none(), changeEmail);
@@ -430,8 +445,8 @@ route.all('/checkSecurityKey', upload.none(), checkSecurityKey);
 route.all('/deleteSecurityKey', upload.none(), deleteSecurityKey);
 route.post('/settings', Settings);
 route.post('/getAdminSettings', getAdminSettings);
-route.post("/addAdmin", addAdmin)
-route.post("/adminLogin", Login)
+route.post('/addAdmin', addAdmin);
+route.post('/adminLogin', Login);
 route.all('/changeAvatar', upload.none(), changeAvatar);
 route.all('/changeNickName', upload.none(), changeNickname);
 
@@ -454,6 +469,20 @@ route.all('/getDepositsUSDT', upload.none(), getDepositsUSDT);
 route.post('/createApplicant', upload.none(), createApplicant);
 route.post('/addDocument', upload.any(), addDocument);
 route.post('/getApplicantStatus', upload.none(), getApplicantStatus);
+
+route.get('/price', async function(req,res)  {
+	let symbol = req.query.symbol;
+	if(symbol == null || symbol == "")  {
+		return res.json({status : "fail", message: "symbol not found"});
+	}
+	let priceData = await axios("http://18.130.193.166:8542/price?symbol=" + symbol);
+	console.log(priceData.data);
+	if(priceData.data.status == 'success') {
+		return res.json({status : "succes", data: priceData.data.data});
+	}
+	
+	return res.json({status : "fail", message: "unknow error"});
+});
 
 if (process.env.NODE_ENV == 'product') {
 	let sslKEY = fs.readFileSync(

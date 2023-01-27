@@ -1,11 +1,12 @@
 var authFile = require('../auth.js');
 var UserModel = require('../models/User');
-
+const BlockedUserModel = require('../models/blockedUser.js');
+const { depositFundOfuser } = require('./depositFund.js');
+const { withdrawFundOfuser } = require('./withdrawFund.js');
 const BanUser = async (req, res) => {
 	//burada banlanacak kullanıcı id'si alınacak
 
-	var apiKey = req.body.apiKey;
-	var userId = req.body.userId;
+	const { apiKey, userId, reason } = req.body;
 
 	if (apiKey == null || userId == null) {
 		return res.json({
@@ -22,16 +23,18 @@ const BanUser = async (req, res) => {
 			message: 'Api key is wrong',
 		});
 	}
-
-	var user = await UserModel.findOne({ _id: userId });
-
+	let user = await UserModel.findOne({ _id: userId });
 	if (user == null) {
 		return res.json({
 			status: 'error',
 			message: 'User not found',
 		});
 	}
-
+	const blockeduser = new BlockedUserModel({
+		user_id: userId,
+		reason: reason,
+	});
+	await blockeduser.save();
 	user.status = '5';
 
 	await user.save();
@@ -41,7 +44,49 @@ const BanUser = async (req, res) => {
 		message: 'User banned',
 	});
 };
+const getAllBannedUser = async (req, res) => {
+	try {
+		var apiKey = req.body.apiKey;
 
+		if (apiKey == null) {
+			return res.json({
+				status: 'error',
+				message: 'Api key or user id is null',
+			});
+		}
+
+		var apiKeyControl = await authFile.apiKeyChecker(apiKey);
+
+		if (apiKeyControl == false) {
+			return res.json({
+				status: 'error',
+				message: 'Api key is wrong',
+			});
+		}
+		var blockedUsers = await BlockedUserModel.find()
+			.populate({
+				path: 'user_id',
+				model: 'User',
+				select: 'name surname status',
+			})
+			.lean();
+		if (!blockedUsers.length) {
+			return res.json({
+				status: 'error',
+				message: 'No Blocked User found',
+			});
+		}
+		return res.json({
+			status: 'success',
+			result: blockedUsers,
+		});
+	} catch (error) {
+		return res.json({
+			status: 'error',
+			message: error.message,
+		});
+	}
+};
 const ReBanUser = async (req, res) => {
 	var apiKey = req.body.apiKey;
 	var userId = req.body.userId;
@@ -70,7 +115,7 @@ const ReBanUser = async (req, res) => {
 			message: 'User not found',
 		});
 	}
-
+	await BlockedUserModel.deleteOne({ user_id: userId });
 	user.status = '1';
 
 	await user.save();
@@ -157,7 +202,6 @@ const denyApplicant = async (req, res) => {
 };
 const filterUser = async (req, res) => {
 	const apiKey = req.body.apiKey;
-
 	if (!apiKey) return res.json({ status: 'error', message: 'Api key is null' });
 	const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
 	if (!apiKeyCheck)
@@ -176,10 +220,35 @@ const filterUser = async (req, res) => {
 	if (dateTo) filter.createdAt = { ...filter.createdAt, $lte: dateTo };
 
 	// Execute the query
-	UserModel.find(filter)
-		.limit(recordPerPage)
-		.then((users) => res.json({ status: 'success', data: users }))
-		.catch((err) => res.status(500).json({ error: err.message }));
+	let users = await UserModel.find(filter).limit(recordPerPage).exec();
+	for (i = 0; i < users.length; i++) {
+		let totalUSDDeposited = 0;
+		let totalUsdWithdrawn = 0;
+		const data = await depositFundOfuser(users[i]._id.toString());
+		for (let i = 0; i < data.length; i++) {
+			if (data[i].symbol === 'Margin') continue;
+			if (data[i].symbol === 'USDT') {
+				totalUSDDeposited += parseFloat(data[i].availableBalance);
+			} else {
+				totalUSDDeposited += parseFloat(data[i].usdtValue);
+			}
+		}
+		const data1 = await withdrawFundOfuser(users[i]._id.toString());
+		for (let i = 0; i < data1.length; i++) {
+			if (data1[i].symbol === 'Margin') continue;
+			if (data1[i].symbol === 'USDT') {
+				totalUsdWithdrawn += parseFloat(data1[i].availableBalance);
+			} else {
+				totalUsdWithdrawn += parseFloat(data1[i].usdtValue);
+			}
+		}
+		users = {
+			...users,
+			totalUSDDeposited: totalUSDDeposited,
+			totalUsdWithdrawn: totalUsdWithdrawn,
+		};
+	}
+	return res.json({ status: 'success', users });
 };
 module.exports = {
 	BanUser,
@@ -189,4 +258,5 @@ module.exports = {
 	userList,
 	denyApplicant,
 	filterUser,
+	getAllBannedUser,
 };

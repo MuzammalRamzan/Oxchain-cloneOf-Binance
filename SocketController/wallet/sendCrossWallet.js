@@ -2,7 +2,7 @@ const Pairs = require("../../models/Pairs");
 
 const SendCrossWallet = async (sockets, _wallets, user_id) => {
     var wallets = new Array();
-    
+        
     for (var i = 0; i < _wallets.length; i++) {
         let item = _wallets[i];
 
@@ -17,6 +17,6 @@ const SendCrossWallet = async (sockets, _wallets, user_id) => {
             symbolName: pairInfo.name,
         });
     }
-    sockets.in(user_id).emit("margin", { page: "margin", type: "cross_wallet", content: wallets });
+    sockets.in(user_id).emit("margin_cross_balance", { page: "margin", type: "cross_balance", content: wallets });
 }
 module.exports = SendCrossWallet;

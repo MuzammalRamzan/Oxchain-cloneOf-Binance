@@ -52,6 +52,7 @@ async function calculate(wallets) {
 
         let amountData = wallet.amount;
 
+        
         if (coinInfo.symbol == "BTC") {
             btcPrice = amountData;
             usdtPrice = amountData * global.MarketData["BTCUSDT"];

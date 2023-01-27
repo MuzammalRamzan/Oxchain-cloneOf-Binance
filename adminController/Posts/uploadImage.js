@@ -26,7 +26,7 @@ const uploadImage = async (file, fileExtension) => {
 			params: {
 				Bucket: 'oxhain',
 				Key: 'news/cover-' + timestamp + '.' + fileExtension,
-				Bodyy: fileNew,
+				Body: fileNew,
 				ContentType: 'image/jpg',
 			},
 		};

@@ -41,12 +41,16 @@
     "passport": "^0.6.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-google-oidc": "^0.1.0",
+    "pdf-fonts": "^1.1.2",
+    "pdfkit": "^0.13.0",
+    "pdfmake": "^0.2.7",
     "sleep": "^6.3.0",
     "slider-captcha": "^1.0.0",
     "socket-io": "^1.0.0",
     "socket.io": "^4.5.1",
     "svg-captcha": "^1.4.0",
     "trongrid": "^1.2.6",
+    "twitter-api-v2": "^1.14.0",
     "web3": "^1.8.1"
   }
 }

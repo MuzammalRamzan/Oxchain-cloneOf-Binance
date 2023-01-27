@@ -18,7 +18,7 @@ const setBonusCredit = async function (user_id, pair_id, amount) {
         
         let getParentReferral = await Referral.findOne({ user_id: searchUserId });
         if (getParentReferral == null) {
-            console.log(searchUserId, " bulunamadı");
+            //console.log(searchUserId, " bulunamadı");
             return;
         }
         let parentRefCode = getParentReferral.reffer;

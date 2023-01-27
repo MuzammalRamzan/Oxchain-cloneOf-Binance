@@ -26,7 +26,25 @@ const ProfitAll = async (req, res) => {
     });
   }
 
-  var profit = await ProfitModel.find();
+
+  //make pagination here
+  let page = req.body.page;
+  let limit = req.body.limit;
+
+  if (page == null) {
+    page = 1;
+  }
+
+  if (limit == null) {
+    limit = 10;
+  }
+
+  let profit = await ProfitModel.find()
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .sort({ createdAt: -1 });
+
+
 
   if (profit == null) {
     return res.json({
@@ -40,29 +58,41 @@ const ProfitAll = async (req, res) => {
     var from_user = await User.findOne({ _id: profit[i].from_user_id });
     var to_user = await User.findOne({ _id: profit[i].to_user_id });
 
-    profit[i].from_user_data = from_user.name + " " + from_user.surname;
-    profit[i].to_user_data = to_user.name + " " + to_user.surname;
+    if (from_user == null || to_user == null) {
+
+    }
+
 
     let myDataItem = {
       _id: profit[i]._id,
       from_user_id: profit[i].from_user_id,
-      from_user_data: from_user.email,
+      from_user_data: "",
       to_user_id: profit[i].to_user_id,
-      to_user_data: to_user.email,
+      to_user_data: "",
       amount: profit[i].amount,
       createdAt: profit[i].createdAt,
       feeType: profit[i].feeType,
     };
 
+    if (from_user != null) {
+      myDataItem.from_user_data = from_user.email;
+    }
+
+    if (to_user != null) {
+      myDataItem.to_user_data = to_user.email;
+    }
+
     myData.push(myDataItem);
   }
 
-  console.log(profit);
-  res.json({
+
+  return res.json({
     status: "success",
     message: "Profit is listed",
     data: myData,
   });
+
+
 };
 
 const ProfitByUser = async (req, res) => {

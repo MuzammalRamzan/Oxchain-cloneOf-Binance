@@ -37,6 +37,19 @@ const ApproveKyc = require('./adminController/ApproveKyc');
 const ApproveRecidency = require('./adminController/ApproveRecidency');
 const DenyKyc = require('./adminController/DenyKyc');
 const { getUsersDetails } = require('./adminController/getUserDetails');
+//refferals
+const { getAllRefferals } = require('./adminController/Referral');
+//supportTeam
+const {
+	addSupportTeamMember,
+	searchSupportTeamMember,
+} = require('./adminController/supportTeam/support');
+//Agents
+const { createAgent, getAllAgents } = require('./adminController/Agent');
+//posts
+const createPost = require('./adminController/Posts/createPost');
+//trades
+const getTrades = require('./adminController/Trades/getTrades');
 
 const upload = multer();
 route.use(bodyParser.json());
@@ -67,15 +80,18 @@ route.all('/getAdmin', upload.none(), Admin.getAdmin);
 route.all('/editUser', upload.none(), User.editUser);
 route.all('/BanUser', upload.none(), User.BanUser);
 route.all('/ReBanUser', upload.none(), User.ReBanUser);
+route.all('/getAllBannedUser', upload.none(), User.getAllBannedUser);
 route.all('/getUser', upload.none(), User.getUser);
 route.all('/filterUser', upload.none(), User.filterUser);
 route.all('/userList', upload.none(), User.userList);
 route.all('/denyApplicant', upload.none(), User.denyApplicant);
 route.all('/setBonusRate', upload.none(), Bonus.setBonusRate);
 route.all('/userDeposits', upload.none(), Deposit.userDeposits);
+route.all('/exportDepositsData', upload.none(), Deposit.exportDepositsData);
 route.all('/totalDeposits', upload.none(), Deposit.totalDeposits);
 route.all('/depositReport', upload.none(), Deposit.totalDepositGraphData);
 route.all('/depositList', upload.none(), Deposit.listDeposits);
+route.all('/filterDeposits', upload.none(), Deposit.filterDeposits);
 route.all('/listPairs', upload.none(), Pairs.listPairs);
 route.all('/setPairFee', upload.none(), Pairs.setPairFee);
 route.all('/getUserBalance', upload.none(), Wallet.getUserBalance);
@@ -85,11 +101,25 @@ route.all('/userWithdraws', upload.none(), Withdraw.userWithdraws);
 route.all('/totalWithdrawn', upload.none(), Withdraw.totalWithdrawn);
 route.all('/withdrawReport', upload.none(), Withdraw.totalWithdrawGraphData);
 route.all('/listWithdraws', upload.none(), Withdraw.listWithdraws);
+route.all('/filterWithdraw', upload.none(), Withdraw.filterWithdraw);
+route.all('/exportWithdrawData', upload.none(), Withdraw.exportWithdrawData);
 route.all('/getProfit', upload.none(), Profit.ProfitAll);
 route.all('/getEarnings', upload.none(), Earnings.getEarnings);
 route.all('/addEarning', upload.none(), Earnings.AddEarning);
 route.all('/getAdminDashboard', upload.none(), AdminDashboard.getData);
 route.all('/getUsersDetails', upload.none(), getUsersDetails);
+//Refferals
+route.all('/getAllRefferals', upload.none(), getAllRefferals);
+//supportTeam apis
+route.all('/addSupportTeamMember', upload.none(), addSupportTeamMember);
+route.all('/searchSupportTeamMember', upload.none(), searchSupportTeamMember);
+//Agents apis router
+route.all('/createAgent', upload.none(), createAgent);
+route.all('/getAllAgents', upload.none(), getAllAgents);
+//create news,blogs or posts
+route.all('/createPost', upload.none(), createPost);
+//Trades
+route.all('/getTrades', upload.none(), getTrades);
 
 route.listen(port, () => {
 	console.log('Server Ayakta');
