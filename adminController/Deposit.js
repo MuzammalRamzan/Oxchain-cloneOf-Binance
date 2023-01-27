@@ -177,29 +177,38 @@ const totalDeposits = async (req, res) => {
 };
 
 const totalDepositGraphData = async (req, res) => {
-	const apiKey = req.body.apiKey;
-	let graphData = [];
-	if (!apiKey) return res.json({ status: 'error', message: 'Api key is null' });
-	const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
-	if (!apiKeyCheck)
-		return res.json({ status: 'error', message: 'Api key is wrong' });
-	const data = await depositReport();
-	console.log('data', data);
-	for (let i = 0; i < data.length; i++) {
-		if (data[i].symbol === 'Margin') continue;
-		if (data[i].symbol === 'USDT') {
-			graphData.push({
-				USD: data[i].availableBalance,
-				date: data[i].date,
-			});
-		} else {
-			graphData.push({
-				USD: data[i].usdtValue,
-				date: data[i].date,
-			});
+	try {
+		const apiKey = req.body.apiKey;
+		let graphData = [];
+		if (!apiKey)
+			return res.json({ status: 'error', message: 'Api key is null' });
+		const apiKeyCheck = await authFile.apiKeyChecker(apiKey);
+		if (!apiKeyCheck)
+			return res.json({ status: 'error', message: 'Api key is wrong' });
+		const data = await depositReport();
+		console.log('data', data);
+		for (let i = 0; i < data.length; i++) {
+			if (data[i].symbol === 'Margin') continue;
+			if (data[i].symbol === 'USDT') {
+				graphData.push({
+					USD: data[i].availableBalance,
+					date: data[i].date,
+				});
+			} else {
+				graphData.push({
+					USD: data[i].usdtValue,
+					date: data[i].date,
+				});
+			}
 		}
+		return res.json({ status: 'success', graphData });
+	} catch (error) {
+		return res.status(500).json({
+			status: 'fail',
+			message: 'Internal Server Error',
+			showableMessage: error.message,
+		});
 	}
-	return res.json({ status: 'success', graphData });
 };
 module.exports = {
 	userDeposits,
