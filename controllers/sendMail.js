@@ -44,18 +44,18 @@ const sendMail = async function (req, res) {
         }).exec();
 
 
-        // mailer.sendMail(
-        //   newMail,
-        //   "Oxhain verification",
-        //   "Pin : " + pin2,
-        //   function (err, data) {
-        //     if (err) {
-        //       console.log("Error " + err);
-        //     } else {
-        //       console.log("sms sent");
-        //     }
-        //   }
-        // );
+        mailer.sendMail(
+          newMail,
+          "Oxhain verification",
+          "Pin : " + pin2,
+          function (err, data) {
+            if (err) {
+              console.log("Error " + err);
+            } else {
+              console.log("sms sent");
+            }
+          }
+        );
 
         if (check != null) {
           await MailVerification.findOneAndUpdate(
