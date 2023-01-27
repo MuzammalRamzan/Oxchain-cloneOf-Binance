@@ -18,7 +18,6 @@ const sendSMS = async function (req, res) {
       _id: user_id,
       status: 1,
     }).exec();
-
     if (user != null) {
       var pin = "0000";
 
@@ -43,10 +42,9 @@ const sendSMS = async function (req, res) {
           reason: "change_phone_new",
         }).exec();
 
-
         let sendSMSResponse = await mailer.sendSMS(
-          user.country_code,
-          user.phone_number,
+          country_code,
+          newPhone,
           "Pin : " + pin,
           function (err, data) {
             if (err) {
@@ -67,7 +65,7 @@ const sendSMS = async function (req, res) {
           newPin = new SMSVerification({
             user_id: user["_id"],
             pin: pin2,
-            reason: "change_phone",
+            reason: "change_phone_new",
             status: 0,
           });
           newPin.save();
