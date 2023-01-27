@@ -36,7 +36,7 @@ const changeEmail = async function (req, res) {
       let check2 = "";
       let check3 = "";
 
-      if (email != undefined && email != null && email != "") {
+      if (email != undefined && email != null && email != "" && req.body?.reason == "change_email") {
 
         check1 = await EmailVerification.findOne({
           user_id: user_id,
@@ -44,10 +44,8 @@ const changeEmail = async function (req, res) {
           pin: req.body.newMailPin,
           status: 0
         }).exec();
-
+        console.log("check1", check1)
         if (!check1) return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong Mail Pin" });
-
-
       }
 
       if (phone != undefined && phone != null && phone != "") {
@@ -69,7 +67,7 @@ const changeEmail = async function (req, res) {
         pin: newMailPin,
         status: 0
       }).exec();
-
+      console.log("check2", check2)
       if (!check2) return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong New Mail Pin" });
 
 
