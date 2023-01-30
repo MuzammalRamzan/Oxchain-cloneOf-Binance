@@ -1,6 +1,7 @@
-const Agent = require('../models/Agent');
+const FAQMember = require('../../models/FAQSMember');
+const authFile = require('../../auth');
 
-const createAgent = async (req, res) => {
+const createFAQMember = async (req, res) => {
 	try {
 		const { name, email, phone, status, apiKey } = req.body;
 		const isAuthenticated = await authFile.apiKeyChecker(apiKey);
@@ -11,17 +12,17 @@ const createAgent = async (req, res) => {
 				showableMessage: 'Forbidden 403, Please provide valid api key',
 			});
 		}
-		const agent = new Agent({
+		const faqMember = new FAQMember({
 			name,
 			email,
 			phone,
 			status,
 		});
-		await agent.save();
+		await faqMember.save();
 		return res.status(201).json({
-			status: 'sucess',
-			message: 'Success',
-			showableMessage: 'Agent Member Added Successfully',
+			status: 'success',
+			message: 'success',
+			showableMessage: 'FAQs member added successfully',
 		});
 	} catch (error) {
 		return res.status(500).json({
@@ -31,21 +32,29 @@ const createAgent = async (req, res) => {
 		});
 	}
 };
-const getAllAgents = async (req, res) => {
+const getAllFAQMembers = async (req, res) => {
 	try {
-		const agents = await Agent.find();
-		if (!agents || agents.length === 0) {
+		const apiKey = req.body.apiKey;
+		const isAuthenticated = await authFile.apiKeyChecker(apiKey);
+		if (!isAuthenticated) {
+			return res.status(403).json({
+				status: 'fail',
+				message: '403 Forbidden',
+				showableMessage: 'Forbidden 403, Please provide valid api key',
+			});
+		}
+		const faqMember = await FAQMember.find();
+		if (!faqMember.length) {
 			return res.status(404).json({
 				status: 'fail',
 				message: 'not found',
-				showableMessage: 'No Agent found',
+				showableMessage: 'FAQ not found',
 			});
 		}
-		res.status(200).json({ status: true, result: agents });
 		return res.status(201).json({
-			status: 'sucess',
-			message: 'Agent Members',
-			ddata: agents,
+			status: 'success',
+			message: 'success',
+			data: faqMember,
 		});
 	} catch (error) {
 		return res.status(500).json({
@@ -57,6 +66,6 @@ const getAllAgents = async (req, res) => {
 };
 
 module.exports = {
-	createAgent,
-	getAllAgents,
+	createFAQMember,
+	getAllFAQMembers,
 };

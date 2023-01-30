@@ -169,6 +169,7 @@ const getPrediction = require('./controllers/Prediction/getPrediction');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
 
 const Delete2fa = require('./controllers/auth/delete2fa');
+const getAllFaqs = require('./controllers/FAQ/getFAQs.js');
 
 //only for testing purposes for emircan
 
@@ -235,9 +236,7 @@ route.all('/addAnnouncement', addAnnouncement);
 route.all('/getAnnouncements', getAnnouncement);
 route.all('/getLocation', getLocation);
 
-
 route.all('/getDashboard', getDashboard);
-
 
 route.all('/getVerificationIds', upload.any(), getVerificationIds);
 route.all('/addVerificationId', upload.any(), addVerificationId);
@@ -379,7 +378,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) {}
+	async function (req, res) { }
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
@@ -479,22 +478,25 @@ route.all('/withdrawHistory', upload.none(), GetWithdrawHistory);
 route.post('/createApplicant', upload.none(), createApplicant);
 route.post('/addDocument', upload.any(), addDocument);
 route.post('/getApplicantStatus', upload.none(), getApplicantStatus);
+route.post('/getAllFAQS', upload.none(), getAllFaqs);
 route.post("/addSupportTicket", addSupportTicket);
 route.get("/getSupportTicket", getSupportTicket);
 route.all("/deleteSupportTicket", deleteSupportTicket)
 route.post("/updateSupportTicket", updateSupportTicket)
 route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
-	if (symbol == null || symbol == "") {
-		return res.json({ status: "fail", message: "symbol not found" });
+	if (symbol == null || symbol == '') {
+		return res.json({ status: 'fail', message: 'symbol not found' });
 	}
-	let priceData = await axios("http://18.130.193.166:8542/price?symbol=" + symbol);
+	let priceData = await axios(
+		'http://18.130.193.166:8542/price?symbol=' + symbol
+	);
 	console.log(priceData.data);
 	if (priceData.data.status == 'success') {
-		return res.json({ status: "succes", data: priceData.data.data });
+		return res.json({ status: 'succes', data: priceData.data.data });
 	}
 
-	return res.json({ status: "fail", message: "unknow error" });
+	return res.json({ status: 'fail', message: 'unknow error' });
 });
 
 if (process.env.NODE_ENV == 'product') {
