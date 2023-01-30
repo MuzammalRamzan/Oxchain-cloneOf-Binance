@@ -22,9 +22,20 @@ const changePhone = async function (req, res) {
       status: 1,
     }).exec();
 
+
+
     if (user != null) {
       var email = user["email"];
       var phone = user["phone_number"];
+      console.log("phone", phone);
+
+      if (phone != undefined && phone != null && phone != "") {
+        console.log("telefon", user["phone_number"]);
+        if (req.body.smsPin == "" || req.body.smsPin == null || req.body.smsPin == undefined) {
+          return res.json({ status: "fail", message: "sms_pin_not_found", showableMessage: "SMS Pin not found" });
+        }
+      }
+
       let checkForPhone = await User.findOne({
         phone_number: newPhone,
         country_code: country_code,
@@ -38,7 +49,7 @@ const changePhone = async function (req, res) {
       let check2 = "";
       let check3 = "";
 
-      if (email != undefined && email != null && email != "" && req.body?.reason == "change_phone") {
+      if (email != undefined && email != null && email != "") {
         check1 = await EmailVerification.findOne({
           user_id: user_id,
           reason: "change_phone",

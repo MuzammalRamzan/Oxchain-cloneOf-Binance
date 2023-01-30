@@ -7,7 +7,7 @@ const DepositsSchema = new mongoose.Schema({
   address: { type: String, required: true },
   fromAddress : {type : String, required: false, default: ""},
   tx_id: { type: String, required: false, default: null },
-  type: { type: String, required: false, default: null },
+  type: { type: String, required: false, default: "on-chain" },
   currency: { type: String, required: false, default: null },
   fee: { type: String, required: false, default: null },
   updatedAt: { type: String, required: false, default: null },
