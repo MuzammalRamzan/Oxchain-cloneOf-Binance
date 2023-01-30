@@ -16,7 +16,7 @@ const deleteSecurityKey = async (req, res) => {
   let twofaCheck;
 
   if (user && user.twofa) {
-    twofaCheck = await authFile.verifyToken(twofapin, twofa);
+    twofaCheck = await authFile.verifyToken(twofapin, user.twofa);
   } else {
     twofaCheck = await RegisterMail.findOne({
       email: user.email,
