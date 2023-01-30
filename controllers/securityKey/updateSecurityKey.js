@@ -77,12 +77,13 @@ const updateSecurityKey = async function (req, res) {
     });
   }
   else {
-    await SecurityKey.findOneAndUpdate(filter, {
+    let res = await SecurityKey.findOneAndUpdate(filter, {
       wallet: wallet,
       deposit: deposit,
       withdraw: withdraw,
       trade: trade,
     });
+    console.log("res", res)
   }
 
   if (emailCheck) {

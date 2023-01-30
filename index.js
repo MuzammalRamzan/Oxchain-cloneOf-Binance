@@ -189,6 +189,10 @@ const checkTwitterAccount = require('./Functions/checkTwitterAccount.js');
 const { default: axios } = require('axios');
 const GetDepositHistory = require('./controllers/deposit/getDepositHistory.js');
 const GetWithdrawHistory = require('./controllers/withdraw/getWithdrawHistory.js');
+const addSupportTicket = require('./controllers/dashboard/addSupportTicket.js');
+const getSupportTicket = require('./controllers/dashboard/getSupportTicket.js');
+const deleteSupportTicket = require('./controllers/dashboard/deleteSupportTicket.js');
+const updateSupportTicket = require('./controllers/dashboard/updateSupportTicket.js');
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -375,7 +379,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) {}
+	async function (req, res) { }
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
@@ -475,19 +479,22 @@ route.all('/withdrawHistory', upload.none(), GetWithdrawHistory);
 route.post('/createApplicant', upload.none(), createApplicant);
 route.post('/addDocument', upload.any(), addDocument);
 route.post('/getApplicantStatus', upload.none(), getApplicantStatus);
-
-route.get('/price', async function(req,res)  {
+route.post("/addSupportTicket", addSupportTicket);
+route.get("/getSupportTicket", getSupportTicket);
+route.all("/deleteSupportTicket", deleteSupportTicket)
+route.post("/updateSupportTicket", updateSupportTicket)
+route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
-	if(symbol == null || symbol == "")  {
-		return res.json({status : "fail", message: "symbol not found"});
+	if (symbol == null || symbol == "") {
+		return res.json({ status: "fail", message: "symbol not found" });
 	}
 	let priceData = await axios("http://18.130.193.166:8542/price?symbol=" + symbol);
 	console.log(priceData.data);
-	if(priceData.data.status == 'success') {
-		return res.json({status : "succes", data: priceData.data.data});
+	if (priceData.data.status == 'success') {
+		return res.json({ status: "succes", data: priceData.data.data });
 	}
-	
-	return res.json({status : "fail", message: "unknow error"});
+
+	return res.json({ status: "fail", message: "unknow error" });
 });
 
 if (process.env.NODE_ENV == 'product') {
