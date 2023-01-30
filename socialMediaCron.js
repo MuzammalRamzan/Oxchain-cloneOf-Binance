@@ -2,6 +2,7 @@ const TwitterPostCheckCron = require("./CronController/socialmedia/twitterPostCh
 const getTwitterPosts = require("./Functions/getTwitterPosts");
 const schedule = require('node-schedule');
 async function SocialMediaCron() {
+    TwitterPostCheckCron();
     schedule.scheduleJob('0 */12 * * *', async function () {
          TwitterPostCheckCron();
       });

@@ -23,6 +23,8 @@ const transferWallet = async function (req, res) {
     amount: amount,
   });
 
+  
+
   if (from == "spot") {
     const wallet = await WalletModel.findOne({
       user_id: user_id,
