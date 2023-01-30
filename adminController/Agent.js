@@ -2,7 +2,15 @@ const Agent = require('../models/Agent');
 
 const createAgent = async (req, res) => {
 	try {
-		const { name, email, phone, status } = req.body;
+		const { name, email, phone, status, apiKey } = req.body;
+		const isAuthenticated = await authFile.apiKeyChecker(apiKey);
+		if (!isAuthenticated) {
+			return res.status(403).json({
+				status: 'fail',
+				message: '403 Forbidden',
+				showableMessage: 'Forbidden 403, Please provide valid api key',
+			});
+		}
 		const agent = new Agent({
 			name,
 			email,
@@ -10,22 +18,41 @@ const createAgent = async (req, res) => {
 			status,
 		});
 		await agent.save();
-		res.status(201).json({ status: true, message: 'Agent added successfully' });
+		return res.status(201).json({
+			status: 'sucess',
+			message: 'Success',
+			showableMessage: 'Agent Member Added Successfully',
+		});
 	} catch (error) {
-		res.status(500).json({ status: false, message: error.message });
+		return res.status(500).json({
+			status: 'fail',
+			message: 'Internal Server Error',
+			showableMessage: error.message,
+		});
 	}
 };
 const getAllAgents = async (req, res) => {
 	try {
 		const agents = await Agent.find();
 		if (!agents || agents.length === 0) {
-			return res
-				.status(404)
-				.json({ status: false, message: 'No agents found' });
+			return res.status(404).json({
+				status: 'fail',
+				message: 'not found',
+				showableMessage: 'No Agent found',
+			});
 		}
 		res.status(200).json({ status: true, result: agents });
+		return res.status(201).json({
+			status: 'sucess',
+			message: 'Agent Members',
+			ddata: agents,
+		});
 	} catch (error) {
-		res.status(500).json({ status: false, message: error.message });
+		return res.status(500).json({
+			status: 'fail',
+			message: 'Internal Server Error',
+			showableMessage: error.message,
+		});
 	}
 };
 

@@ -50,7 +50,7 @@
     "socket.io": "^4.5.1",
     "svg-captcha": "^1.4.0",
     "trongrid": "^1.2.6",
-    "twitter-api-v2": "^1.14.0",
+    "twitter-api-v2": "^1.14.1",
     "web3": "^1.8.1"
   }
 }
