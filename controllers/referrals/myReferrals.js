@@ -17,7 +17,7 @@ const myReferrals = async (req, res) => {
 
   const referrals = await ReferralModel.find(query)
     .select({ user_id: 1, _id: 0 })
-    .populate({ path: "user_id", model: "User", select: "name status" })
+    .populate({ path: "user_id", model: "User", select: "name surname nickname email status" })
     .lean();
   return res.json({ status: "success", data: referrals });
 };
