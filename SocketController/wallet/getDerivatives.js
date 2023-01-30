@@ -1,3 +1,4 @@
+const { default: axios } = require("axios");
 const FutureOrder = require("../../models/FutureOrder");
 const FutureWalletModel = require("../../models/FutureWalletModel")
 
@@ -18,27 +19,51 @@ const GetDerivatives = async (sockets, user_id) => {
     console.log(futureOrders);
     let filter = futureOrders.filter((x) => x._id == user_id);
     if (filter.length == 0) {
+        let btcVal = await getBTCValue(wallet.amount);
         sockets.in(user_id).emit("derivatives", {
             page: "derivatives", type: 'derivatives', content: {
-                coin : "USDT",
-                netEquity: wallet.amount,
-                walletBalance: wallet.amount,
-                availableBalance: wallet.amount,
-                unrealizedPNL: 0
+                totalEquityUSD: wallet.amount,
+                totalEquityBTC: btcVal,
+                unrealizedPNLUSD: 0,
+                unrealizedPNLBTC: 0,
+                list:
+                    [{
+
+                        coin: "USDT",
+                        netEquity: wallet.amount,
+                        walletBalance: wallet.amount,
+                        availableBalance: wallet.amount,
+                        unrealizedPNL: 0
+                    }
+                    ]
             }
         });
     } else {
+        let btcVal = await getBTCValue(wallet.amount);
         sockets.in(user_id).emit("derivatives", {
             page: "derivatives", type: 'derivatives', content: {
-                coin : "USDT",
-                walletBalance: wallet.amount,
-                netEquity: wallet.amount + (filter[0].total + filter[0].usedUSDT),
-                availableBalance: wallet.amount + (filter[0].total + filter[0].usedUSDT),
-                unrealizedPNL: filter[0].total,
+                totalEquityUSD: wallet.amount,
+                totalEquityBTC: btcVal,
+                unrealizedPNLUSD: 0,
+                unrealizedPNLBTC: 0,
+                list: [
+                    {
+                        coin: "USDT",
+                        walletBalance: wallet.amount,
+                        netEquity: wallet.amount + (filter[0].total + filter[0].usedUSDT),
+                        availableBalance: wallet.amount + (filter[0].total + filter[0].usedUSDT),
+                        unrealizedPNL: filter[0].total,
+                    }
+                ]
             }
         });
     }
 
 }
 
+const getBTCValue = async (q) => {
+    let priceInfo = await axios("http://18.130.193.166:8542/price?symbol=BTCUSDT");
+    let price = priceInfo.data.data.ask;
+    return parseFloat(q) / price;
+}
 module.exports = GetDerivatives;
