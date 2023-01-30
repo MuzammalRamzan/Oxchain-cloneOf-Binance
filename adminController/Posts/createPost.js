@@ -24,15 +24,11 @@ const createPost = async (req, res) => {
 			!req.body.file ||
 			!req.body.fileExtension
 		) {
-			return res.status(400).send({
-				message:
+			return res.status(400).json({
+				status: 'fail',
+				message: 'Bad Request',
+				showableMessage:
 					'News title, content, and author, file and fileExtension are required fields',
-			});
-		}
-		if (!result.status) {
-			console.log(result.error);
-			return res.status(400).send({
-				message: 'error while uploading photo!',
 			});
 		}
 		// Create new news article
@@ -40,18 +36,23 @@ const createPost = async (req, res) => {
 			title: req.body.title,
 			content: req.body.content,
 			author: req.body.author,
-			coverPhoto: result.data,
+			coverPhoto: result,
 			category: req.body.category,
 		});
 
 		// Save news article to database
 		await posts.save();
-		return res.status(201).send({
-			status: true,
-			message: 'post is added successfully!',
+		return res.status(400).json({
+			status: 'success',
+			message: 'Bad Request',
+			showableMessage: 'post is added successfully!',
 		});
 	} catch (error) {
-		res.status(500).send({ status: false, error: error.message });
+		return res.status(500).json({
+			status: 'success',
+			message: 'Internal Server Error',
+			showableMessage: error.message,
+		});
 	}
 };
 module.exports = createPost;

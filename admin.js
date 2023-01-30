@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 const multer = require('multer');
 const express = require('express');
 const cors = require('cors');
-const { expressjwt: jwt } = require('express-jwt');
 
 require('dotenv').config();
 
@@ -50,7 +49,10 @@ const { createAgent, getAllAgents } = require('./adminController/Agent');
 const {
 	createFAQMember,
 	getAllFAQMembers,
-} = require('./adminController/FAQTeam');
+} = require('./adminController/FAQS/FAQTeam');
+const createFAQs = require('./adminController/FAQS/createFAQs');
+const updateFAQs = require('./adminController/FAQS/updateFAQs');
+const deleteFAQs = require('./adminController/FAQS/deleteFAQs');
 //posts
 const createPost = require('./adminController/Posts/createPost');
 //trades
@@ -91,22 +93,20 @@ route.all('/filterUser', upload.none(), User.filterUser);
 route.all('/userList', upload.none(), User.userList);
 route.all('/denyApplicant', upload.none(), User.denyApplicant);
 route.all('/setBonusRate', upload.none(), Bonus.setBonusRate);
-route.all('/userDeposits', upload.none(), Deposit.userDeposits);
 route.all('/exportDepositsData', upload.none(), Deposit.exportDepositsData);
 route.all('/totalDeposits', upload.none(), Deposit.totalDeposits);
 route.all('/depositReport', upload.none(), Deposit.totalDepositGraphData);
 route.all('/depositList', upload.none(), Deposit.listDeposits);
-route.all('/filterDeposits', upload.none(), Deposit.filterDeposits);
+route.all('/getUserDeposits', upload.none(), Deposit.getUserDeposits);
 route.all('/listPairs', upload.none(), Pairs.listPairs);
 route.all('/setPairFee', upload.none(), Pairs.setPairFee);
 route.all('/getUserBalance', upload.none(), Wallet.getUserBalance);
 route.all('/getWalletBalance', upload.none(), Wallet.getWalletBalance);
 route.all('/setBalance', upload.none(), Wallet.setBalance);
-route.all('/userWithdraws', upload.none(), Withdraw.userWithdraws);
 route.all('/totalWithdrawn', upload.none(), Withdraw.totalWithdrawn);
 route.all('/withdrawReport', upload.none(), Withdraw.totalWithdrawGraphData);
 route.all('/listWithdraws', upload.none(), Withdraw.listWithdraws);
-route.all('/filterWithdraw', upload.none(), Withdraw.filterWithdraw);
+route.all('/getUserWithdraw', upload.none(), Withdraw.getUserWithdraw);
 route.all('/exportWithdrawData', upload.none(), Withdraw.exportWithdrawData);
 route.all('/getProfit', upload.none(), Profit.ProfitAll);
 route.all('/getEarnings', upload.none(), Earnings.getEarnings);
@@ -128,6 +128,9 @@ route.all('/getTrades', upload.none(), getTrades);
 //FAQS apis router
 route.all('/createFAQMember', upload.none(), createFAQMember);
 route.all('/getAllFAQMembers', upload.none(), getAllFAQMembers);
+route.all('/FAQS/create', upload.none(), createFAQs);
+route.all('/FAQS/update/:id', upload.none(), updateFAQs);
+route.all('/FAQS/delete/:id', upload.none(), deleteFAQs);
 route.listen(port, () => {
 	console.log('Server Ayakta');
 });

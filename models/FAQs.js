@@ -1,28 +1,28 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const FAQSchema = new Schema({
-	name: {
+const FaqSchema = new Schema({
+	question: {
 		type: String,
 		required: true,
 	},
-	email: {
+	answer: {
 		type: String,
 		required: true,
-		unique: true,
-		match:
-			/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
 	},
-	phone: {
+	category: {
 		type: String,
 		required: true,
-		match: /^[0-9]{10,12}$/,
 	},
-	status: {
-		type: String,
-		enum: ['active', 'inactive'],
-		default: 'active',
+	keywords: [String],
+	date_created: {
+		type: Date,
+		default: Date.now,
+	},
+	date_updated: {
+		type: Date,
+		default: Date.now,
 	},
 });
 
-module.exports = mongoose.model('FAQ', FAQSchema);
+module.exports = mongoose.model('FAQs', FaqSchema);

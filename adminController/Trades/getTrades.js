@@ -70,13 +70,25 @@ const getTrades = async (req, res) => {
 
 		// If no trades are found
 		if (!trades.length) {
-			return res.status(501).json({ status: false, error: 'No trade found!' });
+			return res.status(404).json({
+				status: 'fail',
+				message: 'not found',
+				showableMessage: 'No trade found',
+			});
 		}
 		// Return the trades as a success response
-		return res.status(200).json({ status: true, result: trades });
+		return res.status(200).json({
+			status: 'success',
+			message: 'Trades data',
+			data: trades,
+		});
 	} catch (error) {
 		// Return an error response if there is an exception
-		return res.status(501).json({ status: false, error: error.message });
+		return res.status(500).json({
+			status: 'fail',
+			message: 'Internal Server Error',
+			showableMessage: error.message,
+		});
 	}
 };
 

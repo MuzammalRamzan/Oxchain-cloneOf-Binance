@@ -21,12 +21,17 @@ const addSupportTeamMember = async (req, res) => {
 			status,
 		});
 		await newSupportTeamMember.save();
-		res.status(201).json({
-			status: true,
-			message: 'Support team member added successfully',
+		return res.status(201).json({
+			status: 'sucess',
+			message: 'Success',
+			showableMessage: 'Support Member Added Successfully',
 		});
 	} catch (error) {
-		res.status(500).json({ status: false, message: error.message });
+		return res.status(500).json({
+			status: 'fail',
+			message: 'Internal Server Error',
+			showableMessage: error.message,
+		});
 	}
 };
 const searchSupportTeamMember = async (req, res) => {
@@ -65,12 +70,24 @@ const searchSupportTeamMember = async (req, res) => {
 		const supportTeamMembers = await SupportTeam.find(filter).limit(
 			recordsPerpage || 10
 		);
-		if (supportTeamMembers.length === 0) {
-			return res.status(404).json({ message: 'No support team members found' });
+		if (!supportTeamMembers.length) {
+			return res.status(404).json({
+				status: 'fail',
+				message: 'not found',
+				showableMessage: 'No support Team member Found',
+			});
 		}
-		res.status(200).json({ status: true, supportTeamMembers });
+		return res.status(200).json({
+			status: 'sucess',
+			message: 'Support team member',
+			data: supportTeamMembers,
+		});
 	} catch (error) {
-		res.status(500).json({ status: false, message: error.message });
+		return res.status(500).json({
+			status: 'fail',
+			message: 'Internal Server Error',
+			showableMessage: error.message,
+		});
 	}
 };
 
