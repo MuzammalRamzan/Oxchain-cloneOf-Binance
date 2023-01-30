@@ -290,13 +290,15 @@ const filterUser = async (req, res) => {
 				showableMessage: 'Forbidden 403, Please provide valid api key',
 			});
 		}
-		const { id, name, email } = req.query;
-		const recordPerPage = req.query.recordPerPage || 10;
-		const dateFrom = req.query.dateFrom;
-		const dateTo = req.query.dateTo;
+		const { id, name, email } = req.body;
+		const recordPerPage = req.body.recordPerPage || 10;
+		const dateFrom = req.body.dateFrom;
+		const dateTo = req.body.dateTo;
 
 		// Build the filter object
 		const filter = {};
+		let updatedUsers = [];
+
 		if (id) filter._id = id;
 		if (name) filter.name = name;
 		if (email) filter.email = email;
@@ -326,13 +328,16 @@ const filterUser = async (req, res) => {
 					totalUsdWithdrawn += parseFloat(data1[i].usdtValue);
 				}
 			}
-			users = {
-				...users,
-				totalUSDDeposited: totalUSDDeposited,
-				totalUsdWithdrawn: totalUsdWithdrawn,
-			};
+			const user = { ...users[i]._doc };
+			user.totalUSDDeposited = totalUSDDeposited;
+			user.totalUsdWithdrawn = totalUsdWithdrawn;
+			updatedUsers.push(user);
 		}
-		return res.json({ status: 'success', message: 'Users', data: users });
+		return res.json({
+			status: 'success',
+			message: 'Users',
+			data: updatedUsers,
+		});
 	} catch (error) {
 		return res.status(501).json({
 			status: 'error',
