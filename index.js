@@ -379,7 +379,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) { }
+	async function (req, res) {}
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
