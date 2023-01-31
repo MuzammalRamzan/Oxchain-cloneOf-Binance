@@ -15,9 +15,31 @@ const GetWithdrawHistory = async(req,res) => {
     if(req.body.firstDate != null && req.body.endDate != null) {
         filter.createdAt = { $gte: req.body.firstDate, $lte: req.body.endDate };
     }
-    console.log(filter);
     let list = await Withdraw.find(filter);
-    res.json({status : 'success', data : list});
+    let data = [];
+    for(var i = 0; i < list.length; i++) {
+        let coinInfo = await CoinList.findOne({_id : list[i].coin_id});
+        let networkInfo = await Network.findOne({_id : list[i].netowrk_id});
+        data.push({
+            id : list[i]._id,
+            coin : {
+                id : list[i].coin_id,
+                name : coinInfo.symbol,
+            },
+            network : {
+                id : list[i].netowrk_id,
+                name : networkInfo.symbol,
+            },
+            hash : list[i].tx_id,
+            fee : list[i].fee,
+            amount : list[i].amount,
+            fromAddress : list[i].fromAddress,
+            toAddress : list[i].address,
+            date : list[i].createdAt,
+            status : list[i].status,
+        });
+    }
+    res.json({status : 'success', data : data});
 }
 
 module.exports = GetWithdrawHistory;
