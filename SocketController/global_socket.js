@@ -103,6 +103,7 @@ async function GlobalSocket() {
             );
             ws.on("message", async (data) => {
                 let json = JSON.parse(data);
+                console.log(json);
                 if (json.page == "trade") {
                     GetBinanceData(ws, json.pair);
                 } else if (json.page == "all_prices") {

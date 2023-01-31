@@ -1,3 +1,5 @@
+const CoinList = require("../../models/CoinList");
+const Network = require("../../models/Network");
 const Withdraw = require("../../models/Withdraw");
 
 const GetWithdrawHistory = async(req,res) => {
@@ -17,7 +19,9 @@ const GetWithdrawHistory = async(req,res) => {
     }
     let list = await Withdraw.find(filter);
     let data = [];
+    
     for(var i = 0; i < list.length; i++) {
+        console.log(list[i]);
         let coinInfo = await CoinList.findOne({_id : list[i].coin_id});
         let networkInfo = await Network.findOne({_id : list[i].netowrk_id});
         data.push({
@@ -28,7 +32,7 @@ const GetWithdrawHistory = async(req,res) => {
             },
             network : {
                 id : list[i].netowrk_id,
-                name : networkInfo.symbol,
+                name : networkInfo.symbol ?? "",
             },
             hash : list[i].tx_id,
             fee : list[i].fee,
