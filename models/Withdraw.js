@@ -8,6 +8,7 @@ const WithdrawSchema = new mongoose.Schema({
   tx_id: { type: String, required: false, default: null },
   type: { type: String, required: false, default: null },
   fee: { type: Number, required: false, default: null },
+  network_id : {type : mongoose.Schema.Types.ObjectId, ref : "Network" },
   updatedAt: { type: String, required: false, default: null },
   status: { type: String, required: false, default: 0 },
   createdAt: {

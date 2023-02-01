@@ -238,15 +238,21 @@ const withdraw = async (req, res) => {
     }
   }
 
-
+  let isError = false;
+  let tx_id = "";
   switch (networkInfo.symbol) {
     case "TRC":
       transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000).toString() });
       console.log(transaction.data);
       if (transaction.data.status != 'success') {
         res.json({ status: "fail", message: "unknow error" });
-        return;
+        isError = true;
+
+      } else {
+        isError = false;
+        tx_id = transaction.data.data;
       }
+
       break;
     case "BSC":
       coinInfo = await CoinList.findOne({ _id: coin_id });
@@ -256,7 +262,10 @@ const withdraw = async (req, res) => {
         console.log(transaction.data);
         if (transaction.data.status != 'success') {
           res.json({ status: "fail", message: "unknow error" });
-          return;
+          isError = true;
+        } else {
+          isError = false;
+          tx_id = transaction.data.data;
         }
       } else {
         console.log({ token: coinInfo.symbol, from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
@@ -264,7 +273,10 @@ const withdraw = async (req, res) => {
         console.log(transaction.data);
         if (transaction.data.status != 'success') {
           res.json({ status: "fail", message: "unknow error" });
-          return;
+          isError = true;
+        } else {
+          isError = false;
+          tx_id = transaction.data.data;
         }
       }
 
@@ -276,13 +288,19 @@ const withdraw = async (req, res) => {
         transaction = await PostRequestSync("http://54.167.28.93:4455/transfer", { from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
         if (transaction.data.status != 'success') {
           res.json({ status: "fail", message: "unknow error" });
-          return;
+          isError = true;
+        } else {
+          isError = false;
+          tx_id = transaction.data.data;
         }
       } else {
         transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: coinInfo.symbol, from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
         if (transaction.data.status != 'success') {
           res.json({ status: "fail", message: "unknow error" });
-          return;
+          isError = true;
+        } else {
+          isError = false;
+          tx_id = transaction.data.data;
         }
 
       }
@@ -299,11 +317,15 @@ const withdraw = async (req, res) => {
       console.log(transaction.data);
       if (transaction.data.status != 'success') {
         res.json({ status: "fail", message: transaction.data.message });
-        return;
+        isError = true;
+      } else {
+        isError = false;
+        tx_id = transaction.data.data;
       }
       break;
     default:
       res.json({ status: "fail", message: "Invalid network" });
+      isError = true;
       break;
   }
 
@@ -313,19 +335,21 @@ const withdraw = async (req, res) => {
     user_id: user_id,
     coin_id: fromWalelt.coin_id,
     amount: amount,
+    network_id: network_id,
     to: to,
     fee: 0.0,
-    tx_id: ""
+    tx_id: tx_id
   });
 
   await data.save();
 
-  fromWalelt.amount = parseFloat(fromWalelt.amount) - amount;
-  await fromWalelt.save();
-  let response = await NotificationTokens.findOne({
-    user_id: user_id,
-  });
-
+  if (isError == false) {
+    fromWalelt.amount = parseFloat(fromWalelt.amount) - amount;
+    await fromWalelt.save();
+    let response = await NotificationTokens.findOne({
+      user_id: user_id,
+    });
+  }
   if (response == null) {
   } else {
     var token = response["token_id"];
