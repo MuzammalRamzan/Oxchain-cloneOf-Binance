@@ -8,7 +8,7 @@ const GetWithdrawHistory = async (req, res) => {
     let filter = { user_id: uid };
 
     if (req.body.coin != 'all') {
-        filter['coin_id'] = req.body.coin;
+        filter['coin_id'] = req.body.coin_id;
     }
     if (req.body.status != 'all') {
         filter['status'] = req.body.status;
