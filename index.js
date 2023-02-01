@@ -194,6 +194,7 @@ const addSupportTicket = require('./controllers/dashboard/addSupportTicket.js');
 const getSupportTicket = require('./controllers/dashboard/getSupportTicket.js');
 const deleteSupportTicket = require('./controllers/dashboard/deleteSupportTicket.js');
 const updateSupportTicket = require('./controllers/dashboard/updateSupportTicket.js');
+const addSystemFeedback = require('./controllers/dashboard/systemFeedback.js');
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -483,6 +484,7 @@ route.post("/addSupportTicket", addSupportTicket);
 route.get("/getSupportTicket", getSupportTicket);
 route.all("/deleteSupportTicket", deleteSupportTicket)
 route.post("/updateSupportTicket", updateSupportTicket)
+route.post("/systemFeedback", addSystemFeedback)
 route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
 	if (symbol == null || symbol == '') {

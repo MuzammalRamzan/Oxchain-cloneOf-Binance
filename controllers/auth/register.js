@@ -31,12 +31,25 @@ const registerController = async (req, res) => {
         showableMessage: "Email and Pin is required",
       });
     }
+    let filter = {};
+    filter.expiryTime = { $gt: Date.now() };
+    filter.email = data;
+    filter.pin = pin;
+    filter.status = 0;
+    checkEmail = await RegisterMail.findOne(filter).exec();
 
-    checkEmail = await RegisterMail.findOne({
-      email: data,
-      pin: pin,
-      status: 0,
-    }).exec();
+
+    if (checkEmail == null) {
+      return res.json({
+        status: "fail",
+        message: "Pin_time_expired",
+        showableMessage: "Pin Time has been expired",
+      });
+    }
+    filter.email = data;
+    filter.pin = pin;
+    filter.status = 0;
+    checkEmail = await RegisterMail.findOne(filter).exec();
 
     if (checkEmail == null) {
       return res.json({
@@ -70,12 +83,31 @@ const registerController = async (req, res) => {
         showableMessage: "Phone and Country Code is required",
       });
     }
-    checkPhone = await RegisterSMS.findOne({
-      country_code: req.body.country_code,
-      phone_number: req.body.data,
-      pin: pin,
-      status: 0,
-    }).exec();
+    // checkPhone = await RegisterSMS.findOne({
+    //   country_code: req.body.country_code,
+    //   phone_number: req.body.data,
+    //   pin: pin,
+    //   status: 0,
+    // }).exec();
+    let filter = {};
+    filter.expiryTime = { $gt: Date.now() };
+    filter.country_code = req.body.country_code;
+    filter.phone_number = data;
+    filter.pin = pin;
+    filter.status = 0;
+    checkPhone = await RegisterSMS.findOne(filter).exec();
+    if (checkPhone == null) {
+      return res.json({
+        status: "fail",
+        message: "Pin_time_expired",
+        showableMessage: "Pin Time has been expired",
+      });
+    }
+    filter.country_code = req.body.country_code;
+    filter.phone_number = data;
+    filter.pin = pin;
+    filter.status = 0;
+    checkPhone = await RegisterSMS.findOne(filter).exec();
 
     if (checkPhone == null) {
       return res.json({

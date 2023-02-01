@@ -110,14 +110,42 @@ const login = async (req, res) => {
 
       user = await User.findOne({
         email: req.body.user,
-        password: utilities.hashData(req.body.password),
       }).exec();
+      if (user) {
+        user = await User.findOne({
+          email: req.body.user,
+          password: utilities.hashData(req.body.password),
+        }).exec();
+        if (!user) {
+          return res.json({
+            status: "fail",
+            message: "Incorrect Password",
+            showableMessage: "Incorrect Password",
+          });
+        }
+      }
+
+
     }
     else {
       user = await User.findOne({
         phone_number: req.body.user,
-        password: utilities.hashData(req.body.password),
       }).exec();
+      if (user) {
+        user = await User.findOne({
+          phone_number: req.body.user,
+          password: utilities.hashData(req.body.password),
+        }).exec();
+
+        if (!user) {
+          return res.json({
+            status: "fail",
+            message: "Incorrect Password",
+            showableMessage: "Incorrect Password",
+          });
+        }
+      }
+
     }
 
     let securityLevel = 0;
