@@ -50,17 +50,14 @@ const addOrders = async function (req, res) {
 
     var getPair = await Pairs.findOne({ name: req.body.pair_name }).exec();
 
-    console.log(getPair)
     if (getPair == null || getPair == undefined || getPair == "") {
       return res.json({ status: "fail", message: "pair_not_found" });
     }
 
-    console.log(getPair.symbolOneID);
     var fromWallet = await Wallet.findOne({
       coin_id: getPair.symbolOneID,
       user_id: req.body.user_id,
     }).exec();
-    console.log("From", fromWallet);
     var towallet = await Wallet.findOne({
       coin_id: getPair.symbolTwoID,
       user_id: req.body.user_id,
@@ -283,8 +280,12 @@ const addOrders = async function (req, res) {
     }
 
     if (req.body.method == "sell") {
-      let balance = fromWallet.amount;
-      amount = (fromWallet.amount * percent) / 100;
+      let balance = parseFloat(fromWallet.amount);
+      amount = (fromWallet.amount * parseFloat(percent)) / 100.0;
+      //amount = parseFloat(req.body.amount);
+      0.043497041371213414
+      0.04349704137121342
+      console.log(balance , amount);
       if (balance < amount) {
         res.json({ status: "fail", message: "Invalid  balance" });
         return;
@@ -387,8 +388,7 @@ const addOrders = async function (req, res) {
           res.json({ status: "success", message: saved });
         }
       } else if (req.body.type == "market") {
-        let balance = fromWallet.amount;
-
+        
         if (balance >= amount) {
           let total = amount * price;
           const orders = new Orders({

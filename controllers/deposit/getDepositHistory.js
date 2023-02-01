@@ -8,7 +8,7 @@ const GetDepositHistory = async(req,res) => {
     let filter = {user_id : uid};
     
     if(req.body.coin != 'all') {
-        filter['currency'] = req.body.coin;
+        filter['coin_id'] = req.body.coin;
     }
     if(req.body.status != 'all') {
         filter['status'] = req.body.status;
@@ -21,6 +21,7 @@ const GetDepositHistory = async(req,res) => {
     }
     let list = await Deposits.find(filter);
     let data = [];
+    console.log(filter);
     for(var i = 0; i < list.length; i++) {
         let coinInfo = await CoinList.findOne({_id : list[i].coin_id});
         let networkInfo = await Network.findOne({_id : list[i].netowrk_id});
