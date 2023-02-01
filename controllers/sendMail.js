@@ -38,8 +38,7 @@ const sendMail = async function (req, res) {
       }
       var pin = Math.floor(100000 + Math.random() * 900000);
 
-      if (reason == "change_email") {
-
+      if (reason == "change_email_new") {
 
         if (req.body.newMail == "" || req.body.newMail == null || req.body.newMail == undefined) {
           return res.json({ status: "fail", message: "email_not_found", showableMessage: "Email not found" });
@@ -47,9 +46,8 @@ const sendMail = async function (req, res) {
 
         let check = await MailVerification.findOne({
           user_id: user_id,
-          reason: "change_email",
+          reason: "change_email_new",
         }).exec();
-
 
         mailer.sendMail(
           newMail,
@@ -66,14 +64,14 @@ const sendMail = async function (req, res) {
 
         if (check != null) {
           await MailVerification.findOneAndUpdate(
-            { user_id: user["_id"] },
-            { pin: pin, status: "0", reason: reason, }
+            { user_id: user["_id"], reason: "change_email_new" },
+            { pin: pin, status: 0 },
           );
         } else {
           newPin = new MailVerification({
             user_id: user["_id"],
             pin: pin,
-            reason: "change_email",
+            reason: "change_email_new",
             status: 0,
           });
           newPin.save();

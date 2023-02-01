@@ -41,8 +41,7 @@ const UploadRecidency = async function (req, res) {
 
 
 
-    console.log("file1New: " + file1New);
-    console.log("file2New: " + file2New);
+
     if (result === true) {
         let user = await User.findOne({
             _id: user_id,
