@@ -1,14 +1,14 @@
 const FutureOrder = require("../../models/FutureOrder");
 const FutureWalletModel = require("../../models/FutureWalletModel");
 
-const GetFutureWallet = async(sockets, user_id) => {
-    
+const GetFutureWallet = async (sockets, user_id) => {
+
     let balance = await CalculateFutureBalance(user_id);
     if (balance <= 0) {
-        sockets.in(user_id).emit("future_balance",{ type: "future_balance", content: 0.0 });
-        
+        sockets.in(user_id).emit("future_balance", { type: "future_balance", content: 0.0 });
+
     } else {
-        sockets.in(user_id).emit("future_balance",{ type: "future_balance", content: 0.0 });
+        sockets.in(user_id).emit("future_balance", { type: "future_balance", content: 0.0 });
     }
 
     FutureWalletModel.watch([
@@ -16,17 +16,17 @@ const GetFutureWallet = async(sockets, user_id) => {
     ]).on("change", async (data) => {
         balance = await CalculateFutureBalance(user_id);
         if (balance <= 0) {
-            sockets.in(user_id).emit("future_balance",{ type: "future_balance", content: 0.0 });
+            sockets.in(user_id).emit("future_balance", { type: "future_balance", content: 0.0 });
         } else {
-            sockets.in(user_id).emit("future_balance",{ type: "future_balance", content: 0.0 });
+            sockets.in(user_id).emit("future_balance", { type: "future_balance", content: 0.0 });
         }
-    });   
+    });
 }
 
 
 async function CalculateFutureBalance(user_id) {
     let totalPNL = 0.0;
-    
+
 
     let getOpenOrders = await FutureOrder.aggregate([
         {

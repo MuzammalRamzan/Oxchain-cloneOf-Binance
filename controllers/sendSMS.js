@@ -67,9 +67,8 @@ const sendSMS = async function (req, res) {
           }
         );
 
-        console.log(dataTest);
 
-        console.log(country_code, newPhone, pin)
+        console.log(check, pin)
 
         if (check != null) {
           await SMSVerification.findOneAndUpdate(
@@ -80,7 +79,7 @@ const sendSMS = async function (req, res) {
           newPin = new SMSVerification({
             user_id: user["_id"],
             pin: pin,
-            reason: "change_phone",
+            reason: "change_phone_new",
             status: 0,
           });
           newPin.save();
@@ -145,9 +144,7 @@ const sendSMS = async function (req, res) {
     }
     else {
       res.json({ status: "fail", message: "user_not_found" });
-
     }
-
 
   } else {
     res.json({ status: "fail", message: "403 Forbidden" });
