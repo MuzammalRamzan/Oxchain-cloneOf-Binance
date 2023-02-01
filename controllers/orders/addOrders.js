@@ -282,10 +282,10 @@ const addOrders = async function (req, res) {
     if (req.body.method == "sell") {
       let balance = parseFloat(fromWallet.amount);
       amount = (fromWallet.amount * parseFloat(percent)) / 100.0;
+      amount = splitLengthNumber(amount);
       //amount = parseFloat(req.body.amount);
-      0.043497041371213414
-      0.04349704137121342
-      console.log(balance , amount);
+      
+      
       if (balance < amount) {
         res.json({ status: "fail", message: "Invalid  balance" });
         return;
