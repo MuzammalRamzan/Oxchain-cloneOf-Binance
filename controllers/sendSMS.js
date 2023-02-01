@@ -67,9 +67,6 @@ const sendSMS = async function (req, res) {
           }
         );
 
-
-        console.log(check, pin)
-
         if (check != null) {
           await SMSVerification.findOneAndUpdate(
             { user_id: user["_id"] },
