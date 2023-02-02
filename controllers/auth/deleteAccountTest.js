@@ -2,9 +2,9 @@ const UserModel = require('../../models/User');
 
 
 const deleteAccount = async (req, res) => {
-    let user_id = req.body.user_id;
+    let showableUserId = req.body.showableUserId;
 
-    let user = await UserModel.findOne({ _id: user_id }).exec();
+    let user = await UserModel.findOne({ showableUserId: showableUserId }).exec();
 
     if (user) {
         user.remove();
