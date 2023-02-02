@@ -197,6 +197,8 @@ const getSupportTicket = require('./controllers/dashboard/getSupportTicket.js');
 const deleteSupportTicket = require('./controllers/dashboard/deleteSupportTicket.js');
 const updateSupportTicket = require('./controllers/dashboard/updateSupportTicket.js');
 const addSystemFeedback = require('./controllers/dashboard/systemFeedback.js');
+const SpotLimitMarketOrders = require('./controllers/orders/history/spotLimitMarketOrders.js');
+const SpotTradeHistory = require('./controllers/orders/history/spotTradeHistory.js');
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -313,6 +315,11 @@ route.all('/update2fa', upload.none(), update2fa);
 route.all('/getActiveDevice', upload.none(), getActiveDevice);
 route.all('/deleteActiveDevice', upload.none(), deleteActiveDevice);
 route.all('/getVerificationMethod', upload.none(), getVerificationMethod);
+
+
+//ORDER HISTORY
+route.all('/spotLimitMarketOrders', SpotLimitMarketOrders);
+route.all('/spotTradeHistory', SpotTradeHistory);
 
 route.all('/removePhone', upload.none(), removePhone);
 route.all('/removeEmail', upload.none(), removeEmail);

@@ -1,6 +1,6 @@
 const Orders = require("../../../models/Orders");
 
-const SpotLimitMarketOrders = async (req, res) => {
+const SpotTradeHistory = async (req, res) => {
     let uid = req.body.user_id;
     if (uid == null || uid == '') return res.json({ status: 'fail', message: 'User not found' });
     if (req.body.direction == null || req.body.direction == '') return res.json({ status: 'fail', message: 'Direction not found' });
@@ -43,4 +43,4 @@ const SpotLimitMarketOrders = async (req, res) => {
     return res.json({ status: 'success', data: list });
 }
 
-module.exports = SpotLimitMarketOrders;
+module.exports = SpotTradeHistory;
