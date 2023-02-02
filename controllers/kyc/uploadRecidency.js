@@ -127,6 +127,55 @@ const UploadRecidency = async function (req, res) {
             else {
                 if (verification.status == 2) {
 
+                    let country = User.country || null;
+
+
+                    let params4 = {
+                        params: {
+                            Bucket: "oxhain",
+                            Key: 'Recidency/recidency1-' + timestamp + user_id + '.' + req.body.recidencyFileExtension1,
+                            Body: file1New,
+                            ContentType: "image/jpg",
+                        },
+                    };
+
+                    var upload = new AWS.S3.ManagedUpload(params4);
+                    var promise = upload.promise();
+                    promise.then(
+                        function (data) {
+                            console.log('Successfully uploaded photo.');
+                        },
+                        function (err) {
+                            console.error('There was an error uploading: ', err.message);
+                        }
+                    );
+
+
+
+                    if (req.body.recidencyFileExtension2 != null) {
+                        //upload file to aws s3
+                        let params4 = {
+                            params: {
+                                Bucket: "oxhain",
+                                Key: 'Recidency/recidency2-' + timestamp + user_id + '.' + req.body.recidencyFileExtension2,
+                                Body: file2New,
+                                ContentType: "image/jpg",
+                            },
+                        };
+
+                        var upload = new AWS.S3.ManagedUpload(params4);
+                        var promise = upload.promise();
+                        promise.then(
+                            function (data) {
+                                console.log('Successfully uploaded photo.');
+                            },
+                            function (err) {
+                                console.error('There was an error uploading: ', err.message);
+                            }
+                        );
+
+                    }
+
                     RecidencyModel.findOneAndUpdate
                         ({
                             user_id: user_id,

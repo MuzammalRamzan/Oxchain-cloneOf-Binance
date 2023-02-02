@@ -17,7 +17,7 @@ const getKyc = async (req, res) => {
             status: 0,
             ...(user_id && { user_id }),
 
-        }).exec();
+        }).sort({ createdAt: -1 }).exec();
 
         if (verification) {
 
@@ -44,6 +44,8 @@ const getKyc = async (req, res) => {
                     address: user.address ?? "",
                     city: user.city ?? "",
                     url: verification[i].url,
+                    url2: verification[i].url2,
+                    url3: verification[i].url3,
                     country: verification[i].country,
                     createdAt: verification[i].createdAt,
                 }
