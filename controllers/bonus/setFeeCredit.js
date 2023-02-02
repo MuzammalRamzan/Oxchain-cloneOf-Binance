@@ -5,27 +5,31 @@ const UserRef = require("../../models/UserRef");
 const Wallet = require("../../models/Wallet");
 
 const setFeeCredit = async function (user_id, pair_id, amount) {
+    amount = splitLengthNumber(amount);
     let getUser = await User.findOne({ user_id: user_id });
     if (getUser == null) {
         return false;
     }
 
+    console.log("fee test");
     let getUserRefCode = await UserRef.findOne({ user_id: user_id });
+    console.log(getUserRefCode);
     let parentReferralCounter = 0;
     let percentAmount = 20;
     let searchUserId = user_id;
-    while (parentReferralCounter < 4) {
-        
+    while (parentReferralCounter < 4 && parentReferralCounter > -1) {
         let getParentReferral = await Referral.findOne({ user_id: searchUserId });
         if (getParentReferral == null) {
             //console.log(searchUserId, " bulunamadı");
+            parentReferralCounter++;
             return;
         }
         let parentRefCode = getParentReferral.reffer;
-        let getRefferUser = await UserRef.findOne({ refCode: parentRefCode });
 
+        let getRefferUser = await UserRef.findOne({ refCode: parentRefCode });
         let insertAmount = amount * percentAmount / 100.0;
-        if(insertAmount < 0) continue;
+        
+        if(insertAmount <= 0) return;
         let getWallet = await Wallet.findOne({ user_id: getRefferUser.user_id, coin_id: pair_id });
         if(getWallet == null) {
             parentReferralCounter++;
@@ -40,7 +44,7 @@ const setFeeCredit = async function (user_id, pair_id, amount) {
             to_user_id: getRefferUser.user_id,
             pair_id: pair_id,
             status: 1
-        })
+        });
         await insertFeeTable.save();
         searchUserId = getRefferUser.user_id;
         switch (parentReferralCounter) {
@@ -127,5 +131,7 @@ const setFeeCredit = async function (user_id, pair_id, amount) {
         }
     }
 }
-
+function splitLengthNumber(q) {
+    return q.toString().length > 6 ? parseFloat(q.toString().substring(0, 6)) : q;
+  }
 module.exports = setFeeCredit;
