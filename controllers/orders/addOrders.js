@@ -269,7 +269,8 @@ const addOrders = async function (req, res) {
               apiRequest.status = 1;
               await apiRequest.save();
             }
-            SetTradeVolumeAndRefProgram({ order_id: saved._id, user_id: req.body.user_id, trade_from: "spot", trade_type: "buy", amount: amount, totalUSDT: splitLengthNumber(total) })
+            await SetTradeVolumeAndRefProgram({ order_id: saved._id, user_id: req.body.user_id, trade_from: "spot", trade_type: "buy", amount: amount, totalUSDT: splitLengthNumber(total) })
+            await setFeeCredit(req.body.user_id, getPair._id, fee);
             res.json({ status: "success", message: saved });
 
           }
@@ -415,6 +416,7 @@ const addOrders = async function (req, res) {
               await apiRequest.save();
             }
             await SetTradeVolumeAndRefProgram({ order_id: saved._id, user_id: req.body.user_id, trade_from: "spot", trade_type: "sell", amount: amount, totalUSDT: splitLengthNumber(total) });
+            await setFeeCredit(req.body.user_id, getPair._id, fee);
             res.json({ status: "success", message: saved });
           }
         } else {
@@ -427,7 +429,7 @@ const addOrders = async function (req, res) {
       res.json({ status: "fail", message: "invalid_amount" });
     }
 
-    await setFeeCredit(req.body.user_id, getPair._id, fee);
+    
   } catch (err) {
     console.log(err);
     res.json({ status: "fail", message: "unknow_error" });
