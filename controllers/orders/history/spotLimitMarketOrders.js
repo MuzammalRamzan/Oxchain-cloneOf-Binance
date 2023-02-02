@@ -32,3 +32,5 @@ const SpotLimitMarketOrders = async(req,res) => {
     let list = await Orders.find(filter);
     return res.json({status : 'success', data : list});
 }
+
+module.exports = SpotLimitMarketOrders;
