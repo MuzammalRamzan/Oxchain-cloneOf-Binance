@@ -28,6 +28,9 @@ const getKyc = async (req, res) => {
                     })
                     .exec();
 
+                if (user == null || user == undefined || user == '') {
+                    continue;
+                }
                 userObject = {
                     user_id: user._id,
                     email: user.email,
