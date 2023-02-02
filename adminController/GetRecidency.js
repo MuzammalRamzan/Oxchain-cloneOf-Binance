@@ -1,14 +1,14 @@
-const VerificationIdModel = require('../models/VerificationId');
+const VerificationIdModel = require('../models/RecidencyModel');
 const UserModel = require('../models/User');
 
 const Auth = require('../auth.js');
 
 
-const getKyc = async (req, res) => {
+const getRecidency = async (req, res) => {
 
     const api_key = req.body.api_key;
-    let user_id = req.body.user_id;
 
+    let user_id = req.body.user_id;
     const result = await Auth.apiKeyChecker(api_key);
 
     if (result === true) {
@@ -16,7 +16,6 @@ const getKyc = async (req, res) => {
         let verification = await VerificationIdModel.find({
             status: 0,
             ...(user_id && { user_id }),
-
         }).exec();
 
         if (verification) {
@@ -54,8 +53,8 @@ const getKyc = async (req, res) => {
 
             return res.json({
                 status: "success",
-                message: "KYC applications found",
-                showableMessage: "KYC applications found",
+                message: "Recidency applications found",
+                showableMessage: "Recidency applications found",
                 data: array
             });
         }
@@ -71,4 +70,4 @@ const getKyc = async (req, res) => {
 
 };
 
-module.exports = getKyc;
+module.exports = getRecidency;
