@@ -338,7 +338,8 @@ const withdraw = async (req, res) => {
     network_id: network_id,
     to: to,
     fee: 0.0,
-    tx_id: tx_id
+    tx_id: tx_id,
+    status : isError ? -1 : 1
   });
 
   await data.save();
