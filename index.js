@@ -171,6 +171,8 @@ const addNewApiKey = require('./controllers/api/addNewApiKey');
 const Delete2fa = require('./controllers/auth/delete2fa');
 const getAllFaqs = require('./controllers/FAQ/getFAQs.js');
 
+const DeleteAccountTest = require('./controllers/auth/deleteAccountTest');
+
 //only for testing purposes for emircan
 
 const clearKYCAndRecidency = require('./controllers/kyc/clearKYCAndRecidency.js');
@@ -244,6 +246,8 @@ route.all('/addVerificationId', upload.any(), addVerificationId);
 
 route.all('/addAvatar', addAvatar);
 route.all('/getAvatar', getAvatar);
+
+route.all('/deleteAccountForTest', DeleteAccountTest);
 
 route.all('/securityActivities', securityActivities);
 route.all('/walletToWallet', walletToWallet);
