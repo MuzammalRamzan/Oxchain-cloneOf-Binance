@@ -339,7 +339,7 @@ const withdraw = async (req, res) => {
     to: to,
     fee: 0.0,
     tx_id: tx_id,
-    status : isError ? -1 : 1
+    status: isError ? -1 : 1
   });
 
   await data.save();
@@ -350,15 +350,16 @@ const withdraw = async (req, res) => {
     let response = await NotificationTokens.findOne({
       user_id: user_id,
     });
+    if (response == null) {
+    } else {
+      var token = response["token_id"];
+      var body =
+        "A withdraw order has been given from your account. Please wait for the admin to confirm your order.\n\n";
+      notifications.sendPushNotification(token, body);
+    }
+    return res.json({ status: "success", data: data });
   }
-  if (response == null) {
-  } else {
-    var token = response["token_id"];
-    var body =
-      "A withdraw order has been given from your account. Please wait for the admin to confirm your order.\n\n";
-    notifications.sendPushNotification(token, body);
-  }
-  res.json({ status: "success", data: data });
+  return res.json({ status: "fail", message: "unknow error" });
 
 };
 
