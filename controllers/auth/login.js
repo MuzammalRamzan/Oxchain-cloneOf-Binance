@@ -48,6 +48,9 @@ const login = async (req, res) => {
   var loginType = req.body.loginType;
   var pin = req.body.pin;
   var city = "test";
+
+
+
   if (req.body.deviceName != undefined) {
     deviceName = req.body.deviceName;
   }
@@ -69,8 +72,18 @@ const login = async (req, res) => {
   if (req.body.manufacturer != undefined) {
     manufacturer = req.body.manufacturer;
   }
-  if (req.body.ip != undefined) {
+  if (req.body.ip != undefined && req.body.ip != "" && req.body.ip != "null") {
+
     ip = req.body.ip;
+
+    //get city from ip
+
+    let getIP = await axios.get("http://ip-api.com/json/" + ip);
+    if (getIP.data.status == "success") {
+      city = getIP.data.country + " " + getIP.data.city;
+    }
+
+
   } else {
     ip = "null";
   }
