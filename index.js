@@ -199,6 +199,7 @@ const updateSupportTicket = require('./controllers/dashboard/updateSupportTicket
 const addSystemFeedback = require('./controllers/dashboard/systemFeedback.js');
 const SpotLimitMarketOrders = require('./controllers/orders/history/spotLimitMarketOrders.js');
 const SpotTradeHistory = require('./controllers/orders/history/spotTradeHistory.js');
+const GetUserLevel = require('./controllers/users/getUserLevel.js');
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -419,6 +420,7 @@ route.all('/topReferralEarners', upload.none(), topReferralEarners);
 route.all('/myReferralEarns', upload.none(), myReferralEarns);
 route.all('/request_campus', upload.none(), CampusRequestJoin);
 route.all('/getWallet', upload.none(), getWallet);
+route.all('/getUserLevel', upload.none(), GetUserLevel);
 
 route.post('/cancelAllLimit', cancelAllLimit);
 route.post('/cancelAllStopLimit', cancelAllStopLimit);
