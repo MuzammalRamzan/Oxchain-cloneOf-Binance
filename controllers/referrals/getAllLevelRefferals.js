@@ -1,6 +1,7 @@
 const Referral = require('../../models/Referral');
 const UserRef = require('../../models/UserRef');
-const FutureWalletModel = require('../../models/FutureWalletModel');
+const TradeVolume = require('../../models/TradeVolumeModel');
+const mongoose = require('mongoose');
 const getAllLevelReferrals = async (req, res) => {
 	let referralsCount = [0, 0, 0, 0];
 	let referralsIds = [[], [], [], []];
@@ -21,22 +22,25 @@ const getAllLevelReferrals = async (req, res) => {
 			}
 		}
 	}
-
 	for (let i = 0; i < 4; i++) {
-		const sum = await FutureWalletModel.aggregate([
+		const sum = await TradeVolume.aggregate([
 			{
 				$match: {
-					user_id: { $in: referralsIds[i] },
+					user_id: {
+						$in: referralsIds[i].map((id) => mongoose.Types.ObjectId(id)),
+					},
 				},
 			},
 			{
 				$group: {
 					_id: null,
-					totalAmount: { $sum: '$amount' },
+					totalAmount: { $sum: '$totalUSDT' },
 				},
 			},
 		]);
-		tradeVolume[i] = sum[0]?.totalAmount || 0;
+		if (sum[0]) {
+			tradeVolume[i] = sum[0].totalAmount;
+		}
 	}
 
 	res.json({ referralsCount, tradeVolume });
