@@ -9,6 +9,7 @@ const RegisterMailSchema = new mongoose.Schema({
     default: Date.now,
   },
   status: { type: String, required: false, default: "0" },
+  expiryTime: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model("RegisterMail", RegisterMailSchema);

@@ -50,11 +50,15 @@ const addOrders = async function (req, res) {
 
     var getPair = await Pairs.findOne({ name: req.body.pair_name }).exec();
 
-    var fromWalelt = await Wallet.findOne({
+    if (getPair == null || getPair == undefined || getPair == "") {
+      return res.json({ status: "fail", message: "pair_not_found" });
+    }
+
+    var fromWallet = await Wallet.findOne({
       coin_id: getPair.symbolOneID,
       user_id: req.body.user_id,
     }).exec();
-    var toWalelt = await Wallet.findOne({
+    var towallet = await Wallet.findOne({
       coin_id: getPair.symbolTwoID,
       user_id: req.body.user_id,
     }).exec();
@@ -64,7 +68,7 @@ const addOrders = async function (req, res) {
       return;
     }
 
-    const fee = (amount * getPair.tradeFee) / 100;
+    const fee = splitLengthNumber((amount * getPair.tradeFee) / 100.0);
 
     var urlPair = req.body.pair_name.replace("/", "");
     let url =
@@ -97,8 +101,35 @@ const addOrders = async function (req, res) {
 
     if (req.body.method == "buy") {
       if (req.body.type == "stop_limit") {
+
+        if (req.body.stop_limit == undefined || req.body.stop_limit == null || req.body.stop_limit == "") {
+          res.json({ status: "fail", message: "Please enter stop limit" });
+          return;
+        }
+
+        if (req.body.target_price == undefined || req.body.target_price == null || req.body.target_price == "") {
+          res.json({ status: "fail", message: "Please enter target price" });
+          return;
+        }
+
+        if (req.body.stop_limit <= 0) {
+          res.json({ status: "fail", message: "Please enter stop limit" });
+          return;
+        }
+
+        if (req.body.stop_limit < req.body.target_price) {
+          res.json({ status: "fail", message: "The limit price cannot be more than the stop price Buy limit order must be below the price" });
+          return;
+        }
+
+        if (req.body.target_price >= price) {
+          res.json({ status: "fail", message: "Buy limit order must be below the price" });
+          return;
+        }
+
+
         let total = amount * stop_limit;
-        let balance = toWalelt.amount;
+        let balance = towallet.amount;
 
         if (balance < total) {
           res.json({ status: "fail", message: "Invalid  balance" });
@@ -144,8 +175,8 @@ const addOrders = async function (req, res) {
 
         let saved = await orders.save();
         if (saved) {
-          toWalelt.amount = toWalelt.amount - total;
-          await toWalelt.save();
+          towallet.amount = towallet.amount - total;
+          await towallet.save();
           if (api_result === false) {
             apiRequest.status = 1;
             await apiRequest.save();
@@ -154,8 +185,19 @@ const addOrders = async function (req, res) {
         }
       }
       if (req.body.type == "limit") {
+
+        if (req.body.target_price == undefined || req.body.target_price == null || req.body.target_price == "") {
+          res.json({ status: "fail", message: "Please enter target price" });
+          return;
+        }
+
+        if (req.body.target_price >= price) {
+          res.json({ status: "fail", message: "Buy limit order must be below the price" });
+          return;
+        }
+
         let total = amount * target_price;
-        let balance = toWalelt.amount;
+        let balance = towallet.amount;
         if (balance < total) {
           res.json({ status: "fail", message: "Invalid  balance" });
           return;
@@ -184,8 +226,8 @@ const addOrders = async function (req, res) {
 
         let saved = await orders.save();
         if (saved) {
-          toWalelt.amount = toWalelt.amount - total;
-          await toWalelt.save();
+          towallet.amount = towallet.amount - total;
+          await towallet.save();
           if (api_result === false) {
             apiRequest.status = 1;
             await apiRequest.save();
@@ -194,7 +236,7 @@ const addOrders = async function (req, res) {
         }
       } else if (req.body.type == "market") {
         let total = amount * price;
-        let balance = toWalelt.amount;
+        let balance = towallet.amount;
         console.log("total", total)
         console.log("balance", balance)
         if (balance < total) {
@@ -216,18 +258,19 @@ const addOrders = async function (req, res) {
 
           let saved = await orders.save();
           if (saved) {
-            console.log("fromWalelt.amount", fromWalelt, amount, fee)
-            fromWalelt.amount =
-              parseFloat(fromWalelt.amount) + parseFloat(amount) - parseFloat(fee);
-            toWalelt.amount = parseFloat(toWalelt.amount) - parseFloat(total);
+            console.log("fromWallet.amount", fromWallet, amount, fee)
+            fromWallet.amount =
+              parseFloat(fromWallet.amount) + parseFloat(amount) - parseFloat(fee);
+            towallet.amount = parseFloat(towallet.amount) - parseFloat(total);
 
-            await fromWalelt.save();
-            await toWalelt.save();
+            await fromWallet.save();
+            await towallet.save();
             if (api_result === false) {
               apiRequest.status = 1;
               await apiRequest.save();
             }
-            SetTradeVolumeAndRefProgram({ order_id: saved._id, user_id: req.body.user_id, trade_from: "spot", trade_type: "buy", amount: amount, totalUSDT: splitLengthNumber(total) })
+            await SetTradeVolumeAndRefProgram({ order_id: saved._id, user_id: req.body.user_id, trade_from: "spot", trade_type: "buy", amount: amount, totalUSDT: splitLengthNumber(total) })
+            await setFeeCredit(req.body.user_id, getPair.symbolTwoID, fee);
             res.json({ status: "success", message: saved });
 
           }
@@ -238,13 +281,26 @@ const addOrders = async function (req, res) {
     }
 
     if (req.body.method == "sell") {
-      let balance = fromWalelt.amount;
-      amount = (fromWalelt.amount * percent) / 100;
+      let balance = parseFloat(fromWallet.amount);
+      amount = (fromWallet.amount * parseFloat(percent)) / 100.0;
+      amount = splitLengthNumber(amount);
+      //amount = parseFloat(req.body.amount);
+      
+      
       if (balance < amount) {
         res.json({ status: "fail", message: "Invalid  balance" });
         return;
       }
       if (req.body.type == "stop_limit") {
+        if (req.body.target_price == undefined || req.body.target_price == null || req.body.target_price == "") {
+          res.json({ status: "fail", message: "Please enter target price" });
+          return;
+        }
+        if (req.body.stop_limit == undefined || req.body.stop_limit == null || req.body.stop_limit == "") {
+          res.json({ status: "fail", message: "Please enter stop limit" });
+          return;
+        }
+
         target_price = req.body.target_price;
         let stop_limit = req.body.stop_limit ?? 0.0;
         if (stop_limit <= 0) {
@@ -285,8 +341,8 @@ const addOrders = async function (req, res) {
 
         let saved = await orders.save();
         if (saved) {
-          fromWalelt.amount = fromWalelt.amount - amount;
-          await fromWalelt.save();
+          fromWallet.amount = fromWallet.amount - amount;
+          await fromWallet.save();
           if (api_result === false) {
             apiRequest.status = 1;
             await apiRequest.save();
@@ -295,6 +351,12 @@ const addOrders = async function (req, res) {
         }
       }
       if (req.body.type == "limit") {
+        if (req.body.target_price == undefined || req.body.target_price == null || req.body.target_price == "") {
+          res.json({ status: "fail", message: "Please enter target price" });
+          return;
+        }
+
+
         target_price = req.body.target_price;
         if (target_price <= price) {
           res.json({
@@ -318,8 +380,8 @@ const addOrders = async function (req, res) {
 
         let saved = await orders.save();
         if (saved) {
-          fromWalelt.amount = fromWalelt.amount - amount;
-          await fromWalelt.save();
+          fromWallet.amount = fromWallet.amount - amount;
+          await fromWallet.save();
           if (api_result === false) {
             apiRequest.status = 1;
             await apiRequest.save();
@@ -327,8 +389,7 @@ const addOrders = async function (req, res) {
           res.json({ status: "success", message: saved });
         }
       } else if (req.body.type == "market") {
-        let balance = fromWalelt.amount;
-
+        
         if (balance >= amount) {
           let total = amount * price;
           const orders = new Orders({
@@ -345,16 +406,17 @@ const addOrders = async function (req, res) {
 
           let saved = await orders.save();
           if (saved) {
-            fromWalelt.amount = fromWalelt.amount - amount;
-            toWalelt.amount = toWalelt.amount + total - parseFloat(fee);
-            await fromWalelt.save();
-            await toWalelt.save();
+            fromWallet.amount = fromWallet.amount - amount;
+            towallet.amount = towallet.amount + total - parseFloat(fee);
+            await fromWallet.save();
+            await towallet.save();
 
             if (api_result === false) {
               apiRequest.status = 1;
               await apiRequest.save();
             }
             await SetTradeVolumeAndRefProgram({ order_id: saved._id, user_id: req.body.user_id, trade_from: "spot", trade_type: "sell", amount: amount, totalUSDT: splitLengthNumber(total) });
+            await setFeeCredit(req.body.user_id, getPair.symbolTwoID, fee);
             res.json({ status: "success", message: saved });
           }
         } else {
@@ -367,7 +429,7 @@ const addOrders = async function (req, res) {
       res.json({ status: "fail", message: "invalid_amount" });
     }
 
-    await setFeeCredit(req.body.user_id, getPair._id, fee);
+    
   } catch (err) {
     console.log(err);
     res.json({ status: "fail", message: "unknow_error" });
@@ -378,3 +440,7 @@ function splitLengthNumber(q) {
 }
 
 module.exports = addOrders;
+
+
+
+

@@ -14,6 +14,37 @@ function splitLengthNumber(q) {
 
 
 const addFutureOrder = async (req, res) => {
+
+    if (req.body.api_key == undefined || req.body.api_key == "" || req.body.api_key == null) {
+        res.json({ status: "fail", message: "Forbidden 403" });
+        return;
+    }
+
+    if (req.body.future_type == undefined || req.body.future_type == "" || req.body.future_type == null) {
+        res.json({ status: "fail", message: "Please enter future type" });
+        return;
+    }
+
+    if (req.body.user_id == undefined || req.body.user_id == "" || req.body.user_id == null) {
+        res.json({ status: "fail", message: "Please enter user id" });
+        return;
+    }
+
+    if (req.body.type == undefined || req.body.type == "" || req.body.type == null) {
+        res.json({ status: "fail", message: "Please enter type" });
+        return;
+    }
+
+    if (req.body.method == undefined || req.body.method == "" || req.body.method == null) {
+        res.json({ status: "fail", message: "Please enter method" });
+        return;
+    }
+
+    if (req.body.leverage == undefined || req.body.leverage == "" || req.body.leverage == null) {
+        res.json({ status: "fail", message: "Please enter leverage" });
+        return;
+    }
+
     var api_key_result = req.body.api_key;
     let apiResult = await authFile.apiKeyChecker(api_key_result);
     let apiRequest = "";
@@ -102,6 +133,11 @@ const addFutureOrder = async (req, res) => {
     var price = parseFloat(result.data.data.ask);
     if (future_type == "isolated") {
         if (method == "limit") {
+            if (req.body.target_price == undefined || req.body.target_price == "" || req.body.target_price == null) {
+                res.json({ status: "fail", message: "Please enter target price" });
+                return;
+            }
+
             target_price = parseFloat(target_price);
 
             if (target_price <= 0) {
@@ -147,6 +183,18 @@ const addFutureOrder = async (req, res) => {
             res.json({ status: "success", data: order });
             return;
         } else if (method == "stop_limit") {
+
+            if (req.body.target_price == undefined || req.body.target_price == "" || req.body.target_price == null) {
+                res.json({ status: "fail", message: "Please enter target price" });
+                return;
+            }
+
+            if (req.body.stop_limit == undefined || req.body.stop_limit == "" || req.body.stop_limit == null) {
+                res.json({ status: "fail", message: "Please enter stop limit" });
+                return;
+            }
+
+            
             target_price = parseFloat(target_price);
 
             if (target_price <= 0) {

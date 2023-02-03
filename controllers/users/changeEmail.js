@@ -36,12 +36,17 @@ const changeEmail = async function (req, res) {
       let check2 = "";
       let check3 = "";
 
-      if (email != undefined && email != null && email != "" && req.body?.reason == "change_email") {
+      if (req.body.newMailPin == undefined || req.body.newMailPin == null || req.body.newMailPin == "") {
+        return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong New Mail Pin" });
+      }
+
+
+      if (email != undefined && email != null && email != "") {
 
         check1 = await EmailVerification.findOne({
           user_id: user_id,
           reason: "change_email",
-          pin: req.body.newMailPin,
+          pin: req.body.mailPin,
           status: 0
         }).exec();
         console.log("check1", check1)

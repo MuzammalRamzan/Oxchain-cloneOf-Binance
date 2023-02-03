@@ -39,16 +39,19 @@ const sendSMSPin = async (req, res) => {
 
 
     let pin = "000000";
-
+    let expireTime = Date.now() + 1 * 60 * 1000;
     if (check) {
       check.pin = pin;
       check.status = 0;
+      check.expiryTime = expireTime
       check.save();
-    } else {
+    }
+    else {
       const newPin = new RegisterSMS({
         country_code: country_code,
         phone_number: phone_number,
         pin: pin,
+        expiryTime: expireTime,
         status: 0,
       });
       newPin.save();

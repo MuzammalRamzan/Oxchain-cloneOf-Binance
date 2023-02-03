@@ -171,6 +171,8 @@ const addNewApiKey = require('./controllers/api/addNewApiKey');
 const Delete2fa = require('./controllers/auth/delete2fa');
 const getAllFaqs = require('./controllers/FAQ/getFAQs.js');
 
+const DeleteAccountTest = require('./controllers/auth/deleteAccountTest');
+
 //only for testing purposes for emircan
 
 const clearKYCAndRecidency = require('./controllers/kyc/clearKYCAndRecidency.js');
@@ -194,6 +196,10 @@ const addSupportTicket = require('./controllers/dashboard/addSupportTicket.js');
 const getSupportTicket = require('./controllers/dashboard/getSupportTicket.js');
 const deleteSupportTicket = require('./controllers/dashboard/deleteSupportTicket.js');
 const updateSupportTicket = require('./controllers/dashboard/updateSupportTicket.js');
+const addSystemFeedback = require('./controllers/dashboard/systemFeedback.js');
+const SpotLimitMarketOrders = require('./controllers/orders/history/spotLimitMarketOrders.js');
+const SpotTradeHistory = require('./controllers/orders/history/spotTradeHistory.js');
+const GetUserLevel = require('./controllers/users/getUserLevel.js');
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -243,6 +249,8 @@ route.all('/addVerificationId', upload.any(), addVerificationId);
 
 route.all('/addAvatar', addAvatar);
 route.all('/getAvatar', getAvatar);
+
+route.all('/deleteAccountForTest', DeleteAccountTest);
 
 route.all('/securityActivities', securityActivities);
 route.all('/walletToWallet', walletToWallet);
@@ -308,6 +316,11 @@ route.all('/update2fa', upload.none(), update2fa);
 route.all('/getActiveDevice', upload.none(), getActiveDevice);
 route.all('/deleteActiveDevice', upload.none(), deleteActiveDevice);
 route.all('/getVerificationMethod', upload.none(), getVerificationMethod);
+
+
+//ORDER HISTORY
+route.all('/spotLimitMarketOrders', SpotLimitMarketOrders);
+route.all('/spotTradeHistory', SpotTradeHistory);
 
 route.all('/removePhone', upload.none(), removePhone);
 route.all('/removeEmail', upload.none(), removeEmail);
@@ -407,6 +420,7 @@ route.all('/topReferralEarners', upload.none(), topReferralEarners);
 route.all('/myReferralEarns', upload.none(), myReferralEarns);
 route.all('/request_campus', upload.none(), CampusRequestJoin);
 route.all('/getWallet', upload.none(), getWallet);
+route.all('/getUserLevel', upload.none(), GetUserLevel);
 
 route.post('/cancelAllLimit', cancelAllLimit);
 route.post('/cancelAllStopLimit', cancelAllStopLimit);
@@ -483,6 +497,7 @@ route.post("/addSupportTicket", addSupportTicket);
 route.get("/getSupportTicket", getSupportTicket);
 route.all("/deleteSupportTicket", deleteSupportTicket)
 route.post("/updateSupportTicket", updateSupportTicket)
+route.post("/systemFeedback", addSystemFeedback)
 route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
 	if (symbol == null || symbol == '') {

@@ -139,7 +139,7 @@ const UploadKYC = async function (req, res) {
                     url: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/front-' + timestamp + user_id + '.' + file1extension,
                     url2: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/back-' + timestamp + user_id + '.' + file2extension,
                     url3: 'https://oxhain.s3.us-east-2.amazonaws.com/KYC/selfie-' + timestamp + user_id + '.' + file3extension,
-                    country: country,
+                    country: country || null,
                 });
                 verification.save(function (err) {
                     if (err) {
@@ -154,6 +154,75 @@ const UploadKYC = async function (req, res) {
             else {
                 if (verification.status == 2) {
 
+                    //upload file to aws s3
+                    let params2 = {
+                        params: {
+                            Bucket: "oxhain",
+                            Key: 'KYC/front-' + timestamp + user_id + '.' + file1extension,
+                            Body: file1New,
+                            ContentType: "image/jpg",
+                        },
+                    };
+
+                    var upload2 = new AWS.S3.ManagedUpload(params2);
+                    var promise = upload2.promise();
+                    promise.then(
+                        function (data) {
+                            console.log('Successfully uploaded front photo.');
+                        },
+                        function (err) {
+                            console.error('There was an error uploading: ', err.message);
+                        }
+                    );
+
+                    //second photo  
+
+                    //upload file to aws s3
+                    let params = {
+                        params: {
+                            Bucket: "oxhain",
+                            Key: 'KYC/back-' + timestamp + user_id + '.' + file2extension,
+                            Body: file2New,
+                            ContentType: "image/jpg",
+                        },
+                    };
+
+                    var upload = new AWS.S3.ManagedUpload(params);
+                    var promise = upload.promise();
+                    promise.then(
+                        function (data) {
+                            console.log('Successfully uploaded back photo.');
+                        },
+                        function (err) {
+                            console.error('There was an error uploading: ', err.message);
+                        }
+                    );
+
+
+                    //upload file to aws s3
+                    let params3 = {
+                        params: {
+                            Bucket: "oxhain",
+                            Key: 'KYC/selfie-' + timestamp + user_id + '.' + file3extension,
+                            Body: file3New,
+                            ContentType: "image/jpg",
+                        },
+                    };
+
+                    var upload = new AWS.S3.ManagedUpload(params3);
+                    var promise = upload.promise();
+                    promise.then(
+                        function (data) {
+                            console.log('Successfully uploaded selfie photo.');
+                        },
+                        function (err) {
+                            console.error('There was an error uploading: ', err.message);
+                        }
+                    );
+
+
+
+                    let country = User.country;
                     VerificationModel.findOneAndUpdate
                         ({
                             user_id: user_id,

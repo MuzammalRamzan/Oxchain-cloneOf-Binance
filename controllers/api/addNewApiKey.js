@@ -4,6 +4,8 @@ var authFile = require("../../auth.js");
 const SMSVerificationModel = require("../../models/SMSVerification");
 const MailVerificationModel = require("../../models/MailVerification");
 var mailer = require("../../mailer.js");
+const VerificationIdModel = require("../../models/VerificationId");
+const RecidencyModel = require("../../models/RecidencyModel");
 
 
 
@@ -32,6 +34,23 @@ const addNewApiKey = async function (req, res) {
     }
 
 
+    let VerificationCheck = await VerificationIdModel.findOne({
+        user_id: user_id,
+        status: 1,
+    }).exec();
+
+    if (!VerificationCheck) {
+        return res.json({ status: "fail", message: "Please verify your identity first", showableMessage: "Your ID must be verified to create an API Key." });
+    }
+
+    let RecidencyCheck = await RecidencyModel.findOne({
+        user_id: user_id,
+        status: 1,
+    }).exec();
+
+    if (!RecidencyCheck) {
+        return res.json({ status: "fail", message: "Please verify your recidency first", showableMessage: "Your Recidency must be verified to create an API Key." });
+    }
 
 
     var email = user["email"];
