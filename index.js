@@ -160,6 +160,8 @@ const getVerificationIds = require('./controllers/verificationId/getVerification
 const topReferralEarners = require('./controllers/referrals/topReferralEarners');
 const myReferralEarns = require('./controllers/referrals/myReferralEarns');
 const getAllLevelReferrals = require('./controllers/referrals/getAllLevelRefferals.js');
+const getEarningsGraphData = require('./controllers/referrals/getEarningsGraphData.js');
+const getMembersGraphData = require('./controllers/referrals/getMembersGraphData.js');
 
 const getKYCStatus = require('./controllers/kyc/getStatus');
 const getApiKeys = require('./controllers/api/getApiKeys');
@@ -425,6 +427,8 @@ route.all('/request_campus', upload.none(), CampusRequestJoin);
 route.all('/getWallet', upload.none(), getWallet);
 route.all('/getUserLevel', upload.none(), GetUserLevel);
 route.all('/getAllLevelReferrals', upload.none(), getAllLevelReferrals);
+route.all('/getEarningsGraphData', upload.none(), getEarningsGraphData);
+route.all('/getMembersGraphData', upload.none(), getMembersGraphData);
 
 route.post('/cancelAllLimit', cancelAllLimit);
 route.post('/cancelAllStopLimit', cancelAllStopLimit);
