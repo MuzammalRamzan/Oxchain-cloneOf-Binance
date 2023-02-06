@@ -159,6 +159,8 @@ const addVerificationId = require('./controllers/verificationId/addVerificationI
 const getVerificationIds = require('./controllers/verificationId/getVerificationIds');
 const topReferralEarners = require('./controllers/referrals/topReferralEarners');
 const myReferralEarns = require('./controllers/referrals/myReferralEarns');
+const getAllLevelReferrals = require('./controllers/referrals/getAllLevelRefferals.js');
+
 const getKYCStatus = require('./controllers/kyc/getStatus');
 const getApiKeys = require('./controllers/api/getApiKeys');
 
@@ -319,7 +321,6 @@ route.all('/getActiveDevice', upload.none(), getActiveDevice);
 route.all('/deleteActiveDevice', upload.none(), deleteActiveDevice);
 route.all('/getVerificationMethod', upload.none(), getVerificationMethod);
 
-
 //ORDER HISTORY
 route.all('/spotLimitMarketOrders', SpotLimitMarketOrders);
 route.all('/spotTradeHistory', SpotTradeHistory);
@@ -393,7 +394,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) { }
+	async function (req, res) {}
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
@@ -423,6 +424,7 @@ route.all('/myReferralEarns', upload.none(), myReferralEarns);
 route.all('/request_campus', upload.none(), CampusRequestJoin);
 route.all('/getWallet', upload.none(), getWallet);
 route.all('/getUserLevel', upload.none(), GetUserLevel);
+route.all('/getAllLevelReferrals', upload.none(), getAllLevelReferrals);
 
 route.post('/cancelAllLimit', cancelAllLimit);
 route.post('/cancelAllStopLimit', cancelAllStopLimit);
@@ -495,11 +497,11 @@ route.post('/createApplicant', upload.none(), createApplicant);
 route.post('/addDocument', upload.any(), addDocument);
 route.post('/getApplicantStatus', upload.none(), getApplicantStatus);
 route.post('/getAllFAQS', upload.none(), getAllFaqs);
-route.post("/addSupportTicket", addSupportTicket);
-route.get("/getSupportTicket", getSupportTicket);
-route.all("/deleteSupportTicket", deleteSupportTicket)
-route.post("/updateSupportTicket", updateSupportTicket)
-route.post("/systemFeedback", addSystemFeedback)
+route.post('/addSupportTicket', addSupportTicket);
+route.get('/getSupportTicket', getSupportTicket);
+route.all('/deleteSupportTicket', deleteSupportTicket);
+route.post('/updateSupportTicket', updateSupportTicket);
+route.post('/systemFeedback', addSystemFeedback);
 route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
 	if (symbol == null || symbol == '') {

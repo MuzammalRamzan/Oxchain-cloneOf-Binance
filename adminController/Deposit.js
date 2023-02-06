@@ -192,7 +192,7 @@ const listDeposits = async (req, res) => {
 
 const totalDeposits = async (req, res) => {
 	try {
-		const status = req.query.status;
+		const status = req.body.status;
 		const apiKey = req.body.apiKey;
 		let totalUSDDeposited = 0;
 		if (!status) {
