@@ -169,6 +169,7 @@ const getDashboard = require('./controllers/dashboard/getDashboard');
 const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
+const deleteAllKeys = require('./controllers/api/deleteAllKeys');
 
 const Delete2fa = require('./controllers/auth/delete2fa');
 const getAllFaqs = require('./controllers/FAQ/getFAQs.js');
@@ -263,6 +264,7 @@ route.all('/updateSiteNotificationSettings', updateSiteNotificationSettings);
 route.all('/getKYCStatus', getKYCStatus);
 
 route.all('/addNewApiKey', addNewApiKey);
+route.all('/deleteAllKeys', deleteAllKeys);
 route.all('/getApiKeys', getApiKeys);
 
 route.all('/newPrediction', newPrediction);

@@ -42,7 +42,8 @@ const getRecidency = async (req, res) => {
                     phone_number: user.phone_number ?? "",
                     address: user.address ?? "",
                     city: user.city ?? "",
-                    url: verification[i].url,
+                    url: verification[i].url ?? "",
+                    url2: verification[i].url2 ?? "",
                     country: verification[i].country,
                     createdAt: verification[i].createdAt,
                 }
