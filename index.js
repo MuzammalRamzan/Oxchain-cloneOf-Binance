@@ -199,6 +199,7 @@ const updateSupportTicket = require('./controllers/dashboard/updateSupportTicket
 const addSystemFeedback = require('./controllers/dashboard/systemFeedback.js');
 const SpotLimitMarketOrders = require('./controllers/orders/history/spotLimitMarketOrders.js');
 const SpotTradeHistory = require('./controllers/orders/history/spotTradeHistory.js');
+const getPairDetails = require('./controllers/pair/getPairDetails.js');
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -409,7 +410,7 @@ route.all('/getDigits', upload.none(), getDigits);
 route.all('/getCoinList', upload.none(), getCoinList);
 route.all('/getCoinNetworks', upload.none(), depositCoinNetworkOptions);
 route.all('/getCoinInfo', upload.none(), getCoinInfo);
-
+route.all("/getPairDetails", upload.none(), getPairDetails);
 //Referral Modules
 route.all('/getReferral', upload.none(), getReferral);
 route.all('/topReferrals', upload.none(), topReferrals);

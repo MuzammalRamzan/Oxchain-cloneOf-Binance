@@ -17,7 +17,7 @@ const addPair = async function (req, res) {
     });
 
     newPair.save();
-    res.json({ status: "success", data: "" });
+    res.json({ status: "success", data: newPair, });
   } else {
     res.json({ status: "fail", message: "Forbidden 403" });
   }
