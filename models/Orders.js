@@ -11,6 +11,7 @@ const OrdersSchema = new mongoose.Schema({
   method: { type: String, required: true },
   stop_limit : {type : Number, required: false, default: 0.0},
   open_price: { type: Number, required: true },
+  fee : {type : Number, default : 0.0},
   status: { type: Number, required: false, default: 0 },
   createdAt: {
     type: Date,
