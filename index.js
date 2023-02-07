@@ -169,6 +169,7 @@ const getDashboard = require('./controllers/dashboard/getDashboard');
 const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
+const editApiKey = require('./controllers/api/editApiKey');
 const deleteAllKeys = require('./controllers/api/deleteAllKeys');
 
 const Delete2fa = require('./controllers/auth/delete2fa');
@@ -269,6 +270,8 @@ route.all('/getApiKeys', getApiKeys);
 
 route.all('/newPrediction', newPrediction);
 route.all('/getPrediction', getPrediction);
+
+route.all('/editApiKey', editApiKey);
 
 route.all('/walletToWalletBetweenUsers', walletTowalletBetweenUsers);
 
@@ -394,7 +397,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) {}
+	async function (req, res) { }
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
