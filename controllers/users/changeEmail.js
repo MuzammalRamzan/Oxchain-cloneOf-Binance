@@ -30,6 +30,7 @@ const changeEmail = async function (req, res) {
     if (user != null) {
       var email = user["email"];
       var phone = user["phone_number"];
+      var twofa = user["twofa"];
 
 
       let check1 = "";
@@ -38,6 +39,19 @@ const changeEmail = async function (req, res) {
 
       if (req.body.newMailPin == undefined || req.body.newMailPin == null || req.body.newMailPin == "") {
         return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong New Mail Pin" });
+      }
+
+      if (twofa != undefined && twofa != null && twofa != "") {
+
+        if (req.body.twofapin == undefined || req.body.twofapin == null || req.body.twofapin == "") {
+          return res.json({ status: "fail", message: "verification_failed, send 'twofapin'", showableMessage: "Wrong 2FA Pin" });
+        }
+
+        let res = await authFile.verifyToken(req.body.twofapin, twofa);
+
+        if (res === false) {
+          return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong 2FA Pin" });
+        }
       }
 
 

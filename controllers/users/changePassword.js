@@ -28,6 +28,7 @@ const changePassword = async function (req, res) {
 
       var email = user["email"];
       var phone = user["phone_number"];
+      var twofa = user["twofa"];
       let check1 = "";
       let check3 = "";
 
@@ -62,6 +63,19 @@ const changePassword = async function (req, res) {
             message: "verification_failed",
             showableMessage: "Wrong SMS Pin",
           });
+      }
+
+      if (twofa != undefined && twofa != null && twofa != "") {
+
+        if (req.body.twofapin == undefined || req.body.twofapin == null || req.body.twofapin == "") {
+          return res.json({ status: "fail", message: "verification_failed, send 'twofapin'", showableMessage: "Wrong 2FA Pin" });
+        }
+
+        let res = await authFile.verifyToken(req.body.twofapin, twofa);
+
+        if (res === false) {
+          return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong 2FA Pin" });
+        }
       }
 
       if (check1 != "") {
