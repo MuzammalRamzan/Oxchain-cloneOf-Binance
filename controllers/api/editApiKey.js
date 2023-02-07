@@ -4,10 +4,6 @@ let MailVerification = require('../../models/MailVerification');
 let SMSVerification = require('../../models/SMSVerification');
 
 
-
-const Auth = require('../../Auth');
-
-
 const editApiKey = async (req, res) => {
 
     const { api_key, key_id, user_id, trade, deposit, withdraw, transfer, get_balance, futures, status } = req.body;
