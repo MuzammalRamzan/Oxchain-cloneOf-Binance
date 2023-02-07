@@ -70,7 +70,7 @@ const addOrders = async function (req, res) {
     }
 
 
-    
+
 
 
     var urlPair = req.body.pair_name.replace("/", "");
@@ -101,12 +101,11 @@ const addOrders = async function (req, res) {
       });
     }
 
-    
+
 
     if (req.body.method == "buy") {
       let balance = towallet.amount;
       amount = (balance * percent / 100.0) / price;
-      console.log(amount);
       if (req.body.type == "stop_limit") {
 
         if (req.body.stop_limit == undefined || req.body.stop_limit == null || req.body.stop_limit == "") {
@@ -190,7 +189,7 @@ const addOrders = async function (req, res) {
           res.json({ status: "success", message: saved });
         }
       }
-      if (req.body.type == "limit") {
+      else if (req.body.type == "limit") {
         if (req.body.target_price == undefined || req.body.target_price == null || req.body.target_price == "") {
           res.json({ status: "fail", message: "Please enter target price" });
           return;
@@ -200,7 +199,7 @@ const addOrders = async function (req, res) {
           res.json({ status: "fail", message: "Buy limit order must be below the price" });
           return;
         }
-        
+
         if (target_price >= price) {
           res.json({
             status: "fail",
@@ -219,7 +218,7 @@ const addOrders = async function (req, res) {
           second_pair: getPair.symbolTwoID,
           pair_name: getPair.name,
           user_id: req.body.user_id,
-          fee : 0.0,
+          fee: 0.0,
           amount: amount,
           open_price: target_price,
           type: "limit",
@@ -240,9 +239,7 @@ const addOrders = async function (req, res) {
         }
       } else if (req.body.type == "market") {
         let total = amount * price;
-        
-        console.log("total", total)
-        console.log("balance", balance)
+
         if (balance < total) {
           res.json({ status: "fail", message: "Invalid  balance" });
           return;
@@ -251,8 +248,7 @@ const addOrders = async function (req, res) {
           const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
           const feeToAmount = splitLengthNumber((fee / price));
           const buyAmount = splitLengthNumber((amount - feeToAmount));
-          console.log(total, amount ,fee, feeToAmount, buyAmount);
-          
+
           const orders = new Orders({
             pair_id: getPair.symbolOneID,
             second_pair: getPair.symbolTwoID,
@@ -260,7 +256,8 @@ const addOrders = async function (req, res) {
             user_id: req.body.user_id,
             amount: buyAmount,
             open_price: price,
-            fee: fee,
+            feeUSDT: fee,
+            feeAmount: feeToAmount,
             type: "market",
             method: "buy",
             target_price: req.body.target_price,
@@ -268,10 +265,10 @@ const addOrders = async function (req, res) {
 
           let saved = await orders.save();
           if (saved) {
-            fromWallet.amount = parseFloat(fromWallet.amount) + parseFloat(buyAmount);
+            //fromWallet.amount = parseFloat(fromWallet.amount) + parseFloat(buyAmount);
             towallet.amount = parseFloat(towallet.amount) - parseFloat(total);
 
-            await fromWallet.save();
+            //await fromWallet.save();
             await towallet.save();
             if (api_result === false) {
               apiRequest.status = 1;
@@ -399,7 +396,12 @@ const addOrders = async function (req, res) {
       } else if (req.body.type == "market") {
 
         if (balance >= amount) {
+
           let total = amount * price;
+          const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
+          const feeToAmount = splitLengthNumber((fee / price));
+          const buyAmount = splitLengthNumber((amount - feeToAmount));
+
           const orders = new Orders({
             pair_id: getPair.symbolOneID,
             second_pair: getPair.symbolTwoID,
@@ -407,6 +409,8 @@ const addOrders = async function (req, res) {
             user_id: req.body.user_id,
             amount: amount,
             open_price: price,
+            feeUSDT: fee,
+            feeAmount: feeToAmount,
             type: "market",
             method: "sell",
             target_price: req.body.target_price,
