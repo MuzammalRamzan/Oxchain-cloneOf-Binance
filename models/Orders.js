@@ -13,6 +13,7 @@ const OrdersSchema = new mongoose.Schema({
   open_price: { type: Number, required: true },
   feeUSDT : {type : Number, default : 0.0},
   feeAmount : {type : Number, default : 0.0},
+  limit_order_id: {type : String, default : ""},
   status: { type: Number, required: false, default: 0 },
   createdAt: {
     type: Date,

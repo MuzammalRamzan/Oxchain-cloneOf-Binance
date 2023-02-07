@@ -64,6 +64,7 @@ async function Run(orders) {
                         feeUSDT: fee,
                         feeAmount: feeToAmount,
                         open_time: Date.now(),
+                        limit_order_id: order._id,
                         type: "market",
                         method: "buy",
                         target_price: order.target_price,
