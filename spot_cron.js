@@ -31,7 +31,7 @@ async function Run(orders) {
     for (var k = 0; k < orders.length; k++) {
         let order = orders[k];
         let target_price = parseFloat(order.target_price);
-        
+
         if (order.type == 'limit') {
             if (order.status == 0) continue;
             if (order.method == 'buy') {
@@ -53,7 +53,7 @@ async function Run(orders) {
                     const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
                     const feeToAmount = splitLengthNumber((fee / price));
                     const buyAmount = splitLengthNumber((order.amount - feeToAmount));
-                    console.log(order.amount, buyAmount, feeToAmount, fee, total);
+
                     const neworders = new Orders({
                         pair_id: getPair.symbolOneID,
                         second_pair: getPair.symbolTwoID,
@@ -62,7 +62,7 @@ async function Run(orders) {
                         amount: parseFloat(buyAmount),
                         open_price: price,
                         feeUSDT: fee,
-                        feeAmount : feeToAmount,
+                        feeAmount: feeToAmount,
                         open_time: Date.now(),
                         type: "market",
                         method: "buy",
@@ -99,12 +99,17 @@ async function Run(orders) {
                     }).exec();
 
                     let total = parseFloat(order.amount) * price;
-                    console.log("total : ", total);
+                    const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
+                    const feeToAmount = splitLengthNumber((fee / price));
+                    const sellAmount = splitLengthNumber((amount - feeToAmount));
+                    const addUSDTAmount = splitLengthNumber(parseFloat(sellAmount) * price);
                     const neworders = new Orders({
                         pair_id: getPair.symbolOneID,
                         second_pair: getPair.symbolTwoID,
                         pair_name: getPair.name,
                         user_id: order.user_id,
+                        feeUSDT: fee,
+                        feeAmount: feeToAmount,
                         amount: parseFloat(order.amount),
                         open_price: price,
                         open_time: Date.now(),
@@ -119,7 +124,7 @@ async function Run(orders) {
                     let saved = await neworders.save();
                     if (saved) {
                         //fromWalelt.amount = parseFloat(fromWalelt.amount) - order.amount;
-                        toWalelt.amount = parseFloat(toWalelt.amount) + total;
+                        toWalelt.amount = parseFloat(toWalelt.amount) + addUSDTAmount;
                         await toWalelt.save();
                         //await fromWalelt.save();
                     }
@@ -131,7 +136,7 @@ async function Run(orders) {
             let stop_limit = parseFloat(order.stop_limit);
             let getPrice = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
             let price = getPrice.data.data.ask;
-            
+
             if (order.method == 'buy') {
                 //CHECK TP
                 if (price <= stop_limit) {
@@ -154,5 +159,5 @@ async function Run(orders) {
 }
 function splitLengthNumber(q) {
     return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
-  }
+}
 main();

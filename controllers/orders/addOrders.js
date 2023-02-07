@@ -218,7 +218,7 @@ const addOrders = async function (req, res) {
           second_pair: getPair.symbolTwoID,
           pair_name: getPair.name,
           user_id: req.body.user_id,
-          fee: 0.0,
+          
           amount: amount,
           open_price: target_price,
           type: "limit",
@@ -263,12 +263,14 @@ const addOrders = async function (req, res) {
             target_price: req.body.target_price,
           });
 
+          
+
           let saved = await orders.save();
           if (saved) {
-            //fromWallet.amount = parseFloat(fromWallet.amount) + parseFloat(buyAmount);
+            fromWallet.amount = parseFloat(fromWallet.amount) + parseFloat(buyAmount);
             towallet.amount = parseFloat(towallet.amount) - parseFloat(total);
 
-            //await fromWallet.save();
+            await fromWallet.save();
             await towallet.save();
             if (api_result === false) {
               apiRequest.status = 1;
@@ -400,14 +402,15 @@ const addOrders = async function (req, res) {
           let total = amount * price;
           const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
           const feeToAmount = splitLengthNumber((fee / price));
-          const buyAmount = splitLengthNumber((amount - feeToAmount));
-
+          const sellAmount = splitLengthNumber((amount - feeToAmount));
+          const addUSDTAmount = splitLengthNumber(parseFloat(sellAmount) * price);
+          
           const orders = new Orders({
             pair_id: getPair.symbolOneID,
             second_pair: getPair.symbolTwoID,
             pair_name: getPair.name,
             user_id: req.body.user_id,
-            amount: amount,
+            amount: sellAmount,
             open_price: price,
             feeUSDT: fee,
             feeAmount: feeToAmount,
@@ -419,7 +422,7 @@ const addOrders = async function (req, res) {
           let saved = await orders.save();
           if (saved) {
             fromWallet.amount = fromWallet.amount - amount;
-            towallet.amount = towallet.amount + total - parseFloat(fee);
+            towallet.amount = towallet.amount + parseFloat(addUSDTAmount);
             await fromWallet.save();
             await towallet.save();
 
