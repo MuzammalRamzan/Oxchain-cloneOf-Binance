@@ -84,9 +84,9 @@ const editOneStepWithdraw = async (req, res) => {
       return res.json({ status: "fail", message: "verification_failed, send 'twofapin'", showableMessage: "Wrong 2FA Pin" });
     }
 
-    let res = await authFile.verifyToken(req.body.twofapin, twofa);
+    let resultt = await authFile.verifyToken(req.body.twofapin, twofa);
 
-    if (res === false) {
+    if (resultt === false) {
       return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong 2FA Pin" });
     }
   }
