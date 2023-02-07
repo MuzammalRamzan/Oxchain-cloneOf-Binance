@@ -70,12 +70,13 @@ const addOrders = async function (req, res) {
     }
 
 
+    
+
 
     var urlPair = req.body.pair_name.replace("/", "");
     let url =
       'http://18.130.193.166:8542/price?symbol=' + urlPair;
     let result = await axios(url);
-    console.log(result);
     var price = result.data.data.ask;
 
     let target_price = req.body.target_price ?? 0.0;
@@ -100,11 +101,12 @@ const addOrders = async function (req, res) {
       });
     }
 
+    
 
     if (req.body.method == "buy") {
       let balance = towallet.amount;
-
-
+      amount = (balance * percent / 100.0) / price;
+      console.log(amount);
       if (req.body.type == "stop_limit") {
 
         if (req.body.stop_limit == undefined || req.body.stop_limit == null || req.body.stop_limit == "") {
@@ -189,7 +191,6 @@ const addOrders = async function (req, res) {
         }
       }
       if (req.body.type == "limit") {
-
         if (req.body.target_price == undefined || req.body.target_price == null || req.body.target_price == "") {
           res.json({ status: "fail", message: "Please enter target price" });
           return;
@@ -199,12 +200,7 @@ const addOrders = async function (req, res) {
           res.json({ status: "fail", message: "Buy limit order must be below the price" });
           return;
         }
-        let total = amount * target_price;
-        if (balance < total) {
-          res.json({ status: "fail", message: "Invalid  balance" });
-          return;
-        }
-        target_price = req.body.target_price;
+        
         if (target_price >= price) {
           res.json({
             status: "fail",
@@ -212,12 +208,18 @@ const addOrders = async function (req, res) {
           });
           return;
         }
-        total = amount * target_price;
+
+        let total = amount * target_price;
+        if (balance < total) {
+          res.json({ status: "fail", message: "Invalid  balance" });
+          return;
+        }
         const orders = new Orders({
           pair_id: getPair.symbolOneID,
           second_pair: getPair.symbolTwoID,
           pair_name: getPair.name,
           user_id: req.body.user_id,
+          fee : 0.0,
           amount: amount,
           open_price: target_price,
           type: "limit",
@@ -246,17 +248,17 @@ const addOrders = async function (req, res) {
           return;
         }
         if (balance >= total) {
-
           const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
           const feeToAmount = splitLengthNumber((fee / price));
           const buyAmount = splitLengthNumber((amount - feeToAmount));
           console.log(total, amount ,fee, feeToAmount, buyAmount);
+          
           const orders = new Orders({
             pair_id: getPair.symbolOneID,
             second_pair: getPair.symbolTwoID,
             pair_name: getPair.name,
             user_id: req.body.user_id,
-            amount: amount,
+            amount: buyAmount,
             open_price: price,
             fee: fee,
             type: "market",
@@ -266,9 +268,7 @@ const addOrders = async function (req, res) {
 
           let saved = await orders.save();
           if (saved) {
-            console.log("fromWallet.amount", fromWallet, amount, fee)
-            fromWallet.amount =
-              parseFloat(fromWallet.amount) + parseFloat(amount) - parseFloat(fee);
+            fromWallet.amount = parseFloat(fromWallet.amount) + parseFloat(buyAmount);
             towallet.amount = parseFloat(towallet.amount) - parseFloat(total);
 
             await fromWallet.save();
