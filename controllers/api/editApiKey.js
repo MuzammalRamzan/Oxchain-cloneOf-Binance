@@ -97,7 +97,7 @@ const editApiKey = async (req, res) => {
     }
 
     if (status) {
-        if (!status == 1 || !status == 0) {
+        if (!status == "1" && !status == "0" && !status == 0 && !status == 1) {
             return res.json({ status: 'error', message: 'Status is not valid' });
         }
         checkApi.status = status;
