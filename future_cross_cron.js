@@ -11,6 +11,7 @@ var mongodbPass = process.env.MONGO_DB_PASS;
 const UserNotifications = require("./models/UserNotifications");
 const SiteNotificaitonModel = require("./models/SiteNotifications");
 const User = require("./models/User");
+const mailer = require("./mailer");
 
 const io = new Server();
 
