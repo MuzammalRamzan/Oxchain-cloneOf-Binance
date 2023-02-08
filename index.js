@@ -204,6 +204,12 @@ const addSystemFeedback = require('./controllers/dashboard/systemFeedback.js');
 const SpotLimitMarketOrders = require('./controllers/orders/history/spotLimitMarketOrders.js');
 const SpotTradeHistory = require('./controllers/orders/history/spotTradeHistory.js');
 const GetUserLevel = require('./controllers/users/getUserLevel.js');
+
+const getUserNotification = require('./controllers/users/getUserNotification');
+const readUserNotification = require('./controllers/users/readUserNotification');
+
+
+
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -247,6 +253,9 @@ route.all('/getAnnouncements', getAnnouncement);
 route.all('/getLocation', getLocation);
 
 route.all('/getDashboard', getDashboard);
+
+route.all('/getUserNotifications', getUserNotification);
+route.all('/readUserNotification', readUserNotification);
 
 route.all('/getVerificationIds', upload.any(), getVerificationIds);
 route.all('/addVerificationId', upload.any(), addVerificationId);

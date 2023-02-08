@@ -7,6 +7,9 @@ const Wallet = require("./models/Wallet");
 require("dotenv").config();
 const Connection = require('./Connection');
 const { default: axios } = require("axios");
+const SiteNotificaitonModel = require("./models/SiteNotifications");
+const UserNotifications = require("./models/UserNotifications");
+
 async function main() {
     var mongodbPass = process.env.MONGO_DB_PASS;
 
@@ -71,6 +74,31 @@ async function Run(orders) {
                         status: 0,
                     });
 
+                    let user = await User.findOne({ _id: order.user_id });
+                    let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
+
+
+                    if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                        if (SiteNotificaitonsCheck.trade == 1) {
+                            let newNotification = new UserNotifications({
+                                user_id: user._id,
+                                title: "Order Filled",
+                                message: "Your order has been filled",
+                                read: false
+                            });
+
+                            await newNotification.save();
+
+                            if (user.email != null && user.email != '') {
+                                mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
+                            }
+
+                        }
+
+                    }
+
+
                     order.status = 0;
                     await order.save();
                     let saved = await neworders.save();
@@ -119,6 +147,11 @@ async function Run(orders) {
                         target_price: order.target_price,
                         status: 0,
                     });
+
+
+
+
+
 
                     order.status = 0;
                     await order.save();

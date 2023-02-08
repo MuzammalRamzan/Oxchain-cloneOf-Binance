@@ -12,6 +12,9 @@ const FutureWalletModel = require("./models/FutureWalletModel");
 const { default: axios } = require("axios");
 var mongodbPass = process.env.MONGO_DB_PASS;
 var mailer = require("./mailer");
+const SiteNotificaitonModel = require("./models/SiteNotifications");
+
+const UserNotifications = require("./models/UserNotifications");
 
 const io = new Server();
 
@@ -64,15 +67,27 @@ async function Run(orders) {
           if (order.type == "buy") {
             if (price >= order.target_price) {
               let user = await User.findOne({ _id: order.user_id });
-              if (user.email != null && user.email != '') {
+              let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
 
-                let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
-                if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
 
-                  if (SiteNotificaitonsCheck.trade == 1) {
+              if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                if (SiteNotificaitonsCheck.trade == 1) {
+                  let newNotification = new UserNotifications({
+                    user_id: user._id,
+                    title: "Order filled",
+                    message: "Your order has been filled",
+                    read: false
+                  });
+
+                  await newNotification.save();
+
+                  if (user.email != null && user.email != '') {
                     mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
                   }
+
                 }
+
               }
               order.status = 0;
               await order.save();
@@ -99,15 +114,27 @@ async function Run(orders) {
           } else if (order.type == "sell") {
             if (price <= order.target_price) {
               let user = await User.findOne({ _id: order.user_id });
-              if (user.email != null && user.email != '') {
+              let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
 
-                let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
-                if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
 
-                  if (SiteNotificaitonsCheck.trade == 1) {
+              if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                if (SiteNotificaitonsCheck.trade == 1) {
+                  let newNotification = new UserNotifications({
+                    user_id: user._id,
+                    title: "Order Filled",
+                    message: "Your order has been filled",
+                    read: false
+                  });
+
+                  await newNotification.save();
+
+                  if (user.email != null && user.email != '') {
                     mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
                   }
+
                 }
+
               }
               order.status = 0;
               await order.save();
@@ -399,16 +426,27 @@ async function Run(orders) {
           if (order.open_price <= liqPrice) {
 
             let user = await User.findOne({ _id: order.user_id });
-            if (user.email != null && user.email != '') {
+            let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
 
-              let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
-              if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
 
-                if (SiteNotificaitonsCheck.trade == 1) {
+            if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
 
-                  mailer.sendMail(user.email, 'Margin Position', 'Your position has been liquidated. Please check your account.');
+              if (SiteNotificaitonsCheck.trade == 1) {
+                let newNotification = new UserNotifications({
+                  user_id: user._id,
+                  title: "Margin Liquidated",
+                  message: "Your order has been liquidated",
+                  read: false
+                });
+
+                await newNotification.save();
+
+                if (user.email != null && user.email != '') {
+                  mailer.sendMail(user.email, "Margin Liquidated", "Your order has been liquidated");
                 }
+
               }
+
             }
             order.status = 1;
           }
@@ -420,16 +458,27 @@ async function Run(orders) {
           if (order.open_price >= liqPrice) {
 
             let user = await User.findOne({ _id: order.user_id });
-            if (user.email != null && user.email != '') {
+            let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
 
-              let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
-              if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
 
-                if (SiteNotificaitonsCheck.trade == 1) {
+            if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
 
-                  mailer.sendMail(user.email, 'Margin Position', 'Your position has been liquidated. Please check your account.');
+              if (SiteNotificaitonsCheck.trade == 1) {
+                let newNotification = new UserNotifications({
+                  user_id: user._id,
+                  title: "Margin Liquidated",
+                  message: "Your order has been liquidated",
+                  read: false
+                });
+
+                await newNotification.save();
+
+                if (user.email != null && user.email != '') {
+                  mailer.sendMail(user.email, "Margin Liquidated", "Your order has been liquidated");
                 }
+
               }
+
             }
             order.status = 1;
           }

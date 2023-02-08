@@ -7,6 +7,7 @@ var authFile = require("../../auth.js");
 var utilities = require("../../utilities.js");
 const ChangeLogsModel = require("../../models/ChangeLogs");
 const mailer = require("../../mailer");
+const UserNotifications = require("../../models/UserNotifications");
 
 
 const changePassword = async function (req, res) {
@@ -91,7 +92,7 @@ const changePassword = async function (req, res) {
       }
 
       user.password = utilities.hashData(password);
-      user.save();
+      await user.save();
 
       let changeLog = new ChangeLogsModel({
         user_id: user_id,
@@ -101,6 +102,16 @@ const changePassword = async function (req, res) {
         city: req.body.city ?? "Unknown",
       });
       changeLog.save();
+
+
+      let userNotification = new UserNotifications({
+        user_id: user_id,
+        title: "Password Changed",
+        message: "Your password has been changed. If you did not do this, please contact us immediately.",
+        read: false,
+      });
+
+      await userNotification.save();
 
       mailer.sendMail(user.email, "Password Changed", "Password Changed", "Your password has been changed. If you did not do this, please contact us immediately.");
       res.json({ status: "success", message: "password_changed", showableMessage: "Password Changed" });

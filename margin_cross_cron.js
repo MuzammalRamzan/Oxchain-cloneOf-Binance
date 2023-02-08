@@ -12,7 +12,9 @@ const User = require("./models/User.js");
 const Pairs = require("./models/Pairs.js");
 const mailer = require("./mailer");
 const SiteNotificaitonModel = require("./models/SiteNotifications");
+const User = require("./models/User");
 var mongodbPass = process.env.MONGO_DB_PASS;
+const UserNotifications = require("./models/UserNotifications");
 
 const io = new Server();
 
@@ -70,16 +72,29 @@ async function Run(orders) {
             if (price <= order.target_price) {
 
               let user = await User.findOne({ _id: order.user_id });
-              if (user.email != null && user.email != '') {
+              let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
 
-                let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
-                if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
 
-                  if (SiteNotificaitonsCheck.trade == 1) {
+              if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                if (SiteNotificaitonsCheck.trade == 1) {
+                  let newNotification = new UserNotifications({
+                    user_id: user._id,
+                    title: "Order Filled",
+                    message: "Your order has been filled",
+                    read: false
+                  });
+
+                  await newNotification.save();
+
+                  if (user.email != null && user.email != '') {
                     mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
                   }
+
                 }
+
               }
+              
               order.status = 0;
               await order.save();
               let n_order = new MarginOrder({
@@ -111,6 +126,14 @@ async function Run(orders) {
                 if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
 
                   if (SiteNotificaitonsCheck.trade == 1) {
+                    let newNotification = new UserNotifications({
+                      user_id: user._id,
+                      title: "Order Filled",
+                      message: "Your order has been filled",
+                      read: false
+                    });
+
+                    await newNotification.save();
                     mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
                   }
                 }
