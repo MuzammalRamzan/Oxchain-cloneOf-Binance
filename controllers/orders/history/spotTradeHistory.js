@@ -47,18 +47,25 @@ const SpotTradeHistory = async (req, res) => {
             'spot_pairs': o.pair_name,
             'order_type': o.order_type,
             'direction': o.method,
-            'avg_filled': o.open_price,
-            'filled_qty': o.amount,
-            'order_price': o.open_price,
-            'order_qty': o.amount,
+            'filled_value': filled_qty(o.type, o.status, o.amount),
+            'filled_price': o.open_price,
+            'filled_qty': filled_qty(o.type, o.status, o.amount),
+            'trading_fee' : o.feeUSDT,
+            'filled_time': o.createdAt,
             'order_status': convertOrderStatus(o.type, o.status),
-            'order_time': o.createdAt,
+            'transaction_id': o.limit_order_id ?? "-",
             'order_id': o._id,
         });
     }
     return res.json({ status: 'success', data: list });
 }
-
+const filled_qty = (type, status, amount) => {
+    if (status == -1) return 0;
+    else if (status == 0 && type == 'limit') return amount;
+    else if (status == 0 && type == 'market') return amount;
+    else if (status == 1 && type == 'limit') return 0;
+    else return amount;
+}
 const convertOrderStatus = (type, status) => {
     if (status == -1) return "Cancelled";
     else if (status == 0 && type == 'limit') return "Filled";
