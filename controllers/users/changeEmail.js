@@ -121,6 +121,7 @@ const changeEmail = async function (req, res) {
           device: req.body.device ?? "Unknown",
           ip: req.body.ip ?? "Unknown",
           city: req.body.city ?? "Unknown",
+          deviceOS: req.body.deviceOS ?? "Unknown",
         });
         changeLog.save();
 

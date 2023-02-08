@@ -7,7 +7,8 @@ const LoginLogSchema = new mongoose.Schema({
   manufacturer: { type: String, required: true },
   model: { type: String, required: true },
   trust: { type: String, required: false, default: "no" },
-  status: {type: String, required: true},
+  deviceOS: { type: String, required: false },
+  status: { type: String, required: true },
   createdAt: {
     type: Date,
     default: Date.now,

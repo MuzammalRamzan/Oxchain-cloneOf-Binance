@@ -71,7 +71,6 @@ const securityActivities = async function (req, res) {
                 }
             }
 
-
             let changeLogs = await ChangeLogsModel.find({
                 user_id: user_id,
                 ...(dayCount && { createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - dayCount)) } })
@@ -87,6 +86,7 @@ const securityActivities = async function (req, res) {
                         activity: changeLog.type,
                         ip: changeLog.ip,
                         city: changeLog.city,
+                        deviceOS: changeLog.deviceOS,
                         createdAt: changeLog.createdAt
                     }
                     returnData.push(changeLogData);

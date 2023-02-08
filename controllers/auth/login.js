@@ -492,6 +492,7 @@ const login = async (req, res) => {
           deviceName: deviceName,
           manufacturer: manufacturer,
           model: deviceModel,
+          deviceOS: req.body.deviceOS ?? "Unknown",
           status: "completed",
         });
         console.log("newUserLognewUserLog", newUserLog);
