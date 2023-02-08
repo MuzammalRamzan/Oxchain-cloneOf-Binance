@@ -63,12 +63,15 @@ const addOrders = async function (req, res) {
       user_id: req.body.user_id,
     }).exec();
 
+
     if (amount <= 0 || percent <= 0) {
       res.json({ status: "fail", message: "invalid_amount" });
       return;
     }
 
-    const fee = splitLengthNumber((amount * getPair.tradeFee) / 100.0);
+
+
+
 
     var urlPair = req.body.pair_name.replace("/", "");
     let url =
@@ -99,7 +102,10 @@ const addOrders = async function (req, res) {
     }
 
 
+
     if (req.body.method == "buy") {
+      let balance = towallet.amount;
+      amount = (balance * percent / 100.0) / price;
       if (req.body.type == "stop_limit") {
 
         if (req.body.stop_limit == undefined || req.body.stop_limit == null || req.body.stop_limit == "") {
@@ -129,7 +135,6 @@ const addOrders = async function (req, res) {
 
 
         let total = amount * stop_limit;
-        let balance = towallet.amount;
 
         if (balance < total) {
           res.json({ status: "fail", message: "Invalid  balance" });
@@ -184,8 +189,7 @@ const addOrders = async function (req, res) {
           res.json({ status: "success", message: saved });
         }
       }
-      if (req.body.type == "limit") {
-
+      else if (req.body.type == "limit") {
         if (req.body.target_price == undefined || req.body.target_price == null || req.body.target_price == "") {
           res.json({ status: "fail", message: "Please enter target price" });
           return;
@@ -196,13 +200,6 @@ const addOrders = async function (req, res) {
           return;
         }
 
-        let total = amount * target_price;
-        let balance = towallet.amount;
-        if (balance < total) {
-          res.json({ status: "fail", message: "Invalid  balance" });
-          return;
-        }
-        target_price = req.body.target_price;
         if (target_price >= price) {
           res.json({
             status: "fail",
@@ -210,12 +207,18 @@ const addOrders = async function (req, res) {
           });
           return;
         }
-        total = amount * target_price;
+
+        let total = amount * target_price;
+        if (balance < total) {
+          res.json({ status: "fail", message: "Invalid  balance" });
+          return;
+        }
         const orders = new Orders({
           pair_id: getPair.symbolOneID,
           second_pair: getPair.symbolTwoID,
           pair_name: getPair.name,
           user_id: req.body.user_id,
+          
           amount: amount,
           open_price: target_price,
           type: "limit",
@@ -236,31 +239,35 @@ const addOrders = async function (req, res) {
         }
       } else if (req.body.type == "market") {
         let total = amount * price;
-        let balance = towallet.amount;
-        console.log("total", total)
-        console.log("balance", balance)
+
         if (balance < total) {
           res.json({ status: "fail", message: "Invalid  balance" });
           return;
         }
         if (balance >= total) {
+          const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
+          const feeToAmount = splitLengthNumber((fee / price));
+          const buyAmount = splitLengthNumber((amount - feeToAmount));
+
           const orders = new Orders({
             pair_id: getPair.symbolOneID,
             second_pair: getPair.symbolTwoID,
             pair_name: getPair.name,
             user_id: req.body.user_id,
-            amount: amount,
+            amount: buyAmount,
             open_price: price,
+            feeUSDT: fee,
+            feeAmount: feeToAmount,
             type: "market",
             method: "buy",
             target_price: req.body.target_price,
           });
 
+          
+
           let saved = await orders.save();
           if (saved) {
-            console.log("fromWallet.amount", fromWallet, amount, fee)
-            fromWallet.amount =
-              parseFloat(fromWallet.amount) + parseFloat(amount) - parseFloat(fee);
+            fromWallet.amount = parseFloat(fromWallet.amount) + parseFloat(buyAmount);
             towallet.amount = parseFloat(towallet.amount) - parseFloat(total);
 
             await fromWallet.save();
@@ -285,8 +292,8 @@ const addOrders = async function (req, res) {
       amount = (fromWallet.amount * parseFloat(percent)) / 100.0;
       amount = splitLengthNumber(amount);
       //amount = parseFloat(req.body.amount);
-      
-      
+
+
       if (balance < amount) {
         res.json({ status: "fail", message: "Invalid  balance" });
         return;
@@ -389,16 +396,24 @@ const addOrders = async function (req, res) {
           res.json({ status: "success", message: saved });
         }
       } else if (req.body.type == "market") {
-        
+
         if (balance >= amount) {
+
           let total = amount * price;
+          const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
+          const feeToAmount = splitLengthNumber((fee / price));
+          const sellAmount = splitLengthNumber((amount - feeToAmount));
+          const addUSDTAmount = splitLengthNumber(parseFloat(sellAmount) * price);
+          
           const orders = new Orders({
             pair_id: getPair.symbolOneID,
             second_pair: getPair.symbolTwoID,
             pair_name: getPair.name,
             user_id: req.body.user_id,
-            amount: amount,
+            amount: sellAmount,
             open_price: price,
+            feeUSDT: fee,
+            feeAmount: feeToAmount,
             type: "market",
             method: "sell",
             target_price: req.body.target_price,
@@ -407,7 +422,7 @@ const addOrders = async function (req, res) {
           let saved = await orders.save();
           if (saved) {
             fromWallet.amount = fromWallet.amount - amount;
-            towallet.amount = towallet.amount + total - parseFloat(fee);
+            towallet.amount = towallet.amount + parseFloat(addUSDTAmount);
             await fromWallet.save();
             await towallet.save();
 
@@ -429,7 +444,7 @@ const addOrders = async function (req, res) {
       res.json({ status: "fail", message: "invalid_amount" });
     }
 
-    
+
   } catch (err) {
     console.log(err);
     res.json({ status: "fail", message: "unknow_error" });

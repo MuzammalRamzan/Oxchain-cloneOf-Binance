@@ -4,7 +4,7 @@ const SMSVerification = require("../../models/SMSVerification");
 const EmailVerification = require("../../models/MailVerification");
 const ChangeLogsModel = require("../../models/ChangeLogs");
 const mailer = require("../../mailer");
-
+const UserNotifications = require("../../models/UserNotifications");
 
 
 
@@ -30,6 +30,7 @@ const changeEmail = async function (req, res) {
     if (user != null) {
       var email = user["email"];
       var phone = user["phone_number"];
+      var twofa = user["twofa"];
 
 
       let check1 = "";
@@ -38,6 +39,19 @@ const changeEmail = async function (req, res) {
 
       if (req.body.newMailPin == undefined || req.body.newMailPin == null || req.body.newMailPin == "") {
         return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong New Mail Pin" });
+      }
+
+      if (twofa != undefined && twofa != null && twofa != "") {
+
+        if (req.body.twofapin == undefined || req.body.twofapin == null || req.body.twofapin == "") {
+          return res.json({ status: "fail", message: "verification_failed, send 'twofapin'", showableMessage: "Wrong 2FA Pin" });
+        }
+
+        let resultt = await authFile.verifyToken(req.body.twofapin, twofa);
+
+        if (resultt === false) {
+          return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong 2FA Pin" });
+        }
       }
 
 
@@ -111,6 +125,15 @@ const changeEmail = async function (req, res) {
         changeLog.save();
 
         mailer.sendMail(newEmail, "Email Changed", "Email Changed", "Your email has been changed to " + newEmail + ". If you did not change your email, please contact us immediately.");
+
+
+        let userNotification = new UserNotifications({
+          user_id: user_id,
+          title: "Email Changed",
+          message: "Your Email has been changed. If you did not do this, please contact us immediately.",
+          read: false,
+        });
+        await userNotification.save();
 
         res.json({ status: "success", data: "update_success" });
       } else {

@@ -169,6 +169,7 @@ const getDashboard = require('./controllers/dashboard/getDashboard');
 const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
+const editApiKey = require('./controllers/api/editApiKey');
 const deleteAllKeys = require('./controllers/api/deleteAllKeys');
 
 const Delete2fa = require('./controllers/auth/delete2fa');
@@ -204,6 +205,12 @@ const SpotLimitMarketOrders = require('./controllers/orders/history/spotLimitMar
 const SpotTradeHistory = require('./controllers/orders/history/spotTradeHistory.js');
 const getPairDetails = require('./controllers/pair/getPairDetails.js');
 const GetUserLevel = require('./controllers/users/getUserLevel.js');
+
+const getUserNotification = require('./controllers/users/getUserNotification');
+const readUserNotification = require('./controllers/users/readUserNotification');
+
+
+
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -248,6 +255,9 @@ route.all('/getLocation', getLocation);
 
 route.all('/getDashboard', getDashboard);
 
+route.all('/getUserNotifications', getUserNotification);
+route.all('/readUserNotification', readUserNotification);
+
 route.all('/getVerificationIds', upload.any(), getVerificationIds);
 route.all('/addVerificationId', upload.any(), addVerificationId);
 
@@ -270,6 +280,8 @@ route.all('/getApiKeys', getApiKeys);
 
 route.all('/newPrediction', newPrediction);
 route.all('/getPrediction', getPrediction);
+
+route.all('/editApiKey', editApiKey);
 
 route.all('/walletToWalletBetweenUsers', walletTowalletBetweenUsers);
 
@@ -395,7 +407,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) {}
+	async function (req, res) { }
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);

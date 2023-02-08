@@ -2,6 +2,7 @@ const authFile = require("../../auth");
 const OneStepWithdrawModel = require("../../models/OneStepWithdraw");
 const SMSVerification = require("../../models/SMSVerification");
 const MailVerification = require("../../models/MailVerification");
+const UserModel = require("../../models/User");
 
 const editOneStepWithdraw = async (req, res) => {
   const apiKey = req.body.api_key;
@@ -20,10 +21,19 @@ const editOneStepWithdraw = async (req, res) => {
     return res.json({ status: "error", message: "Api key is wrong" });
 
 
+  let user = await UserModel.findOne({
+    _id: userId,
+  }).exec();
+
+  if (!user) return res.json({ status: "error", message: "User not found" });
+  let twofa = user.twofa;
+
   let oneStepChecker = await OneStepWithdrawModel.findOne({
     user_id: userId,
   });
   let verified = false;
+
+
   if (email != "" && email != undefined) {
 
     let mailVerification = await MailVerification.findOne({
@@ -68,6 +78,18 @@ const editOneStepWithdraw = async (req, res) => {
     }
   }
 
+  if (twofa != undefined && twofa != null && twofa != "") {
+
+    if (req.body.twofapin == undefined || req.body.twofapin == null || req.body.twofapin == "") {
+      return res.json({ status: "fail", message: "verification_failed, send 'twofapin'", showableMessage: "Wrong 2FA Pin" });
+    }
+
+    let resultt = await authFile.verifyToken(req.body.twofapin, twofa);
+
+    if (resultt === false) {
+      return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong 2FA Pin" });
+    }
+  }
 
   if (!oneStepChecker) {
     let oneStep = new OneStepWithdrawModel({

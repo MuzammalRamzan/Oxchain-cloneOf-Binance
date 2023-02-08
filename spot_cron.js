@@ -7,6 +7,9 @@ const Wallet = require("./models/Wallet");
 require("dotenv").config();
 const Connection = require('./Connection');
 const { default: axios } = require("axios");
+const SiteNotificaitonModel = require("./models/SiteNotifications");
+const UserNotifications = require("./models/UserNotifications");
+
 async function main() {
     var mongodbPass = process.env.MONGO_DB_PASS;
 
@@ -16,7 +19,7 @@ async function main() {
     let request = { $and: [{ status: { $gt: 0 } }, { $or: [{ type: "limit" }, { type: "stop_limit" }] }] };
     let orders = await Orders.find(request).exec();
     await Run(orders);
-    let isInsert = Orders.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
+    Orders.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
         //orders = data;
         orders = await Orders.find(request).exec();
         await Run(orders);
@@ -30,9 +33,8 @@ async function Run(orders) {
 
     for (var k = 0; k < orders.length; k++) {
         let order = orders[k];
-
         let target_price = parseFloat(order.target_price);
-        
+
         if (order.type == 'limit') {
             if (order.status == 0) continue;
             if (order.method == 'buy') {
@@ -41,7 +43,6 @@ async function Run(orders) {
                 if (price <= target_price) {
                     await Orders.updateOne({ _id: order._id }, { $set: { status: 0 } });
 
-                    console.log("alış gerçekleşiyor");
                     var getPair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
                     var fromWalelt = await Wallet.findOne({
                         coin_id: getPair.symbolOneID,
@@ -52,28 +53,57 @@ async function Run(orders) {
                         user_id: order.user_id,
                     }).exec();
                     let total = parseFloat(order.amount) * parseFloat(order.target_price);
-                    console.log("total : ", total);
+                    const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
+                    const feeToAmount = splitLengthNumber((fee / price));
+                    const buyAmount = splitLengthNumber((order.amount - feeToAmount));
+
                     const neworders = new Orders({
                         pair_id: getPair.symbolOneID,
                         second_pair: getPair.symbolTwoID,
                         pair_name: getPair.name,
                         user_id: order.user_id,
-                        amount: parseFloat(order.amount),
+                        amount: parseFloat(buyAmount),
                         open_price: price,
+                        feeUSDT: fee,
+                        feeAmount: feeToAmount,
                         open_time: Date.now(),
+                        limit_order_id: order._id,
                         type: "market",
                         method: "buy",
                         target_price: order.target_price,
                         status: 0,
                     });
 
+                    let user = await User.findOne({ _id: order.user_id });
+                    let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
+
+
+                    if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                        if (SiteNotificaitonsCheck.trade == 1) {
+                            let newNotification = new UserNotifications({
+                                user_id: user._id,
+                                title: "Order Filled",
+                                message: "Your order has been filled",
+                                read: false
+                            });
+
+                            await newNotification.save();
+
+                            if (user.email != null && user.email != '') {
+                                mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
+                            }
+
+                        }
+
+                    }
+
+
                     order.status = 0;
                     await order.save();
                     let saved = await neworders.save();
                     if (saved) {
-                        console.log(toWalelt);
-                        console.log(toWalelt.amount);
-                        fromWalelt.amount = parseFloat(fromWalelt.amount) + order.amount;
+                        fromWalelt.amount = parseFloat(fromWalelt.amount) + parseFloat(buyAmount);
                         //toWalelt.amount = parseFloat(toWalelt.amount) - total;
                         //await toWalelt.save();
                         await fromWalelt.save();
@@ -98,12 +128,17 @@ async function Run(orders) {
                     }).exec();
 
                     let total = parseFloat(order.amount) * price;
-                    console.log("total : ", total);
+                    const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
+                    const feeToAmount = splitLengthNumber((fee / price));
+                    const sellAmount = splitLengthNumber((amount - feeToAmount));
+                    const addUSDTAmount = splitLengthNumber(parseFloat(sellAmount) * price);
                     const neworders = new Orders({
                         pair_id: getPair.symbolOneID,
                         second_pair: getPair.symbolTwoID,
                         pair_name: getPair.name,
                         user_id: order.user_id,
+                        feeUSDT: fee,
+                        feeAmount: feeToAmount,
                         amount: parseFloat(order.amount),
                         open_price: price,
                         open_time: Date.now(),
@@ -113,14 +148,17 @@ async function Run(orders) {
                         status: 0,
                     });
 
+
+
+
+
+
                     order.status = 0;
                     await order.save();
                     let saved = await neworders.save();
                     if (saved) {
-                        console.log(toWalelt);
-                        console.log(toWalelt.amount);
                         //fromWalelt.amount = parseFloat(fromWalelt.amount) - order.amount;
-                        toWalelt.amount = parseFloat(toWalelt.amount) + total;
+                        toWalelt.amount = parseFloat(toWalelt.amount) + addUSDTAmount;
                         await toWalelt.save();
                         //await fromWalelt.save();
                     }
@@ -132,8 +170,7 @@ async function Run(orders) {
             let stop_limit = parseFloat(order.stop_limit);
             let getPrice = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
             let price = getPrice.data.data.ask;
-            
-            console.log(target_price + " | " + stop_limit + " | " + price);
+
             if (order.method == 'buy') {
                 //CHECK TP
                 if (price <= stop_limit) {
@@ -153,5 +190,8 @@ async function Run(orders) {
         }
     }
 
+}
+function splitLengthNumber(q) {
+    return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
 }
 main();
