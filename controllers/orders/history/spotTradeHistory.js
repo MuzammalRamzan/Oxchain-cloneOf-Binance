@@ -45,7 +45,7 @@ const SpotTradeHistory = async (req, res) => {
         let o = orders[k];
         list.push({
             'spot_pairs': o.pair_name,
-            'order_type': o.order_type,
+            'order_type': o.type,
             'direction': o.method,
             'filled_value': filled_qty(o.type, o.status, o.amount),
             'filled_price': o.open_price,

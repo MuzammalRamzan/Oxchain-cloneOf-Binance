@@ -44,7 +44,7 @@ const SpotLimitMarketOrders = async (req, res) => {
         let o = orders[k];
         list.push({
             'spot_pairs' : o.pair_name,
-            'order_type' : o.order_type,
+            'order_type' : o.type,
             'direction' : o.method,
             'avg_filled' : o.open_price,
             'filled_qty' : o.amount,
