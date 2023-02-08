@@ -29,7 +29,7 @@ const SpotTradeHistory = async (req, res) => {
     }
 
     if (req.body.status != 'all') {
-        filter.type = req.body.status;
+        filter.status = req.body.status;
     }
     console.log(req.body.firstDate)
     if (req.body.firstDate != null && req.body.endDate != null) {
