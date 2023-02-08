@@ -36,6 +36,7 @@ const GetRecidency = require('./adminController/GetRecidency');
 const ApproveKyc = require('./adminController/ApproveKyc');
 const ApproveRecidency = require('./adminController/ApproveRecidency');
 const DenyKyc = require('./adminController/DenyKyc');
+const DenyRecidency = require('./adminController/DenyRecidency');
 const { getUsersDetails } = require('./adminController/getUserDetails');
 //refferals
 const { getAllRefferals } = require('./adminController/Referral');
@@ -83,6 +84,7 @@ route.all('/ApproveRecidency', upload.none(), ApproveRecidency);
 route.all('/DenyKyc', upload.none(), DenyKyc);
 route.all('/GetKyc', upload.none(), GetKyc);
 route.all('/GetRecidency', upload.none(), GetRecidency);
+route.all('/DenyRecidency', upload.none(), DenyRecidency);
 
 route.all('/listAdmin', upload.none(), Admin.listAdmin);
 route.all('/getAdmin', upload.none(), Admin.getAdmin);

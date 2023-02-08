@@ -1,5 +1,5 @@
 const Agent = require('../models/Agent');
-
+const authFile = require('../auth');
 const createAgent = async (req, res) => {
 	try {
 		const { name, email, phone, status, apiKey } = req.body;
@@ -9,6 +9,14 @@ const createAgent = async (req, res) => {
 				status: 'fail',
 				message: '403 Forbidden',
 				showableMessage: 'Forbidden 403, Please provide valid api key',
+			});
+		}
+		const agentData = await Agent.find({ email });
+		if (agentData.length) {
+			return res.json({
+				status: 'fail',
+				message: 'Agent Already Registered',
+				showableMessage: 'Agent Already Registered',
 			});
 		}
 		const agent = new Agent({

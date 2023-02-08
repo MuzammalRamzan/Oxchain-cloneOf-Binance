@@ -31,6 +31,24 @@ const getEarnings = async (req, res) => {
   let myData = [];
   for (var i = 0; i < earnings.length; i++) {
     var user = await User.findOne({ _id: earnings[i].user_id });
+    if (!user) continue;
+    let name = "";
+    let surname = "";
+    let email = "";
+
+    if (user.name) {
+      name = user.name;
+    }
+
+    if (user.surname) {
+      surname = user.surname;
+    }
+
+    if (user.email) {
+      email = user.email;
+    }
+
+
 
     myData.push({
       user_id: earnings[i].user_id,
@@ -38,8 +56,8 @@ const getEarnings = async (req, res) => {
       type: earnings[i].type,
       status: earnings[i].status,
       createdAt: earnings[i].createdAt,
-      user_name: user.name + " " + user.surname,
-      user_mail: user.email,
+      user_name: name + " " + surname,
+      user_mail: email,
     });
   }
 

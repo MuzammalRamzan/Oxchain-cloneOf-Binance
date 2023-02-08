@@ -21,7 +21,8 @@ const getApiKeys = async function (req, res) {
         if (result === true) {
 
             let apiKeys = await ApiKeys.find({
-                user_id: user._id
+                user_id: user._id,
+                status: 1,
             }).exec();
 
             if (apiKeys) {

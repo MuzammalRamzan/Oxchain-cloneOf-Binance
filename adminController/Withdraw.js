@@ -200,7 +200,7 @@ const listWithdraws = async (req, res) => {
 };
 const totalWithdrawn = async (req, res) => {
 	try {
-		const status = req.query.status;
+		const status = req.body.status;
 		const apiKey = req.body.apiKey;
 		let totalUsdWithdrawn = 0;
 		if (!status) {
