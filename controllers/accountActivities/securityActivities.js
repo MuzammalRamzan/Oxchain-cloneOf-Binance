@@ -65,6 +65,7 @@ const securityActivities = async function (req, res) {
                         activity: "New Device Added",
                         ip: device.ip,
                         city: device.city,
+                        deviceOS: device.deviceOs,
                         createdAt: device.createdAt
                     }
                     returnData.push(deviceData);
