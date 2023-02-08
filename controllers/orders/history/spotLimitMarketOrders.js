@@ -31,7 +31,6 @@ const SpotLimitMarketOrders = async (req, res) => {
     if (req.body.status != 'all') {
         filter.type = req.body.status;
     }
-    console.log(req.body.firstDate)
     if (req.body.firstDate != null && req.body.endDate != null) {
         filter.createdAt = {
             $gte: req.body.firstDate,

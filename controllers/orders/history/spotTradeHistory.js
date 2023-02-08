@@ -39,8 +39,33 @@ const SpotTradeHistory = async (req, res) => {
         }
     }
 
-    let list = await Orders.find(filter);
+    let orders = await Orders.find(filter);
+    let list = [];
+    for (let k = 0; k < orders.length; k++) {
+        let o = orders[k];
+        list.push({
+            'spot_pairs': o.pair_name,
+            'order_type': o.order_type,
+            'direction': o.method,
+            'avg_filled': o.open_price,
+            'filled_qty': o.amount,
+            'order_price': o.open_price,
+            'order_qty': o.amount,
+            'order_status': convertOrderStatus(o.type, o.status),
+            'order_time': o.createdAt,
+            'order_id': o._id,
+        });
+    }
     return res.json({ status: 'success', data: list });
 }
+
+const convertOrderStatus = (type, status) => {
+    if (status == -1) return "Cancelled";
+    else if (status == 0 && type == 'limit') return "Filled";
+    else if (status == 0 && type == 'market') return "Market";
+    else if (status == 1 && type == 'limit') return "Limit Order";
+    else return status;
+}
+
 
 module.exports = SpotTradeHistory;
