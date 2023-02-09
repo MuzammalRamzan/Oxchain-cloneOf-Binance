@@ -8,6 +8,7 @@ var utilities = require("../../utilities.js");
 const ChangeLogsModel = require("../../models/ChangeLogs");
 const mailer = require("../../mailer");
 const UserNotifications = require("../../models/UserNotifications");
+const SiteNotifications = require("../../models/SiteNotifications");
 
 
 const changePassword = async function (req, res) {
@@ -115,11 +116,22 @@ const changePassword = async function (req, res) {
 
       await userNotification.save();
 
-      mailer.sendMail(user.email, "Password Changed", "Password Changed", "Your password has been changed. If you did not do this, please contact us immediately.");
-      res.json({ status: "success", message: "password_changed", showableMessage: "Password Changed" });
+
+      let notificationCheck = SiteNotifications.findOne({
+        user_id: user_id
+      }).exec();
+
+      if (notificationCheck != null) {
+
+        if (notificationCheck.system_messages == 1 || notificationCheck.system_messages == "1") {
+          mailer.sendMail(user.email, "Password Changed", "Password Changed", "Your password has been changed. If you did not do this, please contact us immediately.");
+        }
+      }
+
+      return res.json({ status: "success", message: "password_changed", showableMessage: "Password Changed" });
 
     } else {
-      res.json({ status: "fail", message: "user_not_found", showableMessage: "User not found" });
+      return res.json({ status: "fail", message: "user_not_found", showableMessage: "User not found" });
     }
 
 

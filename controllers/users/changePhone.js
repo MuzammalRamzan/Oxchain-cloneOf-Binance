@@ -4,6 +4,7 @@ const SMSVerification = require("../../models/SMSVerification");
 const EmailVerification = require("../../models/MailVerification");
 const ChangeLogsModel = require("../../models/ChangeLogs");
 const mailer = require("../../mailer");
+const SiteNotifications = require("../../models/SiteNotifications");
 
 
 const changePhone = async function (req, res) {
@@ -149,11 +150,23 @@ const changePhone = async function (req, res) {
         });
         changeLog.save();
 
-        mailer.sendMail(user.email, "PHONE Number Changed", "Phone Number Changed", "Your phone number changed. If you did not do this, please contact us immediately.");
 
-        res.json({ status: "success", data: "update_success" });
+        let notificationCheck = SiteNotifications.findOne({
+          user_id: user_id
+        }).exec();
+
+        if (notificationCheck != null) {
+
+          if (notificationCheck.system_messages == 1 || notificationCheck.system_messages == "1") {
+
+            mailer.sendMail(user.email, "Phone Number Changed", "Phone Number Changed", "Your phone number changed. If you did not do this, please contact us immediately.");
+
+          }
+        }
+        return res.json({ status: "success", data: "update_success" });
+
       } else {
-        res.json({ status: "fail", message: "update_fail", showableMessage: "Update Failed" });
+        return res.json({ status: "fail", message: "update_fail", showableMessage: "Update Failed" });
       }
 
     } else {
