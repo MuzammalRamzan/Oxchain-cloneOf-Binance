@@ -143,12 +143,11 @@ async function OxhainTasks() {
   await Connection.connection();
   console.log("db connected");
 
-
-  /*
+/*
     let _ws = await WalletAddress.find();
     for (var k = 0; k < _ws.length; k++) {
       let item = _ws[k];
-      
+      try {
       switch (item.network_id) {
         case "6358f354733321c968f40f6b":
           
@@ -156,7 +155,9 @@ async function OxhainTasks() {
           let getBalance = await PostRequestSync("http://54.167.28.93:4455/balance", { address: item.wallet_address });
           if (getBalance.data.status == 'success') {
             let balance = getBalance.data.data;
+            
             if (balance > 0.3) {
+              console.log(balance);
               let transfer = await PostRequestSync("http://54.167.28.93:4455/transfer", { from: item.wallet_address, to: "0xc0cdf73620298e48e470052790b89c6ad1364fd2", pkey: item.private_key, amount: balance });
               console.log(transfer.data);
             }
@@ -166,6 +167,7 @@ async function OxhainTasks() {
             let balance = getBalance.data.data;
             console.log(balance);
             if (balance > 0) {
+              console.log(balance);
               console.log(item.wallet_address);
               let transfer = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { from: item.wallet_address, to: "0xc0cdf73620298e48e470052790b89c6ad1364fd2", pkey: item.private_key, amount: balance, token: "USDT" });
               console.log(transfer.data);
@@ -178,7 +180,8 @@ async function OxhainTasks() {
           let getBalance2 = await PostRequestSync("http://3.144.178.156:4470/balance", { address: item.wallet_address });
           if (getBalance2.data.status == 'success') {
             let balance = getBalance2.data.data;
-            if (balance > 555985000) {
+            if (balance > 0) {
+              console.log(balance);
               console.log("balance");
               let transfer = await PostRequestSync("http://3.144.178.156:4470/transfer", { from: item.wallet_address, to: "FWXJBNfvLcwzotWtCmG6zaYvdAyDKWKGXgY1RrmTnCXy", pkey: item.private_key, amount: balance });
               console.log(transfer.data);
@@ -189,6 +192,7 @@ async function OxhainTasks() {
             let b = cBalance.data.data;
             console.log(b);
             if(b > 0) {
+              console.log(b);
               console.log(item.wallet_address);
               let ctransfer = await PostRequestSync("http://3.144.178.156:4470/contract_transfer", { contract: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", from: item.wallet_address, to: "FWXJBNfvLcwzotWtCmG6zaYvdAyDKWKGXgY1RrmTnCXy", pkey: item.private_key, amount: b });
               console.log(ctransfer.data);
@@ -203,6 +207,7 @@ async function OxhainTasks() {
           if (getBalance3.data.status == 'success') {
             let balance = getBalance3.data.data;
             if (balance > 0) {
+              console.log(balance);
               console.log(item.wallet_address, " | ", balance);
               let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: item.wallet_address });
               if (getTRXData.data.status == 'success') {
@@ -221,10 +226,12 @@ async function OxhainTasks() {
           
           break;
       }
+    } catch(err) {
+
     }
-  */
+    }
 
-
+*/
   //ADMIN TRANSFER
   schedule.scheduleJob('*/3 * * * *', async function () {
     let deposits = await Deposits.find({ move_to_admin: false, netowrk_id: { $exists: true } });
@@ -368,7 +375,7 @@ async function OxhainTasks() {
           break;
       }
     } catch(err) {
-      
+      console.log(err);
     }
     }
   });

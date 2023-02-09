@@ -99,8 +99,14 @@ async function Run(orders) {
 
               }
 
+              const fee = order.usedUSDT * (order.type == 'buy' ? 0.02 : 0.07) / 100.0;
+              let totalUsedUSDT = usedUSDT - fee;
+
+              order.fee = fee; 
+              order.usedUSDT = totalUsedUSDT;
               order.status = 0;
               await order.save();
+              
               let n_order = new FutureOrder({
                 pair_id: order.pair_id,
                 pair_name: order.pair_name,
@@ -108,9 +114,9 @@ async function Run(orders) {
                 future_type: order.future_type,
                 method: order.method,
                 user_id: order.user_id,
-                usedUSDT: order.usedUSDT,
-                required_margin: order.usedUSDT,
-                isolated: order.isolated,
+                usedUSDT: order.totalUsedUSDT,
+                required_margin: totalUsedUSDT,
+                isolated: totalUsedUSDT,
                 sl: order.sl ?? 0,
                 tp: order.tp ?? 0,
                 target_price: order.target_price,
@@ -147,7 +153,10 @@ async function Run(orders) {
                 }
 
               }
-
+              const fee = order.usedUSDT * (order.type == 'buy' ? 0.02 : 0.07) / 100.0;
+              let totalUsedUSDT = usedUSDT - fee;
+              order.fee = fee;
+              order.usedUSDT = totalUsedUSDT;
               order.status = 0;
               await order.save();
               let n_order = new FutureOrder({
@@ -157,9 +166,9 @@ async function Run(orders) {
                 future_type: order.future_type,
                 method: order.method,
                 user_id: order.user_id,
-                usedUSDT: order.usedUSDT,
-                required_margin: order.usedUSDT,
-                isolated: order.isolated,
+                usedUSDT: totalUsedUSDT,
+                required_margin: totalUsedUSDT,
+                isolated: totalUsedUSDT,
                 sl: order.sl ?? 0,
                 tp: order.tp ?? 0,
                 target_price: order.target_price,
@@ -388,7 +397,6 @@ async function Run(orders) {
           let tp = parseFloat(order.tp);
           let sl = parseFloat(order.sl);
           if (tp != 0 && price >= tp) {
-            console.log("TP OLDU");
             order.status = 1;
             let w = await FutureWalletModel.findOne({ user_id: order.user_id });
             let newBalance = parseFloat(w.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
@@ -397,7 +405,6 @@ async function Run(orders) {
             await w.save();
           }
           if (sl != 0 && price <= sl) {
-            console.log("SL OLDU");
 
             order.status = 1;
             let w = await FutureWalletModel.findOne({ user_id: order.user_id });

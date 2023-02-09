@@ -53,7 +53,7 @@ async function Run(orders) {
                         user_id: order.user_id,
                     }).exec();
                     let total = parseFloat(order.amount) * parseFloat(order.target_price);
-                    const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
+                    const fee = splitLengthNumber((total * getPair.spot_fee) / 100.0);
                     const feeToAmount = splitLengthNumber((fee / price));
                     const buyAmount = splitLengthNumber((order.amount - feeToAmount));
 
@@ -128,7 +128,7 @@ async function Run(orders) {
                     }).exec();
 
                     let total = parseFloat(order.amount) * price;
-                    const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
+                    const fee = splitLengthNumber((total * getPair.spot_fee) / 100.0);
                     const feeToAmount = splitLengthNumber((fee / price));
                     const sellAmount = splitLengthNumber((amount - feeToAmount));
                     const addUSDTAmount = splitLengthNumber(parseFloat(sellAmount) * price);

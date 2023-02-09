@@ -21,6 +21,7 @@ const FutureOrderSchema = new mongoose.Schema({
   usedUSDT: { type: Number, required: false, default: null, maxlength: 8 },
   close_price: { type: Number, required: false },
   close_time: { type: Date },
+  fee: {type: Number, default : 0.0},
   liqPrice: { type: Number, required: false, default: 0.0 },
   adjusted: { type: Number, required: false, default: 0.0 },
   pnl: { type: Number, default: 0.0, required: false, maxlength: 8 },

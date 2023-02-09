@@ -245,7 +245,7 @@ const addOrders = async function (req, res) {
           return;
         }
         if (balance >= total) {
-          const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
+          const fee = splitLengthNumber((total * getPair.spot_fee) / 100.0);
           const feeToAmount = splitLengthNumber((fee / price));
           const buyAmount = splitLengthNumber((amount - feeToAmount));
 
@@ -400,7 +400,7 @@ const addOrders = async function (req, res) {
         if (balance >= amount) {
 
           let total = amount * price;
-          const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
+          const fee = splitLengthNumber((total * getPair.spot_fee) / 100.0);
           const feeToAmount = splitLengthNumber((fee / price));
           const sellAmount = splitLengthNumber((amount - feeToAmount));
           const addUSDTAmount = splitLengthNumber(parseFloat(sellAmount) * price);
