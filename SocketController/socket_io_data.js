@@ -52,6 +52,7 @@ const io = new socketio.Server(server, {
         origin: "*",
     }
 });
+Main();
 async function Main() {
     await Connection.connection();
     io.on("connection", async (socket) => {

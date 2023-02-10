@@ -18,7 +18,6 @@ const closeFutureOrder = async (req, res) => {
       res.json({ status: "fail", message: "invalid_order" });
       return;
     }
-    console.log("1");
     
     let getOrderDetail = await FutureOrder.findOne({ _id: orderId }).exec();
     let getPair = await Pairs.findOne({ _id: getOrderDetail.pair_id }).exec();
