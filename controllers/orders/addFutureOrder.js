@@ -596,7 +596,6 @@ const addFutureOrder = async (req, res) => {
                 method: "market",
                 status: 0,
             }).exec();
-
             if (reverseOreders) {
                 if (reverseOreders.leverage > leverage) {
                     res.json({ status: "fail", message: "Leverage cannot be smaller" });
@@ -725,6 +724,7 @@ const addFutureOrder = async (req, res) => {
                     pair_id: getPair._id,
                     pair_name: getPair.name,
                     type: type,
+                    fee : fee,
                     future_type: future_type,
                     method: method,
                     user_id: user_id,
