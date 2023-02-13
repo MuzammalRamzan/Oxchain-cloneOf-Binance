@@ -10,6 +10,7 @@ const cancelAllStopLimit = async function (req, res) {
     _id: req.body.order_id,
     user_id: req.body.user_id,
     type: "stop_limit",
+    status : 1
   }).exec();
   for (var i = 0; i < orders.length; i++) {
     let order = orders[i];
