@@ -26,7 +26,6 @@ const FutureAmountClose = async (req, res) => {
   }
 
   let pairname = order.pair_name.replace("/", "");
-  console.log(pairname);
   let binanceData = await axios(
     "http://18.130.193.166:8542/price?symbol=" + pairname
   );
@@ -35,14 +34,12 @@ const FutureAmountClose = async (req, res) => {
 
   amount = parseFloat(amount);
 
-  console.log(order.amount, " | ", amount);
   if (order.amount < amount) {
     res.json({ status: "fail", message: "Amount is too big" });
     return;
   }
 
   order.amount = parseFloat(order.amount) - amount;
-  console.log("yeni amount : ", order.amount);
   if (order.amount <= 0) {
     order.status = 1;
   }

@@ -42,7 +42,6 @@ const addMarginIsolatedOrder = async (req, res) => {
     }).exec();
 
     var urlPair = getPair.name.replace("/", "");
-    console.log(urlPair);
     let url =
         'http://18.130.193.166:8542/price?symbol=' + urlPair;
     result = await axios(url);

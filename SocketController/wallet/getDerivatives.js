@@ -16,7 +16,6 @@ const GetDerivatives = async (sockets, user_id) => {
             },
         },
     ]);
-    console.log(futureOrders);
     let filter = futureOrders.filter((x) => x._id == user_id);
     if (filter.length == 0) {
         let btcVal = await getBTCValue(wallet.amount);

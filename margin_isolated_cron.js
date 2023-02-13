@@ -186,7 +186,6 @@ async function Run(orders) {
           });
 
           if (reverseOreders) {
-            console.log("reverse order find");
 
             if (reverseOreders.type == order.type) {
               let oldAmount = reverseOreders.amount;

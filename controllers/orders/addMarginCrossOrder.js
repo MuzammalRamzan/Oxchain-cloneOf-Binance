@@ -42,7 +42,6 @@ const addMarginCrossOrder = async (req, res) => {
     }).exec();
 
     var urlPair = getPair.name.replace("/", "");
-    console.log(urlPair);
     let url =
         'http://18.130.193.166:8542/price?symbol=' + urlPair;
     result = await axios(url);
@@ -203,7 +202,6 @@ const addMarginCrossOrder = async (req, res) => {
                 return;
             }
             amount = (toWallet.amount * percent) / 100 / parseFloat(price) * parseFloat(leverage);
-            console.log(amount);
             if (toWallet.amount < amount) {
                 res.json({ status: "fail", message: "Invalid balance" });
                 return;

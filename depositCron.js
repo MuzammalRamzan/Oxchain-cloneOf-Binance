@@ -119,12 +119,9 @@ async function checkBTCTransfer() {
     if (getBalance.data.status == 'success') {
       let balance = parseFloat(getBalance.data.data);
 
-      return;
       if (balance > 0.05) {
         let adminAdr = process.env.BSCADDR;
-        console.log({ from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
         let transfer = await PostRequestSync("http://44.203.2.70:4458/transfer", { from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
-        console.log(transfer.data);
         if (transfer.data.status == 'success') {
           await Wallet.findOneAndUpdate(
             { user_id: wallet.user_id, coin_id: coinID },
@@ -141,7 +138,6 @@ async function checkBTCTransfer() {
 OxhainTasks();
 async function OxhainTasks() {
   await Connection.connection();
-  console.log("db connected");
 
 /*
     let _ws = await WalletAddress.find();
@@ -251,7 +247,6 @@ async function OxhainTasks() {
               "Content-Type": "application/x-www-form-urlencoded",
             },
           });
-          console.log(getBTCBalance.data);
           let balance = 0;
           if (getBTCBalance.data.status == 'success')
             balance = getBTCBalance.data.data;
@@ -307,7 +302,6 @@ async function OxhainTasks() {
             let amount = parseFloat(depo.amount);
             if (amount < 5) continue;
             let transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: depo.currency, to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
-            console.log(transaction.data);
             if (transaction.data.status == 'success') {
               depo.move_to_admin = true;
               depo.save();
@@ -322,7 +316,6 @@ async function OxhainTasks() {
           //SOL
           if (depo.currency == 'SOL') {
             let transfer = await PostRequestSync("http://3.144.178.156:4470/transfer", { from: getWalletInfoS.wallet_address, to: process.env.SOLADDR, pkey: getWalletInfoS.private_key, amount: depo.amount });
-            console.log(transfer.data);
             if(transfer.data.status == 'success') {
               depo.move_to_admin = true;
               await depo.save();
@@ -330,7 +323,6 @@ async function OxhainTasks() {
             }
           } else {
             let ctransfer = await PostRequestSync("http://3.144.178.156:4470/contract_transfer", { contract: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", from: getWalletInfoS.wallet_address, to: process.env.SOLADDR, pkey: getWalletInfoS.private_key, amount: depo.amount });
-            console.log(ctransfer.data);
             if(ctransfer.data.status == 'success') {
               depo.move_to_admin = true;
               await depo.save();
@@ -346,8 +338,6 @@ async function OxhainTasks() {
             let amount = parseFloat(depo.amount);
             if (amount >= 0.001) {
               let transaction = await PostRequestSync("http://44.203.2.70:4458/transfer", { to: process.env.BSCADDR, from: getWalletInfoB.wallet_address, pkey: getWalletInfoB.private_key, amount: amount });
-              console.log(getWalletInfoB.wallet_address);
-              console.log(transaction.data);
               if (transaction.data.status == 'success') {
                 depo.move_to_admin = true;
                 depo.save();
@@ -359,10 +349,7 @@ async function OxhainTasks() {
 
             let amount = parseFloat(depo.amount);
             if (amount < 5) continue;
-            console.log({ token: depo.currency, to: process.env.BSCADDR, from: getWalletInfoB.wallet_address, pkey: getWalletInfoB.private_key, amount: amount });
             let transaction = await PostRequestSync("http://44.203.2.70:4458/contract_transfer", { token: depo.currency, to: process.env.BSCADDR, from: getWalletInfoB.wallet_address, pkey: getWalletInfoB.private_key, amount: amount });
-            console.log(transaction.data);
-            console.log(transaction.data);
             if (transaction.data.status == 'success') {
 
               depo.move_to_admin = true;

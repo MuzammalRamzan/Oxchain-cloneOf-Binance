@@ -200,7 +200,6 @@ async function Run(orders) {
           });
 
           if (reverseOreders) {
-            console.log("reverse order find");
 
             if (reverseOreders.type == order.type) {
               let oldAmount = reverseOreders.amount;
@@ -224,7 +223,6 @@ async function Run(orders) {
               //Tersine ise
               let checkusdt = (reverseOreders.usedUSDT + reverseOreders.pnl) * reverseOreders.leverage;
               if (checkusdt == order.usedUSDT * order.leverage) {
-                console.log("Bura 1");
                 reverseOreders.status = 1;
 
                 let userBalance = await FutureWalletModel.findOne({

@@ -25,14 +25,12 @@ const closeFutureOrder = async (req, res) => {
     
     let url =
       'http://18.130.193.166:8542/price?symbol=' + urlPair;
-      console.log(url);
     result = await axios(url);
     var price = result.data.data.ask;
     let doc = await FutureOrder.findOneAndUpdate(
       { _id: orderId },
       { $set: { status: 1, close_time: Date.now(), close_price: price } }
     );
-    console.log(doc);
     if (doc.status == 1) {
       res.json({ status: "fail", message: "Order is closed" });
       return;
@@ -54,7 +52,6 @@ const closeFutureOrder = async (req, res) => {
       await marginWallet.save();
     }
 
-    console.log("ok");
 
     res.json({ status: "success", data: doc });
   } catch (err) {

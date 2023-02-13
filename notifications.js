@@ -10,7 +10,6 @@ async function sendPushNotification(expoPushToken, body) {
   };
 
   axios.post("https://exp.host/--/api/v2/push/send", message).then((result) => {
-    console.log(result.data);
   });
 }
 

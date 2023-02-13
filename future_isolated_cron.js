@@ -179,7 +179,6 @@ async function Run(orders) {
           });
 
           if (reverseOreders) {
-            console.log("reverse order find");
 
             if (reverseOreders.type == order.type) {
               let oldAmount = reverseOreders.amount;
@@ -204,7 +203,6 @@ async function Run(orders) {
                 (reverseOreders.usedUSDT + reverseOreders.pnl) *
                 reverseOreders.leverage;
               if (checkusdt == order.usedUSDT * order.leverage) {
-                console.log("Bura 1");
                 reverseOreders.status = 1;
 
                 let userBalance = await FutureWalletModel.findOne({
@@ -355,17 +353,10 @@ async function Run(orders) {
 
         pnl = splitLengthNumber((price - order.open_price) * order.amount);
 
-        console.log(
-          "Open Price: " + order.open_price,
-          order.open_price -
-          order.open_price / (order.leverage * 1.0) -
-          AdjustedLiq
-        );
 
         let reverseUsedUSDT = order.usedUSDT * -1;
 
         if (order.open_price <= liqPrice) {
-          console.log("Bura 2");
           order.status = 1;
         }
         //if (pnl <= reverseUsedUSDT) {
@@ -379,11 +370,11 @@ async function Run(orders) {
         let reverseUsedUSDT = order.usedUSDT * -1;
 
         if (order.open_price <= liqPrice) {
-          console.log("Bura 3");
+          
           order.status = 1;
         }
         if (pnl <= reverseUsedUSDT) {
-          console.log("Bura 4");
+          
           order.status = 1;
         }
       }
@@ -454,7 +445,6 @@ async function Run(orders) {
           let liqPrice =
             order.open_price +
             (order.usedUSDT) * (order.open_price / (order.leverage * 1.0));
-          console.log("LLL : ", liqPrice);
           if (order.open_price >= liqPrice) {
 
             let user = await User.findOne({ _id: order.user_id });
