@@ -26,6 +26,7 @@ async function main() {
     }
 
     let request = { $and: [{ status: { $gt: 0 } }, { $or: [{ type: "limit" }, { type: "stop_limit" }] }] };
+    process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
 
 
     var b_ws = new WebSocket("wss://socket.oxhain.com:7010");
