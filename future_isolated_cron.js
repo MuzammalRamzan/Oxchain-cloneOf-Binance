@@ -58,7 +58,7 @@ async function Run(orders) {
     if (order.method == "limit") {
       if (order.status == 0) continue;
       let item = await axios(
-        "http://18.130.193.166:8542/price?symbol=" +
+        "http://18.170.26.150:8542/price?symbol=" +
         order.pair_name.replace("/", "")
       );
       if (item != null && item != "") {
@@ -294,7 +294,7 @@ async function Run(orders) {
       }
     } else if (order.method == "stop_limit") {
       let item = await axios(
-        "http://18.130.193.166:8542/price?symbol=" +
+        "http://18.170.26.150:8542/price?symbol=" +
         order.pair_name.replace("/", "")
       );
       if (item != null && item != "") {
@@ -322,7 +322,7 @@ async function Run(orders) {
 
     let order = orders[n];
     let getPrice = await axios(
-      "http://18.130.193.166:8542/price?symbol=" +
+      "http://18.170.26.150:8542/price?symbol=" +
       order.pair_name.replace("/", "")
     );
     let price = getPrice.data.data.ask;

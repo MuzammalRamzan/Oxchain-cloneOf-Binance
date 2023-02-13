@@ -144,7 +144,7 @@ const withdraw = async (req, res) => {
     }
     else {
       let getPrice = await axios(
-        "http://18.130.193.166:8542/price?symbol=" +
+        "http://18.170.26.150:8542/price?symbol=" +
         checkCoin.symbol + "USDT"
       );
       price = getPrice.data.data.ask;

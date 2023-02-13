@@ -42,7 +42,7 @@ const addMarginOrder = async (req, res) => {
 
     var urlPair = getPair.name.replace("/", "");
     let url =
-      'http://18.130.193.166:8542/price?symbol=' + urlPair;
+      'http://18.170.26.150:8542/price?symbol=' + urlPair;
     result = await axios(url);
     var price = parseFloat(result.data.data.ask);
     if (margin_type == "isolated") {
