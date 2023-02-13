@@ -1,6 +1,6 @@
 const { createHash } = require("crypto");
 const mongoose = require("mongoose");
-const WebSocket = require('ws');
+const WebSocket = require("ws");
 const Orders = require("./models/Orders");
 const Pairs = require("./models/Pairs");
 const Wallet = require("./models/Wallet");
@@ -9,22 +9,52 @@ const Connection = require('./Connection');
 const { default: axios } = require("axios");
 const SiteNotificaitonModel = require("./models/SiteNotifications");
 const UserNotifications = require("./models/UserNotifications");
+const User = require("./models/User");
+const { Scheduler } = require("aws-sdk");
+const schedule = require('node-schedule');
+const mailer = require("./mailer");
+const CoinList = require("./models/CoinList");
+var MarketData = {};
 
 async function main() {
-    var mongodbPass = process.env.MONGO_DB_PASS;
+    await Connection.connection();
+    
+    let coinList = await CoinList.find({});
 
-    Connection.connection();
-
+    for (var k = 0; k < coinList.length; k++) {
+        MarketData[coinList[k].symbol + "USDT"] = { bid: 0.0, ask: 0.0 };
+    }
 
     let request = { $and: [{ status: { $gt: 0 } }, { $or: [{ type: "limit" }, { type: "stop_limit" }] }] };
-    let orders = await Orders.find(request).exec();
-    await Run(orders);
-    Orders.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
-        //orders = data;
-        orders = await Orders.find(request).exec();
-        await Run(orders);
-    });
 
+    
+    var b_ws = new WebSocket("ws://localhost:7010");
+
+
+    b_ws.onopen = (event) => {
+        console.log("test");
+        b_ws.send(JSON.stringify({ page: "all_prices" }));
+    };
+
+    // Reconnect connection when disconnect connection
+    b_ws.onclose = () => {
+        //b_ws.send(JSON.stringify(initSocketMessage));
+    };
+    b_ws.onmessage = async function (event) {
+        console.log("denem");
+        const data = JSON.parse(event.data);
+        if (data != null && data != "undefined") {
+            for (var m = 0; m < data.length; m++) {
+                let x = data[m];
+                console.log(x)
+                return;
+                MarketData[x.s] = { bid: x.b, ask: x.a };
+            }
+            let orders = await Orders.find(request).exec();
+             await Run(orders);
+            
+        }
+    };
 
 }
 
@@ -33,16 +63,19 @@ async function Run(orders) {
 
     for (var k = 0; k < orders.length; k++) {
         let order = orders[k];
+        let price = MarketData[order.pair_name.replace('/', '')];
+        //console.log(price)
+        if(price == null) continue;
         let target_price = parseFloat(order.target_price);
 
         if (order.type == 'limit') {
             if (order.status == 0) continue;
             if (order.method == 'buy') {
-                let getPrice = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
-                let price = getPrice.data.data.ask;
+                console.log(price, target_price);
                 if (price <= target_price) {
+                    console.log("test 1");
                     await Orders.updateOne({ _id: order._id }, { $set: { status: 0 } });
-
+                    console.log("test 2");
                     var getPair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
                     var fromWalelt = await Wallet.findOne({
                         coin_id: getPair.symbolOneID,
@@ -91,6 +124,7 @@ async function Run(orders) {
                             await newNotification.save();
 
                             if (user.email != null && user.email != '') {
+
                                 mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
                             }
 
@@ -111,8 +145,6 @@ async function Run(orders) {
                 }
             }
             if (order.method == 'sell') {
-                let getPrice = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
-                let price = getPrice.data.data.bid;
                 if (price >= target_price) {
                     await Orders.updateOne({ _id: order._id }, { $set: { status: 0 } });
 
@@ -168,8 +200,6 @@ async function Run(orders) {
             if (order.status == 0) continue;
             let target_price = parseFloat(order.target_price);
             let stop_limit = parseFloat(order.stop_limit);
-            let getPrice = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
-            let price = getPrice.data.data.ask;
 
             if (order.method == 'buy') {
                 //CHECK TP

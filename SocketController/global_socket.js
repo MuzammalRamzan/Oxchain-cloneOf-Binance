@@ -194,6 +194,7 @@ async function GetAllPrices(ws) {
                 let x = data[m];
                 global.MarketData[x.s] = { bid: x.b, ask: x.a };
             }
+            ws.send(JSON.stringify(global.MarketData));
         }
     };
 }
