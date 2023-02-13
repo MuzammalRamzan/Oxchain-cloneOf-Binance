@@ -307,7 +307,6 @@ const addOrders = async function (req, res) {
           res.json({ status: "fail", message: "Please enter stop limit" });
           return;
         }
-        amount = (balance * percent / 100.0) / target_price;
         target_price = req.body.target_price;
         let stop_limit = req.body.stop_limit ?? 0.0;
         if (stop_limit <= 0) {
@@ -372,7 +371,6 @@ const addOrders = async function (req, res) {
           });
           return;
         }
-        amount = (balance * percent / 100.0) / target_price;
         const orders = new Orders({
           pair_id: getPair.symbolOneID,
           second_pair: getPair.symbolTwoID,
