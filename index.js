@@ -208,6 +208,10 @@ const GetUserLevel = require('./controllers/users/getUserLevel.js');
 
 const getUserNotification = require('./controllers/users/getUserNotification');
 const readUserNotification = require('./controllers/users/readUserNotification');
+const SpotCurrentOrders = require('./controllers/orders/history/spotCurrentOrders.js');
+const SpotOrderHistory = require('./controllers/orders/history/spotOrderHistory.js');
+const DerivativesClosedPNL = require('./controllers/orders/history/derivativesClosedPL.js');
+const DerivativesOrderHistory = require('./controllers/orders/history/derivativesOrderHistory.js');
 
 
 
@@ -337,6 +341,14 @@ route.all('/getVerificationMethod', upload.none(), getVerificationMethod);
 //ORDER HISTORY
 route.all('/spotLimitMarketOrders', SpotLimitMarketOrders);
 route.all('/spotTradeHistory', SpotTradeHistory);
+route.all('/spotCurrentOrders', SpotCurrentOrders);
+route.all('/spotOrderHistory', SpotOrderHistory);
+
+
+route.all('/derivativesOrderHistory', DerivativesOrderHistory);
+route.all('/derivativesClosedPNL', DerivativesClosedPNL);
+
+
 
 route.all('/removePhone', upload.none(), removePhone);
 route.all('/removeEmail', upload.none(), removeEmail);

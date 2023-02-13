@@ -1,24 +1,18 @@
-const Orders = require("../../../models/Orders");
+const FutureOrder = require("../../../models/FutureOrder");
 
-const SpotTradeHistory = async (req, res) => {
+const DerivativesTradeHistory = async (req, res) => {
     let uid = req.body.user_id;
     if (uid == null || uid == '') return res.json({ status: 'fail', message: 'User not found' });
-    if (req.body.direction == null || req.body.direction == '') return res.json({ status: 'fail', message: 'Direction not found' });
-    if (req.body.pairOne == null || req.body.pairOne == '') return res.json({ status: 'fail', message: 'Symbol type not found' });
+    if (req.body.symbol == null || req.body.symbol == '') return res.json({ status: 'fail', message: 'Symbol not found' });
     if (req.body.orderType == null || req.body.orderType == '') return res.json({ status: 'fail', message: 'Order  type not found' });
     if (req.body.status == null || req.body.status == '') return res.json({ status: 'fail', message: 'Status type not found' });
     let filter = {};
     filter.user_id = uid;
     let coinName = "";
-    if (req.body.pairOne != 'all') {
-        if (req.body.pairSecond != '') {
-            coinName = req.body.pairOne + "/" + req.body.pairSecond;
-        }
+    if (req.body.symbol != 'all') {
+        filter.pair_name = req.body.symbol;
     }
 
-    if (req.body.direction != 'all') {
-        filter.method = req.body.direction;
-    }
 
     if (req.body.orderType != 'all') {
         filter.type = req.body.orderType;
@@ -29,9 +23,9 @@ const SpotTradeHistory = async (req, res) => {
     }
 
     if (req.body.status != 'all') {
-        filter.status = req.body.status;
+        filter.type = req.body.status;
     }
-    console.log(req.body.firstDate)
+
     if (req.body.firstDate != null && req.body.endDate != null) {
         filter.createdAt = {
             $gte: req.body.firstDate,
@@ -39,32 +33,30 @@ const SpotTradeHistory = async (req, res) => {
         }
     }
 
-    let orders = await Orders.find(filter);
+    console.log(filter);
+
+    let orders = await FutureOrder.find(filter);
     let list = [];
     for (let k = 0; k < orders.length; k++) {
         let o = orders[k];
         list.push({
-            'spot_pairs': o.pair_name,
-            'order_type': o.type,
-            'direction': o.method,
-            'filled_value': filled_qty(o.type, o.status, o.amount),
+            'contracts': o.pair_name,
+            'leverage': o.leverage,
+            'filled_type': 'Order',
+            'filled_total': o.amount,
             'filled_price': o.open_price,
-            'filled_qty': filled_qty(o.type, o.status, o.amount),
-            'trading_fee' : o.feeUSDT,
-            'filled_time': o.createdAt,
+            'direction': o.type,
+            'order_price': o.open_price,
+            'trigger_price': o.target_price ?? o.open_price,
+            'order_price': o.type,
+            'order_type': o.future_type,
             'order_status': convertOrderStatus(o.type, o.status),
-            'transaction_id': o.limit_order_id ?? "-",
-            'order_id': o._id,
+            'order_time': o.open_time,
+            'order_no': o._id,
         });
     }
     return res.json({ status: 'success', data: list });
-}
-const filled_qty = (type, status, amount) => {
-    if (status == -1) return 0;
-    else if (status == 0 && type == 'limit') return amount;
-    else if (status == 0 && type == 'market') return amount;
-    else if (status == 1 && type == 'limit') return 0;
-    else return amount;
+
 }
 const convertOrderStatus = (type, status) => {
     if (status == -1) return "Cancelled";
@@ -73,6 +65,4 @@ const convertOrderStatus = (type, status) => {
     else if (status == 1 && type == 'limit') return "Limit Order";
     else return status;
 }
-
-
-module.exports = SpotTradeHistory;
+module.exports = DerivativesOrderHistory;

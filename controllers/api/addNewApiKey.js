@@ -9,6 +9,7 @@ const RecidencyModel = require("../../models/RecidencyModel");
 
 
 
+
 const addNewApiKey = async function (req, res) {
 
 
@@ -55,6 +56,7 @@ const addNewApiKey = async function (req, res) {
 
     var email = user["email"];
     var phone = user["phone_number"];
+    var twofa = user["twofa"];
 
     let check1 = "";
     let check3 = "";
@@ -99,6 +101,20 @@ const addNewApiKey = async function (req, res) {
             });
         }
 
+    }
+
+
+    if (twofa != undefined && twofa != null && twofa != "") {
+
+        if (req.body.twofapin == undefined || req.body.twofapin == null || req.body.twofapin == "") {
+            return res.json({ status: "fail", message: "verification_failed, send 'twofapin'", showableMessage: "Wrong 2FA Pin" });
+        }
+
+        let resultt = await authFile.verifyToken(req.body.twofapin, twofa);
+
+        if (resultt === false) {
+            return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong 2FA Pin" });
+        }
     }
 
 

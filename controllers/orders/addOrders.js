@@ -133,7 +133,7 @@ const addOrders = async function (req, res) {
           return;
         }
 
-
+        amount = (balance * percent / 100.0) / target_price;
         let total = amount * stop_limit;
 
         if (balance < total) {
@@ -207,7 +207,7 @@ const addOrders = async function (req, res) {
           });
           return;
         }
-
+        amount = (balance * percent / 100.0) / target_price;
         let total = amount * target_price;
         if (balance < total) {
           res.json({ status: "fail", message: "Invalid  balance" });
@@ -245,7 +245,7 @@ const addOrders = async function (req, res) {
           return;
         }
         if (balance >= total) {
-          const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
+          const fee = splitLengthNumber((total * getPair.spot_fee) / 100.0);
           const feeToAmount = splitLengthNumber((fee / price));
           const buyAmount = splitLengthNumber((amount - feeToAmount));
 
@@ -307,7 +307,6 @@ const addOrders = async function (req, res) {
           res.json({ status: "fail", message: "Please enter stop limit" });
           return;
         }
-
         target_price = req.body.target_price;
         let stop_limit = req.body.stop_limit ?? 0.0;
         if (stop_limit <= 0) {
@@ -400,7 +399,7 @@ const addOrders = async function (req, res) {
         if (balance >= amount) {
 
           let total = amount * price;
-          const fee = splitLengthNumber((total * getPair.tradeFee) / 100.0);
+          const fee = splitLengthNumber((total * getPair.spot_fee) / 100.0);
           const feeToAmount = splitLengthNumber((fee / price));
           const sellAmount = splitLengthNumber((amount - feeToAmount));
           const addUSDTAmount = splitLengthNumber(parseFloat(sellAmount) * price);

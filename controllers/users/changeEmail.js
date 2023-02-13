@@ -6,6 +6,7 @@ const ChangeLogsModel = require("../../models/ChangeLogs");
 const mailer = require("../../mailer");
 const UserNotifications = require("../../models/UserNotifications");
 
+const SiteNotifications = require("../../models/SiteNotifications");
 
 
 const changeEmail = async function (req, res) {
@@ -121,10 +122,24 @@ const changeEmail = async function (req, res) {
           device: req.body.device ?? "Unknown",
           ip: req.body.ip ?? "Unknown",
           city: req.body.city ?? "Unknown",
+          deviceOS: req.body.deviceOS ?? "Unknown",
         });
         changeLog.save();
 
-        mailer.sendMail(newEmail, "Email Changed", "Email Changed", "Your email has been changed to " + newEmail + ". If you did not change your email, please contact us immediately.");
+
+
+        let notificationCheck = SiteNotifications.findOne({
+          user_id: user_id
+        }).exec();
+
+        if (notificationCheck != null) {
+
+          if (notificationCheck.system_messages == 1 || notificationCheck.system_messages == "1") {
+
+            mailer.sendMail(newEmail, "Email Changed", "Email Changed", "Your email has been changed to " + newEmail + ". If you did not change your email, please contact us immediately.");
+          }
+        }
+
 
 
         let userNotification = new UserNotifications({
