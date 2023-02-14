@@ -240,7 +240,7 @@ const withdraw = async (req, res) => {
   let tx_id = "";
   switch (networkInfo.symbol) {
     case "TRC":
-      transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000).toString() });
+      transaction = await PostRequestSync("http://"+process.env.TRC20HOST+"/transfer", { from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000).toString() });
       if (transaction.data.status != 'success') {
         res.json({ status: "fail", message: "unknow error" });
         isError = true;
@@ -254,7 +254,7 @@ const withdraw = async (req, res) => {
     case "BSC":
       coinInfo = await CoinList.findOne({ _id: coin_id });
       if (coinInfo.symbol == 'BNB') {
-        transaction = await PostRequestSync("http://44.203.2.70:4458/transfer", { from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
+        transaction = await PostRequestSync("http://"+process.env.BSC20HOST+"/transfer", { from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
         if (transaction.data.status != 'success') {
           res.json({ status: "fail", message: "unknow error" });
           isError = true;
@@ -263,7 +263,7 @@ const withdraw = async (req, res) => {
           tx_id = transaction.data.data;
         }
       } else {
-        transaction = await PostRequestSync("http://44.203.2.70:4458/contract_transfer", { token: coinInfo.symbol, from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
+        transaction = await PostRequestSync("http://"+process.env.BSC20HOST+"/contract_transfer", { token: coinInfo.symbol, from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
         if (transaction.data.status != 'success') {
           res.json({ status: "fail", message: "unknow error" });
           isError = true;
@@ -277,7 +277,7 @@ const withdraw = async (req, res) => {
     case "ERC":
       coinInfo = await CoinList.findOne({ _id: coin_id });
       if (coinInfo.symbol == 'ETH') {
-        transaction = await PostRequestSync("http://54.167.28.93:4455/transfer", { from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
+        transaction = await PostRequestSync("http://"+process.env.ERC20HOST+"/transfer", { from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
         if (transaction.data.status != 'success') {
           res.json({ status: "fail", message: "unknow error" });
           isError = true;
@@ -286,7 +286,7 @@ const withdraw = async (req, res) => {
           tx_id = transaction.data.data;
         }
       } else {
-        transaction = await PostRequestSync("http://54.167.28.93:4455/contract_transfer", { token: coinInfo.symbol, from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
+        transaction = await PostRequestSync("http://"+process.env.ERC20HOST+"/contract_transfer", { token: coinInfo.symbol, from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
         if (transaction.data.status != 'success') {
           res.json({ status: "fail", message: "unknow error" });
           isError = true;
@@ -300,7 +300,7 @@ const withdraw = async (req, res) => {
     case "SEGWIT":
       transaction = await axios.request({
         method: "post",
-        url: "http://3.15.2.155",
+        url: "http://"+process.env.BTCSEQHOST,
         data: "request=transfer&to=" + to + "&amount=" + amount,
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",

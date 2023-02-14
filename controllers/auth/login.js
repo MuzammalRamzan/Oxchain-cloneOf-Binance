@@ -87,6 +87,7 @@ const login = async (req, res) => {
   } else {
     ip = "null";
   }
+  
 
   var notificationToken = req.body.notificationToken;
   let result = await authFile.apiKeyChecker(api_key_result);
@@ -342,7 +343,7 @@ const login = async (req, res) => {
             console.log(networks[x].symbol);
             if (networks[x].symbol === "ERC") {
               console.log("Start ERC");
-              let url = "http://54.167.28.93:4455/create_address";
+              let url = "http://"+process.env.ERC20HOST+"/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address;
@@ -350,7 +351,7 @@ const login = async (req, res) => {
 
             if (networks[x].symbol === "BSC") {
               console.log("Start BSC");
-              let url = "http://44.203.2.70:4458/create_address";
+              let url = "http://"+process.env.BSC20HOST+"/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address;
@@ -358,7 +359,7 @@ const login = async (req, res) => {
 
             if (networks[x].symbol === "TRC") {
               console.log("Start TRC");
-              let url = "http://54.172.40.148:4456/create_address";
+              let url = "http://"+process.env.TRC20HOST+"/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address.base58;
@@ -368,7 +369,7 @@ const login = async (req, res) => {
               console.log("Start BTCNetwork");
               let createBTC = await axios.request({
                 method: "post",
-                url: "http://3.15.2.155",
+                url: "http://"+process.env.BTCSEQHOST,
                 data: "request=create_address",
                 headers: {
                   "Content-Type": "application/x-www-form-urlencoded",
@@ -380,7 +381,7 @@ const login = async (req, res) => {
 
             if (networks[x].symbol === "SOL") {
               console.log("Start SOL");
-              let url = "http://3.144.178.156:4470/create_address";
+              let url = "http://"+process.env.SOLANAHOST+"/create_address";
               let walletTest = await axios.post(url);
               privateKey = JSON.stringify(walletTest.data.data.pKey);
               address = walletTest.data.data.address;
