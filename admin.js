@@ -61,6 +61,7 @@ const deleteFAQs = require('./adminController/FAQS/deleteFAQs');
 const createPost = require('./adminController/Posts/createPost');
 //trades
 const getTrades = require('./adminController/Trades/getTrades');
+const addNews = require('./adminController/news/addNews');
 
 const upload = multer();
 route.use(bodyParser.json());
@@ -141,6 +142,7 @@ route.all('/getAllFAQMembers', upload.none(), getAllFAQMembers);
 route.all('/FAQS/create', upload.none(), createFAQs);
 route.all('/FAQS/update/:id', upload.none(), updateFAQs);
 route.all('/FAQS/delete/:id', upload.none(), deleteFAQs);
+route.all("/addNews", upload.none(), addNews);
 route.listen(port, () => {
 	console.log('Server Ayakta');
 });

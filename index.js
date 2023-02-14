@@ -212,7 +212,8 @@ const SpotCurrentOrders = require('./controllers/orders/history/spotCurrentOrder
 const SpotOrderHistory = require('./controllers/orders/history/spotOrderHistory.js');
 const DerivativesClosedPNL = require('./controllers/orders/history/derivativesClosedPL.js');
 const DerivativesOrderHistory = require('./controllers/orders/history/derivativesOrderHistory.js');
-const convert = require('./controllers/convert/convert.js');
+const getAllNews = require('./controllers/news/getAllNews');
+const getNews = require('./controllers/news/getNewsByCategory');
 
 
 
@@ -528,7 +529,8 @@ route.get('/getSupportTicket', getSupportTicket);
 route.all('/deleteSupportTicket', deleteSupportTicket);
 route.post('/updateSupportTicket', updateSupportTicket);
 route.post('/systemFeedback', addSystemFeedback);
-route.post("/convert", convert)
+route.all("/getAllNews", upload.none(), getAllNews)
+route.all("/getNews", upload.none(), getNews)
 route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
 	if (symbol == null || symbol == '') {

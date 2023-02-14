@@ -5,10 +5,10 @@ async function connection() {
         process.env.DOCUMENT_DB_UID
         + ":" +
         process.env.DOCUMENT_DB_PASS
-        + "@"+process.env.DBIP+"/?retryWrites=true&w=majority");
+        + "@" + process.env.DBIP + "/?retryWrites=true&w=majority");
     console.log(mongoose.connection.readyState);
     console.log("DB Connected");
-
+    // mongodb://oxhainadmin:fsDFr3dc53zv42a35asc9z1432bs3x87x2@18.222.225.251:27017/?retryWrites=true&w=majority
     return;
     var mongodbPass = process.env.MONGO_DB_PASS;
     if (process.env.NODE_ENV == 'development') {
