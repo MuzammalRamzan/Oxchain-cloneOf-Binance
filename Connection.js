@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 async function connection() {
-    
+
     await mongoose.connect("mongodb://" +
         process.env.DOCUMENT_DB_UID
         + ":" +
@@ -30,7 +30,7 @@ async function connection() {
 
     console.log("Connected");
 
-	console.log('Connected');
+    console.log('Connected');
 }
 
 module.exports = { connection: connection };
