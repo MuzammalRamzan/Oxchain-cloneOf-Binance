@@ -161,7 +161,6 @@ const Transfer = async (req, res) => {
                     if (err) {
                         console.log("Error " + err);
                     } else {
-                        console.log("mail sent");
                     }
                 }
             );
@@ -178,7 +177,6 @@ const Transfer = async (req, res) => {
                     if (err) {
                         console.log("Error " + err);
                     } else {
-                        console.log("mail sent");
                     }
                 }
             );

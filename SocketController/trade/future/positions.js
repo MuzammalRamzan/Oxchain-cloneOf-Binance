@@ -2,7 +2,6 @@ const FutureOrder = require("../../../models/FutureOrder");
 const FutureWalletModel = require("../../../models/FutureWalletModel");
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 
-console.log();
 
 const FuturePositions = async (sockets, user_id) => {
   let orders = await FutureOrder.find({
@@ -166,11 +165,7 @@ async function GetFutureCrossLiqPrice(order) {
   }
 
   let kasa = totalWallet + (order_total - order.pnl) + order_usedUSDT;
-  console.log("-------");
-  console.log(kasa);
-  console.log(order_usedUSDT);
-  console.log(totalWallet);
-  console.log("-------");
+  
   let liqPrice = 0.0;
   if (order.type == "buy")
   

@@ -25,7 +25,6 @@ const TwitterPostCheckCron = async () => {
             let item = tweets.data.data[j];
 
             if (item.text.indexOf('Oxhain') != -1) {
-                console.log(item);
                 let check = await SocialMediaPostModel.findOne({ post_link: item.id });
                 if (check == null) {
                     let save = new SocialMediaPostModel({ post_link: item.id, user_id: program[i].user_id, platform: "Twitter" });
@@ -39,10 +38,6 @@ const TwitterPostCheckCron = async () => {
         let getLastPost = await SocialMediaPostModel.findOne({ user_id: program[i].user_id, platform: "Twitter" }, {}, { sort: { createdAt: -1 } });
         let now = new Date();
         let lastItemDate = new Date(getLastPost.createdAt);
-        console.log(lastItemDate)
-        console.log(now)
-        console.log(lastItemDate.getTime());
-        console.log(now.getTime());
         let diffrentDays = Math.round(Math.abs(now.getTime() - lastItemDate.getTime()) / (1000 * 60 * 60 * 24));
         if (diffrentDays > 7) {
             let lastCaveat = program[i].lastCaveat;

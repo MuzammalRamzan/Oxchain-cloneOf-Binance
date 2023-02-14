@@ -59,7 +59,7 @@ async function Run(orders) {
     let order = limitOrders[i];
     if (order.method == 'limit') {
       if (order.status == 0) continue;
-      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
+      let item = await axios("http://18.170.26.150:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
         let price = item.data.data.ask;
         if (order.stop_limit != 0) {
@@ -186,7 +186,6 @@ async function Run(orders) {
           });
 
           if (reverseOreders) {
-            console.log("reverse order find");
 
             if (reverseOreders.type == order.type) {
               let oldAmount = reverseOreders.amount;
@@ -304,7 +303,7 @@ async function Run(orders) {
       }
     }
     else if (order.method == 'stop_limit') {
-      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
+      let item = await axios("http://18.170.26.150:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
         let price = item.data.data.ask;
         if (order.type == 'buy') {

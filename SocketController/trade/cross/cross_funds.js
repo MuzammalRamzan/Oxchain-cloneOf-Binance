@@ -31,7 +31,6 @@ async function calculate(wallets, user_id) {
             totalPNL += parseFloat(element.usedUSDT) + parseFloat(element.pnl);
             totalUsed += parseFloat(element.usedUSDT);
             totalBalance += totalPNL;
-            console.log(totalBalance);
             available -= totalPNL;
             totalAmount += parseFloat(element.amount);
         }

@@ -43,12 +43,8 @@ const initialData = async () => {
         parentRefCode = userRefCode.refCode;
         let checkSubReference = await Referral.findOne({ reffer: parentRefCode });
         if (checkSubReference == null) {
-            console.log(parentRefCode, " yok")
             break;
         }
-        console.log(userRefCode);
-        console.log(parentRefCode);
-        console.log(levelCounter);
         level++;
         levelCounter++;
         parentUID = checkSubReference.user_id;

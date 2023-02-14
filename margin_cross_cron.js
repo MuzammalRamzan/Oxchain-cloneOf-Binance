@@ -63,7 +63,7 @@ async function Run(orders) {
 
     if (order.method == 'limit') {
       if (order.status == 0) continue;
-      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
+      let item = await axios("http://18.170.26.150:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
         let price = item.data.data.ask;
 
@@ -181,7 +181,6 @@ async function Run(orders) {
           });
 
           if (reverseOreders) {
-            console.log("reverse order find");
 
             if (reverseOreders.type == order.type) {
               let oldAmount = reverseOreders.amount;
@@ -295,7 +294,7 @@ async function Run(orders) {
       }
     }
     else if (order.method == 'stop_limit') {
-      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
+      let item = await axios("http://18.170.26.150:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
         let price = item.data.data.ask;
         if (order.type == 'buy') {
@@ -362,7 +361,7 @@ async function Run(orders) {
     for (var k = 0; k < userOrders.length; k++) {
       let order = userOrders[k];
       if (order.status == 1) continue;
-      let findBinanceItem = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
+      let findBinanceItem = await axios("http://18.170.26.150:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (findBinanceItem != null) {
         let item = findBinanceItem.data.data;
         if (order.type == 'buy') {

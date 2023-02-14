@@ -49,8 +49,8 @@ var route = express();
 var wss = null;
 if (process.env.NODE_ENV == 'product') {
     var options = {
-        key: fs.readFileSync('/etc/letsencrypt/live/socket.oxhain.com-0001/privkey.pem'),
-        cert: fs.readFileSync('/etc/letsencrypt/live/socket.oxhain.com-0001/cert.pem')
+        key: fs.readFileSync('/etc/letsencrypt/live/global.oxhain.com/privkey.pem'),
+        cert: fs.readFileSync('/etc/letsencrypt/live/global.oxhain.com/cert.pem')
     };
 
     var server = https.createServer(options);
@@ -94,7 +94,6 @@ async function GlobalSocket() {
     console.log("DB Connect");
     //await FutureWalletModel.updateMany({amount : 1000});
     wss.on("connection", async (ws) => {
-        console.info("websocket connection open");
         if (ws.readyState === ws.OPEN) {
             ws.send(
                 JSON.stringify({
@@ -103,7 +102,6 @@ async function GlobalSocket() {
             );
             ws.on("message", async (data) => {
                 let json = JSON.parse(data);
-                console.log(json);
                 if (json.page == "trade") {
                     GetBinanceData(ws, json.pair);
                 } else if (json.page == "all_prices") {

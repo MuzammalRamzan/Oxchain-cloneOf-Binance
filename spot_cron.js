@@ -33,7 +33,6 @@ async function main() {
 
 
     b_ws.onopen = (event) => {
-        console.log("test");
         b_ws.send(JSON.stringify({ page: "all_prices" }));
     };
 
@@ -70,11 +69,8 @@ async function Run(orders) {
         if (order.type == 'limit') {
             if (order.status == 0) continue;
             if (order.method == 'buy') {
-                console.log(price, target_price);
                 if (price <= target_price) {
-                    console.log("test 1");
                     await Orders.updateOne({ _id: order._id }, { $set: { status: 0 } });
-                    console.log("test 2");
                     var getPair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
                     var fromWalelt = await Wallet.findOne({
                         coin_id: getPair.symbolOneID,
@@ -146,7 +142,6 @@ async function Run(orders) {
                 if (price >= target_price) {
                     await Orders.updateOne({ _id: order._id }, { $set: { status: 0 } });
 
-                    console.log("satış gerçekleşiyor");
                     var getPair = await Pairs.findOne({ symbolOneID: order.pair_id }).exec();
                     var fromWalelt = await Wallet.findOne({
                         coin_id: getPair.symbolOneID,
@@ -157,10 +152,6 @@ async function Run(orders) {
                         user_id: order.user_id,
                     }).exec();
 
-                    console.log("From Wallet");
-                    console.log(fromWalelt);
-                    console.log("To wallet");
-                    console.log(toWalelt);
 
                     let total = parseFloat(order.amount) * price;
                     const fee = splitLengthNumber((total * getPair.spot_fee) / 100.0);
@@ -183,14 +174,12 @@ async function Run(orders) {
                         target_price: order.target_price,
                         status: 0,
                     });
-                    console.log(neworders);
                     order.status = 0;
                     await order.save();
 
                     await neworders.save();
 
                     //fromWalelt.amount = parseFloat(fromWalelt.amount) - order.amount;
-                    console.log(parseFloat(toWalelt.amount), addUSDTAmount);
                     toWalelt.amount = parseFloat(toWalelt.amount) + addUSDTAmount;
                     await toWalelt.save();
                     //await fromWalelt.save();
@@ -205,14 +194,12 @@ async function Run(orders) {
             if (order.method == 'buy') {
                 //CHECK TP
                 if (price <= stop_limit) {
-                    console.log("alış gerçekleşiyor");
                     order.type = 'limit';
                     await order.save();
 
                 }
             } else if (order.method == 'sell') {
                 if (price >= stop_limit) {
-                    console.log("satış gerçekleşiyor");
                     order.type = 'limit';
                     await order.save();
 
