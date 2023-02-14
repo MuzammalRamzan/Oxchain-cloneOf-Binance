@@ -22,7 +22,7 @@ const checkBTCDeposit = async() => {
         if (address.length > 0) {
           let checkRequest = await axios.request({
             method: "post",
-            url: "http://3.15.2.155",
+            url: "http://"+process.env.BTCSEQHOST,
             data: "request=transactions&address=" + address,
             headers: {
               "Content-Type": "application/x-www-form-urlencoded",

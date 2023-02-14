@@ -5,7 +5,7 @@ async function connection() {
         process.env.DOCUMENT_DB_UID
         + ":" +
         process.env.DOCUMENT_DB_PASS
-        + "@18.222.225.251:27017/?retryWrites=true&w=majority");
+        + "@"+process.env.DBIP+"/?retryWrites=true&w=majority");
     console.log(mongoose.connection.readyState);
     console.log("DB Connected");
 
