@@ -323,6 +323,7 @@ async function Run(orders) {
 
 
   let totalPNL = 0.0;
+  
   let orders = await MarginOrder.find({ status: 0, method: "market", margin_type: "isolated" });
   for (var n = 0; n < orders.length; n++) {
 

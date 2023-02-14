@@ -41,8 +41,8 @@ require("dotenv").config();
 var server = null;
 if (process.env.NODE_ENV == 'product') {
     server = https.createServer({
-        key: fs.readFileSync('/etc/letsencrypt/live/socket.oxhain.com-0001/privkey.pem'),
-        cert: fs.readFileSync('/etc/letsencrypt/live/socket.oxhain.com-0001/cert.pem')
+        key: fs.readFileSync('/etc/letsencrypt/live/socket.oxhain.com/privkey.pem'),
+        cert: fs.readFileSync('/etc/letsencrypt/live/socket.oxhain.com/cert.pem')
     });
 } else {
     server = http.createServer();
