@@ -160,6 +160,9 @@ const getVerificationIds = require('./controllers/verificationId/getVerification
 const topReferralEarners = require('./controllers/referrals/topReferralEarners');
 const myReferralEarns = require('./controllers/referrals/myReferralEarns');
 const getAllLevelReferrals = require('./controllers/referrals/getAllLevelRefferals.js');
+const getEarningsGraphData = require('./controllers/referrals/getEarningsGraphData.js');
+const getMembersGraphData = require('./controllers/referrals/getMembersGraphData.js');
+const getAllRefUser = require('./controllers/referrals/getAllRefUser.js');
 
 const getKYCStatus = require('./controllers/kyc/getStatus');
 const getApiKeys = require('./controllers/api/getApiKeys');
@@ -211,8 +214,6 @@ const SpotCurrentOrders = require('./controllers/orders/history/spotCurrentOrder
 const SpotOrderHistory = require('./controllers/orders/history/spotOrderHistory.js');
 const DerivativesClosedPNL = require('./controllers/orders/history/derivativesClosedPL.js');
 const DerivativesOrderHistory = require('./controllers/orders/history/derivativesOrderHistory.js');
-
-
 
 route.use(
 	session({
@@ -343,11 +344,8 @@ route.all('/spotTradeHistory', SpotTradeHistory);
 route.all('/spotCurrentOrders', SpotCurrentOrders);
 route.all('/spotOrderHistory', SpotOrderHistory);
 
-
 route.all('/derivativesOrderHistory', DerivativesOrderHistory);
 route.all('/derivativesClosedPNL', DerivativesClosedPNL);
-
-
 
 route.all('/removePhone', upload.none(), removePhone);
 route.all('/removeEmail', upload.none(), removeEmail);
@@ -418,7 +416,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) { }
+	async function (req, res) {}
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
@@ -449,6 +447,9 @@ route.all('/request_campus', upload.none(), CampusRequestJoin);
 route.all('/getWallet', upload.none(), getWallet);
 route.all('/getUserLevel', upload.none(), GetUserLevel);
 route.all('/getAllLevelReferrals', upload.none(), getAllLevelReferrals);
+route.all('/getEarningsGraphData', upload.none(), getEarningsGraphData);
+route.all('/getMembersGraphData', upload.none(), getMembersGraphData);
+route.all('/getAllRefUser', upload.none(), getAllRefUser);
 
 route.post('/cancelAllLimit', cancelAllLimit);
 route.post('/cancelAllStopLimit', cancelAllStopLimit);
