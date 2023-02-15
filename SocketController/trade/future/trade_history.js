@@ -21,11 +21,11 @@ const FutureTradeHistory = async (sockets, user_id, filter) => {
     let orders = await FutureOrder.find(request);
     let assets = FillTable(orders);
     
-    sockets.in(user_id).emit("future",{ page: "future", type: 'trade_history', content: assets });
+    sockets.in(user_id).emit("future_trade_history",{ page: "future", type: 'trade_history', content: assets });
     FutureOrder.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
         let orders = await FutureOrder.find(request);
         let assets = FillTable(orders);
-        sockets.in(user_id).emit("future",{ page: "future", type: 'trade_history', content: assets });
+        sockets.in(user_id).emit("future_trade_history",{ page: "future", type: 'trade_history', content: assets });
     });
 
 }

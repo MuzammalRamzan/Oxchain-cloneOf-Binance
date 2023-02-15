@@ -10,7 +10,7 @@ const FuturePositions = async (sockets, user_id) => {
     status: 0,
   });
   let assets = await GetFutureLiqPrice(orders);
-  sockets.in(user_id).emit("future",{ page: "future", type: "positions", content: assets });
+  sockets.in(user_id).emit("future_positions",{ page: "future", type: "positions", content: assets });
   
 
   FutureOrder.watch([
@@ -26,7 +26,7 @@ const FuturePositions = async (sockets, user_id) => {
       status: 0,
     });
     let assets = await GetFutureLiqPrice(orders);
-    sockets.in(user_id).emit("future",{ page: "future", type: "positions", content: assets });
+    sockets.in(user_id).emit("future_positions",{ page: "future", type: "positions", content: assets });
   });
 };
 async function GetFutureLiqPrice(orders) {

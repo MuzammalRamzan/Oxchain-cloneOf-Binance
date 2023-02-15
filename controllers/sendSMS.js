@@ -1,4 +1,5 @@
 
+
 const User = require("../models/User");
 const SMSVerification = require("../models/SMSVerification");
 var authFile = require("../auth.js");
@@ -69,8 +70,8 @@ const sendSMS = async function (req, res) {
 
         if (check != null) {
           await SMSVerification.findOneAndUpdate(
-            { user_id: user["_id"] },
-            { pin: pin, status: "0" },
+            { user_id: user["_id"], reason: "change_phone_new" },
+            { pin: pin, status: 0 },
           );
         } else {
           newPin = new SMSVerification({
@@ -149,3 +150,4 @@ const sendSMS = async function (req, res) {
 };
 
 module.exports = sendSMS;
+
