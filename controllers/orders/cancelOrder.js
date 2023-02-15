@@ -39,12 +39,10 @@ const cancelOrder = async function (req, res) {
             update2,
             (err, doc) => {
               if (err) {
-                console.log(err);
                 res.json({ status: "fail", message: error });
               } else {
                 Orders.findOneAndUpdate(filter, update, (err, doc) => {
                   if (err) {
-                    console.log(err);
                     res.json({ status: "fail", message: err });
                   } else {
                     res.json({ status: "success", data: "cancelled" });

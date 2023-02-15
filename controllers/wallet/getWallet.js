@@ -42,7 +42,6 @@ const getWallet = async function (req, res) {
     user_id: req.body.user_id
   }).exec();
 
-  console.log(_wallets);
   var wallets = new Array();
 
   for (var i = 0; i < _wallets.length; i++) {

@@ -56,7 +56,6 @@ const updateUserInfo = async function (req, res) {
         };
         User.findOneAndUpdate(filter, update, (err, doc) => {
           if (err) {
-            console.log(err);
             res.json({ status: "fail", message: err });
           } else {
             res.json({ status: "success", data: "update_success" });

@@ -171,6 +171,7 @@ const getDashboard = require('./controllers/dashboard/getDashboard');
 const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
+const editApiKey = require('./controllers/api/editApiKey');
 const deleteAllKeys = require('./controllers/api/deleteAllKeys');
 
 const Delete2fa = require('./controllers/auth/delete2fa');
@@ -205,6 +206,16 @@ const addSystemFeedback = require('./controllers/dashboard/systemFeedback.js');
 const SpotLimitMarketOrders = require('./controllers/orders/history/spotLimitMarketOrders.js');
 const SpotTradeHistory = require('./controllers/orders/history/spotTradeHistory.js');
 const GetUserLevel = require('./controllers/users/getUserLevel.js');
+
+const getUserNotification = require('./controllers/users/getUserNotification');
+const readUserNotification = require('./controllers/users/readUserNotification');
+const SpotCurrentOrders = require('./controllers/orders/history/spotCurrentOrders.js');
+const SpotOrderHistory = require('./controllers/orders/history/spotOrderHistory.js');
+const DerivativesClosedPNL = require('./controllers/orders/history/derivativesClosedPL.js');
+const DerivativesOrderHistory = require('./controllers/orders/history/derivativesOrderHistory.js');
+
+
+
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -249,6 +260,9 @@ route.all('/getLocation', getLocation);
 
 route.all('/getDashboard', getDashboard);
 
+route.all('/getUserNotifications', getUserNotification);
+route.all('/readUserNotification', readUserNotification);
+
 route.all('/getVerificationIds', upload.any(), getVerificationIds);
 route.all('/addVerificationId', upload.any(), addVerificationId);
 
@@ -271,6 +285,8 @@ route.all('/getApiKeys', getApiKeys);
 
 route.all('/newPrediction', newPrediction);
 route.all('/getPrediction', getPrediction);
+
+route.all('/editApiKey', editApiKey);
 
 route.all('/walletToWalletBetweenUsers', walletTowalletBetweenUsers);
 
@@ -326,6 +342,14 @@ route.all('/getVerificationMethod', upload.none(), getVerificationMethod);
 //ORDER HISTORY
 route.all('/spotLimitMarketOrders', SpotLimitMarketOrders);
 route.all('/spotTradeHistory', SpotTradeHistory);
+route.all('/spotCurrentOrders', SpotCurrentOrders);
+route.all('/spotOrderHistory', SpotOrderHistory);
+
+
+route.all('/derivativesOrderHistory', DerivativesOrderHistory);
+route.all('/derivativesClosedPNL', DerivativesClosedPNL);
+
+
 
 route.all('/removePhone', upload.none(), removePhone);
 route.all('/removeEmail', upload.none(), removeEmail);
@@ -396,7 +420,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) {}
+	async function (req, res) { }
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
@@ -512,7 +536,7 @@ route.get('/price', async function (req, res) {
 		return res.json({ status: 'fail', message: 'symbol not found' });
 	}
 	let priceData = await axios(
-		'http://18.130.193.166:8542/price?symbol=' + symbol
+		'http://18.170.26.150:8542/price?symbol=' + symbol
 	);
 	console.log(priceData.data);
 	if (priceData.data.status == 'success') {

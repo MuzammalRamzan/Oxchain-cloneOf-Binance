@@ -41,9 +41,8 @@ const addMarginOrder = async (req, res) => {
     }
 
     var urlPair = getPair.name.replace("/", "");
-    console.log(urlPair);
     let url =
-      'http://18.130.193.166:8542/price?symbol=' + urlPair;
+      'http://18.170.26.150:8542/price?symbol=' + urlPair;
     result = await axios(url);
     var price = parseFloat(result.data.data.ask);
     if (margin_type == "isolated") {
@@ -185,9 +184,6 @@ const addMarginOrder = async (req, res) => {
         });
 
         if (reverseOreders) {
-          console.log("reverse order find");
-          console.log(reverseOreders);
-          console.log("222");
           if (reverseOreders.leverage > leverage) {
             res.json({ status: "fail", message: "Leverage cannot be smaller" });
             return;
@@ -198,8 +194,6 @@ const addMarginOrder = async (req, res) => {
             let oldPNL = reverseOreders.pnl;
             let oldLeverage = reverseOreders.leverage;
             let newUsedUSDT = oldUsedUSDT + usedUSDT + oldPNL;
-            console.log(oldUsedUSDT, " | ", usedUSDT, " | ", oldPNL);
-            console.log(newUsedUSDT);
             reverseOreders.usedUSDT = newUsedUSDT;
             reverseOreders.open_price = price;
             reverseOreders.pnl = 0;
@@ -266,7 +260,6 @@ const addMarginOrder = async (req, res) => {
               let ilkIslem = reverseOreders.usedUSDT;
               let tersIslem = usedUSDT;
               let data = ilkIslem - tersIslem;
-              console.log("DATASSS : ", data);
               userBalance = await Wallet.findOne({
                 coin_id: MarginWalletId,
                 user_id: req.body.user_id,
@@ -458,7 +451,6 @@ const addMarginOrder = async (req, res) => {
         }).exec();
 
         if (reverseOreders) {
-          console.log("reverse order find");
           if (reverseOreders.leverage > leverage) {
             res.json({ status: "fail", message: "Leverage cannot be smaller" });
             return;
@@ -469,8 +461,6 @@ const addMarginOrder = async (req, res) => {
             let oldPNL = reverseOreders.pnl;
             let oldLeverage = reverseOreders.leverage;
             let newUsedUSDT = oldUsedUSDT + usedUSDT + oldPNL;
-            console.log(oldUsedUSDT, " | ", usedUSDT, " | ", oldPNL);
-            console.log(newUsedUSDT);
             reverseOreders.usedUSDT = newUsedUSDT;
             reverseOreders.open_price = price;
             reverseOreders.pnl = 0;
@@ -537,7 +527,6 @@ const addMarginOrder = async (req, res) => {
               let ilkIslem = reverseOreders.usedUSDT;
               let tersIslem = usedUSDT;
               let data = ilkIslem - tersIslem;
-              console.log("DATASSS : ", data);
               userBalance = await Wallet.findOne({
                 coin_id: MarginWalletId,
                 user_id: req.body.user_id,

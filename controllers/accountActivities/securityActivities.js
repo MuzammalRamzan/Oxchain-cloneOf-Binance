@@ -65,12 +65,12 @@ const securityActivities = async function (req, res) {
                         activity: "New Device Added",
                         ip: device.ip,
                         city: device.city,
+                        deviceOS: device.deviceOs,
                         createdAt: device.createdAt
                     }
                     returnData.push(deviceData);
                 }
             }
-
 
             let changeLogs = await ChangeLogsModel.find({
                 user_id: user_id,
@@ -87,6 +87,7 @@ const securityActivities = async function (req, res) {
                         activity: changeLog.type,
                         ip: changeLog.ip,
                         city: changeLog.city,
+                        deviceOS: changeLog.deviceOS,
                         createdAt: changeLog.createdAt
                     }
                     returnData.push(changeLogData);

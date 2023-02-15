@@ -22,7 +22,7 @@ const checkBTCDeposit = async() => {
         if (address.length > 0) {
           let checkRequest = await axios.request({
             method: "post",
-            url: "http://3.15.2.155",
+            url: "http://"+process.env.BTCSEQHOST,
             data: "request=transactions&address=" + address,
             headers: {
               "Content-Type": "application/x-www-form-urlencoded",
@@ -35,9 +35,7 @@ const checkBTCDeposit = async() => {
           var deposit = "";
           if(checkRequest.data.status == 'error') continue;
           for (let j = 0; j < checkRequest.data.data.length; j++) {
-            console.log(checkRequest.data.data);
             amount = checkRequest.data.data[j].value / 100000000;
-            console.log(amount);
             user = await User.findOne({ _id: user_id }).exec();
             deposit = await Deposits.findOne({
               user_id: user_id,

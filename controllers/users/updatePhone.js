@@ -1,6 +1,7 @@
 const User = require("../../models/User");
 var authFile = require("../../auth.js");
 const mailer = require("../../mailer");
+const SiteNotifications = require("../../models/SiteNotifications");
 
 
 
@@ -30,7 +31,17 @@ const updatePhone = async function (req, res) {
         };
         let doc = await User.findOneAndUpdate(filter, update).exec();
 
-        mailer.sendMail(user.email, "Phone number changed", "Phone number changed", "Your phone number has been changed. If you did not do this, please contact us immediately.");
+
+        let notificationCheck = SiteNotifications.findOne({
+          user_id: user_id
+        }).exec();
+
+        if (notificationCheck != null) {
+
+          if (notificationCheck.system_messages == 1 || notificationCheck.system_messages == "1") {
+            mailer.sendMail(user.email, "Phone number changed", "Phone number changed", "Your phone number has been changed. If you did not do this, please contact us immediately.");
+          }
+        }
         return res.json({ status: "success", data: "update_success" });
       } else {
         return res.json({ status: "fail", message: "2fa_failed", showableMessage: "2FA Failed" });

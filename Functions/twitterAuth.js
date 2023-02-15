@@ -2,7 +2,6 @@ const { default: axios } = require("axios")
 require('dotenv').config();
 
 const TwitterAuth = async () => {
-    console.log('Authorization' , "Bearer " + process.env.TWTTKN);
     let token = await axios.post("https://api.twitter.com/oauth2/token", {
         mode: 'urlencoded',
         urlencoded: 'grant_type=client_credentials'

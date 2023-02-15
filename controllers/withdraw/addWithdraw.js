@@ -13,12 +13,10 @@ const addWithdraw = (req, res) => {
   var coin_id = req.body.coin_id;
 
   authFile.apiKeyChecker(api_key_result).then((result) => {
-    console.log(result);
     if (result === true) {
       Wallet.findOne({ user_id: user_id, coin_id: coin_id }, { amount: 1 })
         .then((list) => {
           if (list == null) {
-            console.log("liste yok");
             res.json({ status: "fail", message: "unknow_error" });
             return;
           }
@@ -30,11 +28,9 @@ const addWithdraw = (req, res) => {
               to: withdraw_address,
               status: 1,
             });
-            console.log(newWithdraw);
             NotificationTokens.findOne({
               user_id: user_id,
             }).then((response) => {
-              console.log(response);
               if (response == null) {
               } else {
                 var token = response["token_id"];

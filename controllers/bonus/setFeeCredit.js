@@ -11,9 +11,7 @@ const setFeeCredit = async function (user_id, pair_id, amount) {
         return false;
     }
 
-    console.log("fee test");
     let getUserRefCode = await UserRef.findOne({ user_id: user_id });
-    console.log(getUserRefCode);
     let parentReferralCounter = 0;
     let percentAmount = 20;
     let searchUserId = user_id;

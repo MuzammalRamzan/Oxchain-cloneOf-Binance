@@ -12,7 +12,9 @@ const User = require("./models/User.js");
 const Pairs = require("./models/Pairs.js");
 const mailer = require("./mailer");
 const SiteNotificaitonModel = require("./models/SiteNotifications");
+const User = require("./models/User");
 var mongodbPass = process.env.MONGO_DB_PASS;
+const UserNotifications = require("./models/UserNotifications");
 
 const io = new Server();
 
@@ -61,7 +63,7 @@ async function Run(orders) {
 
     if (order.method == 'limit') {
       if (order.status == 0) continue;
-      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
+      let item = await axios("http://18.170.26.150:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
         let price = item.data.data.ask;
 
@@ -70,16 +72,29 @@ async function Run(orders) {
             if (price <= order.target_price) {
 
               let user = await User.findOne({ _id: order.user_id });
-              if (user.email != null && user.email != '') {
+              let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
 
-                let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
-                if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
 
-                  if (SiteNotificaitonsCheck.trade == 1) {
+              if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                if (SiteNotificaitonsCheck.trade == 1) {
+                  let newNotification = new UserNotifications({
+                    user_id: user._id,
+                    title: "Order Filled",
+                    message: "Your order has been filled",
+                    read: false
+                  });
+
+                  await newNotification.save();
+
+                  if (user.email != null && user.email != '') {
                     mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
                   }
+
                 }
+
               }
+              
               order.status = 0;
               await order.save();
               let n_order = new MarginOrder({
@@ -111,6 +126,14 @@ async function Run(orders) {
                 if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
 
                   if (SiteNotificaitonsCheck.trade == 1) {
+                    let newNotification = new UserNotifications({
+                      user_id: user._id,
+                      title: "Order Filled",
+                      message: "Your order has been filled",
+                      read: false
+                    });
+
+                    await newNotification.save();
                     mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
                   }
                 }
@@ -158,7 +181,6 @@ async function Run(orders) {
           });
 
           if (reverseOreders) {
-            console.log("reverse order find");
 
             if (reverseOreders.type == order.type) {
               let oldAmount = reverseOreders.amount;
@@ -272,7 +294,7 @@ async function Run(orders) {
       }
     }
     else if (order.method == 'stop_limit') {
-      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
+      let item = await axios("http://18.170.26.150:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
         let price = item.data.data.ask;
         if (order.type == 'buy') {
@@ -339,7 +361,7 @@ async function Run(orders) {
     for (var k = 0; k < userOrders.length; k++) {
       let order = userOrders[k];
       if (order.status == 1) continue;
-      let findBinanceItem = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
+      let findBinanceItem = await axios("http://18.170.26.150:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (findBinanceItem != null) {
         let item = findBinanceItem.data.data;
         if (order.type == 'buy') {
