@@ -11,6 +11,7 @@ const DeviceSchema = new mongoose.Schema({
   isActive: { type: Boolean, required: false },
   loginTime: { type: Date, required: false },
   lastLoginTime: { type: Date, required: false },
+  loginRequest: { type: Number, required: false, default: 0 },
   status: { type: String, required: false, default: 1 },
   createdAt: {
     type: Date,

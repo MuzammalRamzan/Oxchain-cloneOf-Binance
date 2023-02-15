@@ -87,7 +87,7 @@ const login = async (req, res) => {
   } else {
     ip = "null";
   }
-  
+
 
   var notificationToken = req.body.notificationToken;
   let result = await authFile.apiKeyChecker(api_key_result);
@@ -218,6 +218,19 @@ const login = async (req, res) => {
         await siteNotifications.save();
       }
 
+      let loginRequest = 0;
+
+      let activeDeviceCheck = await Device.findOne({
+        user_id: user._id,
+        status: "1",
+      }).exec();
+
+
+      if (activeDeviceCheck != null) {
+        loginRequest = 1;
+      }
+
+
       let device = new Device({
         user_id: user._id,
         deviceName: deviceName,
@@ -225,6 +238,7 @@ const login = async (req, res) => {
         deviceOs: deviceOS,
         deviceVersion: deviceVersion,
         loginTime: Date.now(),
+        loginRequest: loginRequest,
         ip: ip,
         city: city,
       });
@@ -343,7 +357,7 @@ const login = async (req, res) => {
             console.log(networks[x].symbol);
             if (networks[x].symbol === "ERC") {
               console.log("Start ERC");
-              let url = "http://"+process.env.ERC20HOST+"/create_address";
+              let url = "http://" + process.env.ERC20HOST + "/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address;
@@ -351,7 +365,7 @@ const login = async (req, res) => {
 
             if (networks[x].symbol === "BSC") {
               console.log("Start BSC");
-              let url = "http://"+process.env.BSC20HOST+"/create_address";
+              let url = "http://" + process.env.BSC20HOST + "/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address;
@@ -359,7 +373,7 @@ const login = async (req, res) => {
 
             if (networks[x].symbol === "TRC") {
               console.log("Start TRC");
-              let url = "http://"+process.env.TRC20HOST+"/create_address";
+              let url = "http://" + process.env.TRC20HOST + "/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
               address = walletTest.data.data.address.base58;
@@ -369,7 +383,7 @@ const login = async (req, res) => {
               console.log("Start BTCNetwork");
               let createBTC = await axios.request({
                 method: "post",
-                url: "http://"+process.env.BTCSEQHOST,
+                url: "http://" + process.env.BTCSEQHOST,
                 data: "request=create_address",
                 headers: {
                   "Content-Type": "application/x-www-form-urlencoded",
@@ -381,7 +395,7 @@ const login = async (req, res) => {
 
             if (networks[x].symbol === "SOL") {
               console.log("Start SOL");
-              let url = "http://"+process.env.SOLANAHOST+"/create_address";
+              let url = "http://" + process.env.SOLANAHOST + "/create_address";
               let walletTest = await axios.post(url);
               privateKey = JSON.stringify(walletTest.data.data.pKey);
               address = walletTest.data.data.address;
@@ -531,6 +545,22 @@ const login = async (req, res) => {
             { $set: { applicantStatus } }
           );
         }
+
+
+
+
+        if (loginRequest == 1) {
+
+          return res.json({
+            status: "success",
+            data: data,
+            message: "login_request_send",
+            showableMessage: "Login request send",
+          });
+
+        }
+
+
 
         if (loginType == "mobile") {
           let response = await NotificationTokens.findOne({
