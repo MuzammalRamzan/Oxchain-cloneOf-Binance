@@ -39,6 +39,22 @@ const changePhone = async function (req, res) {
         }
       }
 
+      if (country_code == undefined || country_code == null || country_code == "") {
+        return res.json({ status: "fail", message: "country_code_not_found", showableMessage: "Country Code not found" });
+      }
+
+      if (newPhone == undefined || newPhone == null || newPhone == "") {
+        return res.json({ status: "fail", message: "new_phone_not_found", showableMessage: "New Phone not found" });
+      }
+
+
+      //if country code has + sign, remove it
+      if (country_code != undefined && country_code != null && country_code != "") {
+        if (country_code.includes("+")) {
+          country_code = country_code.replace("+", "");
+        }
+      }
+
       let checkForPhone = await User.findOne({
         phone_number: newPhone,
         country_code: country_code,
@@ -175,3 +191,4 @@ const changePhone = async function (req, res) {
   }
 };
 module.exports = changePhone;
+
