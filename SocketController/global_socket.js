@@ -77,8 +77,15 @@ route.get("/price", (req, res) => {
 
 route.get('/24hr', async (req,res) => {
     let data = await axios("https://api.binance.com/api/v3/ticker/24hr");
+    var symbol = req.query.symbol;
+    if(symbol != null) {
+        let item = data.data.filter((x) => x.symbol == symbol);
+        return res.json(item);
+    }
     return res.json(data.data);
 })
+
+
 
 route.listen(8542, () => {
     console.log("Server Ayakta");
