@@ -17,11 +17,11 @@ const FutureTransactionHistory = async (ws, user_id, filter) => {
 
     let table = await Transactions.find(request);
     
-    sockets.in(user_id).emit("cross",{ page: "future", type: 'transaction_history', content: table });
+    sockets.in(user_id).emit("future_transaction_history",{ page: "future", type: 'transaction_history', content: table });
 
     Transactions.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
         let table = await Transactions.find(request);
-        sockets.in(user_id).emit("cross",{ page: "future", type: 'transaction_history', content: table });
+        sockets.in(user_id).emit("future_transaction_history",{ page: "future", type: 'transaction_history', content: table });
     });
 }
 module.exports = FutureTransactionHistory;
