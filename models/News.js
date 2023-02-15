@@ -1,15 +1,23 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const NewsSchema = new mongoose.Schema({
-  // addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  addedBy: { type: String, required: true },
+  author: { type: String, required: true },
   title: { type: String, required: true },
-  description: { type: String },
+  description: { type: String, required: true },
   status: { type: Number, required: false, default: 1 },
-  category: { type: Number, required: true },
+  coverPhoto: {
+    type: String,
+    required: true,
+  },
+  category: {
+    type: String,
+    required: true,
+    enum: ['business', 'markets', 'technology', 'policy'],
+  },
+  is_top: { type: Boolean, default: false },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
-module.exports = mongoose.model("News", NewsSchema);
+module.exports = mongoose.model('News', NewsSchema);

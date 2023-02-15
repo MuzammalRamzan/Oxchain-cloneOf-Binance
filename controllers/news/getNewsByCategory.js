@@ -9,13 +9,14 @@ const getNews = async (req, res) => {
       return res.status(403).json({
         status: 'Failed',
         message: '403 Forbidden',
-        showableMessage: 'Forbidden 403, Please provide valid api key'
+        showableMessage: 'Forbidden 403, Please provide valid apikey '
       });
     }
 
     const { category } = req.query;
 
-    if (category >= 1 && category <= 4) {
+    if (category == "business" || category == "markets" || category == "technology" || category == "policy") {
+
       const allNews = await NewsModal.find({ category: category, status: 1 }).sort({ createdAt: -1 })
 
       if (allNews.length > 0) {
@@ -43,7 +44,7 @@ const getNews = async (req, res) => {
   catch (error) {
     // Log the error for debugging purposes
     return res.status(500).json({
-      status: 'fail',
+      status: 'Failed',
       message: 'Internal Server Error',
       showableMessage: error.message,
     });

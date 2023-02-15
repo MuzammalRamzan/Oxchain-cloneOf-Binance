@@ -214,6 +214,7 @@ const DerivativesClosedPNL = require('./controllers/orders/history/derivativesCl
 const DerivativesOrderHistory = require('./controllers/orders/history/derivativesOrderHistory.js');
 const getAllNews = require('./controllers/news/getAllNews');
 const getNews = require('./controllers/news/getNewsByCategory');
+const getTopNews = require('./controllers/news/getTopNews.js');
 
 
 
@@ -531,6 +532,7 @@ route.post('/updateSupportTicket', updateSupportTicket);
 route.post('/systemFeedback', addSystemFeedback);
 route.all("/getAllNews", upload.none(), getAllNews)
 route.all("/getNews", upload.none(), getNews)
+route.all("/getTopNews", getTopNews)
 route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
 	if (symbol == null || symbol == '') {
