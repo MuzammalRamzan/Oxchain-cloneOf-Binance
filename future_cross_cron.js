@@ -8,6 +8,10 @@ const Connection = require("./Connection");
 const FutureWalletModel = require("./models/FutureWalletModel.js");
 const { default: axios } = require("axios");
 var mongodbPass = process.env.MONGO_DB_PASS;
+const UserNotifications = require("./models/UserNotifications");
+const SiteNotificaitonModel = require("./models/SiteNotifications");
+const User = require("./models/User");
+const mailer = require("./mailer");
 
 const io = new Server();
 
@@ -62,7 +66,7 @@ async function Run(orders) {
     if (order.method == 'limit') {
       if (order.status == 0) continue;
       //let item = list.find(x => x.s == order.pair_name.replace('/', ''));
-      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
+      let item = await axios("http://18.170.26.150:8542/price?symbol=" + order.pair_name.replace("/", ""));
 
       if (item != null && item != '') {
         let price = item.data.data.ask;
@@ -72,19 +76,37 @@ async function Run(orders) {
             if (price <= order.target_price) {
 
               let user = await User.findOne({ _id: order.user_id });
-              if (user.email != null && user.email != '') {
+              let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
 
-                let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
-                if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
 
-                  if (SiteNotificaitonsCheck.trade == 1) {
+              if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                if (SiteNotificaitonsCheck.trade == 1) {
+                  let newNotification = new UserNotifications({
+                    user_id: user._id,
+                    title: "Order Filled",
+                    message: "Your order has been filled",
+                    read: false
+                  });
+
+                  await newNotification.save();
+
+                  if (user.email != null && user.email != '') {
                     mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
                   }
+
                 }
+
               }
 
+              const fee = order.usedUSDT * (order.type == 'buy' ? 0.02 : 0.07) / 100.0;
+              let totalUsedUSDT = usedUSDT - fee;
+
+              order.fee = fee; 
+              order.usedUSDT = totalUsedUSDT;
               order.status = 0;
               await order.save();
+              
               let n_order = new FutureOrder({
                 pair_id: order.pair_id,
                 pair_name: order.pair_name,
@@ -92,9 +114,9 @@ async function Run(orders) {
                 future_type: order.future_type,
                 method: order.method,
                 user_id: order.user_id,
-                usedUSDT: order.usedUSDT,
-                required_margin: order.usedUSDT,
-                isolated: order.isolated,
+                usedUSDT: order.totalUsedUSDT,
+                required_margin: totalUsedUSDT,
+                isolated: totalUsedUSDT,
                 sl: order.sl ?? 0,
                 tp: order.tp ?? 0,
                 target_price: order.target_price,
@@ -109,17 +131,32 @@ async function Run(orders) {
             if (price <= order.target_price) {
 
               let user = await User.findOne({ _id: order.user_id });
-              if (user.email != null && user.email != '') {
+              let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
 
-                let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
-                if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
 
-                  if (SiteNotificaitonsCheck.trade == 1) {
+              if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+
+                if (SiteNotificaitonsCheck.trade == 1) {
+                  let newNotification = new UserNotifications({
+                    user_id: user._id,
+                    title: "Order Filled",
+                    message: "Your order has been filled",
+                    read: false
+                  });
+
+                  await newNotification.save();
+
+                  if (user.email != null && user.email != '') {
                     mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
                   }
-                }
-              }
 
+                }
+
+              }
+              const fee = order.usedUSDT * (order.type == 'buy' ? 0.02 : 0.07) / 100.0;
+              let totalUsedUSDT = usedUSDT - fee;
+              order.fee = fee;
+              order.usedUSDT = totalUsedUSDT;
               order.status = 0;
               await order.save();
               let n_order = new FutureOrder({
@@ -129,9 +166,9 @@ async function Run(orders) {
                 future_type: order.future_type,
                 method: order.method,
                 user_id: order.user_id,
-                usedUSDT: order.usedUSDT,
-                required_margin: order.usedUSDT,
-                isolated: order.isolated,
+                usedUSDT: totalUsedUSDT,
+                required_margin: totalUsedUSDT,
+                isolated: totalUsedUSDT,
                 sl: order.sl ?? 0,
                 tp: order.tp ?? 0,
                 target_price: order.target_price,
@@ -163,7 +200,6 @@ async function Run(orders) {
           });
 
           if (reverseOreders) {
-            console.log("reverse order find");
 
             if (reverseOreders.type == order.type) {
               let oldAmount = reverseOreders.amount;
@@ -187,7 +223,6 @@ async function Run(orders) {
               //Tersine ise
               let checkusdt = (reverseOreders.usedUSDT + reverseOreders.pnl) * reverseOreders.leverage;
               if (checkusdt == order.usedUSDT * order.leverage) {
-                console.log("Bura 1");
                 reverseOreders.status = 1;
 
                 let userBalance = await FutureWalletModel.findOne({
@@ -281,7 +316,7 @@ async function Run(orders) {
     }
     else if (order.method == 'stop_limit') {
       //let item = list.find(x => x.s == order.pair_name.replace('/', ''));
-      let item = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
+      let item = await axios("http://18.170.26.150:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
         let price = item.data.data.ask;
         if (order.type == 'buy') {
@@ -350,7 +385,7 @@ async function Run(orders) {
       let order = userOrders[k];
       if (order.status == 1) continue;
       //let findBinanceItem = list.filter(x => x.s == order.pair_name.replace('/', ''));
-      let findBinanceItem = await axios("http://18.130.193.166:8542/price?symbol=" + order.pair_name.replace("/", ""));
+      let findBinanceItem = await axios("http://18.170.26.150:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (findBinanceItem != null) {
         let item = findBinanceItem.data;
         if (order.type == 'buy') {
@@ -360,7 +395,6 @@ async function Run(orders) {
           let tp = parseFloat(order.tp);
           let sl = parseFloat(order.sl);
           if (tp != 0 && price >= tp) {
-            console.log("TP OLDU");
             order.status = 1;
             let w = await FutureWalletModel.findOne({ user_id: order.user_id });
             let newBalance = parseFloat(w.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
@@ -369,7 +403,6 @@ async function Run(orders) {
             await w.save();
           }
           if (sl != 0 && price <= sl) {
-            console.log("SL OLDU");
 
             order.status = 1;
             let w = await FutureWalletModel.findOne({ user_id: order.user_id });

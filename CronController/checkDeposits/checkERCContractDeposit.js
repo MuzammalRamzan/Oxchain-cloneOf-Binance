@@ -73,7 +73,6 @@ const checkERCContractDeposit = async () => {
     }
   } catch (err) {
     console.log(err);
-    console.log("ERC Contract Deposit err : ", err.message);
   }
 }
 module.exports = checkERCContractDeposit;

@@ -127,8 +127,7 @@ const addFutureOrder = async (req, res) => {
     var urlPair = getPair.name.replace("/", "");
 
     let url =
-        'http://18.130.193.166:8542/price?symbol=' + urlPair;
-    console.log(url);
+        'http://18.170.26.150:8542/price?symbol=' + urlPair;
     result = await axios(url);
     var price = parseFloat(result.data.data.ask);
     if (future_type == "isolated") {
@@ -173,8 +172,6 @@ const addFutureOrder = async (req, res) => {
                 status: 1,
             });
             await order.save();
-            const fee = (amount * getPair.tradeFee) / 100;
-            await setFeeCredit(user_id, getPair._id, fee);
 
             if (apiResult === false) {
                 apiRequest.status = 1;
@@ -194,7 +191,7 @@ const addFutureOrder = async (req, res) => {
                 return;
             }
 
-            
+
             target_price = parseFloat(target_price);
 
             if (target_price <= 0) {
@@ -275,8 +272,6 @@ const addFutureOrder = async (req, res) => {
                 status: 1,
             });
             await order.save();
-            const fee = (amount * getPair.tradeFee) / 100;
-            await setFeeCredit(user_id, getPair._id, fee);
             if (apiResult === false) {
                 apiRequest.status = 1;
                 await apiRequest.save();
@@ -287,7 +282,8 @@ const addFutureOrder = async (req, res) => {
             amount =
                 ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
             let usedUSDT = (amount * price) / req.body.leverage;
-
+            const fee = usedUSDT * (type == 'buy' ? 0.02 : 0.07) / 100.0;
+            let totalUsedUSDT = usedUSDT - fee;
             let reverseOreders = await FutureOrder.findOne({
                 user_id: req.body.user_id,
                 pair_id: getPair._id,
@@ -297,9 +293,6 @@ const addFutureOrder = async (req, res) => {
             });
 
             if (reverseOreders) {
-                console.log("reverse order find");
-                console.log(reverseOreders);
-                console.log("222");
                 if (reverseOreders.leverage > leverage) {
                     res.json({ status: "fail", message: "Leverage cannot be smaller" });
                     return;
@@ -309,11 +302,10 @@ const addFutureOrder = async (req, res) => {
                     let oldUsedUSDT = reverseOreders.usedUSDT;
                     let oldPNL = reverseOreders.pnl;
                     let oldLeverage = reverseOreders.leverage;
-                    let newUsedUSDT = oldUsedUSDT + usedUSDT + oldPNL;
-                    console.log(oldUsedUSDT, " | ", usedUSDT, " | ", oldPNL);
-                    console.log(newUsedUSDT);
+                    let newUsedUSDT = oldUsedUSDT + totalUsedUSDT + oldPNL;
                     reverseOreders.usedUSDT = newUsedUSDT;
                     reverseOreders.open_price = price;
+                    reverseOreders.fee += fee;
                     reverseOreders.pnl = 0;
                     reverseOreders.leverage = leverage;
                     reverseOreders.open_time = Date.now();
@@ -331,6 +323,7 @@ const addFutureOrder = async (req, res) => {
                         apiRequest.status = 1;
                         await apiRequest.save();
                     }
+                    await setFeeCredit(user_id, getPair._id, fee);
                     res.json({ status: "success", data: reverseOreders });
                     return;
                 } else {
@@ -338,7 +331,7 @@ const addFutureOrder = async (req, res) => {
                     let checkusdt =
                         (reverseOreders.usedUSDT + reverseOreders.pnl) *
                         reverseOreders.leverage;
-                    if (checkusdt == usedUSDT * leverage) {
+                    if (checkusdt == totalUsedUSDT * leverage) {
                         reverseOreders.status = 1;
                         userBalance = await FutureWalletModel.findOne({
 
@@ -349,18 +342,20 @@ const addFutureOrder = async (req, res) => {
                             reverseOreders.pnl +
                             reverseOreders.usedUSDT;
                         await userBalance.save();
+                        reverseOreders.fee += fee;
                         await reverseOreders.save();
                         if (apiResult === false) {
                             apiRequest.status = 1;
                             await apiRequest.save();
                         }
+                        await setFeeCredit(user_id, getPair._id, fee);
                         res.json({ status: "success", data: reverseOreders });
                         return;
                     }
 
                     if (checkusdt > usedUSDT * leverage) {
                         let writeUsedUSDT =
-                            reverseOreders.usedUSDT + reverseOreders.pnl - usedUSDT;
+                            reverseOreders.usedUSDT + reverseOreders.pnl - totalUsedUSDT;
                         if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
                         reverseOreders.usedUSDT = writeUsedUSDT;
                         reverseOreders.amount =
@@ -376,6 +371,7 @@ const addFutureOrder = async (req, res) => {
                             apiRequest.status = 1;
                             await apiRequest.save();
                         }
+                        await setFeeCredit(user_id, getPair._id, fee);
                         res.json({ status: "success", data: reverseOreders });
                         return;
                     } else {
@@ -388,20 +384,20 @@ const addFutureOrder = async (req, res) => {
                         */
 
                         let ilkIslem = reverseOreders.usedUSDT;
-                        let tersIslem = usedUSDT;
+                        let tersIslem = totalUsedUSDT;
                         let data = ilkIslem - tersIslem;
-                        console.log("DATASSS : ", data);
+
                         userBalance = await FutureWalletModel.findOne({
 
                             user_id: req.body.user_id,
                         }).exec();
                         userBalance.amount = splitLengthNumber(userBalance.amount + data);
                         await userBalance.save();
-
+                        reverseOreders.fee += fee;
                         reverseOreders.type = type;
                         reverseOreders.leverage = leverage;
                         let writeUsedUSDT =
-                            reverseOreders.usedUSDT + reverseOreders.pnl - usedUSDT;
+                            reverseOreders.usedUSDT + reverseOreders.pnl - totalUsedUSDT;
                         if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
                         reverseOreders.usedUSDT = writeUsedUSDT;
                         //reverseOreders.amount = ((((reverseOreders.usedUSDT + reverseOreders.pnl) * leverage) - (usedUSDT * leverage)) / price);
@@ -412,6 +408,7 @@ const addFutureOrder = async (req, res) => {
                             apiRequest.status = 1;
                             await apiRequest.save();
                         }
+                        await setFeeCredit(user_id, getPair._id, fee);
                         res.json({ status: "success", data: reverseOreders });
                         return;
                     }
@@ -425,13 +422,14 @@ const addFutureOrder = async (req, res) => {
                 let order = new FutureOrder({
                     pair_id: getPair._id,
                     pair_name: getPair.name,
+                    fee: fee,
                     type: type,
                     future_type: future_type,
                     method: method,
                     user_id: user_id,
-                    usedUSDT: usedUSDT,
-                    required_margin: usedUSDT,
-                    isolated: usedUSDT,
+                    usedUSDT: totalUsedUSDT,
+                    required_margin: totalUsedUSDT,
+                    isolated: totalUsedUSDT,
                     sl: req.body.sl ?? 0,
                     tp: req.body.tp ?? 0,
                     target_price: 0.0,
@@ -441,7 +439,7 @@ const addFutureOrder = async (req, res) => {
                     status: 0
                 });
                 await order.save();
-                const fee = (amount * getPair.tradeFee) / 100;
+
                 await setFeeCredit(user_id, getPair._id, fee);
                 if (apiResult === false) {
                     apiRequest.status = 1;
@@ -486,8 +484,7 @@ const addFutureOrder = async (req, res) => {
                 status: 1,
             });
             await order.save();
-            const fee = (amount * getPair.tradeFee) / 100;
-            await setFeeCredit(user_id, getPair._id, fee);
+
             if (apiResult === false) {
                 apiRequest.status = 1;
                 await apiRequest.save();
@@ -585,11 +582,13 @@ const addFutureOrder = async (req, res) => {
             res.json({ status: "success", data: order });
             return;
         } else if (req.body.method == "market") {
-            console.log(userBalance.amount, " | ", percent, " | ", price, " | ", leverage);
+
             let amount =
                 ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
             let usedUSDT = (amount * price) / req.body.leverage;
-            console.log("used usdrt : ", usedUSDT);
+            const fee = usedUSDT * (type == 'buy' ? 0.02 : 0.07) / 100.0;
+            let totalUsedUSDT = usedUSDT - fee;
+
             let reverseOreders = await FutureOrder.findOne({
                 user_id: req.body.user_id,
                 pair_id: getPair._id,
@@ -597,9 +596,7 @@ const addFutureOrder = async (req, res) => {
                 method: "market",
                 status: 0,
             }).exec();
-
             if (reverseOreders) {
-                console.log("reverse order find");
                 if (reverseOreders.leverage > leverage) {
                     res.json({ status: "fail", message: "Leverage cannot be smaller" });
                     return;
@@ -609,13 +606,12 @@ const addFutureOrder = async (req, res) => {
                     let oldUsedUSDT = reverseOreders.usedUSDT;
                     let oldPNL = reverseOreders.pnl;
                     let oldLeverage = reverseOreders.leverage;
-                    let newUsedUSDT = oldUsedUSDT + usedUSDT + oldPNL;
-                    console.log(oldUsedUSDT, " | ", usedUSDT, " | ", oldPNL);
-                    console.log(newUsedUSDT);
-                    console.log("new amount : ", (newUsedUSDT * leverage) / price);
+                    let newUsedUSDT = oldUsedUSDT + totalUsedUSDT + oldPNL;
+
                     reverseOreders.usedUSDT = newUsedUSDT;
                     reverseOreders.open_price = price;
                     reverseOreders.pnl = 0;
+                    reverseOreders.fee += fee;
                     reverseOreders.leverage = leverage;
                     reverseOreders.open_time = Date.now();
                     reverseOreders.amount = splitLengthNumber((newUsedUSDT * leverage) / price);
@@ -630,6 +626,7 @@ const addFutureOrder = async (req, res) => {
                         apiRequest.status = 1;
                         await apiRequest.save();
                     }
+                    await setFeeCredit(user_id, getPair._id, fee);
                     res.json({ status: "success", data: reverseOreders });
                     return;
                 } else {
@@ -637,7 +634,7 @@ const addFutureOrder = async (req, res) => {
                     let checkusdt =
                         (reverseOreders.usedUSDT + reverseOreders.pnl) *
                         reverseOreders.leverage;
-                    if (checkusdt == usedUSDT * leverage) {
+                    if (checkusdt == totalUsedUSDT * leverage) {
                         reverseOreders.status = 1;
                         userBalance = await FutureWalletModel.findOne({
                             user_id: req.body.user_id,
@@ -646,21 +643,24 @@ const addFutureOrder = async (req, res) => {
                             userBalance.amount +
                             reverseOreders.pnl +
                             reverseOreders.usedUSDT;
+                        reverseOreders.fee += fee;
                         await userBalance.save();
                         await reverseOreders.save();
                         if (apiResult === false) {
                             apiRequest.status = 1;
                             await apiRequest.save();
                         }
+                        await setFeeCredit(user_id, getPair._id, fee);
                         res.json({ status: "success", data: reverseOreders });
                         return;
                     }
 
-                    if (checkusdt > usedUSDT * leverage) {
+                    if (checkusdt > totalUsedUSDT * leverage) {
                         let writeUsedUSDT =
-                            reverseOreders.usedUSDT + reverseOreders.pnl - usedUSDT;
+                            reverseOreders.usedUSDT + reverseOreders.pnl - totalUsedUSDT;
                         if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
                         reverseOreders.usedUSDT = writeUsedUSDT;
+                        reverseOreders.fee += fee;
                         reverseOreders.amount =
                             (writeUsedUSDT * reverseOreders.leverage) / price;
                         userBalance = await FutureWalletModel.findOne({
@@ -673,6 +673,7 @@ const addFutureOrder = async (req, res) => {
                             apiRequest.status = 1;
                             await apiRequest.save();
                         }
+                        await setFeeCredit(user_id, getPair._id, fee);
                         res.json({ status: "success", data: reverseOreders });
                         return;
                     } else {
@@ -685,9 +686,8 @@ const addFutureOrder = async (req, res) => {
                         */
 
                         let ilkIslem = reverseOreders.usedUSDT;
-                        let tersIslem = usedUSDT;
+                        let tersIslem = totalUsedUSDT;
                         let data = ilkIslem - tersIslem;
-                        console.log("DATASSS : ", data);
                         userBalance = await FutureWalletModel.findOne({
                             user_id: req.body.user_id,
                         }).exec();
@@ -697,16 +697,18 @@ const addFutureOrder = async (req, res) => {
                         reverseOreders.type = type;
                         reverseOreders.leverage = leverage;
                         let writeUsedUSDT =
-                            reverseOreders.usedUSDT + reverseOreders.pnl - usedUSDT;
+                            reverseOreders.usedUSDT + reverseOreders.pnl - totalUsedUSDT;
                         if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
                         reverseOreders.usedUSDT = writeUsedUSDT;
                         //reverseOreders.amount = ((((reverseOreders.usedUSDT + reverseOreders.pnl) * leverage) - (usedUSDT * leverage)) / price);
                         reverseOreders.amount = splitLengthNumber((writeUsedUSDT * leverage) / price);
+                        reverseOreders.fee += fee;
                         await reverseOreders.save();
                         if (apiResult === false) {
                             apiRequest.status = 1;
                             await apiRequest.save();
                         }
+                        await setFeeCredit(user_id, getPair._id, fee);
                         res.json({ status: "success", data: reverseOreders });
                         return;
                     }
@@ -722,12 +724,13 @@ const addFutureOrder = async (req, res) => {
                     pair_id: getPair._id,
                     pair_name: getPair.name,
                     type: type,
+                    fee : fee,
                     future_type: future_type,
                     method: method,
                     user_id: user_id,
-                    usedUSDT: usedUSDT,
-                    required_margin: usedUSDT,
-                    isolated: usedUSDT,
+                    usedUSDT: totalUsedUSDT,
+                    required_margin: totalUsedUSDT,
+                    isolated: totalUsedUSDT,
                     sl: req.body.sl ?? 0,
                     tp: req.body.tp ?? 0,
                     target_price: 0.0,
@@ -737,12 +740,13 @@ const addFutureOrder = async (req, res) => {
                     status: 0
                 });
                 await order.save();
-                const fee = (amount * getPair.tradeFee) / 100;
+                
                 await setFeeCredit(req.body.user_id, getPair._id, fee);
                 if (apiResult === false) {
                     apiRequest.status = 1;
                     await apiRequest.save();
                 }
+                await setFeeCredit(user_id, getPair._id, fee);
                 res.json({ status: "success", data: order });
                 return;
             }

@@ -31,6 +31,7 @@ const Wallet = require('./adminController/Wallet');
 const Withdraw = require('./adminController/Withdraw');
 const Earnings = require('./adminController/Earnings');
 const AdminDashboard = require('./adminController/AdminDashboard');
+const getUser = require('./adminController/getUser');
 const GetKyc = require('./adminController/GetKyc');
 const GetRecidency = require('./adminController/GetRecidency');
 const ApproveKyc = require('./adminController/ApproveKyc');
@@ -38,6 +39,7 @@ const ApproveRecidency = require('./adminController/ApproveRecidency');
 const DenyKyc = require('./adminController/DenyKyc');
 const DenyRecidency = require('./adminController/DenyRecidency');
 const { getUsersDetails } = require('./adminController/getUserDetails');
+const getUserKYCandRecidency = require('./adminController/getUserKYCandRecidency');
 //refferals
 const { getAllRefferals } = require('./adminController/Referral');
 //supportTeam
@@ -85,6 +87,10 @@ route.all('/DenyKyc', upload.none(), DenyKyc);
 route.all('/GetKyc', upload.none(), GetKyc);
 route.all('/GetRecidency', upload.none(), GetRecidency);
 route.all('/DenyRecidency', upload.none(), DenyRecidency);
+
+
+route.all('/getUserKYCandRecidency', upload.none(), getUserKYCandRecidency);
+route.all('/getUser', upload.none(), getUser);
 
 route.all('/listAdmin', upload.none(), Admin.listAdmin);
 route.all('/getAdmin', upload.none(), Admin.getAdmin);

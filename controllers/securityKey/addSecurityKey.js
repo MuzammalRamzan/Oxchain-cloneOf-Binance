@@ -27,7 +27,7 @@ const addSecurityKey = async function (req, res) {
   }).lean();
 
   if (securityKey)
-    return res.json({ status: "success", data: "secury_key_active" });
+    return res.json({ status: "success", data: "secury_key_active", showableMessage: "Security key already active" });
 
   const user = await User.findOne({ _id: user_id }).lean();
   let twofaCheck;
@@ -37,7 +37,7 @@ const addSecurityKey = async function (req, res) {
   console.log(user.twofa);
   if (user && user.twofa) {
     twofaCheck = await authFile.verifyToken(twofapin, user.twofa);
-    if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed" });
+    if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed", showableMessage: "Wrong 2FA pin" });
 
   } else {
     if (user.email != null) {

@@ -7,6 +7,8 @@ var authFile = require("../../auth.js");
 var utilities = require("../../utilities.js");
 const ChangeLogsModel = require("../../models/ChangeLogs");
 const mailer = require("../../mailer");
+const UserNotifications = require("../../models/UserNotifications");
+const SiteNotifications = require("../../models/SiteNotifications");
 
 
 const changePassword = async function (req, res) {
@@ -16,6 +18,8 @@ const changePassword = async function (req, res) {
   var api_key_result = req.body.api_key;
   let result = await authFile.apiKeyChecker(api_key_result);
 
+
+  console.log("geldi");
   if (result === true) {
 
     let user = await User.findOne({
@@ -28,6 +32,7 @@ const changePassword = async function (req, res) {
 
       var email = user["email"];
       var phone = user["phone_number"];
+      var twofa = user["twofa"];
       let check1 = "";
       let check3 = "";
 
@@ -64,6 +69,19 @@ const changePassword = async function (req, res) {
           });
       }
 
+      if (twofa != undefined && twofa != null && twofa != "") {
+
+        if (req.body.twofapin == undefined || req.body.twofapin == null || req.body.twofapin == "") {
+          return res.json({ status: "fail", message: "verification_failed, send 'twofapin'", showableMessage: "Wrong 2FA Pin" });
+        }
+
+        let resultt = await authFile.verifyToken(req.body.twofapin, twofa);
+
+        if (resultt === false) {
+          return res.json({ status: "fail", message: "verification_failed", showableMessage: "Wrong 2FA Pin" });
+        }
+      }
+
       if (check1 != "") {
         check1.status = 1;
         check1.save();
@@ -75,7 +93,7 @@ const changePassword = async function (req, res) {
       }
 
       user.password = utilities.hashData(password);
-      user.save();
+      await user.save();
 
       let changeLog = new ChangeLogsModel({
         user_id: user_id,
@@ -83,14 +101,37 @@ const changePassword = async function (req, res) {
         device: req.body.device ?? "Unknown",
         ip: req.body.ip ?? "Unknown",
         city: req.body.city ?? "Unknown",
+        deviceOS: req.body.deviceOS ?? "Unknown",
+
       });
       changeLog.save();
 
-      mailer.sendMail(user.email, "Password Changed", "Password Changed", "Your password has been changed. If you did not do this, please contact us immediately.");
-      res.json({ status: "success", message: "password_changed", showableMessage: "Password Changed" });
+
+      let userNotification = new UserNotifications({
+        user_id: user_id,
+        title: "Password Changed",
+        message: "Your password has been changed. If you did not do this, please contact us immediately.",
+        read: false,
+      });
+
+      await userNotification.save();
+
+
+      let notificationCheck = SiteNotifications.findOne({
+        user_id: user_id
+      }).exec();
+
+      if (notificationCheck != null) {
+
+        if (notificationCheck.system_messages == 1 || notificationCheck.system_messages == "1") {
+          mailer.sendMail(user.email, "Password Changed", "Password Changed", "Your password has been changed. If you did not do this, please contact us immediately.");
+        }
+      }
+
+      return res.json({ status: "success", message: "password_changed", showableMessage: "Password Changed" });
 
     } else {
-      res.json({ status: "fail", message: "user_not_found", showableMessage: "User not found" });
+      return res.json({ status: "fail", message: "user_not_found", showableMessage: "User not found" });
     }
 
 

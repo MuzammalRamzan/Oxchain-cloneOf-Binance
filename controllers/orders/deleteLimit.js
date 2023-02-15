@@ -8,6 +8,7 @@ const deleteLimit = async (req, res) => {
   let order = await Orders.findOne({
     _id: req.body.order_id,
     user_id: req.body.user_id,
+    status : 1,
     type: "limit",
   }).exec();
   if (order) {

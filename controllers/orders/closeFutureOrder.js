@@ -18,22 +18,19 @@ const closeFutureOrder = async (req, res) => {
       res.json({ status: "fail", message: "invalid_order" });
       return;
     }
-    console.log("1");
     
     let getOrderDetail = await FutureOrder.findOne({ _id: orderId }).exec();
     let getPair = await Pairs.findOne({ _id: getOrderDetail.pair_id }).exec();
     var urlPair = getPair.name.replace("/", "");
     
     let url =
-      'http://18.130.193.166:8542/price?symbol=' + urlPair;
-      console.log(url);
+      'http://18.170.26.150:8542/price?symbol=' + urlPair;
     result = await axios(url);
     var price = result.data.data.ask;
     let doc = await FutureOrder.findOneAndUpdate(
       { _id: orderId },
       { $set: { status: 1, close_time: Date.now(), close_price: price } }
     );
-    console.log(doc);
     if (doc.status == 1) {
       res.json({ status: "fail", message: "Order is closed" });
       return;
@@ -55,7 +52,6 @@ const closeFutureOrder = async (req, res) => {
       await marginWallet.save();
     }
 
-    console.log("ok");
 
     res.json({ status: "success", data: doc });
   } catch (err) {

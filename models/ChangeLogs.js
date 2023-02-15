@@ -6,6 +6,7 @@ const ChangeLogsSchema = new mongoose.Schema({
     ip: { type: String, required: false },
     device: { type: String, required: false },
     city: { type: String, required: false },
+    deviceOS: { type: String, required: false },
     status: { type: Number, required: false, default: 0 },
     createdAt: {
         type: Date,
