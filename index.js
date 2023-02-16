@@ -215,6 +215,17 @@ const SpotOrderHistory = require('./controllers/orders/history/spotOrderHistory.
 const DerivativesClosedPNL = require('./controllers/orders/history/derivativesClosedPL.js');
 const DerivativesOrderHistory = require('./controllers/orders/history/derivativesOrderHistory.js');
 
+
+//AI TRADE
+const getAIWallet = require('./controllers/AITrade/getWallet.js');
+const transferBalanceAI = require('./controllers/AITrade/transferBalance.js');
+const getAITransferLogs = require('./controllers/AITrade/getTransferLogs.js');
+
+const getAISettings = require('./controllers/AITrade/getAISettings.js');
+const setAISettings = require('./controllers/AITrade/setSettings.js');
+const updateAISettings = require('./controllers/AITrade/updateSettings.js');
+
+
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -250,6 +261,19 @@ route.use(function (err, req, res, next) {
 route.get('/', (req, res) => {
 	res.send('success');
 });
+
+
+
+//AI Trade
+route.all('/getAIWallet', getAIWallet);
+route.all('/transferBalanceAI', transferBalanceAI);
+route.all('/getAITransferLogs', getAITransferLogs);
+
+route.all('/getAISettings', getAISettings);
+route.all('/setAISettings', setAISettings);
+route.all('/updateAISettings', updateAISettings);
+
+
 
 route.all('/delete2fa', Delete2fa);
 
@@ -323,6 +347,9 @@ route.post('/getBonusHistory', getBonusHistory);
 route.all('/UploadKYC', upload.any(), UploadKYC);
 route.all('/idverification', upload.any(), UploadKYC);
 route.all('/UploadRecidency', upload.any(), UploadRecidency);
+
+
+
 
 //AUTH
 route.all('/login', upload.none(), login);
@@ -416,7 +443,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) {}
+	async function (req, res) { }
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
