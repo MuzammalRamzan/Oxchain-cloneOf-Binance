@@ -12,7 +12,6 @@ const getMembersGraphData = async (req, res) => {
 			});
 		}
 		const referrals = await UserRef.find();
-		const totalMembers = await UserRef.countDocuments();
 		const referralCount = {};
 		referrals.forEach((referral) => {
 			const date = referral.createdAt.toLocaleDateString('en-US', {
@@ -35,7 +34,6 @@ const getMembersGraphData = async (req, res) => {
 			message: 'graph Data for members joining',
 			data: {
 				data,
-				totalMembers,
 			},
 		});
 	} catch (error) {
