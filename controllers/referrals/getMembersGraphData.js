@@ -2,7 +2,7 @@ const UserRef = require('../../models/UserRef');
 const authFile = require('../../auth');
 const getMembersGraphData = async (req, res) => {
 	try {
-		const apiKey = req.body.apiKey;
+		const apiKey = req.body.api_key;
 		const isAuthenticated = await authFile.apiKeyChecker(apiKey);
 		if (!isAuthenticated) {
 			return res.status(403).json({
@@ -12,7 +12,6 @@ const getMembersGraphData = async (req, res) => {
 			});
 		}
 		const referrals = await UserRef.find();
-		const totalMembers = await UserRef.countDocuments();
 		const referralCount = {};
 		referrals.forEach((referral) => {
 			const date = referral.createdAt.toLocaleDateString('en-US', {
@@ -35,7 +34,6 @@ const getMembersGraphData = async (req, res) => {
 			message: 'graph Data for members joining',
 			data: {
 				data,
-				totalMembers,
 			},
 		});
 	} catch (error) {

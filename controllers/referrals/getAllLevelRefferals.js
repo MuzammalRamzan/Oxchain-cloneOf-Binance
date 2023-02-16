@@ -6,7 +6,7 @@ const FutureWalletModel = require('../../models/FutureWalletModel');
 const mongoose = require('mongoose');
 const getAllLevelReferrals = async (req, res) => {
 	try {
-		const apiKey = req.body.apiKey;
+		const apiKey = req.body.api_key;
 		const isAuthenticated = await authFile.apiKeyChecker(apiKey);
 		if (!isAuthenticated) {
 			return res.status(403).json({
@@ -21,6 +21,7 @@ const getAllLevelReferrals = async (req, res) => {
 		let totalFutureTradeVolume = 0;
 		let totalSpotTradeVolume = 0;
 		const referrals = await Referral.find();
+		const totalMembers = await UserRef.countDocuments();
 		for (const referral of referrals) {
 			let currentRef = referral;
 			for (let i = 0; i < 4; i++) {
@@ -85,6 +86,7 @@ const getAllLevelReferrals = async (req, res) => {
 				tradeVolume,
 				totalSpotTradeVolume,
 				totalFutureTradeVolume,
+				totalMembers,
 			},
 		});
 	} catch (error) {
