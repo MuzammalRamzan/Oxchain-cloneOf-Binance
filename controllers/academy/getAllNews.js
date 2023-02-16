@@ -1,7 +1,7 @@
-const NewsModal = require("../../models/News");
+const AcademyModal = require("../../models/Academy");
 const authFile = require('../../auth');
 
-const getTopNews = async (req, res) => {
+const getAllTopics = async (req, res) => {
   try {
     const { api_key } = req.body;
     const isAuthenticated = await authFile.apiKeyChecker(api_key);
@@ -12,20 +12,18 @@ const getTopNews = async (req, res) => {
         showableMessage: 'Forbidden 403, Please provide valid api key'
       });
     }
-
-    const allTopNews = await NewsModal.find({ is_top: true, status: 1 }).sort({ createdAt: -1 })
-
-    if (allTopNews?.length > 0) {
+    const allTopics = await AcademyModal.find({ status: 1 }).sort({ createdAt: -1 });
+    if (allTopics?.length > 0) {
       return res.status(200).json({
-        status: "success",
-        message: "News found",
-        news: allTopNews,
+        status: "Success",
+        message: "Topics found",
+        news: allTopics,
       });
     } else
       return res.status(404).json({
         status: "Failed",
-        message: "News not found",
-        howableMessage: "News not found"
+        message: "Topics not found",
+        howableMessage: "Topics not found"
       });
   }
   catch (error) {
@@ -37,4 +35,4 @@ const getTopNews = async (req, res) => {
     });
   }
 }
-module.exports = getTopNews;
+module.exports = getAllTopics;

@@ -215,6 +215,7 @@ const DerivativesOrderHistory = require('./controllers/orders/history/derivative
 const getAllNews = require('./controllers/news/getAllNews');
 const getNews = require('./controllers/news/getNewsByCategory');
 const getTopNews = require('./controllers/news/getTopNews.js');
+const getAllTopics = require('./controllers/academy/getAllNews.js');
 
 
 
@@ -532,7 +533,8 @@ route.post('/updateSupportTicket', updateSupportTicket);
 route.post('/systemFeedback', addSystemFeedback);
 route.all("/getAllNews", upload.none(), getAllNews)
 route.all("/getNews", upload.none(), getNews)
-route.all("/getTopNews", getTopNews)
+route.all("/getTopNews", upload.none(), getTopNews)
+route.all("/getAllTopics", upload.none(), getAllTopics)
 route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
 	if (symbol == null || symbol == '') {

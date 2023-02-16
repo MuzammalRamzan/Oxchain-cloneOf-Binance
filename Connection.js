@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 async function connection() {
-
     await mongoose.connect("mongodb://" +
         process.env.DOCUMENT_DB_UID
         + ":" +
@@ -8,6 +7,7 @@ async function connection() {
         + "@" + process.env.DBIP + "/?retryWrites=true&w=majority");
     console.log(mongoose.connection.readyState);
     console.log("DB Connected");
+
     return;
     var mongodbPass = process.env.MONGO_DB_PASS;
     if (process.env.NODE_ENV == 'development') {
