@@ -160,6 +160,9 @@ const getVerificationIds = require('./controllers/verificationId/getVerification
 const topReferralEarners = require('./controllers/referrals/topReferralEarners');
 const myReferralEarns = require('./controllers/referrals/myReferralEarns');
 const getAllLevelReferrals = require('./controllers/referrals/getAllLevelRefferals.js');
+const getEarningsGraphData = require('./controllers/referrals/getEarningsGraphData.js');
+const getMembersGraphData = require('./controllers/referrals/getMembersGraphData.js');
+const getAllRefUser = require('./controllers/referrals/getAllRefUser.js');
 
 const getKYCStatus = require('./controllers/kyc/getStatus');
 const getApiKeys = require('./controllers/api/getApiKeys');
@@ -218,6 +221,15 @@ const getTopNews = require('./controllers/news/getTopNews.js');
 const getAllTopics = require('./controllers/academy/getAllNews.js');
 
 
+//AI TRADE
+const getAIWallet = require('./controllers/AITrade/getWallet.js');
+const transferBalanceAI = require('./controllers/AITrade/transferBalance.js');
+const getAITransferLogs = require('./controllers/AITrade/getTransferLogs.js');
+
+const getAISettings = require('./controllers/AITrade/getAISettings.js');
+const setAISettings = require('./controllers/AITrade/setSettings.js');
+const updateAISettings = require('./controllers/AITrade/updateSettings.js');
+
 
 route.use(
 	session({
@@ -254,6 +266,19 @@ route.use(function (err, req, res, next) {
 route.get('/', (req, res) => {
 	res.send('success');
 });
+
+
+
+//AI Trade
+route.all('/getAIWallet', getAIWallet);
+route.all('/transferBalanceAI', transferBalanceAI);
+route.all('/getAITransferLogs', getAITransferLogs);
+
+route.all('/getAISettings', getAISettings);
+route.all('/setAISettings', setAISettings);
+route.all('/updateAISettings', updateAISettings);
+
+
 
 route.all('/delete2fa', Delete2fa);
 
@@ -328,6 +353,9 @@ route.all('/UploadKYC', upload.any(), UploadKYC);
 route.all('/idverification', upload.any(), UploadKYC);
 route.all('/UploadRecidency', upload.any(), UploadRecidency);
 
+
+
+
 //AUTH
 route.all('/login', upload.none(), login);
 route.all('/sendMailPin', sendMailPin);
@@ -348,11 +376,8 @@ route.all('/spotTradeHistory', SpotTradeHistory);
 route.all('/spotCurrentOrders', SpotCurrentOrders);
 route.all('/spotOrderHistory', SpotOrderHistory);
 
-
 route.all('/derivativesOrderHistory', DerivativesOrderHistory);
 route.all('/derivativesClosedPNL', DerivativesClosedPNL);
-
-
 
 route.all('/removePhone', upload.none(), removePhone);
 route.all('/removeEmail', upload.none(), removeEmail);
@@ -454,6 +479,9 @@ route.all('/request_campus', upload.none(), CampusRequestJoin);
 route.all('/getWallet', upload.none(), getWallet);
 route.all('/getUserLevel', upload.none(), GetUserLevel);
 route.all('/getAllLevelReferrals', upload.none(), getAllLevelReferrals);
+route.all('/getEarningsGraphData', upload.none(), getEarningsGraphData);
+route.all('/getMembersGraphData', upload.none(), getMembersGraphData);
+route.all('/getAllRefUser', upload.none(), getAllRefUser);
 
 route.post('/cancelAllLimit', cancelAllLimit);
 route.post('/cancelAllStopLimit', cancelAllStopLimit);
