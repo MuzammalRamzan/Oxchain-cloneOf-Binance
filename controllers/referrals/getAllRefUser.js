@@ -2,12 +2,15 @@ const FeeModel = require('../../models/FeeModel');
 const authFile = require('../../auth');
 const UserRef = require('../../models/UserRef');
 const FutureWalletModel = require('../../models/FutureWalletModel');
+const TradeVolume = require('../../models/TradeVolumeModel');
+const User = require('../../models/User');
 
 const mongoose = require('mongoose');
-
 const getAllRefUser = async (req, res) => {
 	try {
 		const apiKey = req.body.api_key;
+		const page = req.body.page || 1;
+		const limit = req.body.limit || 10;
 		const isAuthenticated = await authFile.apiKeyChecker(apiKey);
 		if (!isAuthenticated) {
 			return res.status(403).json({
@@ -16,12 +19,13 @@ const getAllRefUser = async (req, res) => {
 				showableMessage: 'Forbidden 403, Please provide valid api key',
 			});
 		}
-		const refUsers = await UserRef.find();
 
+		// Set the number of records to be returned per page
+		const startIndex = (page - 1) * limit;
+		const totalDocs = await UserRef.countDocuments();
+		let refUsers = await UserRef.find().skip(startIndex).limit(limit).lean();
 		const userIds = refUsers.map((refUser) => refUser.user_id);
-
 		const userTotals = [];
-
 		for (let i = 0; i < userIds.length; i++) {
 			const futureSum = await FutureWalletModel.aggregate([
 				{
@@ -35,6 +39,21 @@ const getAllRefUser = async (req, res) => {
 					$group: {
 						_id: null,
 						totalFutureVolume: { $sum: '$amount' },
+					},
+				},
+			]);
+			const sum = await TradeVolume.aggregate([
+				{
+					$match: {
+						user_id: {
+							$eq: userIds[i],
+						},
+					},
+				},
+				{
+					$group: {
+						_id: null,
+						totalSpotVolume: { $sum: '$totalUSDT' },
 					},
 				},
 			]);
@@ -52,69 +71,30 @@ const getAllRefUser = async (req, res) => {
 					},
 				},
 			]);
-
+			console.log(futureSum, sum);
 			const commision = fees.length > 0 ? fees[0].totalAmount : 0;
 			const futureTotal =
 				futureSum.length > 0 ? futureSum[0].totalFutureVolume : 0;
+			const spotTotal = sum.length > 0 ? sum[0].totalSpotVolume : 0;
+			const user = await User.findOne({ _id: userIds[i] });
 
 			userTotals.push({
-				user_id: userIds[i],
+				user: user,
+				userId: userIds[i],
 				commission: commision,
 				futureSum: futureTotal,
+				spotSum: spotTotal,
+				trades: futureSum.length + sum.length,
 			});
 		}
-
-		// const refUsers = await UserRef.find();
-
-		// const userIds = refUsers.map((refUser) => refUser.user_id);
-		// for (let i = 0; i < userIds.length; i++) {
-		// 	futureSum = await FutureWalletModel.aggregate([
-		// 		{
-		// 			$match: {
-		// 				user_id: {
-		// 					$eq: userIds[i],
-		// 				},
-		// 			},
-		// 		},
-		// 		{
-		// 			$group: {
-		// 				_id: null,
-		// 				totalFutureVolume: { $sum: '$amount' },
-		// 			},
-		// 		},
-		// 	]);
-		// 	console.log(futureSum);
-		// }
-
-		// fees = await FeeModel.aggregate([
-		// 	{
-		// 		$match: {
-		// 			to_user_id: {
-		// 				$in: userIds.map((userId) => mongoose.Types.ObjectId(userId)),
-		// 			},
-		// 		},
-		// 	},
-		// 	{
-		// 		$group: {
-		// 			_id: '$to_user_id',
-		// 			totalAmount: { $sum: '$amount' },
-		// 		},
-		// 	},
-		// ]);
-
-		// const feesWithUserIds = userIds.map((userId) => {
-		// 	const userFees = fees.find((fee) => fee._id.equals(userId));
-		// 	const commision = userFees ? userFees.totalAmount : 0;
-		// 	return {
-		// 		user_id: userId,
-		// 		commision: commision === 0 ? 0 : commision,
-		// 	};
-		// });
-
 		res.json({
 			status: 'success',
-			message: 'Users Refferal Data',
-			data: userTotals,
+			message: 'Users Referral Data',
+			data: {
+				totalPages: Math.ceil(totalDocs / limit),
+				currentPage: page,
+				userTotals: userTotals,
+			},
 		});
 	} catch (error) {
 		return res.status(500).json({
