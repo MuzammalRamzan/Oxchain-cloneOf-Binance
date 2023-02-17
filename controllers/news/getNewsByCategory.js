@@ -13,6 +13,7 @@ const getNews = async (req, res) => {
       });
     }
 
+    
     const { category } = req.query;
 
     if (category == "business" || category == "markets" || category == "technology" || category == "policy") {
