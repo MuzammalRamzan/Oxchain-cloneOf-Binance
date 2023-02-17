@@ -9,14 +9,14 @@ const GetAssetsOverView = async (sockets, user_id) => {
     let spotAssets = await calculateSpot(wallets);
 
     let futureData = await calculateFuture(user_id);
-        sockets.in(user_id).emit("assets_overview", {
-            "spot": spotAssets,
-            "future": futureData
-        });
+    sockets.in(user_id).emit("assets_overview", {
+        "spot": spotAssets,
+        "future": futureData
+    });
 
     Wallet.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
         let wallets = await Wallet.find({ user_id: user_id, status: 1 });
-        let spotData = await calculateSpot( wallets);
+        let spotData = await calculateSpot(wallets);
         let futureData = await calculateFuture(user_id);
         sockets.in(user_id).emit("assets_overview", {
             "spot": spotData,
@@ -25,7 +25,7 @@ const GetAssetsOverView = async (sockets, user_id) => {
     });
 
 
-    
+
 }
 
 async function calculateFuture(user_id) {

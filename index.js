@@ -206,6 +206,7 @@ const updateSupportTicket = require('./controllers/dashboard/updateSupportTicket
 const addSystemFeedback = require('./controllers/dashboard/systemFeedback.js');
 const SpotLimitMarketOrders = require('./controllers/orders/history/spotLimitMarketOrders.js');
 const SpotTradeHistory = require('./controllers/orders/history/spotTradeHistory.js');
+const getPairDetails = require('./controllers/pair/getPairDetails.js');
 const GetUserLevel = require('./controllers/users/getUserLevel.js');
 
 const getUserNotification = require('./controllers/users/getUserNotification');
@@ -214,6 +215,10 @@ const SpotCurrentOrders = require('./controllers/orders/history/spotCurrentOrder
 const SpotOrderHistory = require('./controllers/orders/history/spotOrderHistory.js');
 const DerivativesClosedPNL = require('./controllers/orders/history/derivativesClosedPL.js');
 const DerivativesOrderHistory = require('./controllers/orders/history/derivativesOrderHistory.js');
+const getAllNews = require('./controllers/news/getAllNews');
+const getNews = require('./controllers/news/getNewsByCategory');
+const getTopNews = require('./controllers/news/getTopNews.js');
+const getAllTopics = require('./controllers/academy/getAllNews.js');
 
 
 //AI TRADE
@@ -462,7 +467,7 @@ route.all('/getDigits', upload.none(), getDigits);
 route.all('/getCoinList', upload.none(), getCoinList);
 route.all('/getCoinNetworks', upload.none(), depositCoinNetworkOptions);
 route.all('/getCoinInfo', upload.none(), getCoinInfo);
-
+route.all("/getPairDetails", upload.none(), getPairDetails);
 //Referral Modules
 route.all('/getReferral', upload.none(), getReferral);
 route.all('/topReferrals', upload.none(), topReferrals);
@@ -554,6 +559,10 @@ route.get('/getSupportTicket', getSupportTicket);
 route.all('/deleteSupportTicket', deleteSupportTicket);
 route.post('/updateSupportTicket', updateSupportTicket);
 route.post('/systemFeedback', addSystemFeedback);
+route.all("/getAllNews", upload.none(), getAllNews)
+route.all("/getNews", upload.none(), getNews)
+route.all("/getTopNews", upload.none(), getTopNews)
+route.all("/getAllTopics", upload.none(), getAllTopics)
 route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
 	if (symbol == null || symbol == '') {
