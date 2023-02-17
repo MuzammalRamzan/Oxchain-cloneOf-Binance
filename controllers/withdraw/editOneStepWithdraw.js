@@ -103,7 +103,7 @@ const editOneStepWithdraw = async (req, res) => {
 
     if (req.body.status != undefined && req.body.status != null && req.body.status != "" && req.body.status != "null") {
 
-      if (req.body.status == 0 || req.body.status == "0" || req.body.status == "1" || req.body.status == "1") {
+      if (req.body.status == 0 || req.body.status == "0" || req.body.status == 1 || req.body.status == "1") {
         await OneStepWithdrawModel.findOneAndUpdate(
           {
             user_id: userId,

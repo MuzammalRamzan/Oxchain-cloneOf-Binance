@@ -24,6 +24,7 @@ const SiteNotificationsModel = require("../../models/SiteNotifications");
 const VerificationIdModel = require("../../models/VerificationId");
 const ApiRequest = require("../../models/ApiRequests");
 const ApiKeysModel = require("../../models/ApiKeys");
+const AITradeWalletModel = require("../../models/AITradeWallet");
 
 const moment = require("moment");
 //istanbul date format
@@ -171,6 +172,24 @@ const login = async (req, res) => {
       });
     }
     if (user != null) {
+
+
+      let AITradeWalletCheck = await AITradeWalletModel.findOne({
+        user_id: user._id,
+      }).exec();
+
+      if (AITradeWalletCheck == null) {
+        let newAITradeWallet = new AITradeWalletModel({
+          user_id: user._id,
+          balance: 0,
+          enabled: 0,
+          status: 0,
+        });
+
+        newAITradeWallet.save();
+      }
+
+
       let emailVerifyCheck = await RegisterMail.findOne({
         email: user.email,
         pin: pin,
