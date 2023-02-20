@@ -1,4 +1,4 @@
-const NewsModal = require('../../models/News');
+const AcademyModal = require("../../models/Academy");
 const authFile = require('../../auth');
 
 const getTopics = async (req, res) => {
@@ -37,7 +37,7 @@ const getTopics = async (req, res) => {
         status: 1,
       }).sort({ createdAt: -1 });
 
-      if (allNews.length > 0) {
+      if (topics.length > 0) {
         return res.status(200).json({
           status: 'success',
           message: 'Topic found',
@@ -60,7 +60,7 @@ const getTopics = async (req, res) => {
         status: 1,
       }).sort({ createdAt: -1 });
 
-      if (allNews.length > 0) {
+      if (topics.length > 0) {
         return res.status(200).json({
           status: 'success',
           message: 'Topic found',
