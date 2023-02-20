@@ -97,6 +97,8 @@ const removePhone = require('./controllers/users/removePhone');
 const removeEmail = require('./controllers/users/removeEmail');
 const walletTowalletBetweenUsers = require('./controllers/WalletToWallet/transfer');
 
+const getAIOrders = require('./controllers/AITrade/getAIOrders');
+
 const addAvatar = require('./controllers/avatar/addAvatar');
 const getAvatar = require('./controllers/avatar/getAvatarList');
 
@@ -277,6 +279,7 @@ route.all('/getAITransferLogs', getAITransferLogs);
 route.all('/getAISettings', getAISettings);
 route.all('/setAISettings', setAISettings);
 route.all('/updateAISettings', updateAISettings);
+route.all('/getAIOrders', getAIOrders);
 
 
 
