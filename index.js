@@ -218,7 +218,7 @@ const DerivativesOrderHistory = require('./controllers/orders/history/derivative
 const getAllNews = require('./controllers/news/getAllNews');
 const getNews = require('./controllers/news/getNewsByCategory');
 const getTopNews = require('./controllers/news/getTopNews.js');
-const getAllTopics = require('./controllers/academy/getAllNews.js');
+const getAllTopics = require('./controllers/academy/getAllTopics');
 
 
 //AI TRADE
