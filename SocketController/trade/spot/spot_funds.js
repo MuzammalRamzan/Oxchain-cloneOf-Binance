@@ -44,7 +44,7 @@ async function calculate(wallets) {
     for (var i = 0; i < wallets.length; i++) {
 
         let wallet = wallets[i];
-        if(wallet.balance <= 0) continue;
+        if(wallet.amount <= 0) continue;
         let coinInfo = await CoinList.findOne({ _id: wallet.coin_id });
 
 
