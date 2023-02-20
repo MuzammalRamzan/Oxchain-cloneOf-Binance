@@ -42,7 +42,9 @@ const SpotFunds = async (sockets, user_id) => {
 async function calculate(wallets) {
     let assets = [];
     for (var i = 0; i < wallets.length; i++) {
+
         let wallet = wallets[i];
+        if(wallet.amount <= 0) continue;
         let coinInfo = await CoinList.findOne({ _id: wallet.coin_id });
 
 
