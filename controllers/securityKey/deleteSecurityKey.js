@@ -28,7 +28,7 @@ const deleteSecurityKey = async (req, res) => {
         pin: twofapin,
       }).lean();
   }
-  if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed" });
+  if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed", showableMessage: "Authentication failed" });
 
   await SecurityKey.findOneAndUpdate(
     { user_id: user_id, _id: req.body.key_id },
