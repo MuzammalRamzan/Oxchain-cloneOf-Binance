@@ -2,11 +2,13 @@ const Pairs = require("../../models/Pairs");
 const Wallet = require("../../models/Wallet")
 
 const GetSpotWallet = async (sockets, user_id) => {
+  console.log("Test wallet");
     let wallet = await Wallet.find({ user_id: user_id }).exec();
     SendWallet(sockets, wallet, user_id);
     Wallet.watch([
         { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
     ]).on("change", async (data) => {
+      console.log(data);
         wallet = await Wallet.find({ user_id: user_id }).exec();
         SendWallet(sockets, wallet, user_id);
     });

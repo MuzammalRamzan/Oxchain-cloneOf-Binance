@@ -20,7 +20,7 @@ const myReferrals = async (req, res) => {
 		.populate({
 			path: 'user_id',
 			model: 'User',
-			select: 'name surname nickname email status createdAt',
+			select: 'name surname nickname email status createdAt country_code phone_number',
 		})
 		.lean();
 	return res.json({ status: 'success', data: referrals });

@@ -166,7 +166,6 @@ const getEarningsGraphData = require('./controllers/referrals/getEarningsGraphDa
 const getMembersGraphData = require('./controllers/referrals/getMembersGraphData.js');
 const getAllRefUser = require('./controllers/referrals/getAllRefUser.js');
 
-
 const checklast24hourswithdraws = require('./controllers/withdraw/checklast24hourswithdraws.js');
 
 const getKYCStatus = require('./controllers/kyc/getStatus');
@@ -198,6 +197,7 @@ const changeMarketingMailStatus = require('./controllers/marketingMails/changeSt
 const Subscription = require('./models/Subscription.js');
 const { addAdmin } = require('./adminController/Admin.js');
 const Login = require('./adminController/Login.js');
+//Ambassador
 const CampusRequestJoin = require('./controllers/campusAmbassador/request_join.js');
 const UpdateSocialMedia = require('./controllers/users/updateSocialMedia.js');
 const checkTwitterAccount = require('./Functions/checkTwitterAccount.js');
@@ -224,7 +224,6 @@ const getNews = require('./controllers/news/getNewsByCategory');
 const getTopNews = require('./controllers/news/getTopNews.js');
 const getAllTopics = require('./controllers/academy/getAllTopics');
 
-
 //AI TRADE
 const getAIWallet = require('./controllers/AITrade/getWallet.js');
 const transferBalanceAI = require('./controllers/AITrade/transferBalance.js');
@@ -234,7 +233,6 @@ const getAISettings = require('./controllers/AITrade/getAISettings.js');
 const setAISettings = require('./controllers/AITrade/setSettings.js');
 const updateAISettings = require('./controllers/AITrade/updateSettings.js');
 const getTopics = require('./controllers/academy/getTopicsByCategory.js');
-
 
 route.use(
 	session({
@@ -272,8 +270,6 @@ route.get('/', (req, res) => {
 	res.send('success');
 });
 
-
-
 //AI Trade
 route.all('/getAIWallet', getAIWallet);
 route.all('/transferBalanceAI', transferBalanceAI);
@@ -283,8 +279,6 @@ route.all('/getAISettings', getAISettings);
 route.all('/setAISettings', setAISettings);
 route.all('/updateAISettings', updateAISettings);
 route.all('/getAIOrders', getAIOrders);
-
-
 
 route.all('/delete2fa', Delete2fa);
 
@@ -358,9 +352,6 @@ route.post('/getBonusHistory', getBonusHistory);
 route.all('/UploadKYC', upload.any(), UploadKYC);
 route.all('/idverification', upload.any(), UploadKYC);
 route.all('/UploadRecidency', upload.any(), UploadRecidency);
-
-
-
 
 //AUTH
 route.all('/login', upload.none(), login);
@@ -454,7 +445,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) { }
+	async function (req, res) {}
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
@@ -475,7 +466,7 @@ route.all('/getDigits', upload.none(), getDigits);
 route.all('/getCoinList', upload.none(), getCoinList);
 route.all('/getCoinNetworks', upload.none(), depositCoinNetworkOptions);
 route.all('/getCoinInfo', upload.none(), getCoinInfo);
-route.all("/getPairDetails", upload.none(), getPairDetails);
+route.all('/getPairDetails', upload.none(), getPairDetails);
 //Referral Modules
 route.all('/getReferral', upload.none(), getReferral);
 route.all('/topReferrals', upload.none(), topReferrals);
@@ -566,11 +557,10 @@ route.post('/addSupportTicket', addSupportTicket);
 route.get('/getSupportTicket', getSupportTicket);
 route.all('/deleteSupportTicket', deleteSupportTicket);
 route.post('/systemFeedback', addSystemFeedback);
-route.all("/getAllNews", upload.none(), getAllNews)
-route.all("/getNews", upload.none(), getNews)
-route.all("/getTopNews", upload.none(), getTopNews)
-route.all("/getAllTopics", upload.none(), getAllTopics)
-route.all("/getTopics", upload.none(), getTopics)
+route.all('/getAllNews', upload.none(), getAllNews);
+route.all('/getNews', upload.none(), getNews);
+route.all('/getTopNews', upload.none(), getTopNews);
+route.all('/getAllTopics', upload.none(), getAllTopics);
 route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
 	if (symbol == null || symbol == '') {

@@ -4,6 +4,7 @@ const authFile = require('../../auth');
 const getEarningsGraphData = async (req, res) => {
 	try {
 		const apiKey = req.body.api_key;
+		const user_id = req.body.user_id;
 		const isAuthenticated = await authFile.apiKeyChecker(apiKey);
 		if (!isAuthenticated) {
 			return res.status(403).json({
@@ -12,15 +13,10 @@ const getEarningsGraphData = async (req, res) => {
 				showableMessage: 'Forbidden 403, Please provide valid api key',
 			});
 		}
-		const fees = await FeeModel.find();
+		const fees = await FeeModel.find({ userId: user_id });
 		const earnings = {};
 		fees.forEach((fee) => {
-			const date = fee.createdAt.toLocaleDateString('en-US', {
-				weekday: 'long',
-				year: 'numeric',
-				month: 'long',
-				day: 'numeric',
-			});
+			const date = fee.createdAt;
 			if (!earnings[date]) {
 				earnings[date] = 0;
 			}
