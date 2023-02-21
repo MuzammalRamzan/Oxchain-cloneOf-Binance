@@ -69,6 +69,7 @@ const addTopic = require('./adminController/academy/addTopic');
 const updateTopic = require('./adminController/academy/updateTopic');
 const deleteTopic = require('./adminController/academy/deleteNews');
 const deleteAllTopics = require('./adminController/academy/deleteAllTopics');
+const updateSupportTicket = require('./adminController/updateSupportTicket');
 
 const upload = multer();
 route.use(bodyParser.json());
@@ -157,6 +158,8 @@ route.all('/addTopic', upload.none(), addTopic)
 route.all("/updateTopic/:id", upload.none(), updateTopic)
 route.all("/deleteTopic/:id", upload.none(), deleteTopic)
 route.all("/deleteAllTopics", upload.none(), deleteAllTopics)
+route.post('/updateSupportTicket', updateSupportTicket);
+
 route.listen(port, () => {
 	console.log('Server Ayakta');
 });

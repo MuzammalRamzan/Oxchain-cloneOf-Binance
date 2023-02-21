@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 var uniqueValidator = require("mongoose-unique-validator");
 
 const FaIssueSubSchema = new mongoose.Schema({
-    approveTime: { type: Date },
+    approxTime: { type: Date },
     availableCurrency: { type: Number },
     amountTradeHistory: { type: String }
 })

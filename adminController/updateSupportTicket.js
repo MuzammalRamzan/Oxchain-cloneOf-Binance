@@ -1,6 +1,6 @@
-const SupportTickets = require("../../models/Tickets")
-var authFile = require("../../auth.js");
-const Admin = require("../../models/Admin");
+const SupportTickets = require("../models/Tickets")
+var authFile = require("../auth.js");
+const Admin = require("../models/Admin");
 
 
 
