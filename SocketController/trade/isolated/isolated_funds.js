@@ -36,7 +36,7 @@ async function calculate(wallets, user_id) {
   
         let inOrder = totalAmount;
         let coinInfo = await CoinList.findOne({ _id: wallet.coin_id });
-        assets.push({ "symbol": coinInfo.symbol, "totalBalance": totalBalance, "availableBalance": available, 'inOrder': inOrder });
+        assets.push({ "symbol": coinInfo.symbol, btcValue : 0, "totalBalance": totalBalance, "availableBalance": available, 'inOrder': inOrder });
     }
     return assets;
 }
