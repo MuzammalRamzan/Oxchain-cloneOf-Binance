@@ -5,10 +5,10 @@ const GetFutureWallet = async (sockets, user_id) => {
 
     let balance = await CalculateFutureBalance(user_id);
     if (balance <= 0) {
-        sockets.in(user_id).emit("future_balance", { type: "future_balance", content: 0.0 });
+        sockets.in(user_id).emit("future_balance", { type: "future_balance", content: balance });
 
     } else {
-        sockets.in(user_id).emit("future_balance", { type: "future_balance", content: 0.0 });
+        sockets.in(user_id).emit("future_balance", { type: "future_balance", content: balance });
     }
 
     FutureWalletModel.watch([
@@ -16,9 +16,9 @@ const GetFutureWallet = async (sockets, user_id) => {
     ]).on("change", async (data) => {
         balance = await CalculateFutureBalance(user_id);
         if (balance <= 0) {
-            sockets.in(user_id).emit("future_balance", { type: "future_balance", content: 0.0 });
+            sockets.in(user_id).emit("future_balance", { type: "future_balance", content: balance });
         } else {
-            sockets.in(user_id).emit("future_balance", { type: "future_balance", content: 0.0 });
+            sockets.in(user_id).emit("future_balance", { type: "future_balance", content: balance });
         }
     });
 }
@@ -47,6 +47,7 @@ async function CalculateFutureBalance(user_id) {
         },
     ]);
     let wallet = await FutureWalletModel.findOne({ user_id: user_id }).exec();
+    
     if (getOpenOrders.length == 0) return wallet.amount;
     if (wallet == null) return 0;
     let balance = parseFloat(wallet.amount) + parseFloat(getOpenOrders[0].total);

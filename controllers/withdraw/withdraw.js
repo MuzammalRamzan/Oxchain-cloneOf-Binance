@@ -170,7 +170,23 @@ const withdraw = async (req, res) => {
     let last24HoursWithdrawAmount = 0;
 
     for (let i = 0; i < last24HoursWithdraw.length; i++) {
-      last24HoursWithdrawAmount += parseFloat(last24HoursWithdraw[i].amount);
+
+      //calcualate amount in usdt
+      let price = 0;
+      let coinInfo = await CoinList.findOne({ _id: last24HoursWithdraw[i].coin_id }).exec();
+      if (coinInfo.symbol == "USDT") {
+        price = 1;
+      }
+
+      else {
+
+        let getPrice = await axios("http://18.170.26.150:8542/price?symbol=" + coinInfo.symbol + "USDT");
+        price = getPrice.data.data.ask;
+      }
+
+      let amountUSDT = parseFloat(last24HoursWithdraw[i].amount) * parseFloat(price);
+
+      last24HoursWithdrawAmount += amountUSDT;
     }
     if (last24HoursWithdrawAmount + amount > maxAmount) {
       isOneStep = false;
@@ -240,7 +256,7 @@ const withdraw = async (req, res) => {
   let tx_id = "";
   switch (networkInfo.symbol) {
     case "TRC":
-      transaction = await PostRequestSync("http://"+process.env.TRC20HOST+"/transfer", { from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000).toString() });
+      transaction = await PostRequestSync("http://" + process.env.TRC20HOST + "/transfer", { from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000).toString() });
       if (transaction.data.status != 'success') {
         res.json({ status: "fail", message: "unknow error" });
         isError = true;
@@ -254,7 +270,7 @@ const withdraw = async (req, res) => {
     case "BSC":
       coinInfo = await CoinList.findOne({ _id: coin_id });
       if (coinInfo.symbol == 'BNB') {
-        transaction = await PostRequestSync("http://"+process.env.BSC20HOST+"/transfer", { from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
+        transaction = await PostRequestSync("http://" + process.env.BSC20HOST + "/transfer", { from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
         if (transaction.data.status != 'success') {
           res.json({ status: "fail", message: "unknow error" });
           isError = true;
@@ -263,7 +279,7 @@ const withdraw = async (req, res) => {
           tx_id = transaction.data.data;
         }
       } else {
-        transaction = await PostRequestSync("http://"+process.env.BSC20HOST+"/contract_transfer", { token: coinInfo.symbol, from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
+        transaction = await PostRequestSync("http://" + process.env.BSC20HOST + "/contract_transfer", { token: coinInfo.symbol, from: process.env.BSCADDR, to: to, pkey: process.env.BSCPKEY, amount: amount });
         if (transaction.data.status != 'success') {
           res.json({ status: "fail", message: "unknow error" });
           isError = true;
@@ -277,7 +293,7 @@ const withdraw = async (req, res) => {
     case "ERC":
       coinInfo = await CoinList.findOne({ _id: coin_id });
       if (coinInfo.symbol == 'ETH') {
-        transaction = await PostRequestSync("http://"+process.env.ERC20HOST+"/transfer", { from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
+        transaction = await PostRequestSync("http://" + process.env.ERC20HOST + "/transfer", { from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
         if (transaction.data.status != 'success') {
           res.json({ status: "fail", message: "unknow error" });
           isError = true;
@@ -286,7 +302,7 @@ const withdraw = async (req, res) => {
           tx_id = transaction.data.data;
         }
       } else {
-        transaction = await PostRequestSync("http://"+process.env.ERC20HOST+"/contract_transfer", { token: coinInfo.symbol, from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
+        transaction = await PostRequestSync("http://" + process.env.ERC20HOST + "/contract_transfer", { token: coinInfo.symbol, from: process.env.ERCADDR, to: to, pkey: process.env.ERCPKEY, amount: amount });
         if (transaction.data.status != 'success') {
           res.json({ status: "fail", message: "unknow error" });
           isError = true;
@@ -300,7 +316,7 @@ const withdraw = async (req, res) => {
     case "SEGWIT":
       transaction = await axios.request({
         method: "post",
-        url: "http://"+process.env.BTCSEQHOST,
+        url: "http://" + process.env.BTCSEQHOST,
         data: "request=transfer&to=" + to + "&amount=" + amount,
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",

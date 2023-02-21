@@ -3,55 +3,58 @@ const Network = require("../../models/Network");
 const Withdraw = require("../../models/Withdraw");
 
 const GetWithdrawHistory = async (req, res) => {
-    let uid = req.body.user_id;
-    if (uid == null || uid == '') return res.json({ status: 'fail', message: 'User not found' });
-    let filter = { user_id: uid };
 
-    if (req.body.coin != 'all') {
-        filter['coin_id'] = req.body.coin;
+    let { user_id } = req.body;
+
+    if (!user_id) {
+        return res.json(
+            {
+                status: "fail",
+                message: "user_id is required",
+
+            }
+        );
     }
-    if (req.body.status != 'all') {
-        filter['status'] = req.body.status;
-    }
 
-    if (req.body.firstDate != null && req.body.endDate != null) {
-        filter.createdAt = { $gte: req.body.firstDate, $lte: req.body.endDate };
-    }
-    let list = await Withdraw.find(filter);
-    let data = [];
 
-    for (var i = 0; i < list.length; i++) {
-        
-        let coinInfo = await CoinList.findOne({ _id: list[i].coin_id });
-        var network = {
-            id: "",
-            name: ""
-        };
-        if (list[i].netowrk_id != null) {
-            let networkInfo = await Network.findOne({ _id: list[i].netowrk_id });
-            network = {
-                id: list[i].netowrk_id,
-                name: networkInfo.symbol,
-            };
-        }
+    let withdrawHistory = await Withdraw.find({ user_id: user_id }).exec();
 
-        data.push({
-            id: list[i]._id,
+    let withdrawHistoryData = [];
+
+    for (let i = 0; i < withdrawHistory.length; i++) {
+
+        let coinInfo = await CoinList.findOne({ _id: withdrawHistory[i].coin_id }).exec();
+        let networkInfo = await Network.findOne({ _id: withdrawHistory[i].network_id }).exec();
+        if (coinInfo == null || networkInfo == null) continue;
+
+        withdrawHistoryData.push({
+            id: withdrawHistory[i]._id,
             coin: {
-                id: list[i].coin_id,
+                id: withdrawHistory[i].coin_id,
                 name: coinInfo.symbol,
             },
-            network: network,
-            hash: list[i].tx_id,
-            fee: list[i].fee,
-            amount: list[i].amount,
-            fromAddress: list[i].fromAddress,
-            toAddress: list[i].address,
-            date: list[i].createdAt,
-            status: list[i].status,
+            network: {
+                id: withdrawHistory[i].network_id,
+                name: networkInfo.symbol,
+            },
+            hash: withdrawHistory[i].tx_id,
+            fee: withdrawHistory[i].fee,
+            amount: withdrawHistory[i].amount,
+            fromAddress: withdrawHistory[i].fromAddress,
+            toAddress: withdrawHistory[i].address,
+            date: withdrawHistory[i].createdAt,
+            status: withdrawHistory[i].status,
         });
     }
-    res.json({ status: 'success', data: data });
+
+    return res.json(
+        {
+            status: "success",
+            message: "withdraw history",
+            data: withdrawHistoryData
+        })
+
+
 }
 
 module.exports = GetWithdrawHistory;

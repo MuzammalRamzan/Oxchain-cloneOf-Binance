@@ -6,7 +6,7 @@ const PairModel = require("../../models/Pairs");
 
 const updateSettings = async (req, res) => {
 
-    const { user_id, api_key, balance, maxLose, maxProfit, id } = req.body;
+    const { user_id, api_key, balance, maxLose, maxProfit, id, status } = req.body;
 
     if (!user_id || !api_key || !balance || !maxLose || !maxProfit || !id) {
         return res.json({
@@ -15,9 +15,22 @@ const updateSettings = async (req, res) => {
         });
     }
 
+
     var result = await authFile.apiKeyChecker(api_key);
 
     if (result === true) {
+
+
+        if (status == 1 || status == 0) {
+        }
+        else {
+            return res.json({
+                status: "fail",
+                message: "Invalid status"
+            });
+        }
+
+
         if (user_id.length !== 24) {
             return res.json({
                 status: "fail",
@@ -95,6 +108,11 @@ const updateSettings = async (req, res) => {
         if (maxProfit != null || maxProfit != undefined || maxProfit != "" || !maxProfit < 0) {
             settingCheck.maxProfit = maxProfitFloat;
         }
+
+        if (status != null || status != undefined || status != "" || !status < 0) {
+            settingCheck.status = status;
+        }
+
 
         await settingCheck.save();
 

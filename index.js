@@ -97,6 +97,8 @@ const removePhone = require('./controllers/users/removePhone');
 const removeEmail = require('./controllers/users/removeEmail');
 const walletTowalletBetweenUsers = require('./controllers/WalletToWallet/transfer');
 
+const getAIOrders = require('./controllers/AITrade/getAIOrders');
+
 const addAvatar = require('./controllers/avatar/addAvatar');
 const getAvatar = require('./controllers/avatar/getAvatarList');
 
@@ -163,6 +165,9 @@ const getAllLevelReferrals = require('./controllers/referrals/getAllLevelReffera
 const getEarningsGraphData = require('./controllers/referrals/getEarningsGraphData.js');
 const getMembersGraphData = require('./controllers/referrals/getMembersGraphData.js');
 const getAllRefUser = require('./controllers/referrals/getAllRefUser.js');
+
+
+const checklast24hourswithdraws = require('./controllers/withdraw/checklast24hourswithdraws.js');
 
 const getKYCStatus = require('./controllers/kyc/getStatus');
 const getApiKeys = require('./controllers/api/getApiKeys');
@@ -278,6 +283,7 @@ route.all('/getAITransferLogs', getAITransferLogs);
 route.all('/getAISettings', getAISettings);
 route.all('/setAISettings', setAISettings);
 route.all('/updateAISettings', updateAISettings);
+route.all('/getAIOrders', getAIOrders);
 
 
 
@@ -453,6 +459,8 @@ route.all(
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
+route.post('/checklast24hourswithdraws', checklast24hourswithdraws);
+
 route.post('/editWithdrawalWhiteList', editWithdrawalWhiteList);
 route.post('/getWithdrawalWhiteList', getWithdrawalWhiteList);
 route.all('/addNotification', upload.none(), addNotification);
