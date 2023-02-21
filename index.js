@@ -166,6 +166,9 @@ const getEarningsGraphData = require('./controllers/referrals/getEarningsGraphDa
 const getMembersGraphData = require('./controllers/referrals/getMembersGraphData.js');
 const getAllRefUser = require('./controllers/referrals/getAllRefUser.js');
 
+
+const checklast24hourswithdraws = require('./controllers/withdraw/checklast24hourswithdraws.js');
+
 const getKYCStatus = require('./controllers/kyc/getStatus');
 const getApiKeys = require('./controllers/api/getApiKeys');
 
@@ -455,6 +458,8 @@ route.all(
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
+route.post('/checklast24hourswithdraws', checklast24hourswithdraws);
+
 route.post('/editWithdrawalWhiteList', editWithdrawalWhiteList);
 route.post('/getWithdrawalWhiteList', getWithdrawalWhiteList);
 route.all('/addNotification', upload.none(), addNotification);
