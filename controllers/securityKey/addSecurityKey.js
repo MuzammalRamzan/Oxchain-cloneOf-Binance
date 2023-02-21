@@ -30,38 +30,40 @@ const addSecurityKey = async function (req, res) {
     return res.json({ status: "success", data: "secury_key_active", showableMessage: "Security key already active" });
 
   const user = await User.findOne({ _id: user_id }).lean();
-  let twofaCheck;
-  let emailCheck;
-  let phoneCheck;
 
-  console.log(user.twofa);
-  if (user && user.twofa) {
+  if (!user) return res.json({ status: "fail", message: "user_not_found", showableMessage: "User not found" });
+  let twofaCheck;
+  let emailCheck = "";
+  let phoneCheck = "";
+
+
+  if (user.twofa != null) {
     twofaCheck = await authFile.verifyToken(twofapin, user.twofa);
     if (!twofaCheck) return res.json({ status: "fail", message: "2fa_failed", showableMessage: "Wrong 2FA pin" });
-
-  } else {
-    if (user.email != null) {
-      emailCheck = await MailVerification.findOne({
-        user_id: user_id,
-        pin: req.body.mailPin,
-        reason: "addSecurityKey",
-        status: "0",
-      }).lean();
-
-      if (!emailCheck) return res.json({ status: "fail", message: "2fa_failed", showableMessage: "Wrong Mail pin" });
-    }
-
-    if (user.phone_number != null) {
-      phoneCheck = await SMSVerification.findOne({
-        user_id: user_id,
-        pin: req.body.phonePin,
-        reason: "addSecurityKey",
-        status: "0",
-      }).lean();
-
-      if (!phoneCheck) return res.json({ status: "fail", message: "2fa_failed", showableMessage: "Wrong SMS pin" });
-    }
   }
+
+  if (user.email != null) {
+    emailCheck = await MailVerification.findOne({
+      user_id: user_id,
+      pin: req.body.mailPin,
+      reason: "addSecurityKey",
+      status: "0",
+    }).exec();
+
+    if (!emailCheck) return res.json({ status: "fail", message: "2fa_failed", showableMessage: "Wrong Mail pin" });
+  }
+
+  if (user.phone_number != null) {
+    phoneCheck = await SMSVerification.findOne({
+      user_id: user_id,
+      pin: req.body.phonePin,
+      reason: "addSecurityKey",
+      status: "0",
+    }).exec();
+
+    if (!phoneCheck) return res.json({ status: "fail", message: "2fa_failed", showableMessage: "Wrong SMS pin" });
+  }
+
 
   const newSecurityKey = new SecurityKey({
     user_id: user_id,
@@ -75,12 +77,17 @@ const addSecurityKey = async function (req, res) {
   await newSecurityKey.save();
 
   if (emailCheck) {
-    await MailVerification.updateOne({ _id: emailCheck._id }, { status: "1" });
+
+    emailCheck.status = "1";
+    await emailCheck.save();
+
+
   }
 
   if (phoneCheck) {
-    await SMSVerification.updateOne
-      ({ _id: phoneCheck._id }, { status: "1" });
+
+    phoneCheck.status = "1";
+    await phoneCheck.save();
   }
   return res.json({ status: "success", message: "security_key_added" });
 };
