@@ -2,6 +2,7 @@ const SupportTickets = require("../../models/Tickets")
 var authFile = require("../../auth.js");
 const User = require("../../models/User");
 const uploadImage = require('../../adminController/Posts/uploadImage');
+const RegisterMail = require("../../models/RegisterMail");
 
 
 ////status 0=open , 1=closed   2=delete
@@ -22,7 +23,12 @@ const addSupportTicket = async (req, res) => {
                 status: 1,
             }).exec();
             if (!user) { return res.json({ status: "fail", message: "user_not_found", showableMessage: "User not Found" }); }
-
+            let checkMail = await RegisterMail.findOne({
+                email: req.body.registeredEmail,
+            });
+            if (!checkMail) {
+                return res.status(400).json({ status: "fail", message: "Registerd_email_not_Found", showableMessage: "Registered Email not Found" })
+            }
             let check1 = await SupportTickets.findOne({
                 user_id: req.body.user_id,
                 issueType: req.body.issueType,
