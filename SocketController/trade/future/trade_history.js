@@ -1,10 +1,12 @@
 const FutureOrder = require("../../../models/FutureOrder");
 const MarginOrder = require("../../../models/MarginOrder");
 
-const FutureTradeHistory = async (sockets, user_id, filter) => {
+const FutureTradeHistory = async (sockets, user_id) => {
 
     let request = { user_id: user_id, method: "market" };
+    /*
     if (filter['symbol'] != null) {
+        console.log(filter['symbol'])
         request['pair_name'] = filter['symbol'];
     }
 
@@ -18,6 +20,8 @@ const FutureTradeHistory = async (sockets, user_id, filter) => {
         request['createdAt'] = { $gte: filter['date_from'], $lt: filter['date_to'] };
     }
 
+    */
+   
     let orders = await FutureOrder.find(request);
     let assets = FillTable(orders);
     

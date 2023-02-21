@@ -2,6 +2,7 @@ const FutureOrder = require("../../../models/FutureOrder");
 
 const FutureOrderHistory = async (sockets, user_id, filter) => {
     let request = { user_id: user_id };
+    /*
     if (filter['symbol'] != null) {
         request['pair_name'] = filter['symbol'];
     }
@@ -31,6 +32,8 @@ const FutureOrderHistory = async (sockets, user_id, filter) => {
         request['createdAt'] = {$gte : filter['date_from'], $lt : filter['date_to']};
     }
 
+    */
+   
     let orders = await FutureOrder.find(request);
     
     sockets.in(user_id).emit("future",{ page: "future", type: 'order_history', content: orders });
