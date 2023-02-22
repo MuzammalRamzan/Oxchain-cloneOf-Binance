@@ -1,3 +1,4 @@
+
 const User = require("../../models/User");
 const Wallet = require("../../models/Wallet");
 const WalletAddress = require("../../models/WalletAddress");
@@ -25,6 +26,7 @@ const VerificationIdModel = require("../../models/VerificationId");
 const ApiRequest = require("../../models/ApiRequests");
 const ApiKeysModel = require("../../models/ApiKeys");
 const AITradeWalletModel = require("../../models/AITradeWallet");
+const mailer = require("../../mailer");
 
 const moment = require("moment");
 //istanbul date format
@@ -237,6 +239,23 @@ const login = async (req, res) => {
         await siteNotifications.save();
       }
 
+
+      if (checkSiteNotifications) {
+
+        if (checkSiteNotifications.activities == 1 || checkSiteNotifications.activities == "1") {
+
+
+          let loginLogCheck = await LoginLogs.findOne({
+            user_id: user._id,
+            ip: ip,
+          }).exec();
+
+          if (loginLogCheck == null) {
+            mailer.sendMail(user.email, "New Login", "An unusual login has been detected from your account. If you did not authorize this login, please contact support immediately.");
+          }
+        }
+      }
+
       let loginRequest = 0;
 
       let activeDeviceCheck = await Device.findOne({
@@ -373,9 +392,7 @@ const login = async (req, res) => {
           if (walletAddressCheck == null) {
             let privateKey = "";
             let address = "";
-            console.log(networks[x].symbol);
             if (networks[x].symbol === "ERC") {
-              console.log("Start ERC");
               let url = "http://" + process.env.ERC20HOST + "/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
@@ -383,7 +400,6 @@ const login = async (req, res) => {
             }
 
             if (networks[x].symbol === "BSC") {
-              console.log("Start BSC");
               let url = "http://" + process.env.BSC20HOST + "/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
@@ -391,7 +407,6 @@ const login = async (req, res) => {
             }
 
             if (networks[x].symbol === "TRC") {
-              console.log("Start TRC");
               let url = "http://" + process.env.TRC20HOST + "/create_address";
               let walletTest = await axios.post(url);
               privateKey = walletTest.data.data.privateKey;
@@ -399,7 +414,6 @@ const login = async (req, res) => {
             }
 
             if (networks[x].symbol === "SEGWIT") {
-              console.log("Start BTCNetwork");
               let createBTC = await axios.request({
                 method: "post",
                 url: "http://" + process.env.BTCSEQHOST,
@@ -413,7 +427,6 @@ const login = async (req, res) => {
             }
 
             if (networks[x].symbol === "SOL") {
-              console.log("Start SOL");
               let url = "http://" + process.env.SOLANAHOST + "/create_address";
               let walletTest = await axios.post(url);
               privateKey = JSON.stringify(walletTest.data.data.pKey);
@@ -439,7 +452,6 @@ const login = async (req, res) => {
 
           if (walletResult === null) {
           } else {
-            console.log("Cüzdan var");
           }
 
           //Margin Wallet Check
@@ -529,7 +541,6 @@ const login = async (req, res) => {
           deviceOS: req.body.deviceOS ?? "Unknown",
           status: "completed",
         });
-        console.log("newUserLognewUserLog", newUserLog);
         let room = await newUserLog.save();
         newRegisteredId = room.id;
 
@@ -567,6 +578,21 @@ const login = async (req, res) => {
 
 
 
+        let notificationCheck = await SiteNotificationsModel.findOne({
+          user_id: user["_id"],
+        }).exec();
+
+        console.log("notificationCheck", notificationCheck);
+
+        if (notificationCheck != null) {
+
+          if (notificationCheck.system_messages == 1 || notificationCheck.system_messages == "1") {
+            mailer.sendMail(user.email, "Login", "Successfully logged in from " + ip);
+          }
+        }
+
+
+
 
         if (loginRequest == 1) {
 
@@ -578,6 +604,10 @@ const login = async (req, res) => {
           });
 
         }
+
+
+
+
 
 
 
@@ -596,18 +626,20 @@ const login = async (req, res) => {
               if (err) {
                 throw err;
               } else {
-                res.json({ status: "success", data: data });
+
+                return res.json({ status: "success", data: data });
               }
             });
           } else {
-            res.json({ status: "success", data: data });
+
+            return res.json({ status: "success", data: data });
           }
         } else {
-          res.json({ status: "success", data: data });
+          return res.json({ status: "success", data: data });
         }
       }
       if (status == "0") {
-        res.json({
+        return res.json({
           status: "fail",
           message: "account_not_active",
           showableMessage: "Account not active",
@@ -639,3 +671,4 @@ const login = async (req, res) => {
 };
 
 module.exports = login;
+
