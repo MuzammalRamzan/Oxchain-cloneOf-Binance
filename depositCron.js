@@ -139,7 +139,7 @@ OxhainTasks();
 async function OxhainTasks() {
   await Connection.connection();
 
-
+/*
     let _ws = await WalletAddress.find();
     for (var k = 0; k < _ws.length; k++) {
       let item = _ws[k];
@@ -224,7 +224,7 @@ async function OxhainTasks() {
 
     }
     }
-
+*/
 
   //ADMIN TRANSFER
   schedule.scheduleJob('*/3 * * * *', async function () {
