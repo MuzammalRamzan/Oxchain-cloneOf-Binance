@@ -234,6 +234,7 @@ const getAISettings = require('./controllers/AITrade/getAISettings.js');
 const setAISettings = require('./controllers/AITrade/setSettings.js');
 const updateAISettings = require('./controllers/AITrade/updateSettings.js');
 const getTopics = require('./controllers/academy/getTopicsByCategory.js');
+const CloseAllFutureOrders = require('./controllers/orders/closeAllFutureOrders.js');
 
 route.use(
 	session({
@@ -407,6 +408,7 @@ route.all('/getOrders', upload.none(), getOrders);
 route.post('/getClosedMarginOrders', getClosedMarginOrders);
 route.post('/getOpenMarginOrders', getOpenMarginOrders);
 route.post('/closeMarginOrder', closeMarginOrder);
+route.post('/closeAllFuture', CloseAllFutureOrders);
 route.post('/addMarginOrder', addMarginOrder);
 route.post('/addMarginCrossOrder', addMarginCrossOrder);
 route.post('/addMarginIsolatedOrder', addMarginIsolatedOrder);
