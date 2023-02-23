@@ -207,7 +207,6 @@ const GetWithdrawHistory = require('./controllers/withdraw/getWithdrawHistory.js
 const addSupportTicket = require('./controllers/dashboard/addSupportTicket.js');
 const getSupportTicket = require('./controllers/dashboard/getSupportTicket.js');
 const deleteSupportTicket = require('./controllers/dashboard/deleteSupportTicket.js');
-const updateSupportTicket = require('./controllers/dashboard/updateSupportTicket.js');
 const addSystemFeedback = require('./controllers/dashboard/systemFeedback.js');
 const SpotLimitMarketOrders = require('./controllers/orders/history/spotLimitMarketOrders.js');
 const SpotTradeHistory = require('./controllers/orders/history/spotTradeHistory.js');
@@ -234,6 +233,7 @@ const getAISettings = require('./controllers/AITrade/getAISettings.js');
 const setAISettings = require('./controllers/AITrade/setSettings.js');
 const updateAISettings = require('./controllers/AITrade/updateSettings.js');
 const getTopics = require('./controllers/academy/getTopicsByCategory.js');
+const CloseAllFutureOrders = require('./controllers/orders/closeAllFutureOrders.js');
 
 route.use(
 	session({
@@ -407,6 +407,7 @@ route.all('/getOrders', upload.none(), getOrders);
 route.post('/getClosedMarginOrders', getClosedMarginOrders);
 route.post('/getOpenMarginOrders', getOpenMarginOrders);
 route.post('/closeMarginOrder', closeMarginOrder);
+route.post('/closeAllFuture', CloseAllFutureOrders);
 route.post('/addMarginOrder', addMarginOrder);
 route.post('/addMarginCrossOrder', addMarginCrossOrder);
 route.post('/addMarginIsolatedOrder', addMarginIsolatedOrder);
@@ -557,7 +558,6 @@ route.post('/getAllFAQS', upload.none(), getAllFaqs);
 route.post('/addSupportTicket', addSupportTicket);
 route.get('/getSupportTicket', getSupportTicket);
 route.all('/deleteSupportTicket', deleteSupportTicket);
-route.post('/updateSupportTicket', updateSupportTicket);
 route.post('/systemFeedback', addSystemFeedback);
 route.all('/getAllNews', upload.none(), getAllNews);
 route.all('/getNews', upload.none(), getNews);

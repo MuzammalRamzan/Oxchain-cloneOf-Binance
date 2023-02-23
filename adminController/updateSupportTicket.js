@@ -1,10 +1,10 @@
-const SupportTickets = require("../../models/Tickets")
-var authFile = require("../../auth.js");
-const Admin = require("../../models/Admin");
+const SupportTickets = require("../models/Tickets")
+var authFile = require("../auth.js");
+const Admin = require("../models/Admin");
+const SupportTeam = require("../models/supportTeam")
 
 
-
-////status 0=open , 1=closed ,3=delete
+////status 0=open , 1=closed ,2=delete
 const updateSupportTicket = async (req, res) => {
     var api_key_result = req.body.api_key;
     var user_id = req.body.user_id;
@@ -12,11 +12,11 @@ const updateSupportTicket = async (req, res) => {
     var result = await authFile.apiKeyChecker(api_key_result);
 
     if (result === true) {
-        let user = await Admin.findOne({
+        let user = await SupportTeam.findOne({
             _id: user_id,
             status: 1,
         }).exec();
-        if (!user) { return res.json({ status: "fail", message: "user_not_an_Admin", showableMessage: "User not have Permission to update" }); }
+        if (!user) { return res.json({ status: "fail", message: "user_not_authorized", showableMessage: "User not have Permission to update" }); }
 
         const newData = await SupportTickets.findById(
             req.body.ticketID
