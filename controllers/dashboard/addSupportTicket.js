@@ -23,12 +23,12 @@ const addSupportTicket = async (req, res) => {
                 status: 1,
             }).exec();
             if (!user) { return res.json({ status: "fail", message: "user_not_found", showableMessage: "User not Found" }); }
-            let checkMail = await RegisterMail.findOne({
-                email: req.body.registeredEmail,
-            });
-            if (!checkMail) {
-                return res.status(400).json({ status: "fail", message: "Registerd_email_not_Found", showableMessage: "Registered Email not Found" })
-            }
+            // let checkMail = await RegisterMail.findOne({
+            //     email: req.body.registeredEmail,
+            // });
+            // if (!checkMail) {
+            //     return res.status(400).json({ status: "fail", message: "Registerd_email_not_Found", showableMessage: "Registered Email not Found" })
+            // }
             let check1 = await SupportTickets.findOne({
                 user_id: req.body.user_id,
                 issueType: req.body.issueType,
@@ -43,7 +43,7 @@ const addSupportTicket = async (req, res) => {
                 user_id: req.body.user_id,
                 issueType: req.body.issueType,
                 email: req.body.email,
-                registeredEmail: req.body.registeredEmail,
+                registeredEmailOrPhone: req.body.registeredEmail,
                 subject: req.body.subject,
                 description: req.body.description,
                 priority: req.body.priority,

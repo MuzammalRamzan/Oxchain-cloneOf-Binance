@@ -43,7 +43,7 @@ const SupportTickets = new mongoose.Schema({
     user_id: { type: String, required: true },
     issueType: { type: String, require: true },
     email: { type: String, require: true },
-    registeredEmail: { type: String, required: false, default: null },
+    registeredEmailOrPhone: { type: String, required: false, default: null },
     registeredPhone: { type: String, required: false, default: null },
     subject: { type: String, required: true },
     description: { type: String, required: true },
