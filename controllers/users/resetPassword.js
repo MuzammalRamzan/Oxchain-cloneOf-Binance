@@ -1,8 +1,11 @@
+
+
 const User = require("../../models/User");
 var authFile = require("../../auth.js");
 var utilities = require("../../utilities.js");
 const MailVerification = require("../../models/MailVerification");
 const SMSVerification = require("../../models/SMSVerification");
+const mailer = require("../../mailer");
 
 const resetPassword = async function (req, res) {
   var password = utilities.hashData(req.body.password);
@@ -52,7 +55,7 @@ const resetPassword = async function (req, res) {
           showableMessage: "Phone is required",
         });
       }
-      
+
       user = await User.findOne({
         country_code: req.body.country_code,
         phone_number: req.body.phone_number,
@@ -115,6 +118,11 @@ const resetPassword = async function (req, res) {
       user.password = password;
 
       user.save();
+
+      if (user.email != undefined && user.email != null && user.email != "") {
+        mailer.sendMail(user.email, "Reset Password", "Your password has been resetted. If you didn't do this, please contact us immediately.");
+      }
+
       return res.json({ status: "success", message: "password_changed", showableMessage: "Password Changed" });
     }
     else {
@@ -126,3 +134,4 @@ const resetPassword = async function (req, res) {
 };
 
 module.exports = resetPassword;
+

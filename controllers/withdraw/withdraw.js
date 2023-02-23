@@ -254,6 +254,7 @@ const withdraw = async (req, res) => {
 
   let isError = false;
   let tx_id = "";
+  /*
   switch (networkInfo.symbol) {
     case "TRC":
       transaction = await PostRequestSync("http://" + process.env.TRC20HOST + "/transfer", { from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000).toString() });
@@ -336,6 +337,7 @@ const withdraw = async (req, res) => {
       break;
   }
 
+  */
 
 
   let data = new Withdraws({
