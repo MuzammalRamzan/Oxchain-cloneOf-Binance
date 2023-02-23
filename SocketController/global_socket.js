@@ -75,10 +75,10 @@ route.get("/price", (req, res) => {
     res.json({ 'status': 'success', 'data': data });
 });
 
-route.get('/24hr', async (req,res) => {
+route.get('/24hr', async (req, res) => {
     let data = await axios("https://api.binance.com/api/v3/ticker/24hr");
     var symbol = req.query.symbol;
-    if(symbol != null) {
+    if (symbol != null) {
         let item = data.data.filter((x) => x.symbol == symbol);
         return res.json(item);
     }
@@ -170,13 +170,7 @@ async function GetBinanceData(ws, pair) {
 }
 
 async function GetAllPrices(ws) {
-    let coinList = await CoinList.find({});
     var b_ws = new WebSocket("wss://stream.binance.com/stream");
-
-    for (var k = 0; k < coinList.length; k++) {
-        global.MarketData[coinList[k].symbol + "USDT"] = { bid: 0.0, ask: 0.0 };
-    }
-
     const initSocketMessage = {
         method: "SUBSCRIBE",
         params: ["!ticker@arr"],
@@ -197,7 +191,10 @@ async function GetAllPrices(ws) {
         if (data != null && data != "undefined") {
             for (var m = 0; m < data.length; m++) {
                 let x = data[m];
-                global.MarketData[x.s] = { bid: x.b, ask: x.a };
+                if (Object(global.MarketData).hasOwnProperty(x.s)) {
+                    global.MarketData[x.s] = { bid: x.b, ask: x.a };
+                }
+
             }
             ws.send(JSON.stringify(global.MarketData));
         }
@@ -234,6 +231,7 @@ async function fillMarketPrices() {
             if (data != null && data != "undefined") {
                 for (var m = 0; m < data.length; m++) {
                     let x = data[m];
+                    if(global.MarketData[x.s] != null)
                     global.MarketData[x.s] = { bid: x.b, ask: x.a };
                 }
             }
