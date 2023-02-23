@@ -61,7 +61,7 @@ const addSupportTicket = async (req, res) => {
             newData.save().then(() => {
                 res.json({ status: "success", message: "Ticket generated", showableMessage: "Ticket generated" });
             }).catch((error) => {
-                res.json({ status: "failed", message: "Ticket generated failed", showableMessage: error.message });
+                res.json({ status: "failed", message: error.message, showableMessage: "Ticket generated failed" });
             })
         }
         else {
