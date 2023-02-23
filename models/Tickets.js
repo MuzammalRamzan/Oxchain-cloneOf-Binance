@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 var uniqueValidator = require("mongoose-unique-validator");
 
 const FaIssueSubSchema = new mongoose.Schema({
-    approveTime: { type: Date },
+    approxTime: { type: String },
     availableCurrency: { type: Number },
     amountTradeHistory: { type: String }
 })
@@ -14,7 +14,7 @@ const DepositIssueSubSchema = new mongoose.Schema({
     depositToken: { type: String },
     depositNetwork: { type: String },
     depositAmount: { type: String },
-    dateOfDesposit: { type: Date },
+    dateOfDesposit: { type: String },
     recipientWalletAddress: { type: String },
     status: { type: String },
     txId: { type: String }
@@ -24,7 +24,7 @@ const WithdrawIssueSubSchema = new mongoose.Schema({
     withdrawToken: { type: String },
     withdrawNetwork: { type: String },
     withdrawAmount: { type: String },
-    dateOfWithdraw: { type: Date },
+    dateOfWithdraw: { type: String },
     recipientWalletAddress: { type: String },
     status: { type: String },
     txId: { type: String }
@@ -43,7 +43,7 @@ const SupportTickets = new mongoose.Schema({
     user_id: { type: String, required: true },
     issueType: { type: String, require: true },
     email: { type: String, require: true },
-    registeredEmail: { type: String, required: false, default: null },
+    registeredEmailOrPhone: { type: String, required: false, default: null },
     registeredPhone: { type: String, required: false, default: null },
     subject: { type: String, required: true },
     description: { type: String, required: true },

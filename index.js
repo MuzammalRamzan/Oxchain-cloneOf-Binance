@@ -207,7 +207,6 @@ const GetWithdrawHistory = require('./controllers/withdraw/getWithdrawHistory.js
 const addSupportTicket = require('./controllers/dashboard/addSupportTicket.js');
 const getSupportTicket = require('./controllers/dashboard/getSupportTicket.js');
 const deleteSupportTicket = require('./controllers/dashboard/deleteSupportTicket.js');
-const updateSupportTicket = require('./controllers/dashboard/updateSupportTicket.js');
 const addSystemFeedback = require('./controllers/dashboard/systemFeedback.js');
 const SpotLimitMarketOrders = require('./controllers/orders/history/spotLimitMarketOrders.js');
 const SpotTradeHistory = require('./controllers/orders/history/spotTradeHistory.js');
@@ -559,7 +558,6 @@ route.post('/getAllFAQS', upload.none(), getAllFaqs);
 route.post('/addSupportTicket', addSupportTicket);
 route.get('/getSupportTicket', getSupportTicket);
 route.all('/deleteSupportTicket', deleteSupportTicket);
-route.post('/updateSupportTicket', updateSupportTicket);
 route.post('/systemFeedback', addSystemFeedback);
 route.all('/getAllNews', upload.none(), getAllNews);
 route.all('/getNews', upload.none(), getNews);
