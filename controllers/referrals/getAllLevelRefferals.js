@@ -22,7 +22,6 @@ const getAllLevelReferrals = async (req, res) => {
 			const ambassador = await IBModel.findOne({
 				user_id,
 			});
-			console.log('ambassador', ambassador);
 			if (!ambassador) {
 				return res.status(404).json({
 					status: 'fail',
@@ -32,11 +31,11 @@ const getAllLevelReferrals = async (req, res) => {
 			}
 		}
 		let referralsCount = [0, 0, 0, 0];
+		let totalMembers = 0;
 		let referralsIds = [[], [], [], []];
 		let tradeVolume = [0, 0, 0, 0];
 		let totalFutureTradeVolume = 0;
 		let totalSpotTradeVolume = 0;
-		const totalMembers = await UserRef.countDocuments();
 
 		// Get the user's referral code
 		const userRef = await UserRef.findOne({ user_id });
@@ -74,7 +73,6 @@ const getAllLevelReferrals = async (req, res) => {
 			referralsIds[2] = level3ReferralIdsArray;
 
 			// Get the level 4 referrals
-			console.log('level3ReferralIdsArray', level3ReferralIdsArray);
 			const level4ReferralIds = await UserRef.find({
 				user_id: { $in: level3ReferralIdsArray },
 			}).distinct('refCode');
@@ -89,6 +87,7 @@ const getAllLevelReferrals = async (req, res) => {
 			referralsIds[3] = level4ReferralIdsArray;
 		}
 		for (let i = 0; i < 4; i++) {
+			totalMembers += referralsIds[i].length;
 			const sum = await TradeVolume.aggregate([
 				{
 					$match: {
