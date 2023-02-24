@@ -15,14 +15,17 @@ const myReferrals = async (req, res) => {
 	const query = { reffer: refCode };
 	if (fromDate && toDate) query.createdAt = { $gte: fromDate, $lte: toDate };
 
-	const referrals = await ReferralModel.find(query)
+	let referrals = await ReferralModel.find(query)
 		.select({ user_id: 1, _id: 0 })
 		.populate({
 			path: 'user_id',
 			model: 'User',
-			select: 'name surname nickname email status createdAt country_code phone_number',
+			select:
+				'name surname nickname email status createdAt country_code phone_number',
 		})
 		.lean();
+	referrals = referrals.filter((referral) => referral.user_id !== null);
+
 	return res.json({ status: 'success', data: referrals });
 };
 
