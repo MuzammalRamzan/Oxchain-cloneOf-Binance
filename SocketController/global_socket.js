@@ -199,7 +199,11 @@ async function GetAllPrices(ws) {
             for (var m = 0; m < data.length; m++) {
                 let x = data[m];
                 if (Object(global.MarketData).hasOwnProperty(x.s)) {
-                    global.MarketData[x.s] = { bid: x.b, ask: x.a };
+                    global.MarketData[x.s] = {
+                        bid: x.b,
+                        ask: x.a,
+                        change: x.P,
+                    };
                 }
 
             }
