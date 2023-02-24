@@ -27,7 +27,7 @@ const getEarningsGraphData = async (req, res) => {
 				});
 			}
 		}
-		const fees = await FeeModel.find({ userId: user_id });
+		const fees = await FeeModel.find({ to_user_id: user_id });
 		const earnings = {};
 		fees.forEach((fee) => {
 			const date = fee.createdAt;
