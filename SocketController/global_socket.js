@@ -82,6 +82,11 @@ route.get('/24hr', async (req, res) => {
         let item = data.data.filter((x) => x.symbol == symbol);
         return res.json(item);
     }
+    if (req.query.symbols != null) {
+        let symbols = req.query.symbols.replaceAll('/', '').split(',');
+        let item = data.data.filter((x) => symbols.indexOf(x.symbol) != -1);
+        return res.json(item);
+    }
     return res.json(data.data);
 })
 
