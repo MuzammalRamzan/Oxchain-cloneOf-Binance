@@ -29,6 +29,18 @@ const addSupportTicket = async (req, res) => {
             // if (!checkMail) {
             //     return res.status(400).json({ status: "fail", message: "Registerd_email_not_Found", showableMessage: "Registered Email not Found" })
             // }
+            // let checkPhone = await UserModel.findOne({
+            //     country_code: country_code,
+            //     phone_number: phone_number,
+            //   }).exec();
+
+            //   if (!checkPhone) {
+            //     return res.json({
+            //       status: "fail",
+            //       message: "phone_not_registered",
+            //       showableMessage: "Phone not registered",
+            //     });
+            //   }
             let check1 = await SupportTickets.findOne({
                 user_id: req.body.user_id,
                 issueType: req.body.issueType,
