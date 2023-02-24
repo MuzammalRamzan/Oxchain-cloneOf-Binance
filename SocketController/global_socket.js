@@ -142,6 +142,7 @@ async function GetBinanceData(ws, pair) {
             `${noSlashPair}@aggTrade`,
             `${noSlashPair}@bookTicker`,
             `${noSlashPair}@trade`,
+            `${noSlashPair}@ticker`,
             "!miniTicker@arr",
         ],
         // params: ["!miniTicker@arr"],
@@ -166,9 +167,10 @@ async function GetBinanceData(ws, pair) {
                 ws.send(JSON.stringify({ type: "prices", content: data }));
             } else if (data.e === "trade") {
                 ws.send(JSON.stringify({ type: "trade", content: data }));
-            } else if (data[0].e === "24hrMiniTicker") {
-                // console.log(data);
+            } else if (data.e === "24hrMiniTicker") {
                 ws.send(JSON.stringify({ type: "market", content: data }));
+            } else if (data.e === "24hrTicker") {
+                ws.send(JSON.stringify({ type: "ticker", content: data }));
             }
         }
     };
@@ -236,8 +238,8 @@ async function fillMarketPrices() {
             if (data != null && data != "undefined") {
                 for (var m = 0; m < data.length; m++) {
                     let x = data[m];
-                    if(global.MarketData[x.s] != null)
-                    global.MarketData[x.s] = { bid: x.b, ask: x.a };
+                    if (global.MarketData[x.s] != null)
+                        global.MarketData[x.s] = { bid: x.b, ask: x.a };
                 }
             }
         };
