@@ -108,6 +108,12 @@ const getLocation = require('./controllers/users/getLocation');
 
 const getSiteNotificationSettings = require('./controllers/siteNotifications/get');
 const updateSiteNotificationSettings = require('./controllers/siteNotifications/update');
+
+
+const getWhatIsEnabled = require('./controllers/whatIsEnabled/get');
+
+
+
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oidc');
 //var formattedKey = authenticator.generateKey();
@@ -283,6 +289,11 @@ route.all('/getAIOrders', getAIOrders);
 
 route.all('/delete2fa', Delete2fa);
 
+
+
+route.all('/getWhatIsEnabled', getWhatIsEnabled);
+
+
 route.all('/addAnnouncement', addAnnouncement);
 route.all('/getAnnouncements', getAnnouncement);
 route.all('/getLocation', getLocation);
@@ -447,7 +458,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) {}
+	async function (req, res) { }
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);

@@ -82,6 +82,11 @@ route.get('/24hr', async (req, res) => {
         let item = data.data.filter((x) => x.symbol == symbol);
         return res.json(item);
     }
+    if (req.query.symbols != null) {
+        let symbols = req.query.symbols.replaceAll('/', '').split(',');
+        let item = data.data.filter((x) => symbols.indexOf(x.symbol) != -1);
+        return res.json(item);
+    }
     return res.json(data.data);
 })
 
@@ -137,6 +142,7 @@ async function GetBinanceData(ws, pair) {
             `${noSlashPair}@aggTrade`,
             `${noSlashPair}@bookTicker`,
             `${noSlashPair}@trade`,
+            `${noSlashPair}@ticker`,
             "!miniTicker@arr",
         ],
         // params: ["!miniTicker@arr"],
@@ -161,9 +167,10 @@ async function GetBinanceData(ws, pair) {
                 ws.send(JSON.stringify({ type: "prices", content: data }));
             } else if (data.e === "trade") {
                 ws.send(JSON.stringify({ type: "trade", content: data }));
-            } else if (data[0].e === "24hrMiniTicker") {
-                // console.log(data);
+            } else if (data.e === "24hrMiniTicker") {
                 ws.send(JSON.stringify({ type: "market", content: data }));
+            } else if (data.e === "24hrTicker") {
+                ws.send(JSON.stringify({ type: "ticker", content: data }));
             }
         }
     };
@@ -192,7 +199,11 @@ async function GetAllPrices(ws) {
             for (var m = 0; m < data.length; m++) {
                 let x = data[m];
                 if (Object(global.MarketData).hasOwnProperty(x.s)) {
-                    global.MarketData[x.s] = { bid: x.b, ask: x.a };
+                    global.MarketData[x.s] = {
+                        bid: x.b,
+                        ask: x.a,
+                        change: x.P,
+                    };
                 }
 
             }
@@ -231,8 +242,8 @@ async function fillMarketPrices() {
             if (data != null && data != "undefined") {
                 for (var m = 0; m < data.length; m++) {
                     let x = data[m];
-                    if(global.MarketData[x.s] != null)
-                    global.MarketData[x.s] = { bid: x.b, ask: x.a };
+                    if (global.MarketData[x.s] != null)
+                        global.MarketData[x.s] = { bid: x.b, ask: x.a };
                 }
             }
         };
