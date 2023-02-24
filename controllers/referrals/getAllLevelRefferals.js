@@ -73,7 +73,6 @@ const getAllLevelReferrals = async (req, res) => {
 			referralsIds[2] = level3ReferralIdsArray;
 
 			// Get the level 4 referrals
-			console.log('level3ReferralIdsArray', level3ReferralIdsArray);
 			const level4ReferralIds = await UserRef.find({
 				user_id: { $in: level3ReferralIdsArray },
 			}).distinct('refCode');
