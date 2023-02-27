@@ -3,7 +3,7 @@ const UserNotifications = require("../../models/UserNotifications");
 
 const readUserNotification = async function (req, res) {
 
-    const { user_id } = req.body;
+    const { user_id, limit } = req.body;
 
     let userCheck = await User.findOne({ _id: user_id });
 
@@ -11,7 +11,16 @@ const readUserNotification = async function (req, res) {
         return res.json({ status: "fail", data: "User not found" });
     }
 
-    let userNotifications = await UserNotifications.find({ user_id: user_id, read: false });
+    let userNotifications = "";
+
+    if (limit == null || limit == undefined || limit == "") {
+        userNotifications = await UserNotifications.find({ user_id: user_id, read: false });
+
+    }
+    else {
+        userNotifications = await UserNotifications.find({ user_id: user_id, read: false }).limit(limit);   
+
+    }
 
     for (let i = 0; i < userNotifications.length; i++) {
         let userNotification = userNotifications[i];
