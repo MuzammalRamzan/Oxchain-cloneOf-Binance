@@ -243,6 +243,7 @@ const getTopics = require('./controllers/academy/getTopicsByCategory.js');
 const CloseAllFutureOrders = require('./controllers/orders/closeAllFutureOrders.js');
 
 const ApproveLoginRequest = require('./controllers/auth/approveLoginRequest.js');
+const GetCandleData = require('./controllers/pair/getCandleData.js');
 
 route.use(
 	session({
@@ -479,6 +480,7 @@ route.all('/setFavoritePair', upload.none(), SetFavoritePair);
 route.all('/getFavoritePairs', upload.none(), GetFavoritePairs);
 route.all('/getPairs', upload.none(), getPairs);
 route.all('/addPair', upload.none(), addPair);
+route.all('/getCandleData', upload.none(), GetCandleData);
 route.all('/getDigits', upload.none(), getDigits);
 route.all('/getCoinList', upload.none(), getCoinList);
 route.all('/getCoinNetworks', upload.none(), depositCoinNetworkOptions);
