@@ -74,7 +74,31 @@ route.get("/price", (req, res) => {
     let data = global.MarketData[symbol];
     res.json({ 'status': 'success', 'data': data });
 });
+route.get('/getCandleData', async (req, res) => {
+    try {
+        let symbol = req.query.symbol;
+        if (symbol == null)
+            return res.send({ status: 'fail', message: 'Symbol not found' });
+        let dt = new Date();
+        let now = dt.getTime();
+        dt.setDate(dt.getDate() - 1);
+        let yesterday = dt.getTime();
 
+        symbol = symbol.replace('/', '_');
+
+        let uri = "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&startTime=" + yesterday + "&endTime=" + now + "";
+        let candleData = axios.get(uri);
+        let data = (await candleData).data;
+        let ret = [];
+        data.forEach(x => {
+            ret.push(x[2]);
+        });
+        return res.json({ status: 'success', data: ret });
+    } catch (err) {
+        console.log(err);
+        return res.json({ status: 'fail', message: "Unknow error" });
+    }
+});
 route.get('/24hr', async (req, res) => {
     let data = await axios("https://api.binance.com/api/v3/ticker/24hr");
     var symbol = req.query.symbol;
@@ -135,7 +159,7 @@ async function GetBinanceData(ws, pair) {
 
     // BNB_USDT => bnbusdt
     const noSlashPair = pair.replace("_", "").toLowerCase();
-    let coins = await CoinList.find({status: 1});
+    let coins = await CoinList.find({ status: 1 });
     let params = [];
     coins.forEach((val) => {
         params.push(val.symbol.toLowerCase() + "usdt@aggTrade");
