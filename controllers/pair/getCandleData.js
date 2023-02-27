@@ -21,7 +21,7 @@ const GetCandleData = async(req,res) => {
         });
         return res.json({status : 'success', data : ret});
     } catch(err) {
-
+        return res.json({status : 'fail', message : "Unknow error"});
     }
 }
 
