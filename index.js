@@ -181,6 +181,7 @@ const getDashboard = require('./controllers/dashboard/getDashboard');
 
 const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
+const getPredictionHistory = require('./controllers/Prediction/getPredictionHistory');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
 const editApiKey = require('./controllers/api/editApiKey');
 const deleteAllKeys = require('./controllers/api/deleteAllKeys');
@@ -325,7 +326,7 @@ route.all('/getApiKeys', getApiKeys);
 
 route.all('/newPrediction', newPrediction);
 route.all('/getPrediction', getPrediction);
-
+route.all('/getPredictionHistory', getPredictionHistory);
 route.all('/editApiKey', editApiKey);
 
 route.all('/walletToWalletBetweenUsers', walletTowalletBetweenUsers);
