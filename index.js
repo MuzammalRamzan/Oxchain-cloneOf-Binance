@@ -109,10 +109,7 @@ const getLocation = require('./controllers/users/getLocation');
 const getSiteNotificationSettings = require('./controllers/siteNotifications/get');
 const updateSiteNotificationSettings = require('./controllers/siteNotifications/update');
 
-
 const getWhatIsEnabled = require('./controllers/whatIsEnabled/get');
-
-
 
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oidc');
@@ -170,7 +167,10 @@ const myReferralEarns = require('./controllers/referrals/myReferralEarns');
 const getAllLevelReferrals = require('./controllers/referrals/getAllLevelRefferals.js');
 const getEarningsGraphData = require('./controllers/referrals/getEarningsGraphData.js');
 const getMembersGraphData = require('./controllers/referrals/getMembersGraphData.js');
+const getDirectMemberGraph = require('./controllers/referrals/getDirectMemberGraph.js');
+
 const getAllRefUser = require('./controllers/referrals/getAllRefUser.js');
+const getDirectReferralStats = require('./controllers/referrals/getDirectReferralStats.js');
 
 const checklast24hourswithdraws = require('./controllers/withdraw/checklast24hourswithdraws.js');
 
@@ -293,10 +293,7 @@ route.all('/getAIOrders', getAIOrders);
 
 route.all('/delete2fa', Delete2fa);
 
-
-
 route.all('/getWhatIsEnabled', getWhatIsEnabled);
-
 
 route.all('/approveLoginRequest', ApproveLoginRequest);
 route.all('/addAnnouncement', addAnnouncement);
@@ -463,7 +460,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) { }
+	async function (req, res) {}
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
@@ -499,7 +496,9 @@ route.all('/getUserLevel', upload.none(), GetUserLevel);
 route.all('/getAllLevelReferrals', upload.none(), getAllLevelReferrals);
 route.all('/getEarningsGraphData', upload.none(), getEarningsGraphData);
 route.all('/getMembersGraphData', upload.none(), getMembersGraphData);
+route.all('/getDirectMemberGraph', upload.none(), getDirectMemberGraph);
 route.all('/getAllRefUser', upload.none(), getAllRefUser);
+route.all('/getDirectReferralStats', upload.none(), getDirectReferralStats);
 
 route.post('/cancelAllLimit', cancelAllLimit);
 route.post('/cancelAllStopLimit', cancelAllStopLimit);
