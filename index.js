@@ -242,6 +242,8 @@ const updateAISettings = require('./controllers/AITrade/updateSettings.js');
 const getTopics = require('./controllers/academy/getTopicsByCategory.js');
 const CloseAllFutureOrders = require('./controllers/orders/closeAllFutureOrders.js');
 
+const ApproveLoginRequest = require('./controllers/auth/approveLoginRequest.js');
+
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -295,6 +297,7 @@ route.all('/delete2fa', Delete2fa);
 route.all('/getWhatIsEnabled', getWhatIsEnabled);
 
 
+route.all('/approveLoginRequest', ApproveLoginRequest);
 route.all('/addAnnouncement', addAnnouncement);
 route.all('/getAnnouncements', getAnnouncement);
 route.all('/getLocation', getLocation);
