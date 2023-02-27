@@ -26,6 +26,7 @@
     "express-session": "^1.17.3",
     "geoip-lite": "^1.4.6",
     "google-auth-library": "^8.7.0",
+    "google-libphonenumber": "^3.2.32",
     "jsonwebtoken": "^8.5.1",
     "messagebird": "^4.0.1",
     "moment": "^2.29.4",
