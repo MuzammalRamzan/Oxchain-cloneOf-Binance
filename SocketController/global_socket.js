@@ -84,7 +84,7 @@ route.get('/getCandleData', async (req, res) => {
         dt.setDate(dt.getDate() - 1);
         let yesterday = dt.getTime();
 
-        symbol = symbol.replace('/', '_');
+        symbol = symbol.replace('/', '');
 
         let uri = "https://api.binance.com/api/v3/klines?symbol="+symbol+"&interval=1h&startTime=" + yesterday + "&endTime=" + now + "";
         let candleData = axios.get(uri);
