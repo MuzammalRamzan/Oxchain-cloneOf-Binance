@@ -135,9 +135,19 @@ async function GetBinanceData(ws, pair) {
 
     // BNB_USDT => bnbusdt
     const noSlashPair = pair.replace("_", "").toLowerCase();
-
+    let coins = await CoinList.find({status: 1});
+    let params = [];
+    coins.forEach((val) => {
+        params.push(val.symbol.toLowerCase() + "usdt@aggTrade");
+        params.push(val.symbol.toLowerCase() + "usdt@bookTicker");
+        params.push(val.symbol.toLowerCase() + "usdt@trade");
+        params.push(val.symbol.toLowerCase() + "usdt@ticker");
+        params.push(val.symbol.toLowerCase() + "usdt@miniTicker");
+    });
     const initSocketMessage = {
         method: "SUBSCRIBE",
+        params: params,
+        /*
         params: [
             `${noSlashPair}@aggTrade`,
             `${noSlashPair}@bookTicker`,
@@ -145,6 +155,7 @@ async function GetBinanceData(ws, pair) {
             `${noSlashPair}@ticker`,
             "!miniTicker@arr",
         ],
+        */
         // params: ["!miniTicker@arr"],
         id: 1,
     };
