@@ -181,6 +181,7 @@ const getDashboard = require('./controllers/dashboard/getDashboard');
 
 const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
+const getPredictionHistory = require('./controllers/Prediction/getPredictionHistory');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
 const editApiKey = require('./controllers/api/editApiKey');
 const deleteAllKeys = require('./controllers/api/deleteAllKeys');
@@ -241,6 +242,9 @@ const updateAISettings = require('./controllers/AITrade/updateSettings.js');
 const getTopics = require('./controllers/academy/getTopicsByCategory.js');
 const CloseAllFutureOrders = require('./controllers/orders/closeAllFutureOrders.js');
 
+const ApproveLoginRequest = require('./controllers/auth/approveLoginRequest.js');
+const GetCandleData = require('./controllers/pair/getCandleData.js');
+
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -291,6 +295,7 @@ route.all('/delete2fa', Delete2fa);
 
 route.all('/getWhatIsEnabled', getWhatIsEnabled);
 
+route.all('/approveLoginRequest', ApproveLoginRequest);
 route.all('/addAnnouncement', addAnnouncement);
 route.all('/getAnnouncements', getAnnouncement);
 route.all('/getLocation', getLocation);
@@ -322,7 +327,7 @@ route.all('/getApiKeys', getApiKeys);
 
 route.all('/newPrediction', newPrediction);
 route.all('/getPrediction', getPrediction);
-
+route.all('/getPredictionHistory', getPredictionHistory);
 route.all('/editApiKey', editApiKey);
 
 route.all('/walletToWalletBetweenUsers', walletTowalletBetweenUsers);
@@ -472,6 +477,7 @@ route.all('/setFavoritePair', upload.none(), SetFavoritePair);
 route.all('/getFavoritePairs', upload.none(), GetFavoritePairs);
 route.all('/getPairs', upload.none(), getPairs);
 route.all('/addPair', upload.none(), addPair);
+route.all('/getCandleData', upload.none(), GetCandleData);
 route.all('/getDigits', upload.none(), getDigits);
 route.all('/getCoinList', upload.none(), getCoinList);
 route.all('/getCoinNetworks', upload.none(), depositCoinNetworkOptions);

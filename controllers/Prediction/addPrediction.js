@@ -16,7 +16,7 @@ const AITradeLogsModel = require('../../models/AITradeLogs');
 
 const addPrediction = async (req, res) => {
 
-    const { symbol, prediction, api_key } = req.body;
+    const { symbol, prediction, api_key, priceData } = req.body;
 
     const result = await authFile.apiKeyChecker(api_key);
 
@@ -29,18 +29,21 @@ const addPrediction = async (req, res) => {
         let newPredictionHistory = new PredictionHistoryModel({
             coin_symbol: symbol,
             prediction: prediction,
+            price: priceData
         });
 
         await newPredictionHistory.save();
 
         if (predictionCheck) {
             predictionCheck.prediction = prediction;
+            predictionCheck.price = priceData;
             await predictionCheck.save();
         }
         else {
             let newPrediction = new PredictionModel({
                 coin_symbol: symbol,
                 prediction: prediction,
+                price: priceData
             });
             await newPrediction.save();
         }
