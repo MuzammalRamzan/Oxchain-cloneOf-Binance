@@ -86,7 +86,7 @@ route.get('/getCandleData', async (req, res) => {
 
         symbol = symbol.replace('/', '_');
 
-        let uri = "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&startTime=" + yesterday + "&endTime=" + now + "";
+        let uri = "https://api.binance.com/api/v3/klines?symbol="+symbol+"&interval=1h&startTime=" + yesterday + "&endTime=" + now + "";
         let candleData = axios.get(uri);
         let data = (await candleData).data;
         let ret = [];
