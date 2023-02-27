@@ -33,7 +33,7 @@ const sendMailPin = async (req, res) => {
 		}).exec();
 
 		let pin = Math.floor(100000 + Math.random() * 900000);
-		let expireTime = Date.now() + 5 * 60 * 1000;
+		let expireTime = Date.now() + 1 * 60 * 1000;
 		if (check) {
 			check.pin = pin;
 			check.status = 0;
