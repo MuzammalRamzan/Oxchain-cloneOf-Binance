@@ -4,9 +4,8 @@ const RegisterMail = require('../../models/RegisterMail');
 const RegisterSMS = require('../../models/RegisterSMS');
 const UserRef = require('../../models/UserRef');
 const utilities = require('../../utilities');
-const { PhoneNumberUtil, PhoneNumberFormat } = require('google-libphonenumber');
+const { PhoneNumberUtil } = require('google-libphonenumber');
 const phoneNumberUtil = PhoneNumberUtil.getInstance();
-
 const registerController = async (req, res) => {
 	try {
 		var registerType = req.body.registerType;
@@ -102,6 +101,13 @@ const registerController = async (req, res) => {
 					status: 'fail',
 					message: 'phone and country code required',
 					showableMessage: 'Phone and Country Code is required',
+				});
+			}
+			if (!phoneNumberUtil.getMetadataForRegion(req.body.country_code)) {
+				return res.json({
+					status: 'fail',
+					message: 'Inavlid country code',
+					showableMessage: 'Entered country code is incorrect!',
 				});
 			}
 			const phoneNumber = phoneNumberUtil.parse(
