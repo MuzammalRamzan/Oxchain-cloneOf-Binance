@@ -28,7 +28,7 @@ const changePassword = async function (req, res) {
 				return res.json({
 					status: 'fail',
 					message: 'wrong_password',
-					showableMessage: 'wrong password',
+					showableMessage: 'Your current password is incorrect',
 				});
 
 			var email = user['email'];
