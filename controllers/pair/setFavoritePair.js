@@ -20,11 +20,11 @@ const SetFavoritePair = async (req, res) => {
       return;
     }
 
-    if (removeAll == true) {
+    if (removeAll == "true") {
 
       await FavoriteCoin.deleteMany({ user_id: user_id });
 
-      res.json({ status: "success", data: "OK" });
+      return res.json({ status: "success", data: "OK" });
 
     }
 
