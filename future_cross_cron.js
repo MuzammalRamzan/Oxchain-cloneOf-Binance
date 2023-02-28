@@ -204,7 +204,7 @@ async function Run(orders) {
             if (reverseOreders.type == order.type) {
               let oldAmount = reverseOreders.amount;
               let oldUsedUSDT = reverseOreders.usedUSDT;
-              let oldPNL = reverseOreders.pnl;
+              let oldPNL = splitLengthNumber(reverseOreders.pnl);
               let oldLeverage = reverseOreders.leverage;
               let newUsedUSDT = oldUsedUSDT + order.usedUSDT + oldPNL;
 
@@ -391,7 +391,7 @@ async function Run(orders) {
         if (order.type == 'buy') {
           let price = parseFloat(item.data.ask);
           let pnl = splitLengthNumber((price - order.open_price) * order.amount);
-          order.pnl = pnl;
+          order.pnl = splitLengthNumber(pnl);
           let tp = parseFloat(order.tp);
           let sl = parseFloat(order.sl);
           if (tp != 0 && price >= tp) {
@@ -442,7 +442,7 @@ async function Run(orders) {
 
 
 function splitLengthNumber(q) {
-  return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
+  return q.toString().length > 4 ? parseFloat(q.toString().substring(0, 4)) : q;
 }
 
 initialize();
