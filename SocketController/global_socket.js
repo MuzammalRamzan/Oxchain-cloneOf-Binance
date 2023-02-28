@@ -86,7 +86,7 @@ route.get('/getCandleData', async (req, res) => {
 
         symbol = symbol.replace('/', '');
 
-        let uri = "https://api.binance.com/api/v3/klines?symbol="+symbol+"&interval=1h&startTime=" + yesterday + "&endTime=" + now + "";
+        let uri = "https://api.binance.com/api/v3/klines?symbol=" + symbol + "&interval=1h&startTime=" + yesterday + "&endTime=" + now + "";
         let candleData = axios.get(uri);
         let data = (await candleData).data;
         let ret = [];
@@ -140,6 +140,8 @@ async function GlobalSocket() {
                 let json = JSON.parse(data);
                 if (json.page == "trade") {
                     GetBinanceData(ws, json.pair);
+                } else if (json.page == "market") {
+                    GetMarketData(ws);
                 } else if (json.page == "all_prices") {
                     GetAllPrices(ws);
                 }
@@ -151,14 +153,10 @@ async function GlobalSocket() {
     });
 }
 
-
-
-async function GetBinanceData(ws, pair) {
-    if (pair == "" || pair == null || pair == "undefined") return;
+async function GetMarketData(ws, pair) {
     var b_ws = new WebSocket("wss://stream.binance.com/stream");
 
     // BNB_USDT => bnbusdt
-    const noSlashPair = pair.replace("_", "").toLowerCase();
     let coins = await CoinList.find({ status: 1 });
     let params = [];
     coins.forEach((val) => {
@@ -206,6 +204,64 @@ async function GetBinanceData(ws, pair) {
                 ws.send(JSON.stringify({ type: "market", content: data }));
             } else if (data.e === "24hrTicker") {
                 ws.send(JSON.stringify({ type: "ticker", content: data }));
+            }
+        }
+    };
+}
+
+async function GetBinanceData(ws, pair) {
+    if (pair == "" || pair == null || pair == "undefined") return;
+
+    let coins = await Pairs.find({ status: 1 });
+
+    let onlyCoins = [];
+    coins.forEach(val => {
+        onlyCoins.push({ 's': val.name.replace('/', '') });
+    })
+
+    var b_ws = new WebSocket("wss://stream.binance.com/stream");
+
+    // BNB_USDT => bnbusdt
+    const noSlashPair = pair.replace("_", "").toLowerCase();
+
+    const initSocketMessage = {
+        method: "SUBSCRIBE",
+        params: [
+            "!miniTicker@arr",
+        ],
+        // params: ["!miniTicker@arr"],
+        id: 1,
+    };
+
+    b_ws.onopen = (event) => {
+        b_ws.send(JSON.stringify(initSocketMessage));
+    };
+
+    // Reconnect connection when disconnect connection
+    b_ws.onclose = () => {
+        b_ws.send(JSON.stringify(initSocketMessage));
+    };
+
+    b_ws.onmessage = function (event) {
+        const data = JSON.parse(event.data).data;
+        if (data != null && data != "undefined") {
+            if (data.A && data.a && data.b && data.B && !data.e) {
+                ws.send(JSON.stringify({ type: "order_books", content: data }));
+            } else if (data.e === "aggTrade") {
+                ws.send(JSON.stringify({ type: "prices", content: data }));
+            } else if (data.e === "trade") {
+                ws.send(JSON.stringify({ type: "trade", content: data }));
+            } else if (data[0].e === "24hrMiniTicker") {
+                // console.log(data);
+                data.forEach(symbolInfo => {
+                    let index = onlyCoins.findIndex(x => x.s == symbolInfo.s);
+                    if(index != -1) {
+                        onlyCoins[index] = symbolInfo;
+                        ws.send(JSON.stringify({ type: "market", content: onlyCoins }));
+                    }
+                });
+               
+
             }
         }
     };
