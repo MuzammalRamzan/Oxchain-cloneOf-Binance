@@ -209,6 +209,7 @@ const { addAdmin } = require('./adminController/Admin.js');
 const Login = require('./adminController/Login.js');
 //Ambassador
 const CampusRequestJoin = require('./controllers/campusAmbassador/request_join.js');
+const isAmbassador = require('./controllers/campusAmbassador/isAmbassador.js');
 const UpdateSocialMedia = require('./controllers/users/updateSocialMedia.js');
 const checkTwitterAccount = require('./Functions/checkTwitterAccount.js');
 const { default: axios } = require('axios');
@@ -497,6 +498,7 @@ route.all('/referralRewards', upload.none(), referralRewards);
 route.all('/topReferralEarners', upload.none(), topReferralEarners);
 route.all('/myReferralEarns', upload.none(), myReferralEarns);
 route.all('/request_campus', upload.none(), CampusRequestJoin);
+route.all('/isAmbassador', upload.none(), isAmbassador);
 route.all('/getWallet', upload.none(), getWallet);
 route.all('/getUserLevel', upload.none(), GetUserLevel);
 route.all('/getAllLevelReferrals', upload.none(), getAllLevelReferrals);
