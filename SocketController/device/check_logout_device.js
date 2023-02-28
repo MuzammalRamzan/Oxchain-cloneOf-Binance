@@ -17,14 +17,6 @@ const CheckLogoutDevice = async (ws, user_id) => {
             }
 
         }
-
-        if (data.operationType == "update") {
-
-            //if device.loginRequest == 2 then send login request to device
-            if (data.updateDescription.updatedFields.loginRequest == 2) {
-                ws.send(JSON.stringify({ command: "login_request_approved", device: data.documentKey._id }));
-            }
-        }
     }
     );
 
