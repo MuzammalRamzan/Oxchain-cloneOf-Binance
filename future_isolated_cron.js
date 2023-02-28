@@ -183,7 +183,7 @@ async function Run(orders) {
             if (reverseOreders.type == order.type) {
               let oldAmount = reverseOreders.amount;
               let oldUsedUSDT = reverseOreders.usedUSDT;
-              let oldPNL = reverseOreders.pnl;
+              let oldPNL = splitLengthNumber(reverseOreders.pnl);
               let oldLeverage = reverseOreders.leverage;
               let newUsedUSDT = oldUsedUSDT + order.usedUSDT + oldPNL;
 
@@ -485,12 +485,12 @@ async function Run(orders) {
       }
     }
 
-    order.pnl = pnl;
+    order.pnl = splitLengthNumber(pnl);
     await order.save();
   }
 }
 function splitLengthNumber(q) {
-  return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
+  return q.toString().length > 4 ? parseFloat(q.toString().substring(0, 4)) : q;
 }
 
 initialize();
