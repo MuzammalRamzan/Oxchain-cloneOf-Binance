@@ -109,10 +109,7 @@ const getLocation = require('./controllers/users/getLocation');
 const getSiteNotificationSettings = require('./controllers/siteNotifications/get');
 const updateSiteNotificationSettings = require('./controllers/siteNotifications/update');
 
-
 const getWhatIsEnabled = require('./controllers/whatIsEnabled/get');
-
-
 
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oidc');
@@ -170,7 +167,10 @@ const myReferralEarns = require('./controllers/referrals/myReferralEarns');
 const getAllLevelReferrals = require('./controllers/referrals/getAllLevelRefferals.js');
 const getEarningsGraphData = require('./controllers/referrals/getEarningsGraphData.js');
 const getMembersGraphData = require('./controllers/referrals/getMembersGraphData.js');
+const getDirectMemberGraph = require('./controllers/referrals/getDirectMemberGraph.js');
+
 const getAllRefUser = require('./controllers/referrals/getAllRefUser.js');
+const getDirectReferralStats = require('./controllers/referrals/getDirectReferralStats.js');
 
 const checklast24hourswithdraws = require('./controllers/withdraw/checklast24hourswithdraws.js');
 
@@ -181,6 +181,10 @@ const getDashboard = require('./controllers/dashboard/getDashboard');
 
 const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
+const getPredictionHistory = require('./controllers/Prediction/getPredictionHistory');
+const getPredictionLogsWithCoin = require('./controllers/Prediction/getPredictionLogsWithCoin.js');
+const getPredictionLogs = require('./controllers/Prediction/getPredictionLogs');
+const getPredictionAccuracyMetrics = require('./controllers/Prediction/getPredictionAccuracyMetrics');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
 const editApiKey = require('./controllers/api/editApiKey');
 const deleteAllKeys = require('./controllers/api/deleteAllKeys');
@@ -205,6 +209,7 @@ const { addAdmin } = require('./adminController/Admin.js');
 const Login = require('./adminController/Login.js');
 //Ambassador
 const CampusRequestJoin = require('./controllers/campusAmbassador/request_join.js');
+const isAmbassador = require('./controllers/campusAmbassador/isAmbassador.js');
 const UpdateSocialMedia = require('./controllers/users/updateSocialMedia.js');
 const checkTwitterAccount = require('./Functions/checkTwitterAccount.js');
 const { default: axios } = require('axios');
@@ -242,6 +247,9 @@ const getTopics = require('./controllers/academy/getTopicsByCategory.js');
 const CloseAllFutureOrders = require('./controllers/orders/closeAllFutureOrders.js');
 const getMarket = require('./controllers/market/getMarket.js');
 const getTopMarketGainers = require('./controllers/market/getTopMarketGainers.js');
+
+const ApproveLoginRequest = require('./controllers/auth/approveLoginRequest.js');
+const GetCandleData = require('./controllers/pair/getCandleData.js');
 
 route.use(
 	session({
@@ -291,11 +299,9 @@ route.all('/getAIOrders', getAIOrders);
 
 route.all('/delete2fa', Delete2fa);
 
-
-
 route.all('/getWhatIsEnabled', getWhatIsEnabled);
 
-
+route.all('/approveLoginRequest', ApproveLoginRequest);
 route.all('/addAnnouncement', addAnnouncement);
 route.all('/getAnnouncements', getAnnouncement);
 route.all('/getLocation', getLocation);
@@ -327,7 +333,10 @@ route.all('/getApiKeys', getApiKeys);
 
 route.all('/newPrediction', newPrediction);
 route.all('/getPrediction', getPrediction);
-
+route.all('/getPredictionHistory', getPredictionHistory);
+route.all('/getPredictionLogsWithCoin', getPredictionLogsWithCoin);
+route.all('/getPredictionLogs', getPredictionLogs);
+route.all('/getPredictionAccuracyMetrics', getPredictionAccuracyMetrics);
 route.all('/editApiKey', editApiKey);
 
 route.all('/walletToWalletBetweenUsers', walletTowalletBetweenUsers);
@@ -460,7 +469,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) { }
+	async function (req, res) {}
 );
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
@@ -477,6 +486,7 @@ route.all('/setFavoritePair', upload.none(), SetFavoritePair);
 route.all('/getFavoritePairs', upload.none(), GetFavoritePairs);
 route.all('/getPairs', upload.none(), getPairs);
 route.all('/addPair', upload.none(), addPair);
+route.all('/getCandleData', upload.none(), GetCandleData);
 route.all('/getDigits', upload.none(), getDigits);
 route.all('/getCoinList', upload.none(), getCoinList);
 route.all('/getCoinNetworks', upload.none(), depositCoinNetworkOptions);
@@ -490,12 +500,15 @@ route.all('/referralRewards', upload.none(), referralRewards);
 route.all('/topReferralEarners', upload.none(), topReferralEarners);
 route.all('/myReferralEarns', upload.none(), myReferralEarns);
 route.all('/request_campus', upload.none(), CampusRequestJoin);
+route.all('/isAmbassador', upload.none(), isAmbassador);
 route.all('/getWallet', upload.none(), getWallet);
 route.all('/getUserLevel', upload.none(), GetUserLevel);
 route.all('/getAllLevelReferrals', upload.none(), getAllLevelReferrals);
 route.all('/getEarningsGraphData', upload.none(), getEarningsGraphData);
 route.all('/getMembersGraphData', upload.none(), getMembersGraphData);
+route.all('/getDirectMemberGraph', upload.none(), getDirectMemberGraph);
 route.all('/getAllRefUser', upload.none(), getAllRefUser);
+route.all('/getDirectReferralStats', upload.none(), getDirectReferralStats);
 
 route.post('/cancelAllLimit', cancelAllLimit);
 route.post('/cancelAllStopLimit', cancelAllStopLimit);

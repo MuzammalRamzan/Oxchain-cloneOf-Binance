@@ -43,6 +43,7 @@ const MarginCrossWallet = require("../models/MarginCrossWallet");
 const MarginIsolatedWallet = require("../models/MarginIsolatedWallet");
 const BinanceAPI = require("../BinanceAPI");
 const CheckLogoutDevice = require("./device/check_logout_device");
+const loginApproveCheck = require("./device/login_approve_check");
 const { default: axios } = require("axios");
 var route = express();
 
@@ -74,7 +75,31 @@ route.get("/price", (req, res) => {
     let data = global.MarketData[symbol];
     res.json({ 'status': 'success', 'data': data });
 });
+route.get('/getCandleData', async (req, res) => {
+    try {
+        let symbol = req.query.symbol;
+        if (symbol == null)
+            return res.send({ status: 'fail', message: 'Symbol not found' });
+        let dt = new Date();
+        let now = dt.getTime();
+        dt.setDate(dt.getDate() - 1);
+        let yesterday = dt.getTime();
 
+        symbol = symbol.replace('/', '');
+
+        let uri = "https://api.binance.com/api/v3/klines?symbol=" + symbol + "&interval=1h&startTime=" + yesterday + "&endTime=" + now + "";
+        let candleData = axios.get(uri);
+        let data = (await candleData).data;
+        let ret = [];
+        data.forEach(x => {
+            ret.push(x[2]);
+        });
+        return res.json({ status: 'success', data: ret });
+    } catch (err) {
+        console.log(err);
+        return res.json({ status: 'fail', message: "Unknow error" });
+    }
+});
 route.get('/24hr', async (req, res) => {
     let data = await axios("https://api.binance.com/api/v3/ticker/24hr");
     var symbol = req.query.symbol;
@@ -114,30 +139,42 @@ async function GlobalSocket() {
             );
             ws.on("message", async (data) => {
                 let json = JSON.parse(data);
-                if (json.page == "market") {
-                    GetBinanceData(ws);
+                if (json.page == "trade") {
+                    GetBinanceData(ws, json.pair);
+                } else if (json.page == "market") {
+                    GetMarketData(ws);
                 } else if (json.page == "all_prices") {
                     GetAllPrices(ws);
                 }
                 else if (json.page == 'check_logout') {
                     CheckLogoutDevice(ws, json.user_id);
+                } else if (json.page == 'login_approve_check') {
+
+                    loginApproveCheck(ws, json.device_id);
+
                 }
             });
         }
     });
 }
 
-
-
-async function GetBinanceData(ws, pair) {
-    if (pair == "" || pair == null || pair == "undefined") return;
+async function GetMarketData(ws, pair) {
     var b_ws = new WebSocket("wss://stream.binance.com/stream");
 
     // BNB_USDT => bnbusdt
-    const noSlashPair = pair.replace("_", "").toLowerCase();
-
+    let coins = await CoinList.find({ status: 1 });
+    let params = [];
+    coins.forEach((val) => {
+        params.push(val.symbol.toLowerCase() + "usdt@aggTrade");
+        params.push(val.symbol.toLowerCase() + "usdt@bookTicker");
+        params.push(val.symbol.toLowerCase() + "usdt@trade");
+        params.push(val.symbol.toLowerCase() + "usdt@ticker");
+        params.push(val.symbol.toLowerCase() + "usdt@miniTicker");
+    });
     const initSocketMessage = {
         method: "SUBSCRIBE",
+        params: params,
+        /*
         params: [
             `${noSlashPair}@aggTrade`,
             `${noSlashPair}@bookTicker`,
@@ -145,6 +182,7 @@ async function GetBinanceData(ws, pair) {
             `${noSlashPair}@ticker`,
             "!miniTicker@arr",
         ],
+        */
         // params: ["!miniTicker@arr"],
         id: 1,
     };
@@ -171,6 +209,67 @@ async function GetBinanceData(ws, pair) {
                 ws.send(JSON.stringify({ type: "market", content: data }));
             } else if (data.e === "24hrTicker") {
                 ws.send(JSON.stringify({ type: "ticker", content: data }));
+            }
+        }
+    };
+}
+
+async function GetBinanceData(ws, pair) {
+    if (pair == "" || pair == null || pair == "undefined") return;
+
+    let coins = await Pairs.find({ status: 1 });
+
+    let onlyCoins = [];
+    coins.forEach(val => {
+        onlyCoins.push({ 's': val.name.replace('/', '') });
+    })
+
+    var b_ws = new WebSocket("wss://stream.binance.com/stream");
+
+    // BNB_USDT => bnbusdt
+    const noSlashPair = pair.replace("_", "").toLowerCase();
+
+    const initSocketMessage = {
+        method: "SUBSCRIBE",
+        params: [
+            `${noSlashPair}@aggTrade`,
+            `${noSlashPair}@bookTicker`,
+            `${noSlashPair}@trade`,
+            "!miniTicker@arr",
+        ],
+        // params: ["!miniTicker@arr"],
+        id: 1,
+    };
+
+    b_ws.onopen = (event) => {
+        b_ws.send(JSON.stringify(initSocketMessage));
+    };
+
+    // Reconnect connection when disconnect connection
+    b_ws.onclose = () => {
+        b_ws.send(JSON.stringify(initSocketMessage));
+    };
+
+    b_ws.onmessage = function (event) {
+        const data = JSON.parse(event.data).data;
+        if (data != null && data != "undefined") {
+            if (data.A && data.a && data.b && data.B && !data.e) {
+                ws.send(JSON.stringify({ type: "order_books", content: data }));
+            } else if (data.e === "aggTrade") {
+                ws.send(JSON.stringify({ type: "prices", content: data }));
+            } else if (data.e === "trade") {
+                ws.send(JSON.stringify({ type: "trade", content: data }));
+            } else if (data[0].e === "24hrMiniTicker") {
+                // console.log(data);
+                data.forEach(symbolInfo => {
+                    let index = onlyCoins.findIndex(x => x.s == symbolInfo.s);
+                    if (index != -1) {
+                        onlyCoins[index] = symbolInfo;
+                        ws.send(JSON.stringify({ type: "market", content: onlyCoins }));
+                    }
+                });
+
+
             }
         }
     };
