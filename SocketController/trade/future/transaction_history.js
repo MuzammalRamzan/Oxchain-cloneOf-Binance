@@ -1,6 +1,9 @@
+const SocketRoomsModel = require("../../../models/SocketRoomsModel");
 const Transactions = require("../../../models/Transactions");
 
 const FutureTransactionHistory = async (sockets, user_id, filter) => {
+    let token = user_id;
+    user_id = user_id.substring(0, user_id.indexOf('-'));
     let request = { user_id: user_id };
 
     /*
@@ -15,10 +18,10 @@ const FutureTransactionHistory = async (sockets, user_id, filter) => {
     */
 
     let table = await Transactions.find(request);
-    sockets.in(user_id).emit("future_transaction_history",{ page: "future", type: 'transaction_history', content: table });
-    Transactions.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
-        let table = await Transactions.find(request);
-        sockets.in(user_id).emit("future_transaction_history",{ page: "future", type: 'transaction_history', content: table });
+    
+    var roomInUsers = await SocketRoomsModel.find({ token: token, process: "future_transaction_history" });
+    roomInUsers.forEach((room) => {
+        sockets.in(room.token).emit("future_transaction_history", table);
     });
 }
 module.exports = FutureTransactionHistory;
