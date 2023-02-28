@@ -24,7 +24,7 @@ const isAmbassador = async (req, res) => {
 			});
 		} else {
 			return res.status(404).json({
-				status: 'false',
+				status: 'success',
 				message: 'given user_id is not ambassador',
 				data: false,
 			});
