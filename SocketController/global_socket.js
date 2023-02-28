@@ -227,6 +227,9 @@ async function GetBinanceData(ws, pair) {
     const initSocketMessage = {
         method: "SUBSCRIBE",
         params: [
+            `${noSlashPair}@aggTrade`,
+            `${noSlashPair}@bookTicker`,
+            `${noSlashPair}@trade`,
             "!miniTicker@arr",
         ],
         // params: ["!miniTicker@arr"],
