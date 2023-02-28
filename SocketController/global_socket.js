@@ -114,8 +114,8 @@ async function GlobalSocket() {
             );
             ws.on("message", async (data) => {
                 let json = JSON.parse(data);
-                if (json.page == "trade") {
-                    GetBinanceData(ws, json.pair);
+                if (json.page == "market") {
+                    GetBinanceData(ws);
                 } else if (json.page == "all_prices") {
                     GetAllPrices(ws);
                 }
