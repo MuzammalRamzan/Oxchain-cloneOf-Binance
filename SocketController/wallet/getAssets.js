@@ -14,7 +14,7 @@ const GetAssets = async (sockets, user_id) => {
   var roomInUsers = await SocketRoomsModel.find({ token:token, process: "assets" });
   roomInUsers.forEach((room) => {
     sockets.in(room.token).emit("assets", assets);
-  })
+  });
 
 }
 

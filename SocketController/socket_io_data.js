@@ -100,6 +100,7 @@ async function Main() {
             checkRoomOrJoin('derivatives_wallet',socket, user_id);
             DerivativesFunds( io.sockets, user_id);
         });
+        /*
         socket.on('margin_cross_balance', (user_id) => {
             checkRoomOrJoin('margin_cross_balance',socket, user_id);
             GetCrossWallet( io.sockets, user_id);
@@ -153,6 +154,7 @@ async function Main() {
             checkRoomOrJoin('isolated_open_orders',socket, user_id);
             IsolatedFunds( io.sockets, user_id);
         });
+        */
         socket.on('future_balance', (user_id) => {
             checkRoomOrJoin('future_balance',socket, user_id);
             GetFutureWallet( io.sockets, user_id);

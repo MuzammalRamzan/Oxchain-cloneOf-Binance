@@ -15,11 +15,11 @@ const getNotification = async (req, res) => {
     let UserNotificationsCheck = "";
 
     if (limit == null || limit == undefined || limit == "") {
-        UserNotificationsCheck = await UserNotifications.find({ user_id: user_id }).sort({ date: -1 }).exec();
+        UserNotificationsCheck = await UserNotifications.find({ user_id: user_id }).sort({ createdAt: -1 }).exec();
     }
     else {
 
-        UserNotificationsCheck = await UserNotifications.find({ user_id: user_id }).sort({ date: -1 }).limit(limit).exec();
+        UserNotificationsCheck = await UserNotifications.find({ user_id: user_id }).sort({ createdAt: -1 }).limit(limit).exec();
 
     }
 
