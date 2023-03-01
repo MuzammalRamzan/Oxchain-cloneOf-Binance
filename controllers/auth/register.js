@@ -5,6 +5,11 @@ const RegisterSMS = require('../../models/RegisterSMS');
 const UserRef = require('../../models/UserRef');
 const utilities = require('../../utilities');
 const { PhoneNumberUtil } = require('google-libphonenumber');
+const {
+	generateFromEmail,
+	generateUsername,
+} = require('unique-username-generator');
+
 const phoneNumberUtil = PhoneNumberUtil.getInstance();
 const registerController = async (req, res) => {
 	try {
@@ -178,7 +183,9 @@ const registerController = async (req, res) => {
 		} while (checkShowableUserId != null);
 
 		if (registerType == 'email') {
+			const username = generateFromEmail(data, 0);
 			newUser = new User({
+				nickname: username,
 				email: data,
 				password: utilities.hashData(req.body.password),
 				api_key_result: req.body.api_key,
@@ -186,7 +193,9 @@ const registerController = async (req, res) => {
 				status: 1,
 			});
 		} else {
+			const username = generateUsername('', 0, 15);
 			newUser = new User({
+				nickname: username,
 				country_code: req.body.country_code,
 				phone_number: req.body.data,
 				password: utilities.hashData(req.body.password),
