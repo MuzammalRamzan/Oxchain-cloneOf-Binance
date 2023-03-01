@@ -17,13 +17,13 @@ const isAmbassador = async (req, res) => {
 			user_id,
 		});
 		if (ambassador) {
-			return res.status(404).json({
+			return res.status(200).json({
 				status: 'success',
 				message: 'given user_id is  ambassador',
 				data: true,
 			});
 		} else {
-			return res.status(404).json({
+			return res.status(200).json({
 				status: 'success',
 				message: 'given user_id is not ambassador',
 				data: false,
