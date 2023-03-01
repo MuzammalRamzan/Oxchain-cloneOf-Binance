@@ -7,8 +7,9 @@ async function SpotAssetsCalculate(wallets) {
 
         let totalBtcValue = 0.0;
         let totalUsdValue = 0.0;
-        let priceData = await axios("http://18.170.26.150:8542/price?symbol=BTCUSDT");
-        let btcPrice = priceData.data.data.ask;
+        //let priceData = await axios("http://18.170.26.150:8542/price?symbol=BTCUSDT");
+        let priceData = global.MarketData["BTCUSDT"];
+        let btcPrice = priceData.ask;
         let walletData = {};
 
         wallets.forEach(async (key, value) => {
@@ -34,8 +35,9 @@ async function SpotAssetsCalculate(wallets) {
                 walletData[value].balance = walletData[value].amount;
                 totalUsdValue += walletData[value].amount;
             } else {
-                priceData = await axios("http://18.170.26.150:8542/price?symbol=" + value + "USDT");
-                let price = priceData.data.data.ask;
+                //priceData = await axios("http://18.170.26.150:8542/price?symbol=" + value + "USDT");
+                priceData = global.MarketData[value + "USDT"].ask
+                let price = priceData;
 
                 if (price > 0) {
                     walletData[value].balance =
@@ -62,7 +64,7 @@ async function SpotAssetsCalculate(wallets) {
         }); 
         */
     } catch (err) {
-        console.log(err);
+        
     }
     return {
         wallets: 0,

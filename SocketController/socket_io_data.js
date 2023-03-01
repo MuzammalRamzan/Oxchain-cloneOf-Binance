@@ -62,43 +62,44 @@ async function Main() {
     io.on("connection", async (socket) => {
 
         socket.on('wallets', (user_id) => {
-            checkRoomOrJoin('wallets',socket, user_id);
-            GetSpotWallet( io.sockets, user_id);
+
+            checkRoomOrJoin('wallets', socket, user_id);
+            GetSpotWallet(io.sockets, user_id);
         });
         socket.on('assets', (user_id) => {
-            checkRoomOrJoin('assets',socket, user_id);
-            GetAssets( io.sockets, user_id);
+            checkRoomOrJoin('assets', socket, user_id);
+            GetAssets(io.sockets, user_id);
         });
         socket.on('assets_overview', (user_id) => {
-            checkRoomOrJoin('assets_overview',socket, user_id);
-            GetAssetsOverView( io.sockets, user_id);
+            checkRoomOrJoin('assets_overview', socket, user_id);
+            GetAssetsOverView(io.sockets, user_id);
         });
         socket.on('derivatives', (user_id) => {
-            checkRoomOrJoin('derivatives',socket, user_id);
-            GetDerivatives( io.sockets, user_id);
+            checkRoomOrJoin('derivatives', socket, user_id);
+            GetDerivatives(io.sockets, user_id);
         });
 
         socket.on('spot_open_orders', (user_id) => {
-            checkRoomOrJoin('spot_open_orders',socket, user_id);
-            SpotOpenOrders( io.sockets, user_id);
+            checkRoomOrJoin('spot_open_orders', socket, user_id);
+            SpotOpenOrders(io.sockets, user_id);
         });
 
         socket.on('spot_order_history', (user_id) => {
-            checkRoomOrJoin('spot_order_history',socket, user_id);
-            SpotOrderHistory( io.sockets, user_id);
+            checkRoomOrJoin('spot_order_history', socket, user_id);
+            SpotOrderHistory(io.sockets, user_id);
         });
         socket.on('spot_trade_history', (user_id) => {
-            checkRoomOrJoin('spot_trade_history',socket, user_id);
-            SpotTradeHistory( io.sockets, user_id);
+            checkRoomOrJoin('spot_trade_history', socket, user_id);
+            SpotTradeHistory(io.sockets, user_id);
         });
         socket.on('spot_funds', (user_id) => {
-            checkRoomOrJoin('spot_funds',socket, user_id);
-            SpotFunds( io.sockets, user_id);
+            checkRoomOrJoin('spot_funds', socket, user_id);
+            SpotFunds(io.sockets, user_id);
         });
 
         socket.on('derivatives_wallet', (user_id) => {
-            checkRoomOrJoin('derivatives_wallet',socket, user_id);
-            DerivativesFunds( io.sockets, user_id);
+            checkRoomOrJoin('derivatives_wallet', socket, user_id);
+            DerivativesFunds(io.sockets, user_id);
         });
         /*
         socket.on('margin_cross_balance', (user_id) => {
@@ -156,38 +157,39 @@ async function Main() {
         });
         */
         socket.on('future_balance', (user_id) => {
-            checkRoomOrJoin('future_balance',socket, user_id);
-            GetFutureWallet( io.sockets, user_id);
+            checkRoomOrJoin('future_balance', socket, user_id);
+            GetFutureWallet(io.sockets, user_id);
         });
         socket.on('future_positions', (user_id) => {
-            checkRoomOrJoin('future_positions',socket, user_id);
-            FuturePositions( io.sockets, user_id);
+            checkRoomOrJoin('future_positions', socket, user_id);
+            FuturePositions(io.sockets, user_id);
         });
         socket.on('future_open_orders', (user_id) => {
-            checkRoomOrJoin('future_open_orders',socket, user_id);
-            FutureOpenOrders( io.sockets, user_id);
+            checkRoomOrJoin('future_open_orders', socket, user_id);
+            FutureOpenOrders(io.sockets, user_id);
         });
         socket.on('future_order_history', (user_id) => {
-            checkRoomOrJoin('future_order_history',socket, user_id);
-            FutureOrderHistory( io.sockets, user_id);
+            checkRoomOrJoin('future_order_history', socket, user_id);
+            FutureOrderHistory(io.sockets, user_id);
         });
         socket.on('future_trade_history', (user_id) => {
-            checkRoomOrJoin('future_trade_history',socket, user_id);
-            FutureTradeHistory( io.sockets, user_id);
+            checkRoomOrJoin('future_trade_history', socket, user_id);
+            FutureTradeHistory(io.sockets, user_id);
         });
         socket.on('future_transaction_history', (user_id) => {
-            checkRoomOrJoin('future_transaction_history',socket, user_id);
-            FutureTransactionHistory( io.sockets, user_id);
+            checkRoomOrJoin('future_transaction_history', socket, user_id);
+            FutureTransactionHistory(io.sockets, user_id);
         });
         socket.on('future_assets', (user_id) => {
-            checkRoomOrJoin('future_assets',socket, user_id);
-            FutureAssets( io.sockets, user_id);
+            checkRoomOrJoin('future_assets', socket, user_id);
+            FutureAssets(io.sockets, user_id);
         });
 
 
-        socket.on('leave',(id) => {
-             SocketRoomsModel.deleteMany({ token: id });
-            io.sockets.clients(id).forEach((s) => s.leave(id));
+
+        socket.on('leave', (id) => {
+            SocketRoomsModel.deleteMany({ token: id });
+            socket.leave(id);
         })
 
 
@@ -238,18 +240,18 @@ async function fillMarketPrices() {
 fillMarketPrices();
 
 async function checkRoomOrJoin(process, socket, id) {
-    console.log(id);
     if (id.indexOf('-') <= 0) return;
+    let split = id.split('-');
+    let uid = split[0];
     if (socket.rooms.has(id) == false) {
-        let split = id.split('-');
-        let uid = split[0];
-        
         socket.join(id);
+    }
+
+    let check = await SocketRoomsModel.findOne({ user_id: uid, token: id, process: process });
+    if(check == null) {
         let save = new SocketRoomsModel({ user_id: uid, token: id, process: process });
         await save.save();
     }
-
-    console.log(socket.rooms);
 }
 
 
