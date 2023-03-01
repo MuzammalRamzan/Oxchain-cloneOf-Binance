@@ -43,6 +43,7 @@ const MarginCrossWallet = require("../models/MarginCrossWallet");
 const MarginIsolatedWallet = require("../models/MarginIsolatedWallet");
 const BinanceAPI = require("../BinanceAPI");
 const CheckLogoutDevice = require("./device/check_logout_device");
+const loginApproveCheck = require("./device/login_approve_check");
 const { default: axios } = require("axios");
 var route = express();
 
@@ -147,6 +148,10 @@ async function GlobalSocket() {
                 }
                 else if (json.page == 'check_logout') {
                     CheckLogoutDevice(ws, json.user_id);
+                } else if (json.page == 'login_approve_check') {
+
+                    loginApproveCheck(ws, json.device_id);
+
                 }
             });
         }
@@ -258,12 +263,12 @@ async function GetBinanceData(ws, pair) {
                 // console.log(data);
                 data.forEach(symbolInfo => {
                     let index = onlyCoins.findIndex(x => x.s == symbolInfo.s);
-                    if(index != -1) {
+                    if (index != -1) {
                         onlyCoins[index] = symbolInfo;
                         ws.send(JSON.stringify({ type: "market", content: onlyCoins }));
                     }
                 });
-               
+
 
             }
         }
