@@ -1,6 +1,8 @@
 const User = require("../../models/User");
 const LoginLogs = require("../../models/LoginLogs");
 var authFile = require("../../auth.js");
+const MailVerificationModel = require("../../models/MailVerification");
+const SmsVerificationModel = require("../../models/SMSVerification");
 
 const twoFactor = async function (req, res) {
   var twofapin = req.body.twofapin;
@@ -9,31 +11,81 @@ const twoFactor = async function (req, res) {
   var wantToTrust = req.body.wantToTrust;
   var log_id = req.body.log_id;
   var result = await authFile.apiKeyChecker(api_key_result);
+  var mailPin = req.body.mailPin;
+  var smsPin = req.body.smsPin;
+
+  var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 
   if (result === true) {
+
     var user = await User.findOne({
       _id: user_id,
     }).exec();
 
     if (user != null) {
+
+      let check1 = false;
+      let check2 = false;
+
       var twofa = user["twofa"];
 
-      var result2 = await authFile.verifyToken(twofapin, twofa);
+      if (user.twofa != null && user.twofa != undefined && user.twofa != "") {
+        var result2 = await authFile.verifyToken(twofapin, twofa);
 
-      if (result2 === true) {
-        if (wantToTrust == "yes") {
-          var update = { trust: "yes" };
-          var log = await LoginLogs.findOneAndUpdate(
-            { _id: log_id },
-            update
-          ).exec();
-          res.json({ status: "success", data: "2fa_success" });
-        } else {
-          res.json({ status: "success", message: "2fa_success" });
+        if (result2 === false) {
+          return res.json({ status: "fail", message: "2fa_failed", showableMessage: "Wrong 2fa pin" });
         }
-      } else {
-        res.json({ status: "fail", message: "2fa_failed", showableMessage: "2FA Failed" });
       }
+
+      if (user.email != null && user.email != undefined && user.email != "") {
+
+        check1 = await MailVerificationModel.findOne({
+          user_id: user_id,
+          reason: "login_verification",
+          pin: mailPin,
+        }).exec();
+
+        if (check1 == null) {
+          return res.json({ status: "fail", message: "mail_verification_failed", showableMessage: "Wrong mail pin" });
+        }
+      }
+      else {
+        if (user.phone != null && user.phone != undefined && user.phone != "") {
+
+          check2 = await SmsVerificationModel.findOne({
+            user_id: user_id,
+            reason: "login_verification",
+            pin: smsPin,
+          }).exec();
+
+          if (check2 == null) {
+            return res.json({ status: "fail", message: "sms_verification_failed", showableMessage: "Wrong sms pin" });
+          }
+        }
+      }
+
+
+      if (check1 != false) {
+
+        check1.status = 1;
+        await check1.save();
+
+      }
+
+      if (check2 != false) {
+        check2.status = 1;
+        await check2.save();
+      }
+
+
+      var update = { trust: "yes", status: "completed" };
+      await LoginLogs.findOneAndUpdate(
+        { ip: ip, user_id: user_id },
+        update
+      ).exec();
+      return res.json({ status: "success", data: "2fa_success" });
+
+
     } else {
       res.json({ status: "fail", message: "login_failed", showableMessage: "Login Failed" });
     }
