@@ -251,22 +251,13 @@ const login = async (req, res) => {
           }).exec();
 
           if (loginLogCheck == null) {
+            //burada pin göndereceğiz
             mailer.sendMail(user.email, "New Login", "An unusual login has been detected from your account. If you did not authorize this login, please contact support immediately.");
           }
         }
       }
 
-      let loginRequest = 0;
 
-      let activeDeviceCheck = await Device.findOne({
-        user_id: user._id,
-        status: "1",
-      }).exec();
-
-
-      if (activeDeviceCheck != null) {
-        loginRequest = 1;
-      }
 
 
       let device = new Device({
@@ -276,7 +267,7 @@ const login = async (req, res) => {
         deviceOs: deviceOS,
         deviceVersion: deviceVersion,
         loginTime: Date.now(),
-        loginRequest: loginRequest,
+        loginRequest: "",
         ip: ip,
         city: city,
       });
@@ -590,21 +581,6 @@ const login = async (req, res) => {
             mailer.sendMail(user.email, "Login", "Successfully logged in from " + ip);
           }
         }
-
-
-
-
-        if (loginRequest == 1) {
-
-          return res.json({
-            status: "success",
-            data: data,
-            message: "login_request_send",
-            showableMessage: "Login request send",
-          });
-
-        }
-
 
 
 
