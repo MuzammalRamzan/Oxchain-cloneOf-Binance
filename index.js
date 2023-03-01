@@ -591,6 +591,7 @@ route.all('/getTopNews', upload.none(), getTopNews);
 route.all('/getAllTopics', upload.none(), getAllTopics);
 route.all("/getMarket", upload.none(), getMarket);
 route.all("/getTopMarketGainers", upload.none(), getTopMarketGainers)
+route.all("/getTopics", upload.none(), getTopics)
 route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
 	if (symbol == null || symbol == '') {
