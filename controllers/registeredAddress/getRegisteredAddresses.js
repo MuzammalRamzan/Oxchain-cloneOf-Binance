@@ -10,6 +10,7 @@ const getRegisteredAddresses = async (req, res) => {
   const label = req.body.label;
   const origin = req.body.origin;
   const network = req.body.network;
+  const address = req.body.address;
 
 
   const result = await authFile.apiKeyChecker(api_key);
@@ -24,6 +25,7 @@ const getRegisteredAddresses = async (req, res) => {
       ...(label && { label }),
       ...(origin && { origin }),
       ...(network && { network }),
+      ...(address && { address })
     }).exec();
 
     res.json({
