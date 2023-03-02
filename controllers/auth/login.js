@@ -28,6 +28,14 @@ const ApiKeysModel = require("../../models/ApiKeys");
 const AITradeWalletModel = require("../../models/AITradeWallet");
 const mailer = require("../../mailer");
 
+const SMSVerificationModel = require("../../models/SMSVerification");
+const MailVerificationModel = require("../../models/MailVerification");
+
+let mailVerificationSent = false;
+let smsVerificationSent = false;
+
+let pinSent = false;
+
 const moment = require("moment");
 //istanbul date format
 
@@ -44,7 +52,8 @@ const login = async (req, res) => {
   var deviceVersion = "null";
   var deviceType = "null";
   var manufacturer = "null";
-  var ip = req.body.ip;
+
+  var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
   var searchType = req.body.searchType;
   var deviceModel = "null";
   var user_id = req.body.user_id;
@@ -75,21 +84,13 @@ const login = async (req, res) => {
   if (req.body.manufacturer != undefined) {
     manufacturer = req.body.manufacturer;
   }
-  if (req.body.ip != undefined && req.body.ip != "" && req.body.ip != "null") {
-
-    ip = req.body.ip;
-
-    //get city from ip
-
-    let getIP = await axios.get("http://ip-api.com/json/" + ip);
-    if (getIP.data.status == "success") {
-      city = getIP.data.country + " " + getIP.data.city;
-    }
 
 
-  } else {
-    ip = "null";
+  let getIP = await axios.get("http://ip-api.com/json/" + ip);
+  if (getIP.data.status == "success") {
+    city = getIP.data.country + " " + getIP.data.city;
   }
+
 
 
   var notificationToken = req.body.notificationToken;
@@ -240,22 +241,12 @@ const login = async (req, res) => {
       }
 
 
-      if (checkSiteNotifications) {
-
-        if (checkSiteNotifications.activities == 1 || checkSiteNotifications.activities == "1") {
 
 
-          let loginLogCheck = await LoginLogs.findOne({
-            user_id: user._id,
-            ip: ip,
-          }).exec();
 
-          if (loginLogCheck == null) {
-            //burada pin göndereceğiz
-            mailer.sendMail(user.email, "New Login", "An unusual login has been detected from your account. If you did not authorize this login, please contact support immediately.");
-          }
-        }
-      }
+
+
+
 
 
 
@@ -343,6 +334,78 @@ const login = async (req, res) => {
         verificationStatus = "none";
       }
 
+      let loginLogCheck = await LoginLogs.findOne({
+        user_id: user._id,
+        ip: ip,
+        status: "completed"
+      }).exec();
+
+      if (loginLogCheck == null) {
+        //burada pin göndereceğiz 
+
+        pinSent = true;
+        //generate random pin
+        var verificationPin = Math.floor(100000 + Math.random() * 900000);
+
+
+        if (user.email != undefined && user.email != "" && user.email != null) {
+
+          let mailCheck = await MailVerificationModel.findOne({
+            user_id: user._id,
+            reason: "login_verification",
+          }).exec();
+
+          if (mailCheck != null) {
+            mailCheck.pin = verificationPin;
+            mailCheck.status = "0";
+            await mailCheck.save();
+          }
+          else {
+            let newMailVerification = new MailVerificationModel({
+              user_id: user._id,
+              pin: verificationPin,
+              reason: "login_verification",
+              status: "0",
+            });
+
+            await newMailVerification.save();
+          }
+
+          mailVerificationSent = true;
+
+          mailer.sendMail(user.email, "New Login", "An unusual login has been detected from your account. </br><p style='font-weight:bold'>Pin:" + verificationPin + "</p> If you did not authorize this login, please contact support immediately.");
+
+        }
+        else {
+          verificationPin = "000000";
+          if (user.phone_number != undefined && user.phone_number != "" && user.phone_number != null) {
+            smsVerificationSent = true;
+
+            let smsCheck = await SMSVerificationModel.findOne({
+              user_id: user._id,
+              reason: "login_verification",
+            }).exec();
+
+            if (smsCheck != null) {
+              smsCheck.pin = verificationPin;
+              smsCheck.status = "0";
+              await smsCheck.save();
+            }
+            else {
+              let newSMSVerification = new SMSVerificationModel({
+                user_id: user._id,
+                pin: verificationPin,
+                reason: "login_verification",
+                status: "0",
+              });
+              await newSMSVerification.save();
+            }
+            let smsText = "An unusual login has been detected from your account. Verification Pin:" + verificationPin + " If you did not authorize this login, please contact support immediately.";
+            sms.sendSMS(user.country_code, user.phone_number, smsText);
+          }
+        }
+      }
+
       var data = {
         response: "success",
         email: user.email,
@@ -364,6 +427,8 @@ const login = async (req, res) => {
         showableUserId: user.showableUserId,
         last_login: logs,
         verificationStatus: verificationStatus,
+        mailVerificationSent: mailVerificationSent,
+        smsVerificationSent: smsVerificationSent,
       };
 
 
@@ -523,6 +588,7 @@ const login = async (req, res) => {
           await createWallet.save();
         }
 
+        //get ip of user
         const newUserLog = new LoginLogs({
           user_id: user["_id"],
           ip: ip,
@@ -530,7 +596,7 @@ const login = async (req, res) => {
           manufacturer: manufacturer,
           model: deviceModel,
           deviceOS: req.body.deviceOS ?? "Unknown",
-          status: "completed",
+          status: pinSent ? "pin_sent" : "success",
         });
         let room = await newUserLog.save();
         newRegisteredId = room.id;
