@@ -60,6 +60,9 @@ Main();
 async function Main() {
     await Connection.connection();
     io.on("connection", async (socket) => {
+        console.log("Yeni Bağlantı");
+
+        console.log(socket.eventNames);
 
         socket.on('wallets', (user_id) => {
 
