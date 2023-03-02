@@ -18,8 +18,9 @@ const deleteOneStepWithdraw = async (req, res) => {
 
 	if (!oneStepChecker) {
 		return res.json({
-			status: 'false',
+			status: 'fail',
 			message: 'One step Withdrawl not found',
+			showableMessage: 'One step Withdrawl not found',
 		});
 	} else {
 		await OneStepWithdrawModel.deleteOne({ user_id: userId });
