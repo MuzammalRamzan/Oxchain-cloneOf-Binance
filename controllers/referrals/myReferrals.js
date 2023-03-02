@@ -21,7 +21,7 @@ const myReferrals = async (req, res) => {
 			path: 'user_id',
 			model: 'User',
 			select:
-				'name surname nickname email status createdAt country_code phone_number',
+				'name surname nickname email status createdAt country_code phone_number showableUserId',
 		})
 		.lean();
 	referrals = referrals.filter((referral) => referral.user_id !== null);
