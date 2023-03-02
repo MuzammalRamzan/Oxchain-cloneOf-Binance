@@ -350,7 +350,6 @@ async function Run(orders) {
   let totalPNL = 0.0;
   for (var i = 0; i < getOpenOrders.length; i++) {
     let data = getOpenOrders[i];
-
     let total = splitLengthNumber(splitLengthNumber(parseFloat(data.total))) + splitLengthNumber(parseFloat(data.usedUSDT));
 
 
@@ -361,6 +360,7 @@ async function Run(orders) {
     let marginWalletAmount = wallet.amount;
 
     //buraya isoleden gelen aktif emirlerin ana yatırma bakiyesini eklemeliyiz çünkü bütün margin wallet bakiyesini değiştiriyor bu fonksiyon
+    
     wallet.pnl = splitLengthNumber(data.total);
     await wallet.save();
 

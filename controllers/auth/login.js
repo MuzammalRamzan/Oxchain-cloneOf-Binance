@@ -84,21 +84,13 @@ const login = async (req, res) => {
   if (req.body.manufacturer != undefined) {
     manufacturer = req.body.manufacturer;
   }
-  if (req.body.ip != undefined && req.body.ip != "" && req.body.ip != "null") {
-
-    ip = req.body.ip;
-
-    //get city from ip
-
-    let getIP = await axios.get("http://ip-api.com/json/" + ip);
-    if (getIP.data.status == "success") {
-      city = getIP.data.country + " " + getIP.data.city;
-    }
 
 
-  } else {
-    ip = "null";
+  let getIP = await axios.get("http://ip-api.com/json/" + ip);
+  if (getIP.data.status == "success") {
+    city = getIP.data.country + " " + getIP.data.city;
   }
+
 
 
   var notificationToken = req.body.notificationToken;

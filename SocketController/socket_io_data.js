@@ -60,9 +60,7 @@ Main();
 async function Main() {
     await Connection.connection();
     io.on("connection", async (socket) => {
-
         socket.on('wallets', (user_id) => {
-
             checkRoomOrJoin('wallets', socket, user_id);
             GetSpotWallet(io.sockets, user_id);
         });
