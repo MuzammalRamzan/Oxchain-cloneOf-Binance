@@ -2,7 +2,7 @@ const authFile = require('../../auth');
 const OneStepWithdrawModel = require('../../models/OneStepWithdraw');
 const UserModel = require('../../models/User');
 
-const deletOneStepWithdraw = async (req, res) => {
+const deleteOneStepWithdraw = async (req, res) => {
 	const apiKey = req.body.api_key;
 	const userId = req.body.user_id;
 
@@ -30,4 +30,4 @@ const deletOneStepWithdraw = async (req, res) => {
 	}
 };
 
-module.exports = deletOneStepWithdraw;
+module.exports = deleteOneStepWithdraw;

@@ -146,7 +146,7 @@ const cancelFutureLimit = require('./controllers/orders/cancelFutureLimit.js');
 const closeFutureOrder = require('./controllers/orders/closeFutureOrder.js');
 const AdjustMargin = require('./controllers/orders/adjust_margin.js');
 const editOneStepWithdraw = require('./controllers/withdraw/editOneStepWithdraw');
-const deletOneStepWithdraw = require('./controllers/withdraw/deletOneStepWithdraw.js');
+const deleteOneStepWithdraw = require('./controllers/withdraw/deleteOneStepWithdraw.js');
 const getOneStepWithdraw = require('./controllers/withdraw/getOneStepWithdraw');
 const editWithdrawalWhiteList = require('./controllers/withdraw/editWithdrawalWhiteList');
 const getWithdrawalWhiteList = require('./controllers/withdraw/getWithdrawalWhiteList');
@@ -470,7 +470,7 @@ route.all(
 	upload.none(),
 	async function (req, res) {}
 );
-route.post('/deletOneStepWithdraw', deletOneStepWithdraw);
+route.post('/deleteOneStepWithdraw', deleteOneStepWithdraw);
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
 route.post('/getOneStepWithdraw', getOneStepWithdraw);
 route.post('/checklast24hourswithdraws', checklast24hourswithdraws);
