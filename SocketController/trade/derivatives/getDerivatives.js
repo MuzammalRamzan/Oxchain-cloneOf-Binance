@@ -16,11 +16,11 @@ const SpotFunds = async (ws, user_id) => {
 		}
 		let findBinanceItem = await axios(
 			'https://api.binance.com/api/v3/ticker/price?symbol=' +
-				coinInfo.symbol +
-				'USDT'
+			coinInfo.symbol +
+			'USDT'
 		);
 
-		//create a price object
+		//create= a price object
 		prices[coinInfo.symbol] = findBinanceItem.data.price;
 	}
 
