@@ -245,6 +245,8 @@ const setAISettings = require('./controllers/AITrade/setSettings.js');
 const updateAISettings = require('./controllers/AITrade/updateSettings.js');
 const getTopics = require('./controllers/academy/getTopicsByCategory.js');
 const CloseAllFutureOrders = require('./controllers/orders/closeAllFutureOrders.js');
+const getMarket = require('./controllers/market/getMarket.js');
+const getTopMarketGainers = require('./controllers/market/getTopMarketGainers.js');
 
 const ApproveLoginRequest = require('./controllers/auth/approveLoginRequest.js');
 const GetCandleData = require('./controllers/pair/getCandleData.js');
@@ -587,6 +589,9 @@ route.all('/getAllNews', upload.none(), getAllNews);
 route.all('/getNews', upload.none(), getNews);
 route.all('/getTopNews', upload.none(), getTopNews);
 route.all('/getAllTopics', upload.none(), getAllTopics);
+route.all("/getMarket", upload.none(), getMarket);
+route.all("/getTopMarketGainers", upload.none(), getTopMarketGainers)
+route.all("/getTopics", upload.none(), getTopics)
 route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
 	if (symbol == null || symbol == '') {
