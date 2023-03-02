@@ -60,13 +60,7 @@ Main();
 async function Main() {
     await Connection.connection();
     io.on("connection", async (socket) => {
-        console.log("Yeni Bağlantı");
-
-        console.log(socket.eventNames());
-        
-
         socket.on('wallets', (user_id) => {
-
             checkRoomOrJoin('wallets', socket, user_id);
             GetSpotWallet(io.sockets, user_id);
         });
