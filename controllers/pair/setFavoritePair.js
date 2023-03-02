@@ -6,6 +6,7 @@ const SetFavoritePair = async (req, res) => {
   try {
     let user_id = req.body.user_id;
     let coin_id = req.body.coin_id;
+    let page = req.body.page;
     let removeAll = req.body.removeAll;
 
 
@@ -40,11 +41,13 @@ const SetFavoritePair = async (req, res) => {
     let check = await FavoriteCoin.findOne({
       user_id: user_id,
       coin_id: pairData.symbolOneID,
+      page: page,
     });
     if (check == null) {
       let save = new FavoriteCoin({
         user_id: user_id,
         coin_id: pairData.symbolOneID,
+        page: page,
       });
       await save.save();
       res.json({ status: "success", data: "OK" });
