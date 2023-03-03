@@ -27,6 +27,8 @@ const ApiRequest = require("../../models/ApiRequests");
 const ApiKeysModel = require("../../models/ApiKeys");
 const AITradeWalletModel = require("../../models/AITradeWallet");
 const mailer = require("../../mailer");
+const requestIp = require('request-ip');
+
 
 const SMSVerificationModel = require("../../models/SMSVerification");
 const MailVerificationModel = require("../../models/MailVerification");
@@ -54,10 +56,7 @@ const login = async (req, res) => {
   var manufacturer = "null";
 
   //getting ip as ::1 for localhost, so we need to get the real ip address
-  var ip = req.socket.remoteAddress;
-  if (ip.substr(0, 7) == "::ffff:") {
-    ip = ip.substr(7);
-  }
+  const ip = req.clientIp;
   console.log(ip);
 
 

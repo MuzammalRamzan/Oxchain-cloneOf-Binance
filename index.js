@@ -113,6 +113,10 @@ const getWhatIsEnabled = require('./controllers/whatIsEnabled/get');
 
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oidc');
+
+
+const requestIp = require('request-ip');
+
 //var formattedKey = authenticator.generateKey();
 //var formattedToken = authenticator.generateToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse");
 //console.log(authenticator.verifyToken("npbi sddb h5m3 24w2 i4dz 2mta hx3j pmse", "260180"));
@@ -129,6 +133,9 @@ var port = process.env.PORT;
 //set limit for request body for base64 image upload
 route.use(bodyParser.json({ limit: '50mb' }));
 route.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
+route.use(requestIp.mw());
+
 
 const topReferrals = require('./controllers/referrals/topReferrals.js');
 const getReferral = require('./controllers/referrals/getReferral.js');
@@ -470,7 +477,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) {}
+	async function (req, res) { }
 );
 route.post('/deleteOneStepWithdraw', deleteOneStepWithdraw);
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
