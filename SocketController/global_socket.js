@@ -77,7 +77,7 @@ route.get("/price", async(req, res) => {
     }
     await MarketDBConnection();
     symbol = symbol.replace('/', '').replace('_', '');
-    let data = QuoteModel.findOne({symbol : symbol});
+    let data = await  QuoteModel.findOne({symbol : symbol});
     res.json({ 'status': 'success', 'data': data });
 });
 route.get('/getCandleData', async (req, res) => {
