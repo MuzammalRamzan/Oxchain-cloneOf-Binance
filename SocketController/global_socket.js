@@ -142,9 +142,9 @@ async function GlobalSocket() {
             );
             ws.on("message", async (data) => {
                 let json = JSON.parse(data);
-                if(json.page == 'order_book') {
+                if (json.page == 'order_book') {
                     GetOrderBooks(ws, json.pair);
-                } else if(json.page == 'market_info') {
+                } else if (json.page == 'market_info') {
                     GetMarketInfo(ws, json.pair);
                 }
                 else if (json.page == 'check_logout') {
@@ -172,24 +172,32 @@ async function GlobalSocket() {
 }
 
 async function GetOrderBooks(ws, pair) {
-    let symbol = pair.replace('/', '').replace('_', '');
-    OrderBookModel.watch([
-        { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
-    ]).on("change", async (data) => { 
-        let book = await OrderBookModel.findOne({symbol : symbol});
+    if (pair != null || pair != "") {
+        let symbol = pair.replace('/', '').replace('_', '');
+        let book = await OrderBookModel.findOne({ symbol: symbol });
         ws.send(JSON.stringify({ type: "order_book", content: book }));
-    })
+        OrderBookModel.watch([
+            { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+        ]).on("change", async (data) => {
+            let book = await OrderBookModel.findOne({ symbol: symbol });
+            ws.send(JSON.stringify({ type: "order_book", content: book }));
+        })
+    }
 }
 
 
 async function GetMarketInfo(ws, pair) {
-    let symbol = pair.replace('/', '').replace('_', '');
-    QuoteModel.watch([
-        { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
-    ]).on("change", async (data) => { 
-        let quote = await QuoteModel.findOne({symbol : symbol});
+    if (pair != null || pair != "") {
+        let symbol = pair.replace('/', '').replace('_', '');
+        let quote = await QuoteModel.findOne({ symbol: symbol });
         ws.send(JSON.stringify({ type: "quotes", content: quote }));
-    })
+        QuoteModel.watch([
+            { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+        ]).on("change", async (data) => {
+            let quote = await QuoteModel.findOne({ symbol: symbol });
+            ws.send(JSON.stringify({ type: "quotes", content: quote }));
+        })
+    }
 }
 
 
