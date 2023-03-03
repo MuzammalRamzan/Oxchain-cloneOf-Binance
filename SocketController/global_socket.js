@@ -75,7 +75,8 @@ route.get("/price", (req, res) => {
         res.json({ 'status': 'fail', 'msg': 'symbol not found' });
         return;
     }
-    let data = global.MarketData[symbol];
+    symbol = symbol.replace('/', '').replace('_', '');
+    let data = QuoteModel.findOne({symbol : symbol});
     res.json({ 'status': 'success', 'data': data });
 });
 route.get('/getCandleData', async (req, res) => {
