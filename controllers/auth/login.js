@@ -54,13 +54,11 @@ const login = async (req, res) => {
   var manufacturer = "null";
 
   //getting ip as ::1 for localhost, so we need to get the real ip address
-  var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  var ip = req.connection.remoteAddress;
   if (ip.substr(0, 7) == "::ffff:") {
     ip = ip.substr(7);
   }
   console.log(ip);
-
-
 
 
   var searchType = req.body.searchType;
