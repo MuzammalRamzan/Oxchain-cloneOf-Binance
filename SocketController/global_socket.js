@@ -45,8 +45,11 @@ const BinanceAPI = require("../BinanceAPI");
 const CheckLogoutDevice = require("./device/check_logout_device");
 const loginApproveCheck = require("./device/login_approve_check");
 const { default: axios } = require("axios");
+const OrderBookModel = require("../models/BinanceData/OrderBookModel");
+const MarketDBConnection = require("../MarketDBConnection");
+const QuoteModel = require("../models/BinanceData/QuoteModel");
 var route = express();
-
+require('dotenv').config();
 var wss = null;
 if (process.env.NODE_ENV == 'product') {
     var options = {
@@ -127,8 +130,8 @@ global.MarketData = {};
 
 async function GlobalSocket() {
     fillMarketPrices();
-    await Connection.connection();
-    console.log("DB Connect");
+
+    await MarketDBConnection()
     //await FutureWalletModel.updateMany({amount : 1000});
     wss.on("connection", async (ws) => {
         if (ws.readyState === ws.OPEN) {
@@ -139,177 +142,54 @@ async function GlobalSocket() {
             );
             ws.on("message", async (data) => {
                 let json = JSON.parse(data);
-                if (json.page == "trade") {
-                    GetBinanceData(ws, json.pair);
-                } else if (json.page == "market") {
-                    GetMarketData(ws);
-                } else if (json.page == "all_prices") {
-                    GetAllPrices(ws);
+                if(json.page == 'order_book') {
+                    GetOrderBooks(ws, json.pair);
+                } else if(json.page == 'market_info') {
+                    GetMarketInfo(ws, json.pair);
                 }
                 else if (json.page == 'check_logout') {
                     CheckLogoutDevice(ws, json.user_id);
                 } else if (json.page == 'login_approve_check') {
 
                     loginApproveCheck(ws, json.device_id);
-
                 }
+                /*
+                if (json.page == "trade") {
+                    GetBinanceData(ws, json.pair);
+                } else if (json.page == "market") {
+                    GetMarketData(ws);
+                } else if (json.page == "order_book") {
+                    GetOrderBooks(ws, json.pair);
+                }
+                else if (json.page == "all_prices") {
+                    GetAllPrices(ws);
+                }
+                
+                */
             });
         }
     });
 }
 
-async function GetMarketData(ws, pair) {
-    var b_ws = new WebSocket("wss://stream.binance.com/stream");
-
-    // BNB_USDT => bnbusdt
-    let coins = await CoinList.find({ status: 1 });
-    let params = [];
-    coins.forEach((val) => {
-        params.push(val.symbol.toLowerCase() + "usdt@aggTrade");
-        params.push(val.symbol.toLowerCase() + "usdt@bookTicker");
-        params.push(val.symbol.toLowerCase() + "usdt@trade");
-        params.push(val.symbol.toLowerCase() + "usdt@ticker");
-        params.push(val.symbol.toLowerCase() + "usdt@miniTicker");
-    });
-    const initSocketMessage = {
-        method: "SUBSCRIBE",
-        params: params,
-        /*
-        params: [
-            `${noSlashPair}@aggTrade`,
-            `${noSlashPair}@bookTicker`,
-            `${noSlashPair}@trade`,
-            `${noSlashPair}@ticker`,
-            "!miniTicker@arr",
-        ],
-        */
-        // params: ["!miniTicker@arr"],
-        id: 1,
-    };
-
-    b_ws.onopen = (event) => {
-        b_ws.send(JSON.stringify(initSocketMessage));
-    };
-
-    // Reconnect connection when disconnect connection
-    b_ws.onclose = () => {
-        b_ws.send(JSON.stringify(initSocketMessage));
-    };
-
-    b_ws.onmessage = function (event) {
-        const data = JSON.parse(event.data).data;
-        if (data != null && data != "undefined") {
-            if (data.A && data.a && data.b && data.B && !data.e) {
-                ws.send(JSON.stringify({ type: "order_books", content: data }));
-            } else if (data.e === "aggTrade") {
-                ws.send(JSON.stringify({ type: "prices", content: data }));
-            } else if (data.e === "trade") {
-                ws.send(JSON.stringify({ type: "trade", content: data }));
-            } else if (data.e === "24hrMiniTicker") {
-                ws.send(JSON.stringify({ type: "market", content: data }));
-            } else if (data.e === "24hrTicker") {
-                ws.send(JSON.stringify({ type: "ticker", content: data }));
-            }
-        }
-    };
-}
-
-async function GetBinanceData(ws, pair) {
-    if (pair == "" || pair == null || pair == "undefined") return;
-
-    let coins = await Pairs.find({ status: 1 });
-
-    let onlyCoins = [];
-    coins.forEach(val => {
-        onlyCoins.push({ 's': val.name.replace('/', '') });
+async function GetOrderBooks(ws, pair) {
+    let symbol = pair.replace('/', '').replace('_', '');
+    OrderBookModel.watch([
+        { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+    ]).on("change", async (data) => { 
+        let book = await OrderBookModel.findOne({symbol : symbol});
+        ws.send(JSON.stringify({ type: "order_book", content: book }));
     })
-
-    var b_ws = new WebSocket("wss://stream.binance.com/stream");
-
-    // BNB_USDT => bnbusdt
-    const noSlashPair = pair.replace("_", "").toLowerCase();
-
-    const initSocketMessage = {
-        method: "SUBSCRIBE",
-        params: [
-            `${noSlashPair}@aggTrade`,
-            `${noSlashPair}@bookTicker`,
-            `${noSlashPair}@trade`,
-            `${noSlashPair}@trade`,
-            "!miniTicker@arr",
-        ],
-        // params: ["!miniTicker@arr"],
-        id: 1,
-    };
-
-    b_ws.onopen = (event) => {
-        b_ws.send(JSON.stringify(initSocketMessage));
-    };
-
-    // Reconnect connection when disconnect connection
-    b_ws.onclose = () => {
-        b_ws.send(JSON.stringify(initSocketMessage));
-    };
-
-    b_ws.onmessage = function (event) {
-        const data = JSON.parse(event.data).data;
-        if (data != null && data != "undefined") {
-            if (data.A && data.a && data.b && data.B && !data.e) {
-                ws.send(JSON.stringify({ type: "order_books", content: data }));
-            } else if (data.e === "aggTrade") {
-                ws.send(JSON.stringify({ type: "prices", content: data }));
-            } else if (data.e === "trade") {
-                ws.send(JSON.stringify({ type: "trade", content: data }));
-            } else if (data[0].e === "24hrMiniTicker") {
-                // console.log(data);
-                data.forEach(symbolInfo => {
-                    let index = onlyCoins.findIndex(x => x.s == symbolInfo.s);
-                    if (index != -1) {
-                        onlyCoins[index] = symbolInfo;
-                        ws.send(JSON.stringify({ type: "market", content: onlyCoins }));
-                    }
-                });
-
-
-            }
-        }
-    };
 }
 
-async function GetAllPrices(ws) {
-    var b_ws = new WebSocket("wss://stream.binance.com/stream");
-    const initSocketMessage = {
-        method: "SUBSCRIBE",
-        params: ["!ticker@arr"],
-        // params: ["!miniTicker@arr"],
-        id: 1,
-    };
 
-    b_ws.onopen = (event) => {
-        b_ws.send(JSON.stringify(initSocketMessage));
-    };
-
-    // Reconnect connection when disconnect connection
-    b_ws.onclose = () => {
-        b_ws.send(JSON.stringify(initSocketMessage));
-    };
-    b_ws.onmessage = function (event) {
-        const data = JSON.parse(event.data).data;
-        if (data != null && data != "undefined") {
-            for (var m = 0; m < data.length; m++) {
-                let x = data[m];
-                if (Object(global.MarketData).hasOwnProperty(x.s)) {
-                    global.MarketData[x.s] = {
-                        bid: x.b,
-                        ask: x.a,
-                        change: x.P,
-                    };
-                }
-
-            }
-            ws.send(JSON.stringify(global.MarketData));
-        }
-    };
+async function GetMarketInfo(ws, pair) {
+    let symbol = pair.replace('/', '').replace('_', '');
+    QuoteModel.watch([
+        { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+    ]).on("change", async (data) => { 
+        let quote = await QuoteModel.findOne({symbol : symbol});
+        ws.send(JSON.stringify({ type: "quotes", content: quote }));
+    })
 }
 
 
