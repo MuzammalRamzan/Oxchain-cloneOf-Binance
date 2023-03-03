@@ -64,7 +64,7 @@ if (process.env.NODE_ENV == 'product') {
 else {
     wss = new WebSocketServer({ port: 7010 });
 }
-
+MarketDBConnection();
 
 route.use(cors());
 route.use(bodyParser.json());
@@ -75,7 +75,7 @@ route.get("/price", async(req, res) => {
         res.json({ 'status': 'fail', 'msg': 'symbol not found' });
         return;
     }
-    await MarketDBConnection();
+    
     symbol = symbol.replace('/', '').replace('_', '');
     let data = await  QuoteModel.findOne({symbol : symbol});
     res.json({ 'status': 'success', 'data': data });
