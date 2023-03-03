@@ -54,7 +54,7 @@ const login = async (req, res) => {
   var manufacturer = "null";
 
   //getting ip as ::1 for localhost, so we need to get the real ip address
-  var ip = req.connection.remoteAddress;
+  var ip = req.socket.remoteAddress;
   if (ip.substr(0, 7) == "::ffff:") {
     ip = ip.substr(7);
   }
