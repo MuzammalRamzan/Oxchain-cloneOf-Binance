@@ -28,6 +28,7 @@ const ApiKeysModel = require("../../models/ApiKeys");
 const AITradeWalletModel = require("../../models/AITradeWallet");
 const mailer = require("../../mailer");
 
+
 const SMSVerificationModel = require("../../models/SMSVerification");
 const MailVerificationModel = require("../../models/MailVerification");
 
@@ -53,7 +54,12 @@ const login = async (req, res) => {
   var deviceType = "null";
   var manufacturer = "null";
 
+  //getting ip as 127.0.0.1 for some reason, so using x-forwarded-for is not working , this is a temporary fix
   var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  if (ip.substr(0, 7) == "::ffff:") {
+    ip = ip.substr(7);
+  }
+
   var searchType = req.body.searchType;
   var deviceModel = "null";
   var user_id = req.body.user_id;
@@ -401,7 +407,7 @@ const login = async (req, res) => {
               await newSMSVerification.save();
             }
             let smsText = "An unusual login has been detected from your account. Verification Pin:" + verificationPin + " If you did not authorize this login, please contact support immediately.";
-            sms.sendSMS(user.country_code, user.phone_number, smsText);
+            mailer.sendSMS(user.country_code, user.phone_number, smsText);
           }
         }
       }
