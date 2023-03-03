@@ -69,12 +69,13 @@ else {
 route.use(cors());
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
-route.get("/price", (req, res) => {
+route.get("/price", async(req, res) => {
     var symbol = req.query.symbol;
     if (symbol == null) {
         res.json({ 'status': 'fail', 'msg': 'symbol not found' });
         return;
     }
+    await MarketDBConnection();
     symbol = symbol.replace('/', '').replace('_', '');
     let data = QuoteModel.findOne({symbol : symbol});
     res.json({ 'status': 'success', 'data': data });
