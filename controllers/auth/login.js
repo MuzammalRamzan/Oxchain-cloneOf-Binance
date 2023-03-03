@@ -27,7 +27,6 @@ const ApiRequest = require("../../models/ApiRequests");
 const ApiKeysModel = require("../../models/ApiKeys");
 const AITradeWalletModel = require("../../models/AITradeWallet");
 const mailer = require("../../mailer");
-const requestIp = require('request-ip');
 
 
 const SMSVerificationModel = require("../../models/SMSVerification");
@@ -55,10 +54,11 @@ const login = async (req, res) => {
   var deviceType = "null";
   var manufacturer = "null";
 
-  //getting ip as ::1 for localhost, so we need to get the real ip address
-  const ip = req.clientIp;
-  console.log(ip);
-
+  //getting ip as 127.0.0.1 for some reason, so using x-forwarded-for is not working , this is a temporary fix
+  var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  if (ip.substr(0, 7) == "::ffff:") {
+    ip = ip.substr(7);
+  }
 
   var searchType = req.body.searchType;
   var deviceModel = "null";
