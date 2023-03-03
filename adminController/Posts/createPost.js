@@ -42,9 +42,9 @@ const createPost = async (req, res) => {
 
 		// Save news article to database
 		await posts.save();
-		return res.status(400).json({
+		return res.status(200).json({
 			status: 'success',
-			message: 'Bad Request',
+			message: 'Post_added',
 			showableMessage: 'post is added successfully!',
 		});
 	} catch (error) {

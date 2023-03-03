@@ -235,6 +235,7 @@ async function GetBinanceData(ws, pair) {
             `${noSlashPair}@aggTrade`,
             `${noSlashPair}@bookTicker`,
             `${noSlashPair}@trade`,
+            `${noSlashPair}@trade`,
             "!miniTicker@arr",
         ],
         // params: ["!miniTicker@arr"],

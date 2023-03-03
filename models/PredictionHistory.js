@@ -4,6 +4,7 @@ const PredictionSchema = new mongoose.Schema({
     prediction: { type: String, required: true },
     coin_symbol: { type: String, required: true },
     price: { type: Number, required: true },
+    interval: { type: String, required: true },
     createdAt: {
         type: Date,
         default: Date.now,
