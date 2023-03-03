@@ -53,7 +53,16 @@ const login = async (req, res) => {
   var deviceType = "null";
   var manufacturer = "null";
 
+  //getting ip as ::1 for localhost, so we need to get the real ip address
   var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  if (ip.substr(0, 7) == "::ffff:") {
+    ip = ip.substr(7);
+  }
+  console.log(ip);
+
+
+
+
   var searchType = req.body.searchType;
   var deviceModel = "null";
   var user_id = req.body.user_id;
@@ -401,7 +410,7 @@ const login = async (req, res) => {
               await newSMSVerification.save();
             }
             let smsText = "An unusual login has been detected from your account. Verification Pin:" + verificationPin + " If you did not authorize this login, please contact support immediately.";
-            sms.sendSMS(user.country_code, user.phone_number, smsText);
+            mailer.sendSMS(user.country_code, user.phone_number, smsText);
           }
         }
       }
