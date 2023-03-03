@@ -108,17 +108,17 @@ const registerController = async (req, res) => {
 					showableMessage: 'Phone and Country Code is required',
 				});
 			}
-			if (!phoneNumberUtil.getMetadataForRegion(req.body.country_code)) {
+			const alpha2Code = phoneNumberUtil.getRegionCodeForCountryCode(
+				req.body.country_code
+			);
+			if (!phoneNumberUtil.getMetadataForRegion(alpha2Code)) {
 				return res.json({
 					status: 'fail',
 					message: 'Inavlid country code',
 					showableMessage: 'Entered country code is incorrect!',
 				});
 			}
-			const phoneNumber = phoneNumberUtil.parse(
-				req.body.data,
-				req.body.country_code
-			);
+			const phoneNumber = phoneNumberUtil.parse(req.body.data, alpha2Code);
 			if (!phoneNumberUtil.isValidNumber(phoneNumber)) {
 				return res.json({
 					status: 'fail',
