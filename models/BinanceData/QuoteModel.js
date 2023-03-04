@@ -12,6 +12,7 @@ const QuoteModel = mongoose.Schema({
     change : {type : String},  
     changeDiff : {type : String},  
     volume : {type : String},  
+    market_type : {type: String}, //spot or future
 })
 
 module.exports = mongoose.model("QuoteModel", QuoteModel);

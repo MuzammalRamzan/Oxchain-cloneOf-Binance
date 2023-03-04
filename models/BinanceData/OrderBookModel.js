@@ -6,6 +6,7 @@ const OrderBookModel = mongoose.Schema({
     sellLimit : {type : String},
     buyPrice : {type: String},
     sellPrice : {type: String},
+    market_type : {type: String}, //spot or future
     created_at : {type: Date, default : Date.now()}
 })
 

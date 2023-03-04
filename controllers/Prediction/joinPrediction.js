@@ -14,9 +14,9 @@ const AITradeLogsModel = require('../../models/AITradeLogs');
 
 
 
-const addPrediction = async (req, res) => {
+const joinPrediction = async (req, res) => {
 
-    const { symbol, prediction, api_key, priceData, interval } = req.body;
+    const { symbol, prediction, api_key, interval } = req.body;
 
     const result = await authFile.apiKeyChecker(api_key);
 
