@@ -14,7 +14,7 @@ const twoFactor = async function (req, res) {
   var mailPin = req.body.mailPin;
   var smsPin = req.body.smsPin;
 
-  var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  let ip = req.headers['client-ip'];
 
   if (result === true) {
 
@@ -78,11 +78,16 @@ const twoFactor = async function (req, res) {
       }
 
 
-      var update = { trust: "yes", status: "completed" };
-      await LoginLogs.findOneAndUpdate(
-        { ip: ip, user_id: user_id },
-        update
-      ).exec();
+      var loginLog = await LoginLogs.findOne({
+        user_id: user_id,
+        ip: ip,
+      }).exec();
+
+      if (loginLog != null) {
+        loginLog.status = "completed";
+        await loginLog.save();
+      }
+
       return res.json({ status: "success", data: "2fa_success" });
 
 
