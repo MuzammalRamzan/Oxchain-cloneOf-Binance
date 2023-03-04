@@ -54,11 +54,8 @@ const login = async (req, res) => {
   var deviceType = "null";
   var manufacturer = "null";
 
-  //getting ip as 127.0.0.1 for some reason, so using x-forwarded-for is not working , this is a temporary fix
-  var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-  if (ip.substr(0, 7) == "::ffff:") {
-    ip = ip.substr(7);
-  }
+  var ip = req.headers["client-ip"] || "null";
+
 
   var searchType = req.body.searchType;
   var deviceModel = "null";
