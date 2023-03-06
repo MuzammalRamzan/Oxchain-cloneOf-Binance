@@ -70,15 +70,19 @@ route.use(cors());
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
 route.get("/price", async (req, res) => {
-    var symbol = req.query.symbol;
-    if (symbol == null) {
-        res.json({ 'status': 'fail', 'msg': 'symbol not found' });
-        return;
-    }
+    try {
+        var symbol = req.query.symbol;
+        if (symbol == null) {
+            res.json({ 'status': 'fail', 'msg': 'symbol not found' });
+            return;
+        }
 
-    symbol = symbol.replace('/', '').replace('_', '');
-    let data = await QuoteModel.findOne({ symbol: symbol });
-    res.json({ 'status': 'success', 'data': data });
+        symbol = symbol.replace('/', '').replace('_', '');
+        let data = await QuoteModel.findOne({ symbol: symbol });
+        return res.json({ 'status': 'success', 'data': data });
+    } catch (err) {
+        return res.json({ 'status': 'error', 'message': 'unknow error' });
+    }
 });
 route.get('/getCandleData', async (req, res) => {
     try {
@@ -106,18 +110,23 @@ route.get('/getCandleData', async (req, res) => {
     }
 });
 route.get('/24hr', async (req, res) => {
-    let data = await axios("https://api.binance.com/api/v3/ticker/24hr");
-    var symbol = req.query.symbol;
-    if (symbol != null) {
-        let item = data.data.filter((x) => x.symbol == symbol);
-        return res.json(item);
+    try {
+        let data = await axios("https://api.binance.com/api/v3/ticker/24hr");
+        var symbol = req.query.symbol;
+        if (symbol != null) {
+            let item = data.data.filter((x) => x.symbol == symbol);
+            return res.json(item);
+        }
+        if (req.query.symbols != null) {
+            let symbols = req.query.symbols.replaceAll('/', '').split(',');
+            let item = data.data.filter((x) => symbols.indexOf(x.symbol) != -1);
+            return res.json(item);
+        }
+        return res.json(data.data);
+    } catch (err) {
+        return res.json({ 'status': 'error', 'message': "unknow error" });
     }
-    if (req.query.symbols != null) {
-        let symbols = req.query.symbols.replaceAll('/', '').split(',');
-        let item = data.data.filter((x) => symbols.indexOf(x.symbol) != -1);
-        return res.json(item);
-    }
-    return res.json(data.data);
+
 })
 
 
@@ -134,120 +143,148 @@ async function GlobalSocket() {
 
     await MarketDBConnection()
     //await FutureWalletModel.updateMany({amount : 1000});
-    wss.on("connection", async (ws) => {
-        if (ws.readyState === ws.OPEN) {
-            ws.send(
-                JSON.stringify({
-                    msg1: "WELCOME TO OXHAIN",
-                })
-            );
-            ws.on("message", async (data) => {
-                let json = JSON.parse(data);
-                if (json.page == 'spot_order_book') {
-                    GetSpotOrderBooks(ws, json.pair);
-                } else if (json.page == 'spot_market_info') {
-                    GetSpotMarketInfo(ws, json.pair);
-                } else if (json.page == 'future_order_book') {
-                    GetFutureOrderBooks(ws, json.pair);
-                } else if (json.page == 'future_market_info') {
-                    GetFutureMarketInfo(ws, json.pair);
-                } else if (json.page == 'spot_all_prices') {
-                    GetMarketPrices(ws, 'spot');
-                }  else if (json.page == 'future_all_prices') {
-                    GetMarketPrices(ws, 'future');
-                }
-                else if (json.page == 'check_logout') {
-                    CheckLogoutDevice(ws, json.user_id);
-                } else if (json.page == 'login_approve_check') {
+    try {
+        wss.on("connection", async (ws) => {
+            if (ws.readyState === ws.OPEN) {
+                ws.send(
+                    JSON.stringify({
+                        msg1: "WELCOME TO OXHAIN",
+                    })
+                );
+                ws.on("message", async (data) => {
+                    try {
+                        let json = JSON.parse(data);
+                        if (json.page == 'spot_order_book') {
+                            GetSpotOrderBooks(ws, json.pair);
+                        } else if (json.page == 'spot_market_info') {
+                            GetSpotMarketInfo(ws, json.pair);
+                        } else if (json.page == 'future_order_book') {
+                            GetFutureOrderBooks(ws, json.pair);
+                        } else if (json.page == 'future_market_info') {
+                            GetFutureMarketInfo(ws, json.pair);
+                        } else if (json.page == 'spot_all_prices') {
+                            GetMarketPrices(ws, 'spot');
+                        } else if (json.page == 'future_all_prices') {
+                            GetMarketPrices(ws, 'future');
+                        }
+                        else if (json.page == 'check_logout') {
+                            CheckLogoutDevice(ws, json.user_id);
+                        } else if (json.page == 'login_approve_check') {
 
-                    loginApproveCheck(ws, json.device_id);
-                }
-                /*
-                if (json.page == "trade") {
-                    GetBinanceData(ws, json.pair);
-                } else if (json.page == "market") {
-                    GetMarketData(ws);
-                } else if (json.page == "order_book") {
-                    GetOrderBooks(ws, json.pair);
-                }
-                else if (json.page == "all_prices") {
-                    GetAllPrices(ws);
-                }
-                
-                */
-            });
-        }
-    });
+                            loginApproveCheck(ws, json.device_id);
+                        }
+                    } catch (err) {
+
+                    }
+                    /*
+                    if (json.page == "trade") {
+                        GetBinanceData(ws, json.pair);
+                    } else if (json.page == "market") {
+                        GetMarketData(ws);
+                    } else if (json.page == "order_book") {
+                        GetOrderBooks(ws, json.pair);
+                    }
+                    else if (json.page == "all_prices") {
+                        GetAllPrices(ws);
+                    }
+                    
+                    */
+                });
+            }
+        });
+    } catch (err) {
+
+    }
 }
 
 async function GetMarketPrices(ws, market_type) {
-    let items = await QuoteModel.find({ market_type: market_type }).select('symbol ask bid change changeDiff')
-    ws.send(JSON.stringify({ type: market_type + "_prices", content: items }));
-    QuoteModel.watch([
-        { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
-    ]).on("change", async (data) => {
+    try {
         let items = await QuoteModel.find({ market_type: market_type }).select('symbol ask bid change changeDiff')
         ws.send(JSON.stringify({ type: market_type + "_prices", content: items }));
-        
-    })
+        QuoteModel.watch([
+            { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+        ]).on("change", async (data) => {
+            let items = await QuoteModel.find({ market_type: market_type }).select('symbol ask bid change changeDiff')
+            ws.send(JSON.stringify({ type: market_type + "_prices", content: items }));
+
+        })
+    } catch (err) {
+
+    }
 }
 
 async function GetFutureOrderBooks(ws, pair) {
-    if (pair != null || pair != "") {
-        let symbol = pair.replace('/', '').replace('_', '');
-        let book = await OrderBookModel.findOne({ symbol: symbol });
-        ws.send(JSON.stringify({ type: "future_order_book", content: book }));
-        OrderBookModel.watch([
-            { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
-        ]).on("change", async (data) => {
+    try {
+        if (pair != null || pair != "") {
+            let symbol = pair.replace('/', '').replace('_', '');
             let book = await OrderBookModel.findOne({ symbol: symbol });
-            ws.send(JSON.stringify({ type: "future_book", content: book }));
-        })
+            ws.send(JSON.stringify({ type: "future_order_book", content: book }));
+            OrderBookModel.watch([
+                { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+            ]).on("change", async (data) => {
+                let book = await OrderBookModel.findOne({ symbol: symbol });
+                ws.send(JSON.stringify({ type: "future_book", content: book }));
+            })
+        }
+    } catch (err) {
+
     }
 }
 
 
 async function GetFutureMarketInfo(ws, pair) {
-    if (pair != null || pair != "") {
-        let symbol = pair.replace('/', '').replace('_', '');
-        let quote = await QuoteModel.findOne({ symbol: symbol });
-        ws.send(JSON.stringify({ type: "future_market_info", content: quote }));
-        QuoteModel.watch([
-            { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
-        ]).on("change", async (data) => {
+    try {
+        if (pair != null || pair != "") {
+            let symbol = pair.replace('/', '').replace('_', '');
             let quote = await QuoteModel.findOne({ symbol: symbol });
             ws.send(JSON.stringify({ type: "future_market_info", content: quote }));
-        })
+            QuoteModel.watch([
+                { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+            ]).on("change", async (data) => {
+                let quote = await QuoteModel.findOne({ symbol: symbol });
+                ws.send(JSON.stringify({ type: "future_market_info", content: quote }));
+            })
+        }
+    } catch (err) {
+
     }
 }
 
 
 async function GetSpotOrderBooks(ws, pair) {
-    if (pair != null || pair != "") {
-        let symbol = pair.replace('/', '').replace('_', '');
-        let book = await OrderBookModel.findOne({ symbol: symbol });
-        ws.send(JSON.stringify({ type: "spot_order_book", content: book }));
-        OrderBookModel.watch([
-            { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
-        ]).on("change", async (data) => {
+    try {
+        if (pair != null || pair != "") {
+            let symbol = pair.replace('/', '').replace('_', '');
             let book = await OrderBookModel.findOne({ symbol: symbol });
-            ws.send(JSON.stringify({ type: "order_book", content: book }));
-        })
+            ws.send(JSON.stringify({ type: "spot_order_book", content: book }));
+            OrderBookModel.watch([
+                { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+            ]).on("change", async (data) => {
+                let book = await OrderBookModel.findOne({ symbol: symbol });
+                ws.send(JSON.stringify({ type: "order_book", content: book }));
+            })
+        }
+    } catch (err) {
+
     }
 }
 
 
 async function GetSpotMarketInfo(ws, pair) {
-    if (pair != null || pair != "") {
-        let symbol = pair.replace('/', '').replace('_', '');
-        let quote = await QuoteModel.findOne({ symbol: symbol });
-        ws.send(JSON.stringify({ type: "spot_market_info", content: quote }));
-        QuoteModel.watch([
-            { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
-        ]).on("change", async (data) => {
+    try {
+        if (pair != null || pair != "") {
+            let symbol = pair.replace('/', '').replace('_', '');
             let quote = await QuoteModel.findOne({ symbol: symbol });
             ws.send(JSON.stringify({ type: "spot_market_info", content: quote }));
-        })
+            QuoteModel.watch([
+                { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+            ]).on("change", async (data) => {
+                let quote = await QuoteModel.findOne({ symbol: symbol });
+                ws.send(JSON.stringify({ type: "spot_market_info", content: quote }));
+            })
+        }
+    } catch (err) {
+
     }
 }
 
