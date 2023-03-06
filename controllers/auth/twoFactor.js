@@ -83,17 +83,19 @@ const twoFactor = async function (req, res) {
         ip: ip,
       }).exec();
 
-      if (loginLog.length > 0) {
+     if(loginLog.length > 0){
 
-        await LoginLogs.updateMany({
-          user_id: user_id,
-          ip: ip,
-        }, {
-          $set: {
-            status: "completed",
-          },
-        });
-      }
+      //update all login logs
+      await LoginLogs.updateMany({
+        user_id: user_id,
+        ip: ip,
+      }, {
+        $set: {
+          status: "completed",
+        },
+      });
+
+     }
 
       return res.json({ status: "success", data: "2fa_success" });
 

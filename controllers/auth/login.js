@@ -56,7 +56,7 @@ const login = async (req, res) => {
 
   var ip = req.headers["client-ip"] || "null";
 
-
+  console.log("IP: " + ip);
   var searchType = req.body.searchType;
   var deviceModel = "null";
   var user_id = req.body.user_id;
@@ -343,7 +343,12 @@ const login = async (req, res) => {
         status: "completed"
       }).exec();
 
+
+      console.log("User: " + user._id);
+      console.log("Login Loglar: " + loginLogCheck);
       if (loginLogCheck == null) {
+
+        console.log("Login Logu Yok");
         //burada pin göndereceğiz 
 
         pinSent = true;
@@ -374,9 +379,9 @@ const login = async (req, res) => {
             await newMailVerification.save();
           }
 
+          console.log("Mail Gönderildi");
           mailVerificationSent = true;
-
-          mailer.sendMail(user.email, "New Login", "An unusual login has been detected from your account. </br><p style='font-weight:bold'>Pin:" + verificationPin + "</p> If you did not authorize this login, please contact support immediately.");
+          await mailer.sendMail(user.email, "New Login", "An unusual login has been detected from your account. </br><p style='font-weight:bold'>Pin:" + verificationPin + "</p> If you did not authorize this login, please contact support immediately.");
 
         }
         else {
@@ -647,7 +652,7 @@ const login = async (req, res) => {
         if (notificationCheck != null) {
 
           if (notificationCheck.system_messages == 1 || notificationCheck.system_messages == "1") {
-            mailer.sendMail(user.email, "Login", "Successfully logged in from " + ip);
+            await mailer.sendMail(user.email, "Login", "Successfully logged in from " + ip);
           }
         }
 
