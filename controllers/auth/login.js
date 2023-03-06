@@ -247,15 +247,22 @@ const login = async (req, res) => {
       let device_id = "";
 
 
+      let requestDeviceId = req.body.device_id;
+
+      if (requestDeviceId == undefined || requestDeviceId == null || requestDeviceId == "") {
+        requestDeviceId = "No Device Id";
+      }
+
       let checkDevice = await Device.findOne({
         user_id: user._id,
-        deviceName: deviceName,
+        deviceId: requestDeviceId,
         ip: ip,
       }).exec();
 
       if (checkDevice == null) {
         let device = new Device({
           user_id: user._id,
+          deviceId: requestDeviceId,
           deviceName: deviceName,
           deviceType: deviceType,
           deviceOs: deviceOS,
