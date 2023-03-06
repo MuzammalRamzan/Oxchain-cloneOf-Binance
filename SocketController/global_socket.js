@@ -69,15 +69,15 @@ MarketDBConnection();
 route.use(cors());
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
-route.get("/price", async(req, res) => {
+route.get("/price", async (req, res) => {
     var symbol = req.query.symbol;
     if (symbol == null) {
         res.json({ 'status': 'fail', 'msg': 'symbol not found' });
         return;
     }
-    
+
     symbol = symbol.replace('/', '').replace('_', '');
-    let data = await  QuoteModel.findOne({symbol : symbol});
+    let data = await QuoteModel.findOne({ symbol: symbol });
     res.json({ 'status': 'success', 'data': data });
 });
 route.get('/getCandleData', async (req, res) => {
@@ -151,6 +151,10 @@ async function GlobalSocket() {
                     GetFutureOrderBooks(ws, json.pair);
                 } else if (json.page == 'future_market_info') {
                     GetFutureMarketInfo(ws, json.pair);
+                } else if (json.page == 'spot_all_prices') {
+                    GetMarketPrices(ws, 'spot');
+                }  else if (json.page == 'future_all_prices') {
+                    GetMarketPrices(ws, 'future');
                 }
                 else if (json.page == 'check_logout') {
                     CheckLogoutDevice(ws, json.user_id);
@@ -176,6 +180,17 @@ async function GlobalSocket() {
     });
 }
 
+async function GetMarketPrices(ws, market_type) {
+    let items = await QuoteModel.find({ market_type: market_type }).select('symbol ask bid change changeDiff')
+    ws.send(JSON.stringify({ type: market_type + "_prices", content: items }));
+    QuoteModel.watch([
+        { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+    ]).on("change", async (data) => {
+        let items = await QuoteModel.find({ market_type: market_type }).select('symbol ask bid change changeDiff')
+        ws.send(JSON.stringify({ type: market_type + "_prices", content: items }));
+        
+    })
+}
 
 async function GetFutureOrderBooks(ws, pair) {
     if (pair != null || pair != "") {
