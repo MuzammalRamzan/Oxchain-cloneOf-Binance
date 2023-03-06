@@ -256,7 +256,6 @@ const login = async (req, res) => {
       let checkDevice = await Device.findOne({
         user_id: user._id,
         deviceId: requestDeviceId,
-        ip: ip,
       }).exec();
 
       if (checkDevice == null) {
@@ -299,7 +298,6 @@ const login = async (req, res) => {
 
       let logs = await LoginLogs.find({
         user_id: user["_id"],
-        ip: ip,
         deviceName: deviceName,
         manufacturer: manufacturer,
         model: deviceModel,
@@ -350,7 +348,6 @@ const login = async (req, res) => {
 
       let loginLogCheck = await LoginLogs.findOne({
         user_id: user._id,
-        ip: ip,
         deviceId: requestDeviceId,
         status: "completed"
       }).exec();

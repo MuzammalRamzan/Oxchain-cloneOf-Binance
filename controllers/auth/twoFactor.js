@@ -40,7 +40,6 @@ const twoFactor = async function (req, res) {
 
       let loginLogCheck = await LoginLogs.findOne({
         user_id: user._id,
-        ip: ip,
         status: "completed"
       }).exec();
 
@@ -94,14 +93,12 @@ const twoFactor = async function (req, res) {
 
       var loginLog = await LoginLogs.find({
         user_id: user_id,
-        ip: ip,
         deviceId: req.body.device_id,
       }).exec();
 
       let device = await Device.find({
         user_id: user_id,
         deviceId: req.body.device_id,
-        ip: ip,
       }).exec();
 
       if (loginLog.length > 0) {
@@ -109,7 +106,6 @@ const twoFactor = async function (req, res) {
         //update all login logs
         await LoginLogs.updateMany({
           user_id: user_id,
-          ip: ip,
           deviceId: req.body.device_id,
         }, {
           $set: {
@@ -123,7 +119,6 @@ const twoFactor = async function (req, res) {
         await Device.updateMany({
           user_id: user_id,
           deviceId: req.body.device_id,
-          ip: ip,
         }, {
           $set: {
             status: 1
