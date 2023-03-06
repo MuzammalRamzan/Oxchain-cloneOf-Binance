@@ -64,7 +64,7 @@ const login = async (req, res) => {
   var user_id = req.body.user_id;
   var loginType = req.body.loginType;
   var pin = req.body.pin;
-  var city = "test";
+  let city = "";
 
 
 
@@ -244,32 +244,34 @@ const login = async (req, res) => {
         });
         await siteNotifications.save();
       }
+      let device_id = "";
 
 
-
-
-
-
-
-
-
-
-
-
-      let device = new Device({
+      let checkDevice = await Device.findOne({
         user_id: user._id,
         deviceName: deviceName,
-        deviceType: deviceType,
-        deviceOs: deviceOS,
-        deviceVersion: deviceVersion,
-        loginTime: Date.now(),
-        loginRequest: "",
         ip: ip,
-        city: city,
-      });
-      await device.save();
+      }).exec();
 
-      let device_id = device._id;
+      if (checkDevice != null) {
+        let device = new Device({
+          user_id: user._id,
+          deviceName: deviceName,
+          deviceType: deviceType,
+          deviceOs: deviceOS,
+          deviceVersion: deviceVersion,
+          loginTime: Date.now(),
+          loginRequest: "",
+          ip: ip,
+          city: city,
+        });
+        await device.save();
+
+        device_id = device._id;
+      }
+      else {
+        device_id = checkDevice._id;
+      }
 
       req.session.device_id = device_id;
 
