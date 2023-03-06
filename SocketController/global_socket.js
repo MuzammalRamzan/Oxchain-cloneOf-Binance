@@ -288,6 +288,7 @@ async function GetSpotMarketInfo(ws, pair) {
                 { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
             ]).on("change", async (data) => {
                 let quote = await QuoteModel.findOne({ _id: data.documentKey._id,  market_type :'spot' });
+                if(quote != null)
                 ws.send(JSON.stringify({ type: "spot_market_info", content: quote }));
             })
         }
