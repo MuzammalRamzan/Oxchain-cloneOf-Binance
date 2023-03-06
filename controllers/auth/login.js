@@ -614,6 +614,7 @@ const login = async (req, res) => {
           ip: ip,
           deviceName: deviceName,
           manufacturer: manufacturer,
+          deviceId: requestDeviceId,
           model: deviceModel,
           deviceOS: req.body.deviceOS ?? "Unknown",
           status: pinSent ? "pin_sent" : "success",
