@@ -128,10 +128,9 @@ route.listen(8542, () => {
 
 
 
-global.MarketData = {};
+
 
 async function GlobalSocket() {
-    fillMarketPrices();
 
     await MarketDBConnection()
     //await FutureWalletModel.updateMany({amount : 1000});
@@ -238,44 +237,6 @@ async function GetSpotMarketInfo(ws, pair) {
 }
 
 
-async function fillMarketPrices() {
-    let coinList = await CoinList.find({});
-    try {
-        var b_ws = new WebSocket("wss://stream.binance.com/stream");
-
-        for (var k = 0; k < coinList.length; k++) {
-            global.MarketData[coinList[k].symbol + "USDT"] = { bid: 0.0, ask: 0.0 };
-        }
-
-        const initSocketMessage = {
-            method: "SUBSCRIBE",
-            params: ["!ticker@arr"],
-            // params: ["!miniTicker@arr"],
-            id: 1,
-        };
-
-        b_ws.onopen = (event) => {
-            b_ws.send(JSON.stringify(initSocketMessage));
-        };
-
-        // Reconnect connection when disconnect connection
-        b_ws.onclose = () => {
-            b_ws.send(JSON.stringify(initSocketMessage));
-        };
-        b_ws.onmessage = function (event) {
-            const data = JSON.parse(event.data).data;
-            if (data != null && data != "undefined") {
-                for (var m = 0; m < data.length; m++) {
-                    let x = data[m];
-                    if (global.MarketData[x.s] != null)
-                        global.MarketData[x.s] = { bid: x.b, ask: x.a };
-                }
-            }
-        };
-    } catch (err) {
-        console.log(err.message);
-    }
-}
 
 
 GlobalSocket();
