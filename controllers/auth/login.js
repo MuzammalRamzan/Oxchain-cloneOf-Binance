@@ -351,7 +351,7 @@ const login = async (req, res) => {
       let loginLogCheck = await LoginLogs.findOne({
         user_id: user._id,
         ip: ip,
-        deviceId : device_id,
+        deviceId: requestDeviceId,
         status: "completed"
       }).exec();
 

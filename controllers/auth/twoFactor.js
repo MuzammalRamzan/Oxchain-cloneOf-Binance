@@ -94,6 +94,7 @@ const twoFactor = async function (req, res) {
       var loginLog = await LoginLogs.find({
         user_id: user_id,
         ip: ip,
+        deviceId: req.body.device_id,
       }).exec();
 
       if (loginLog.length > 0) {
