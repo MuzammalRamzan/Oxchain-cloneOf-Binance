@@ -19,7 +19,7 @@ const FuturePercentClose = async (req, res) => {
         res.json({ status: 'fail', message: 'User not found' });
         return;
     }
-    let binanceData = await axios("https://api.binance.com/api/v3/ticker/price?symbol=" + order.pair_name.replace('/', ''));
+    let binanceData = await axios("http://18.170.26.150:8542/price?symbol=" + order.pair_name.replace('/', ''));
     let marketPrice = parseFloat(binanceData.data['price']);
 
     percent = parseFloat(percent);
