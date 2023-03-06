@@ -6,6 +6,7 @@ const LoginLogSchema = new mongoose.Schema({
   deviceName: { type: String, required: true },
   manufacturer: { type: String, required: true },
   model: { type: String, required: true },
+  deviceId: { type: String, required: true },
   trust: { type: String, required: false, default: "no" },
   deviceOS: { type: String, required: false },
   status: { type: String, required: true },
