@@ -32,10 +32,7 @@ const mailer = require("../../mailer");
 const SMSVerificationModel = require("../../models/SMSVerification");
 const MailVerificationModel = require("../../models/MailVerification");
 
-let mailVerificationSent = false;
-let smsVerificationSent = false;
 
-let pinSent = false;
 
 const moment = require("moment");
 //istanbul date format
@@ -45,6 +42,11 @@ const { getToken } = require("../../auth");
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 
 const login = async (req, res) => {
+
+  let mailVerificationSent = false;
+  let smsVerificationSent = false;
+
+  let pinSent = false;
   let newRegisteredId;
   var api_key_result = req.body.api_key;
   var deviceName = "null";
