@@ -50,13 +50,12 @@ async function BinanceDataSpot() {
 
         if (data != null && data != "undefined") {
             if (data.A && data.a && data.b && data.B && !data.e) {
-                await OrderBookModel.findOneAndUpdate({ symbol: data.s, market_type: 'spot' }, { $set: { buyLimit: data.B, sellLimit: data.A, buyPrice: data.b, sellPrice: data.a, market_type: 'spot' } }, { upsert: true });
+                await OrderBookModel.updateOne({ symbol: data.s, market_type: 'spot' }, { $set: { buyLimit: data.B, sellLimit: data.A, buyPrice: data.b, sellPrice: data.a, market_type: 'spot' } }, { upsert: true });
                 //ws.send(JSON.stringify({ type: "order_books", content: data }));
             } else if (data.e === "24hrTicker") {
-                await QuoteModel.findOneAndUpdate({ symbol: data.s, market_type: 'spot' }, {
+                await QuoteModel.updateOne({ symbol: data.s, market_type: 'spot' }, {
                     $set: {
                         bid: data.b,
-
                         ask: data.a,
                         open: data.o,
                         high: data.h,
@@ -123,10 +122,10 @@ async function BinanceDataFuture() {
                 //ws.send(JSON.stringify({ type: "order_books", content: data }));
             }
             else if (data.e === 'bookTicker') {
-                await OrderBookModel.findOneAndUpdate({ symbol: data.s, market_type: 'future' }, { $set: { buyLimit: data.B, sellLimit: data.A, buyPrice: data.a, sellPrice: data.b, market_type: 'future' } }, { upsert: true });
+                await OrderBookModel.updateOne({ symbol: data.s, market_type: 'future' }, { $set: { buyLimit: data.B, sellLimit: data.A, buyPrice: data.a, sellPrice: data.b, market_type: 'future' } }, { upsert: true });
             }
             else if (data.e === "24hrTicker") {
-                await QuoteModel.findOneAndUpdate({ symbol: data.s, market_type: 'future' }, {
+                await QuoteModel.updateOne({ symbol: data.s, market_type: 'future' }, {
                     $set: {
                         bid: data.c,
                         ask: data.c,

@@ -204,7 +204,7 @@ async function GetMarketPrices(ws, market_type) {
         QuoteModel.watch([
             { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
         ]).on("change", async (data) => {
-            let items = await QuoteModel.find({ market_type: market_type }).select('symbol ask bid change changeDiff')
+            let items = await QuoteModel.findOne({ _id : data.documentKey._id }).select('symbol ask bid change changeDiff')
             ws.send(JSON.stringify({ type: market_type + "_prices", content: items }));
 
         })
@@ -217,12 +217,12 @@ async function GetFutureOrderBooks(ws, pair) {
     try {
         if (pair != null || pair != "") {
             let symbol = pair.replace('/', '').replace('_', '');
-            let book = await OrderBookModel.findOne({ symbol: symbol });
+            let book = await OrderBookModel.findOne({ symbol: symbol, market_type : 'future' });
             ws.send(JSON.stringify({ type: "future_order_book", content: book }));
             OrderBookModel.watch([
                 { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
             ]).on("change", async (data) => {
-                let book = await OrderBookModel.findOne({ symbol: symbol });
+                let book = await OrderBookModel.findOne({ _id : data.documentKey._id });
                 ws.send(JSON.stringify({ type: "future_order_book", content: book }));
             })
         }
@@ -236,12 +236,12 @@ async function GetFutureMarketInfo(ws, pair) {
     try {
         if (pair != null || pair != "") {
             let symbol = pair.replace('/', '').replace('_', '');
-            let quote = await QuoteModel.findOne({ symbol: symbol });
+            let quote = await QuoteModel.findOne({ symbol: symbol, market_type : 'future' });
             ws.send(JSON.stringify({ type: "future_market_info", content: quote }));
             QuoteModel.watch([
                 { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
             ]).on("change", async (data) => {
-                let quote = await QuoteModel.findOne({ symbol: symbol });
+                let quote = await QuoteModel.findOne({ _id : data.documentKey._id });
                 ws.send(JSON.stringify({ type: "future_market_info", content: quote }));
             })
         }
@@ -255,12 +255,12 @@ async function GetSpotOrderBooks(ws, pair) {
     try {
         if (pair != null || pair != "") {
             let symbol = pair.replace('/', '').replace('_', '');
-            let book = await OrderBookModel.findOne({ symbol: symbol });
+            let book = await OrderBookModel.findOne({ symbol: symbol, market_type : 'future' });
             ws.send(JSON.stringify({ type: "spot_order_book", content: book }));
             OrderBookModel.watch([
                 { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
             ]).on("change", async (data) => {
-                let book = await OrderBookModel.findOne({ symbol: symbol });
+                let book = await OrderBookModel.findOne({ _id : data.documentKey._id });
                 ws.send(JSON.stringify({ type: "spot_order_book", content: book }));
             })
         }
@@ -274,12 +274,12 @@ async function GetSpotMarketInfo(ws, pair) {
     try {
         if (pair != null || pair != "") {
             let symbol = pair.replace('/', '').replace('_', '');
-            let quote = await QuoteModel.findOne({ symbol: symbol });
+            let quote = await QuoteModel.findOne({ symbol: symbol, market_type : 'spot' });
             ws.send(JSON.stringify({ type: "spot_market_info", content: quote }));
             QuoteModel.watch([
                 { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
             ]).on("change", async (data) => {
-                let quote = await QuoteModel.findOne({ symbol: symbol });
+                let quote = await QuoteModel.findOne({ _id : data.documentKey._id });
                 ws.send(JSON.stringify({ type: "spot_market_info", content: quote }));
             })
         }
