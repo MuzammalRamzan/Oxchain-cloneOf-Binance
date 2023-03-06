@@ -1,4 +1,5 @@
 const User = require("../../models/User");
+const Device = require("../../models/Device");
 const LoginLogs = require("../../models/LoginLogs");
 var authFile = require("../../auth.js");
 const MailVerificationModel = require("../../models/MailVerification");
@@ -97,18 +98,37 @@ const twoFactor = async function (req, res) {
         deviceId: req.body.device_id,
       }).exec();
 
+      let device = await Device.find({
+        user_id: user_id,
+        deviceId: req.body.device_id,
+        ip: ip,
+      }).exec();
+
       if (loginLog.length > 0) {
 
         //update all login logs
         await LoginLogs.updateMany({
           user_id: user_id,
           ip: ip,
+          deviceId: req.body.device_id,
         }, {
           $set: {
             status: "completed",
           },
         });
+      }
 
+      if (device.length > 0) {
+
+        await Device.updateMany({
+          user_id: user_id,
+          deviceId: req.body.device_id,
+          ip: ip,
+        }, {
+          $set: {
+            status: 1
+          },
+        });
       }
 
       return res.json({ status: "success", data: "2fa_success" });
