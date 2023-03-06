@@ -10,7 +10,7 @@ require('dotenv').config();
 async function BinanceService() {
     await MarketDBConnection()
     BinanceDataFuture();
-    //BinanceDataSpot();
+    BinanceDataSpot();
 }
 BinanceService();
 async function BinanceDataSpot() {
@@ -90,14 +90,14 @@ async function BinanceDataFuture() {
 
     // BNB_USDT => bnbusdt
     let params = [];
+    /*
     params.push("btcusdt@bookTicker");
     params.push("btcusdt@ticker");
-    /*
+    */
     coins.forEach((val) => {
         params.push(val.symbolOne.toLowerCase() + "usdt@bookTicker");
         params.push(val.symbolOne.toLowerCase() + "usdt@ticker");
     });
-    */
     const initSocketMessage = {
         method: "SUBSCRIBE",
         params: params,
@@ -126,7 +126,6 @@ async function BinanceDataFuture() {
                 await OrderBookModel.findOneAndUpdate({ symbol: data.s, market_type: 'future' }, { $set: { buyLimit: data.B, sellLimit: data.A, buyPrice: data.a, sellPrice: data.b, market_type: 'future' } }, { upsert: true });
             }
             else if (data.e === "24hrTicker") {
-                console.log(data)
                 await QuoteModel.findOneAndUpdate({ symbol: data.s, market_type: 'future' }, {
                     $set: {
                         bid: data.c,
