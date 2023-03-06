@@ -32,10 +32,7 @@ const mailer = require("../../mailer");
 const SMSVerificationModel = require("../../models/SMSVerification");
 const MailVerificationModel = require("../../models/MailVerification");
 
-let mailVerificationSent = false;
-let smsVerificationSent = false;
 
-let pinSent = false;
 
 const moment = require("moment");
 //istanbul date format
@@ -45,6 +42,11 @@ const { getToken } = require("../../auth");
 const MarginWalletId = "62ff3c742bebf06a81be98fd";
 
 const login = async (req, res) => {
+
+  let mailVerificationSent = false;
+  let smsVerificationSent = false;
+
+  let pinSent = false;
   let newRegisteredId;
   var api_key_result = req.body.api_key;
   var deviceName = "null";
@@ -54,18 +56,15 @@ const login = async (req, res) => {
   var deviceType = "null";
   var manufacturer = "null";
 
-  //getting ip as 127.0.0.1 for some reason, so using x-forwarded-for is not working , this is a temporary fix
-  var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-  if (ip.substr(0, 7) == "::ffff:") {
-    ip = ip.substr(7);
-  }
+  var ip = req.headers["client-ip"] || "null";
 
+  console.log("IP: " + ip);
   var searchType = req.body.searchType;
   var deviceModel = "null";
   var user_id = req.body.user_id;
   var loginType = req.body.loginType;
   var pin = req.body.pin;
-  var city = "test";
+  let city = "";
 
 
 
@@ -245,32 +244,41 @@ const login = async (req, res) => {
         });
         await siteNotifications.save();
       }
+      let device_id = "";
 
 
+      let requestDeviceId = req.body.device_id;
 
+      if (requestDeviceId == undefined || requestDeviceId == null || requestDeviceId == "") {
+        requestDeviceId = "No Device Id";
+      }
 
-
-
-
-
-
-
-
-
-      let device = new Device({
+      let checkDevice = await Device.findOne({
         user_id: user._id,
-        deviceName: deviceName,
-        deviceType: deviceType,
-        deviceOs: deviceOS,
-        deviceVersion: deviceVersion,
-        loginTime: Date.now(),
-        loginRequest: "",
+        deviceId: requestDeviceId,
         ip: ip,
-        city: city,
-      });
-      await device.save();
+      }).exec();
 
-      let device_id = device._id;
+      if (checkDevice == null) {
+        let device = new Device({
+          user_id: user._id,
+          deviceId: requestDeviceId,
+          deviceName: deviceName,
+          deviceType: deviceType,
+          deviceOs: deviceOS,
+          deviceVersion: deviceVersion,
+          loginTime: Date.now(),
+          loginRequest: "",
+          ip: ip,
+          city: city,
+        });
+        await device.save();
+
+        device_id = device._id;
+      }
+      else {
+        device_id = checkDevice._id;
+      }
 
       req.session.device_id = device_id;
 
@@ -346,7 +354,12 @@ const login = async (req, res) => {
         status: "completed"
       }).exec();
 
+
+      console.log("User: " + user._id);
+      console.log("Login Loglar: " + loginLogCheck);
       if (loginLogCheck == null) {
+
+        console.log("Login Logu Yok");
         //burada pin göndereceğiz 
 
         pinSent = true;
@@ -377,9 +390,9 @@ const login = async (req, res) => {
             await newMailVerification.save();
           }
 
+          console.log("Mail Gönderildi");
           mailVerificationSent = true;
-
-          mailer.sendMail(user.email, "New Login", "An unusual login has been detected from your account. </br><p style='font-weight:bold'>Pin:" + verificationPin + "</p> If you did not authorize this login, please contact support immediately.");
+          await mailer.sendMail(user.email, "New Login", "An unusual login has been detected from your account. </br><p style='font-weight:bold'>Pin:" + verificationPin + "</p> If you did not authorize this login, please contact support immediately.");
 
         }
         else {
@@ -650,7 +663,7 @@ const login = async (req, res) => {
         if (notificationCheck != null) {
 
           if (notificationCheck.system_messages == 1 || notificationCheck.system_messages == "1") {
-            mailer.sendMail(user.email, "Login", "Successfully logged in from " + ip);
+            await mailer.sendMail(user.email, "Login", "Successfully logged in from " + ip);
           }
         }
 
