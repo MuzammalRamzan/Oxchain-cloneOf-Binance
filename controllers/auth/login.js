@@ -253,7 +253,7 @@ const login = async (req, res) => {
         ip: ip,
       }).exec();
 
-      if (checkDevice != null) {
+      if (checkDevice == null) {
         let device = new Device({
           user_id: user._id,
           deviceName: deviceName,
