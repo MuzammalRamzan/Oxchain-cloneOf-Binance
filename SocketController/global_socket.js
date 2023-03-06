@@ -223,7 +223,7 @@ async function GetFutureOrderBooks(ws, pair) {
                 { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
             ]).on("change", async (data) => {
                 let book = await OrderBookModel.findOne({ symbol: symbol });
-                ws.send(JSON.stringify({ type: "future_book", content: book }));
+                ws.send(JSON.stringify({ type: "future_order_book", content: book }));
             })
         }
     } catch (err) {
@@ -261,7 +261,7 @@ async function GetSpotOrderBooks(ws, pair) {
                 { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
             ]).on("change", async (data) => {
                 let book = await OrderBookModel.findOne({ symbol: symbol });
-                ws.send(JSON.stringify({ type: "order_book", content: book }));
+                ws.send(JSON.stringify({ type: "spot_order_book", content: book }));
             })
         }
     } catch (err) {
