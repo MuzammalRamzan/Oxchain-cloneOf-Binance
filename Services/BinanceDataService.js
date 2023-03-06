@@ -6,8 +6,14 @@ const OrderBookModel = require("../models/BinanceData/OrderBookModel");
 const QuoteModel = require("../models/BinanceData/QuoteModel");
 const Pairs = require("../models/Pairs");
 require('dotenv').config();
-async function BinanceDataSpot() {
+
+async function BinanceService() {
     await MarketDBConnection()
+    BinanceDataFuture();
+    //BinanceDataSpot();
+}
+BinanceService();
+async function BinanceDataSpot() {
     let pairsData = await axios.get('https://api.oxhain.com/getPairs');
     coins = pairsData.data.data;
     let onlyCoins = [];
@@ -44,12 +50,13 @@ async function BinanceDataSpot() {
 
         if (data != null && data != "undefined") {
             if (data.A && data.a && data.b && data.B && !data.e) {
-                await OrderBookModel.findOneAndUpdate({ symbol: data.s, market_type : 'spot' }, { $set: { buyLimit: data.B, sellLimit: data.A, buyPrice: data.b, sellPrice: data.a, market_type : 'spot' } }, { upsert: true });
+                await OrderBookModel.findOneAndUpdate({ symbol: data.s, market_type: 'spot' }, { $set: { buyLimit: data.B, sellLimit: data.A, buyPrice: data.b, sellPrice: data.a, market_type: 'spot' } }, { upsert: true });
                 //ws.send(JSON.stringify({ type: "order_books", content: data }));
             } else if (data.e === "24hrTicker") {
-                await QuoteModel.findOneAndUpdate({ symbol: data.s, market_type : 'spot' }, {
+                await QuoteModel.findOneAndUpdate({ symbol: data.s, market_type: 'spot' }, {
                     $set: {
                         bid: data.b,
+
                         ask: data.a,
                         open: data.o,
                         high: data.h,
@@ -58,7 +65,7 @@ async function BinanceDataSpot() {
                         change: data.p,
                         changeDiff: data.P,
                         volume: data.v,
-                        market_type : 'spot'
+                        market_type: 'spot'
                     }
                 }, { upsert: true });
 
@@ -71,7 +78,7 @@ async function BinanceDataSpot() {
 }
 
 async function BinanceDataFuture() {
-    await MarketDBConnection()
+
     let pairsData = await axios.get('https://api.oxhain.com/getPairs');
     coins = pairsData.data.data;
     let onlyCoins = [];
@@ -83,10 +90,14 @@ async function BinanceDataFuture() {
 
     // BNB_USDT => bnbusdt
     let params = [];
+    params.push("btcusdt@bookTicker");
+    params.push("btcusdt@ticker");
+    /*
     coins.forEach((val) => {
         params.push(val.symbolOne.toLowerCase() + "usdt@bookTicker");
         params.push(val.symbolOne.toLowerCase() + "usdt@ticker");
     });
+    */
     const initSocketMessage = {
         method: "SUBSCRIBE",
         params: params,
@@ -108,17 +119,18 @@ async function BinanceDataFuture() {
 
         if (data != null && data != "undefined") {
             if (data.A && data.a && data.b && data.B && !data.e) {
-                
+
                 //ws.send(JSON.stringify({ type: "order_books", content: data }));
-            } 
-            else if(data.e === 'bookTicker') {
-                await OrderBookModel.findOneAndUpdate({ symbol: data.s, market_type : 'future' }, { $set: { buyLimit: data.B, sellLimit: data.A, buyPrice: data.a, sellPrice: data.b, market_type : 'future' } }, { upsert: true });
+            }
+            else if (data.e === 'bookTicker') {
+                await OrderBookModel.findOneAndUpdate({ symbol: data.s, market_type: 'future' }, { $set: { buyLimit: data.B, sellLimit: data.A, buyPrice: data.a, sellPrice: data.b, market_type: 'future' } }, { upsert: true });
             }
             else if (data.e === "24hrTicker") {
-                await QuoteModel.findOneAndUpdate({ symbol: data.s , market_type : 'future'}, {
+                console.log(data)
+                await QuoteModel.findOneAndUpdate({ symbol: data.s, market_type: 'future' }, {
                     $set: {
-                        bid: data.b,
-                        ask: data.a,
+                        bid: data.c,
+                        ask: data.c,
                         open: data.o,
                         high: data.h,
                         low: data.l,
@@ -126,7 +138,7 @@ async function BinanceDataFuture() {
                         change: data.p,
                         changeDiff: data.P,
                         volume: data.v,
-                        market_type : 'future'
+                        market_type: 'future'
                     }
                 }, { upsert: true });
 
@@ -137,5 +149,3 @@ async function BinanceDataFuture() {
         }
     };
 }
-BinanceDataFuture();
-BinanceDataSpot();
