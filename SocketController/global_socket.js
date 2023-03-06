@@ -204,8 +204,13 @@ async function GetMarketPrices(ws, market_type) {
         QuoteModel.watch([
             { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
         ]).on("change", async (data) => {
-            let items = await QuoteModel.findOne({ _id : data.documentKey._id }).select('symbol ask bid change changeDiff')
-            ws.send(JSON.stringify({ type: market_type + "_prices", content: items }));
+            let items = await QuoteModel.findOne({ _id: data.documentKey._id, market_type: market_type });
+            if (items != null) {
+                items = items.select('symbol ask bid change changeDiff');
+                ws.send(JSON.stringify({ type: market_type + "_prices", content: items }));
+
+            }
+
 
         })
     } catch (err) {
@@ -217,13 +222,14 @@ async function GetFutureOrderBooks(ws, pair) {
     try {
         if (pair != null || pair != "") {
             let symbol = pair.replace('/', '').replace('_', '');
-            let book = await OrderBookModel.findOne({ symbol: symbol, market_type : 'future' });
+            let book = await OrderBookModel.findOne({ symbol: symbol, market_type: 'future' });
             ws.send(JSON.stringify({ type: "future_order_book", content: book }));
             OrderBookModel.watch([
                 { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
             ]).on("change", async (data) => {
-                let book = await OrderBookModel.findOne({ _id : data.documentKey._id });
-                ws.send(JSON.stringify({ type: "future_order_book", content: book }));
+                let book = await OrderBookModel.findOne({ _id: data.documentKey._id, market_type: 'future' });
+                if (book != null)
+                    ws.send(JSON.stringify({ type: "future_order_book", content: book }));
             })
         }
     } catch (err) {
@@ -236,13 +242,14 @@ async function GetFutureMarketInfo(ws, pair) {
     try {
         if (pair != null || pair != "") {
             let symbol = pair.replace('/', '').replace('_', '');
-            let quote = await QuoteModel.findOne({ symbol: symbol, market_type : 'future' });
+            let quote = await QuoteModel.findOne({ symbol: symbol, market_type: 'future' });
             ws.send(JSON.stringify({ type: "future_market_info", content: quote }));
             QuoteModel.watch([
                 { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
             ]).on("change", async (data) => {
-                let quote = await QuoteModel.findOne({ _id : data.documentKey._id });
-                ws.send(JSON.stringify({ type: "future_market_info", content: quote }));
+                let quote = await QuoteModel.findOne({ _id: data.documentKey._id, market_type: 'future' });
+                if (quote != null)
+                    ws.send(JSON.stringify({ type: "future_market_info", content: quote }));
             })
         }
     } catch (err) {
@@ -255,13 +262,14 @@ async function GetSpotOrderBooks(ws, pair) {
     try {
         if (pair != null || pair != "") {
             let symbol = pair.replace('/', '').replace('_', '');
-            let book = await OrderBookModel.findOne({ symbol: symbol, market_type : 'future' });
+            let book = await OrderBookModel.findOne({ symbol: symbol, market_type: 'spot' });
             ws.send(JSON.stringify({ type: "spot_order_book", content: book }));
             OrderBookModel.watch([
                 { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
             ]).on("change", async (data) => {
-                let book = await OrderBookModel.findOne({ _id : data.documentKey._id });
-                ws.send(JSON.stringify({ type: "spot_order_book", content: book }));
+                let book = await OrderBookModel.findOne({ _id: data.documentKey._id, market_type: 'spot' });
+                if (book != null)
+                    ws.send(JSON.stringify({ type: "spot_order_book", content: book }));
             })
         }
     } catch (err) {
@@ -274,12 +282,12 @@ async function GetSpotMarketInfo(ws, pair) {
     try {
         if (pair != null || pair != "") {
             let symbol = pair.replace('/', '').replace('_', '');
-            let quote = await QuoteModel.findOne({ symbol: symbol, market_type : 'spot' });
+            let quote = await QuoteModel.findOne({ symbol: symbol, market_type: 'spot' });
             ws.send(JSON.stringify({ type: "spot_market_info", content: quote }));
             QuoteModel.watch([
                 { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
             ]).on("change", async (data) => {
-                let quote = await QuoteModel.findOne({ _id : data.documentKey._id });
+                let quote = await QuoteModel.findOne({ _id: data.documentKey._id,  market_type :'spot' });
                 ws.send(JSON.stringify({ type: "spot_market_info", content: quote }));
             })
         }
