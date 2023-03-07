@@ -204,12 +204,13 @@ async function GlobalSocket() {
 
 async function GetMarketTradeData(ws, symbol ,market_type) {
     try {
-        let items = await MarketTradeModel.find({ symbol : symbol, market_type: market_type }).select('symbol price amount isMaker')
+        let items = await MarketTradeModel.findOne({ symbol : symbol, market_type: market_type }).select('symbol price amount isMaker')
         ws.send(JSON.stringify({ type: market_type + "_market_trade", content: items }));
         MarketTradeModel.watch([
             { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
         ]).on("change", async (data) => {
-            let items = await MarketTradeModel.find({symbol :symbol,  market_type: market_type }).select('symbol price amount isMaker');
+            let items = await MarketTradeModel.findOne({symbol :symbol,  market_type: market_type }).select('symbol price amount isMaker');
+            if(items != null)
             ws.send(JSON.stringify({ type: market_type + "_market_trade", content: items }));
         })
     } catch (err) {
