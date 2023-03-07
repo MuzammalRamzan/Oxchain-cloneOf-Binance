@@ -1,7 +1,17 @@
 const PredictionHistory = require('../../models/PredictionHistory');
+var authFile = require('../../auth.js');
 
 const log = async (req, res) => {
-	const { coin_symbol, interval } = req.body;
+	const { coin_symbol, interval, api_key } = req.body;
+
+	const isAuthenticated = await authFile.apiKeyChecker(api_key);
+	if (!isAuthenticated) {
+		return res.status(403).json({
+			status: 'fail',
+			message: '403 Forbidden',
+			showableMessage: 'Forbidden 403, Please provide valid api key',
+		});
+	}
 	//filter data according to timePeriod
 	let timeFilter;
 	switch (interval) {
