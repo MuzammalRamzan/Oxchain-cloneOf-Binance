@@ -204,9 +204,8 @@ async function GetMarketPrices(ws, market_type) {
         QuoteModel.watch([
             { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
         ]).on("change", async (data) => {
-            let items = await QuoteModel.findOne({ _id: data.documentKey._id, market_type: market_type });
+            let items = await QuoteModel.findOne({ _id: data.documentKey._id, market_type: market_type }).select('symbol ask bid change changeDiff');
             if (items != null) {
-                items = items.select('symbol ask bid change changeDiff');
                 ws.send(JSON.stringify({ type: market_type + "_prices", content: items }));
 
             }
