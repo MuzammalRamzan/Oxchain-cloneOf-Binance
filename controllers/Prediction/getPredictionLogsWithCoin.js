@@ -1,7 +1,17 @@
 const Prediction = require('../../models/Prediction');
 const PredictionHistory = require('../../models/PredictionHistory');
+var authFile = require('../../auth.js');
 
 const log = async (req, res) => {
+	const api_key = req.body.api_key;
+	const isAuthenticated = await authFile.apiKeyChecker(api_key);
+	if (!isAuthenticated) {
+		return res.status(403).json({
+			status: 'fail',
+			message: '403 Forbidden',
+			showableMessage: 'Forbidden 403, Please provide valid api key',
+		});
+	}
 	let timeInMs;
 
 	if (req.body.interval === '5m') {
