@@ -64,18 +64,20 @@ if (process.env.NODE_ENV == 'product') {
 else {
     wss = new WebSocketServer({ port: 7010 });
 }
-
+MarketDBConnection();
 
 route.use(cors());
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
-route.get("/price", (req, res) => {
+route.get("/price", async(req, res) => {
     var symbol = req.query.symbol;
     if (symbol == null) {
         res.json({ 'status': 'fail', 'msg': 'symbol not found' });
         return;
     }
-    let data = global.MarketData[symbol];
+    
+    symbol = symbol.replace('/', '').replace('_', '');
+    let data = await  QuoteModel.findOne({symbol : symbol});
     res.json({ 'status': 'success', 'data': data });
 });
 route.get('/getCandleData', async (req, res) => {
@@ -126,10 +128,9 @@ route.listen(8542, () => {
 
 
 
-global.MarketData = {};
+
 
 async function GlobalSocket() {
-    fillMarketPrices();
 
     await MarketDBConnection()
     //await FutureWalletModel.updateMany({amount : 1000});
@@ -142,10 +143,14 @@ async function GlobalSocket() {
             );
             ws.on("message", async (data) => {
                 let json = JSON.parse(data);
-                if(json.page == 'order_book') {
-                    GetOrderBooks(ws, json.pair);
-                } else if(json.page == 'market_info') {
-                    GetMarketInfo(ws, json.pair);
+                if (json.page == 'spot_order_book') {
+                    GetSpotOrderBooks(ws, json.pair);
+                } else if (json.page == 'spot_market_info') {
+                    GetSpotMarketInfo(ws, json.pair);
+                } else if (json.page == 'future_order_book') {
+                    GetFutureOrderBooks(ws, json.pair);
+                } else if (json.page == 'future_market_info') {
+                    GetFutureMarketInfo(ws, json.pair);
                 }
                 else if (json.page == 'check_logout') {
                     CheckLogoutDevice(ws, json.user_id);
@@ -171,66 +176,67 @@ async function GlobalSocket() {
     });
 }
 
-async function GetOrderBooks(ws, pair) {
-    let symbol = pair.replace('/', '').replace('_', '');
-    OrderBookModel.watch([
-        { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
-    ]).on("change", async (data) => { 
-        let book = await OrderBookModel.findOne({symbol : symbol});
-        ws.send(JSON.stringify({ type: "order_book", content: book }));
-    })
-}
 
-
-async function GetMarketInfo(ws, pair) {
-    let symbol = pair.replace('/', '').replace('_', '');
-    QuoteModel.watch([
-        { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
-    ]).on("change", async (data) => { 
-        let quote = await QuoteModel.findOne({symbol : symbol});
-        ws.send(JSON.stringify({ type: "quotes", content: quote }));
-    })
-}
-
-
-async function fillMarketPrices() {
-    let coinList = await CoinList.find({});
-    try {
-        var b_ws = new WebSocket("wss://stream.binance.com/stream");
-
-        for (var k = 0; k < coinList.length; k++) {
-            global.MarketData[coinList[k].symbol + "USDT"] = { bid: 0.0, ask: 0.0 };
-        }
-
-        const initSocketMessage = {
-            method: "SUBSCRIBE",
-            params: ["!ticker@arr"],
-            // params: ["!miniTicker@arr"],
-            id: 1,
-        };
-
-        b_ws.onopen = (event) => {
-            b_ws.send(JSON.stringify(initSocketMessage));
-        };
-
-        // Reconnect connection when disconnect connection
-        b_ws.onclose = () => {
-            b_ws.send(JSON.stringify(initSocketMessage));
-        };
-        b_ws.onmessage = function (event) {
-            const data = JSON.parse(event.data).data;
-            if (data != null && data != "undefined") {
-                for (var m = 0; m < data.length; m++) {
-                    let x = data[m];
-                    if (global.MarketData[x.s] != null)
-                        global.MarketData[x.s] = { bid: x.b, ask: x.a };
-                }
-            }
-        };
-    } catch (err) {
-        console.log(err.message);
+async function GetFutureOrderBooks(ws, pair) {
+    if (pair != null || pair != "") {
+        let symbol = pair.replace('/', '').replace('_', '');
+        let book = await OrderBookModel.findOne({ symbol: symbol });
+        ws.send(JSON.stringify({ type: "future_order_book", content: book }));
+        OrderBookModel.watch([
+            { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+        ]).on("change", async (data) => {
+            let book = await OrderBookModel.findOne({ symbol: symbol });
+            ws.send(JSON.stringify({ type: "future_book", content: book }));
+        })
     }
 }
+
+
+async function GetFutureMarketInfo(ws, pair) {
+    if (pair != null || pair != "") {
+        let symbol = pair.replace('/', '').replace('_', '');
+        let quote = await QuoteModel.findOne({ symbol: symbol });
+        ws.send(JSON.stringify({ type: "future_market_info", content: quote }));
+        QuoteModel.watch([
+            { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+        ]).on("change", async (data) => {
+            let quote = await QuoteModel.findOne({ symbol: symbol });
+            ws.send(JSON.stringify({ type: "future_market_info", content: quote }));
+        })
+    }
+}
+
+
+async function GetSpotOrderBooks(ws, pair) {
+    if (pair != null || pair != "") {
+        let symbol = pair.replace('/', '').replace('_', '');
+        let book = await OrderBookModel.findOne({ symbol: symbol });
+        ws.send(JSON.stringify({ type: "spot_order_book", content: book }));
+        OrderBookModel.watch([
+            { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+        ]).on("change", async (data) => {
+            let book = await OrderBookModel.findOne({ symbol: symbol });
+            ws.send(JSON.stringify({ type: "order_book", content: book }));
+        })
+    }
+}
+
+
+async function GetSpotMarketInfo(ws, pair) {
+    if (pair != null || pair != "") {
+        let symbol = pair.replace('/', '').replace('_', '');
+        let quote = await QuoteModel.findOne({ symbol: symbol });
+        ws.send(JSON.stringify({ type: "spot_market_info", content: quote }));
+        QuoteModel.watch([
+            { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+        ]).on("change", async (data) => {
+            let quote = await QuoteModel.findOne({ symbol: symbol });
+            ws.send(JSON.stringify({ type: "spot_market_info", content: quote }));
+        })
+    }
+}
+
+
 
 
 GlobalSocket();

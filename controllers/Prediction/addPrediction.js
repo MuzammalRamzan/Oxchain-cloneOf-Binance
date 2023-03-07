@@ -2,8 +2,8 @@ const PredictionModel = require('../../models/Prediction');
 var authFile = require('../../auth.js');
 const PredictionHistoryModel = require('../../models/PredictionHistory');
 
-const AITradeSettingsModel = require('../../models/AITradeSettings');
 const AITradeWalletModel = require('../../models/AITradeWallet');
+const AIFutureModel = require('../../models/AIFutureModel');
 const PairModel = require('../../models/Pairs');
 const UserModel = require('../../models/User');
 const OrderModel = require('../../models/Orders');
@@ -56,112 +56,31 @@ const addPrediction = async (req, res) => {
             name: symbol + "/USDT"
         });
 
+        console.log(pairs);
         if (pairs) {
 
-            let setting = await AITradeSettingsModel.find({
-                pair: pairs._id
-            });
+            let AIFutureModelCheck = await AIFutureModel.findOne({
+                pair: symbol,
+            }).exec();
 
-            if (setting) {
-
-                for (let i = 0; i < setting.length; i++) {
-                    let userCheck = await UserModel.findOne({
-                        _id: setting[i].user_id
-                    });
-
-                    if (!userCheck) {
-                        continue;
-                    }
+            if (AIFutureModelCheck) {
 
 
-                    if (prediction == 1 || prediction == "1") {
+                //3 method, biri otomatik (5 dk da bir veya 1 saatte bir pozisyonu kapatıp yenisini açar)
+                //2. si manuel, emir açılır, verilen emirde max Order sayısı alınır, max order sayısı kadar emir oluşturulur, emirler kullanıcı isteyene kadar kapanmaz
+                //3. sü tp/sl 
 
-                        let balance = parseFloat(setting[i].balance);
-
-                        //give spot market order to user 
-                        var urlPair = symbol + "USDT";
-                        let url =
-                            'http://18.170.26.150:8542/price?symbol=' + urlPair;
-                        let result = await axios(url);
-                        var price = result.data.data.ask;
-
-
-                        if (balance == 0) {
-                            continue;
-                        }
-                        //calculate coin amount to buy
-                        let coinAmount = balance / price;
-
-                        const orders = new AITradeLogsModel({
-                            pair_id: pairs.symbolOneID,
-                            second_pair: pairs.symbolTwoID,
-                            pair_name: pairs.name,
-                            user_id: userCheck._id,
-                            amount: coinAmount,
-                            open_price: price,
-                            feeUSDT: 0,
-                            feeAmount: 0,
-                            type: "market",
-                            method: "buy",
-                        });
-
-
-                        let saved = await orders.save();
-
-                        if (saved) {
-
-                            setting[i].balance = 0;
-                            setting[i].coin_balance += coinAmount;
-                            await setting[i].save();
-                        }
-
-                    }
-
-
-                    if (prediction == 0 || prediction == "0") {
-
-                        let coin_balance = parseFloat(setting[i].coin_balance);
-
-                        //give spot market order to user 
-                        var urlPair = symbol + "USDT";
-                        let url =
-                            'http://18.170.26.150:8542/price?symbol=' + urlPair;
-                        let result = await axios(url);
-                        var price = result.data.data.bid;
-
-
-                        if (coin_balance == 0) {
-                            continue;
-                        }
-
-
-                        let calculatedBalance = coin_balance * parseFloat(price, 8);
-
-                        const orders = new AITradeLogsModel({
-                            pair_id: pairs.symbolOneID,
-                            second_pair: pairs.symbolTwoID,
-                            pair_name: pairs.name,
-                            user_id: userCheck._id,
-                            amount: coin_balance,
-                            open_price: price,
-                            feeUSDT: 0,
-                            feeAmount: 0,
-                            type: "market",
-                            method: "sell",
-                        });
-
-                        let saved = await orders.save();
-
-                        if (saved) {
-
-                            setting[i].balance += calculatedBalance;
-                            setting[i].coin_balance = 0;
-                            await setting[i].save();
-                        }
-                    }
+                
+console.log(AIFutureModelCheck);
+                for (let i = 0; i < AIFutureModelCheck.length; i++) 
+                {
 
                 }
+
             }
+
+
+
         }
 
 

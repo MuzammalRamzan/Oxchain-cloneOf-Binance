@@ -14,7 +14,7 @@ const twoFactor = async function (req, res) {
   var mailPin = req.body.mailPin;
   var smsPin = req.body.smsPin;
 
-  var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  let ip = req.headers['client-ip'];
 
   if (result === true) {
 
@@ -37,32 +37,45 @@ const twoFactor = async function (req, res) {
         }
       }
 
-      if (user.email != null && user.email != undefined && user.email != "") {
+      let loginLogCheck = await LoginLogs.findOne({
+        user_id: user._id,
+        ip: ip,
+        status: "completed"
+      }).exec();
 
-        check1 = await MailVerificationModel.findOne({
-          user_id: user_id,
-          reason: "login_verification",
-          pin: mailPin,
-        }).exec();
 
-        if (check1 == null) {
-          return res.json({ status: "fail", message: "mail_verification_failed", showableMessage: "Wrong mail pin" });
-        }
-      }
-      else {
-        if (user.phone != null && user.phone != undefined && user.phone != "") {
 
-          check2 = await SmsVerificationModel.findOne({
+      if (loginLogCheck == null) {
+
+        if (user.email != null && user.email != undefined && user.email != "") {
+
+          check1 = await MailVerificationModel.findOne({
             user_id: user_id,
             reason: "login_verification",
-            pin: smsPin,
+            pin: mailPin,
           }).exec();
 
-          if (check2 == null) {
-            return res.json({ status: "fail", message: "sms_verification_failed", showableMessage: "Wrong sms pin" });
+          if (check1 == null) {
+            return res.json({ status: "fail", message: "mail_verification_failed", showableMessage: "Wrong mail pin" });
+          }
+        }
+        else {
+          if (user.phone != null && user.phone != undefined && user.phone != "") {
+
+            check2 = await SmsVerificationModel.findOne({
+              user_id: user_id,
+              reason: "login_verification",
+              pin: smsPin,
+            }).exec();
+
+            if (check2 == null) {
+              return res.json({ status: "fail", message: "sms_verification_failed", showableMessage: "Wrong sms pin" });
+            }
           }
         }
       }
+
+
 
 
       if (check1 != false) {
@@ -78,11 +91,25 @@ const twoFactor = async function (req, res) {
       }
 
 
-      var update = { trust: "yes", status: "completed" };
-      await LoginLogs.findOneAndUpdate(
-        { ip: ip, user_id: user_id },
-        update
-      ).exec();
+      var loginLog = await LoginLogs.find({
+        user_id: user_id,
+        ip: ip,
+      }).exec();
+
+      if (loginLog.length > 0) {
+
+        //update all login logs
+        await LoginLogs.updateMany({
+          user_id: user_id,
+          ip: ip,
+        }, {
+          $set: {
+            status: "completed",
+          },
+        });
+
+      }
+
       return res.json({ status: "success", data: "2fa_success" });
 
 
