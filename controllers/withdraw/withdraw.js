@@ -144,7 +144,7 @@ const withdraw = async (req, res) => {
     }
     else {
       let getPrice = await axios(
-        "http://18.170.26.150:8542/price?symbol=" +
+        "http://global.oxhain.com:8542/price?symbol=" +
         checkCoin.symbol + "USDT"
       );
       price = getPrice.data.data.ask;
@@ -180,7 +180,7 @@ const withdraw = async (req, res) => {
 
       else {
 
-        let getPrice = await axios("http://18.170.26.150:8542/price?symbol=" + coinInfo.symbol + "USDT");
+        let getPrice = await axios("http://global.oxhain.com:8542/price?symbol=" + coinInfo.symbol + "USDT");
         price = getPrice.data.data.ask;
       }
 

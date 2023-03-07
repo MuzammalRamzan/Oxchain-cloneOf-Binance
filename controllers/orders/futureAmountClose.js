@@ -27,7 +27,7 @@ const FutureAmountClose = async (req, res) => {
 
   let pairname = order.pair_name.replace("/", "");
   let binanceData = await axios(
-    "http://18.170.26.150:8542/price?symbol=" + pairname
+    "http://global.oxhain.com:8542/price?symbol=" + pairname
   );
 
   let marketPrice = parseFloat(binanceData.data.data.ask);

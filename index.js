@@ -604,7 +604,7 @@ route.get('/price', async function (req, res) {
 		return res.json({ status: 'fail', message: 'symbol not found' });
 	}
 	let priceData = await axios(
-		'http://18.170.26.150:8542/price?symbol=' + symbol
+		'http://global.oxhain.com:8542/price?symbol=' + symbol
 	);
 	console.log(priceData.data);
 	if (priceData.data.status == 'success') {

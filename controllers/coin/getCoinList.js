@@ -63,7 +63,7 @@ async function parseCoins(coins, amounts) {
 }
 
 const calcCoinValue = async (coin, amount) => {
-  let priceInfo = await axios("http://18.170.26.150:8542/price?symbol=" + coin + "USDT");
+  let priceInfo = await axios("http://global.oxhain.com:8542/price?symbol=" + coin + "USDT");
   let price = priceInfo.data.data.ask;
   return price * amount;
 }

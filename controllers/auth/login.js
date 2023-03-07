@@ -343,7 +343,7 @@ const login = async (req, res) => {
           verificationStatus = "rejected";
         }
       } else {
-        verificationStatus = "none";
+        verificationStatus = "Not Verified";
       }
 
       let loginLogCheck = await LoginLogs.findOne({
