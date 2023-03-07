@@ -1,6 +1,7 @@
 const Prediction = require('../../models/Prediction');
 const PredictionHistory = require('../../models/PredictionHistory');
 var authFile = require('../../auth.js');
+const CoinList = require('../../models/CoinList');
 
 const log = async (req, res) => {
 	const api_key = req.body.api_key;
@@ -45,6 +46,16 @@ const log = async (req, res) => {
 		})
 			.sort({ createdAt: -1 })
 			.limit(4);
+		console.log(predictionHistoryData.length);
+		let noOfSuccessfullPredictions = await PredictionHistory.countDocuments({
+			coin_symbol: coinSymbols[i],
+			createdAt: { $gte: thirtyDaysAgo },
+			interval: req.body.interval,
+			prediction: 1,
+		})
+			.sort({ createdAt: -1 })
+			.limit(4);
+		console.log(noOfSuccessfullPredictions);
 
 		let predictionData = await Prediction.find({
 			coin_symbol: coinSymbols[i],
@@ -67,7 +78,7 @@ const log = async (req, res) => {
 			});
 			let timeInterval = `${startTime}-${endTime}`;
 			let nextData = predictionHistoryData[i + 1];
-
+			// console.log('coinInfo', coinInfo.symbol);
 			if (data.prediction == 1) {
 				if (data.price < nextData.price) {
 					foreachPredictionData.push({
@@ -125,9 +136,17 @@ const log = async (req, res) => {
 			interval,
 			isSuccess: 'pending',
 		});
-
+		if (coinSymbols[i] == 'XRP') continue;
+		let coinInfo = await CoinList.findOne({
+			symbol: coinSymbols[i],
+		});
 		generalDataArray.push({
 			coin_symbol: coinSymbols[i],
+			coinUrl: coinInfo.image_url,
+			noOfSuccessfullPredictions,
+			totalPredictions: predictionHistoryData.length,
+			accuracy:
+				(noOfSuccessfullPredictions / predictionHistoryData.length) * 100,
 			data: foreachPredictionData,
 		});
 	}

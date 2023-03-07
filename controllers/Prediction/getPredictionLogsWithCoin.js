@@ -1,5 +1,7 @@
 const Prediction = require('../../models/Prediction');
 const PredictionHistory = require('../../models/PredictionHistory');
+const CoinList = require('../../models/CoinList');
+
 var authFile = require('../../auth.js');
 
 const log = async (req, res) => {
@@ -36,7 +38,12 @@ const log = async (req, res) => {
 		interval: req.body.interval,
 		prediction: 1,
 	});
-
+	let coinInfo;
+	if (req.body.coin_symbol !== 'XRP') {
+		coinInfo = await CoinList.findOne({
+			symbol: req.body.coin_symbol,
+		});
+	}
 	let predictionData = await Prediction.find({
 		coin_symbol: req.body.coin_symbol,
 		interval: req.body.interval,
@@ -126,6 +133,8 @@ const log = async (req, res) => {
 		status: 'success',
 		data: {
 			data: dataArray,
+			symbol: coinInfo?.symbol,
+			coinUrl: coinInfo?.image_url,
 			noOfSuccessfullPredictions,
 			totalPredictions: predictionHistoryData.length,
 			accuracy:
