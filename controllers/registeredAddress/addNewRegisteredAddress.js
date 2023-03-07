@@ -126,7 +126,7 @@ const addNewRegisteredAddress = async function (req, res) {
 
 			let saved = await newAddress.save();
 			if (saved) {
-				res.json({ status: 'success', message: saved });
+				return res.json({ status: 'success', message: saved });
 			}
 		}
 		else {
