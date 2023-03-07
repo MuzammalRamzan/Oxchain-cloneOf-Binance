@@ -44,9 +44,17 @@ const log = async (req, res) => {
 
 		for (let i = 0; i < predictionHistoryData.length - 1; i++) {
 			let data = predictionHistoryData[i];
-			let startTime = new Date(data.createdAt).toLocaleTimeString();
+			let startTime = new Date(data.createdAt).toLocaleTimeString([], {
+				hour12: false,
+				hour: '2-digit',
+				minute: '2-digit',
+			});
 			let endTimeStamp = new Date(data.createdAt).getTime() + timeInMs;
-			let endTime = new Date(endTimeStamp).toLocaleTimeString();
+			let endTime = new Date(endTimeStamp).toLocaleTimeString([], {
+				hour12: false,
+				hour: '2-digit',
+				minute: '2-digit',
+			});
 			let timeInterval = `${startTime}-${endTime}`;
 			let nextData = predictionHistoryData[i + 1];
 
@@ -88,10 +96,18 @@ const log = async (req, res) => {
 		}
 		let pendingStartTime = new Date(
 			predictionData[0].createdAt
-		).toLocaleTimeString();
+		).toLocaleTimeString([], {
+			hour12: false,
+			hour: '2-digit',
+			minute: '2-digit',
+		});
 		let pendingEndTimestamp =
 			new Date(predictionData[0].createdAt).getTime() + timeInMs;
-		let pendingEndTime = new Date(pendingEndTimestamp).toLocaleTimeString();
+		let pendingEndTime = new Date(pendingEndTimestamp).toLocaleTimeString([], {
+			hour12: false,
+			hour: '2-digit',
+			minute: '2-digit',
+		});
 		let interval = `${pendingStartTime}-${pendingEndTime}`;
 		foreachPredictionData.push({
 			prediction: predictionData[0].prediction,

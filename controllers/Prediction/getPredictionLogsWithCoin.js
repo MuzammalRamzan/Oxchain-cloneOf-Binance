@@ -39,10 +39,17 @@ const log = async (req, res) => {
 		let data = predictionHistoryData[i];
 
 		let nextData = predictionHistoryData[i + 1];
-
-		let startTime = new Date(data.createdAt).toLocaleTimeString();
+		let startTime = new Date(data.createdAt).toLocaleTimeString([], {
+			hour12: false,
+			hour: '2-digit',
+			minute: '2-digit',
+		});
 		let endTimeStamp = new Date(data.createdAt).getTime() + timeInMs;
-		let endTime = new Date(endTimeStamp).toLocaleTimeString();
+		let endTime = new Date(endTimeStamp).toLocaleTimeString([], {
+			hour12: false,
+			hour: '2-digit',
+			minute: '2-digit',
+		});
 		let timeInterval = `${startTime}-${endTime}`;
 
 		if (data.prediction == 1) {
@@ -81,14 +88,23 @@ const log = async (req, res) => {
 			}
 		}
 	}
-	console.log(new Date(predictionData[0].createdAt).getTime());
 	let pendingStartTime = new Date(
 		predictionData[0].createdAt
-	).toLocaleTimeString();
+	).toLocaleTimeString([], {
+		hour12: false,
+		hour: '2-digit',
+		minute: '2-digit',
+	});
 	let pendingEndTimestamp =
 		new Date(predictionData[0].createdAt).getTime() + timeInMs;
-	let pendingEndTime = new Date(pendingEndTimestamp).toLocaleTimeString();
+	let pendingEndTime = new Date(pendingEndTimestamp).toLocaleTimeString([], {
+		hour12: false,
+		hour: '2-digit',
+		minute: '2-digit',
+	});
 	let interval = `${pendingStartTime}-${pendingEndTime}`;
+
+	console.log(interval); // Output: 18:30-19:30
 
 	dataArray.push({
 		prediction: predictionData[0].prediction,
