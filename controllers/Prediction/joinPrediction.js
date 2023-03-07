@@ -95,4 +95,4 @@ console.log(AIFutureModelCheck);
 
 }
 
-module.exports = addPrediction;
+module.exports = joinPrediction;
