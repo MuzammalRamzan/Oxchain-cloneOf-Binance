@@ -13,8 +13,8 @@ const addNewRegisteredAddress = async function (req, res) {
 	const network = req.body.network;
 	const whiteListed = req.body.whiteListed;
 	const tag = req.body.tag;
-	const email = req.body.emailPin;
-	const phone = req.body.phonePin;
+	const emailPin = req.body.emailPin;
+	const phonePin = req.body.phonePin;
 	let reason = 'addRegisteredAddress';
 
 	let result = await authFile.apiKeyChecker(api_key);
@@ -23,53 +23,58 @@ const addNewRegisteredAddress = async function (req, res) {
 		let user = await User.findOne({ _id: user_id });
 
 		if (user) {
-			/******************************************************/
-			let twofa = user.twofa;
-			if (email != '' && email != undefined) {
-				let mailVerification = await MailVerification.findOne({
-					user_id: userId,
-					reason: reason,
-					pin: email,
-					status: 0,
+
+
+			let checkAddress = await RegisteredAddress.findOne({
+				user_id,
+				address,
+			});
+
+			if (checkAddress) {
+				res.json({
+					status: 'fail',
+					message: 'Address already exists',
+					showableMessage: 'Address already exists',
 				});
-				if (mailVerification) {
-					await MailVerification.findOneAndUpdate(mailVerification._id, {
-						user_id: userId,
-						reason: reason,
-						pin: email,
-						status: 1,
-					});
-				} else {
-					return res.json({
-						status: 'failed',
-						message: 'verification_failed',
-						showableMessage: 'Mail pin is wrong',
-					});
-				}
+				return;
 			}
 
-			if (phone != '' && phone != undefined) {
-				let smsVerification = await SMSVerification.findOne({
-					user_id: userId,
-					reason: reason,
-					pin: phone,
-					status: 0,
-				});
 
-				if (smsVerification) {
-					await SMSVerification.findOneAndUpdate(smsVerification._id, {
-						user_id: userId,
-						reason: reason,
-						pin: phone,
-						status: 1,
-					});
-				} else {
+			var email = user['email'];
+			var phone = user['phone_number'];
+			var twofa = user['twofa'];
+			let check1 = '';
+			let check3 = '';
+
+			if (email != undefined && email != null && email != '') {
+				check1 = await MailVerification.findOne({
+					user_id: user_id,
+					reason: reason,
+					pin: req.body.mailPin,
+					status: 0,
+				}).exec();
+				if (!check1)
 					return res.json({
-						status: 'failed',
+						status: 'fail',
 						message: 'verification_failed',
-						showableMessage: 'Phone pin is wrong',
+						showableMessage: 'Wrong Mail Pin',
 					});
-				}
+			}
+
+			if (phone != undefined && phone != null && phone != '') {
+				check3 = await SMSVerification.findOne({
+					user_id: user_id,
+					reason: reason,
+					pin: req.body.smsPin,
+					status: 0,
+				}).exec();
+
+				if (!check3)
+					return res.json({
+						status: 'fail',
+						message: 'verification_failed',
+						showableMessage: 'Wrong SMS Pin',
+					});
 			}
 
 			if (twofa != undefined && twofa != null && twofa != '') {
@@ -95,21 +100,17 @@ const addNewRegisteredAddress = async function (req, res) {
 					});
 				}
 			}
-			/*****************************************/
 
-			let checkAddress = await RegisteredAddress.findOne({
-				user_id,
-				address,
-			});
-
-			if (checkAddress) {
-				res.json({
-					status: 'fail',
-					message: 'Address already exists',
-					showableMessage: 'Address already exists',
-				});
-				return;
+			if (check1 != '') {
+				check1.status = 1;
+				await check1.save();
 			}
+
+			if (check3 != '') {
+				check3.status = 1;
+				await check3.save();
+			}
+
 
 			let newAddress = new RegisteredAddress({
 				user_id,
@@ -127,7 +128,8 @@ const addNewRegisteredAddress = async function (req, res) {
 			if (saved) {
 				res.json({ status: 'success', message: saved });
 			}
-		} else {
+		}
+		else {
 			res.json({
 				status: 'fail',
 				message: 'Invalid user',
