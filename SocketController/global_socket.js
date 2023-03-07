@@ -200,12 +200,12 @@ async function GlobalSocket() {
 async function GetMarketPrices(ws, market_type) {
     try {
         let items = await QuoteModel.find({ market_type: market_type }).select('symbol ask bid change changeDiff')
-        ws.send(JSON.stringify({ type: market_type + "_prices", content: items }));
+        ws.send(JSON.stringify({ type: market_type + "_all_prices", content: items }));
         QuoteModel.watch([
             { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
         ]).on("change", async (data) => {
             let items = await QuoteModel.find({ market_type: market_type }).select('symbol ask bid change changeDiff');
-            ws.send(JSON.stringify({ type: market_type + "_prices", content: items }));
+            ws.send(JSON.stringify({ type: market_type + "_all_prices", content: items }));
             
 
         })
