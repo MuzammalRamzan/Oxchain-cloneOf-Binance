@@ -1,7 +1,7 @@
 const axios = require('axios');
 require('dotenv').config();
 const developmentURL = 'https://api.binance.com/api/v3/ticker/price?symbol=';
-const productionURL = 'http://18.170.26.150:8542/price?symbol=';
+const productionURL = 'http://global.oxhain.com:8542/price?symbol=';
 const cryptoConvert = async (firstCoinSymbol, secondCoinSymbol) => {
 	// Replace the symbol 'SHIBA' with 'SHIB'
 	if (firstCoinSymbol == 'SHIBA') {

@@ -62,7 +62,7 @@ const DerivativesCalculate = async(wallet) => {
 }
 
 const getBTCValue = async (q) => {
-    let priceInfo = await axios("http://18.170.26.150:8542/price?symbol=BTCUSDT");
+    let priceInfo = await axios("http://global.oxhain.com:8542/price?symbol=BTCUSDT");
     let price = priceInfo.data.data.ask;
     return parseFloat(q) / price;
 }

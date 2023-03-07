@@ -59,10 +59,10 @@ if (process.env.NODE_ENV == 'product') {
 
     var server = https.createServer(options);
     server.listen(7010);
-    wss = new WebSocketServer({ server });
+    wss = new WebSocketServer({ server : server, perMessageDeflate: false });
 }
 else {
-    wss = new WebSocketServer({ port: 7010 });
+    wss = new WebSocketServer({ port: 7010, perMessageDeflate: false });
 }
 MarketDBConnection();
 

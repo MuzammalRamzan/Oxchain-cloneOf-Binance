@@ -23,7 +23,7 @@ const closeMarginOrder = async (req, res) => {
     let getPair = await Pairs.findOne({ _id: getOrderDetail.pair_id }).exec();
     var urlPair = getPair.name.replace("/", "");
     let url =
-      'http://18.170.26.150:8542/price?symbol=' + urlPair;
+      'http://global.oxhain.com:8542/price?symbol=' + urlPair;
     result = await axios(url);
     var price = result.data.data.ask;
     let doc = await MarginOrder.findOneAndUpdate(

@@ -70,7 +70,7 @@ const addOrders = async function (req, res) {
 
     var urlPair = req.body.pair_name.replace("/", "");
     let url =
-      'http://18.170.26.150:8542/price?symbol=' + urlPair;
+      'http://global.oxhain.com:8542/price?symbol=' + urlPair;
     let result = await axios(url);
     var price = result.data.data.ask;
 

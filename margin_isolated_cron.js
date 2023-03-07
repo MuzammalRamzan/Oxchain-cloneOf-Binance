@@ -59,7 +59,7 @@ async function Run(orders) {
     let order = limitOrders[i];
     if (order.method == 'limit') {
       if (order.status == 0) continue;
-      let item = await axios("http://18.170.26.150:8542/price?symbol=" + order.pair_name.replace("/", ""));
+      let item = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
         let price = item.data.data.ask;
         if (order.stop_limit != 0) {
@@ -303,7 +303,7 @@ async function Run(orders) {
       }
     }
     else if (order.method == 'stop_limit') {
-      let item = await axios("http://18.170.26.150:8542/price?symbol=" + order.pair_name.replace("/", ""));
+      let item = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
         let price = item.data.data.ask;
         if (order.type == 'buy') {
