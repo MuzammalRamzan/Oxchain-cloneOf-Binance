@@ -142,6 +142,7 @@ route.listen(8542, () => {
 
 async function GlobalSocket() {
 
+    await MarketDBConnection()
     //await FutureWalletModel.updateMany({amount : 1000});
     try {
         wss.on("connection", async (ws) => {
