@@ -182,12 +182,10 @@ const getApiKeys = require('./controllers/api/getApiKeys');
 
 const getDashboard = require('./controllers/dashboard/getDashboard');
 
-
 const newPrediction = require('./controllers/Prediction/addPrediction');
 const getPrediction = require('./controllers/Prediction/getPrediction');
 
 const getPredictionHistory = require('./controllers/Prediction/getPredictionHistory');
-const getPredictionLogsWithCoin = require('./controllers/Prediction/getPredictionLogsWithCoin.js');
 const getPredictionLogs = require('./controllers/Prediction/getPredictionLogs');
 const getPredictionAccuracyMetrics = require('./controllers/Prediction/getPredictionAccuracyMetrics');
 const addNewApiKey = require('./controllers/api/addNewApiKey');
@@ -255,7 +253,6 @@ const getTopMarketGainers = require('./controllers/market/getTopMarketGainers.js
 
 const ApproveLoginRequest = require('./controllers/auth/approveLoginRequest.js');
 const GetCandleData = require('./controllers/pair/getCandleData.js');
-const joinPrediction = require('./controllers/Prediction/joinPrediction.js');
 
 route.use(
 	session({
@@ -339,11 +336,9 @@ route.all('/addNewApiKey', addNewApiKey);
 route.all('/deleteAllKeys', deleteAllKeys);
 route.all('/getApiKeys', getApiKeys);
 
-route.all('/joinPrediction', joinPrediction);
 route.all('/newPrediction', newPrediction);
 route.all('/getPrediction', getPrediction);
 route.all('/getPredictionHistory', getPredictionHistory);
-route.all('/getPredictionLogsWithCoin', getPredictionLogsWithCoin);
 route.all('/getPredictionLogs', getPredictionLogs);
 route.all('/getPredictionAccuracyMetrics', getPredictionAccuracyMetrics);
 route.all('/editApiKey', editApiKey);
@@ -478,7 +473,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) { }
+	async function (req, res) {}
 );
 route.post('/deleteOneStepWithdraw', deleteOneStepWithdraw);
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
@@ -599,9 +594,9 @@ route.all('/getAllNews', upload.none(), getAllNews);
 route.all('/getNews', upload.none(), getNews);
 route.all('/getTopNews', upload.none(), getTopNews);
 route.all('/getAllTopics', upload.none(), getAllTopics);
-route.all("/getMarket", upload.none(), getMarket);
-route.all("/getTopMarketGainers", upload.none(), getTopMarketGainers)
-route.all("/getTopics", upload.none(), getTopics)
+route.all('/getMarket', upload.none(), getMarket);
+route.all('/getTopMarketGainers', upload.none(), getTopMarketGainers);
+route.all('/getTopics', upload.none(), getTopics);
 route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
 	if (symbol == null || symbol == '') {
