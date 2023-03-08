@@ -13,7 +13,11 @@ const log = async (req, res) => {
 		});
 	}
 	if (!coin_symbol || coin_symbol === undefined) {
-		return res.status(400).send('coin_symbol parameter is missing');
+		return res.status(400).send({
+			status: 'fail',
+			message: 'coin_symbol parameter is missing',
+			showableMessage: 'coin_symbol parameter is missing',
+		});
 	}
 	//filter data according to timePeriod
 	let timeFilter;
