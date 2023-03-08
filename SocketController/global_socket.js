@@ -41,16 +41,17 @@ route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
 route.get("/price", async (req, res) => {
     try {
-        const symbol = req.query.symbol;
+        let symbol = req.query.symbol;
         if (symbol == null) {
             res.json({ 'status': 'fail', 'msg': 'symbol not found' });
             return;
         }
 
         symbol = symbol.replace('/', '').replace('_', '');
-        const data = await QuoteModel.findOne({ symbol: symbol });
+        const data = await SpotQuoteModel.findOne({ symbol: symbol });
         return res.json({ 'status': 'success', 'data': data });
     } catch (err) {
+        console.log(err)
         return res.json({ 'status': 'error', 'message': 'unknow error' });
     }
 });
