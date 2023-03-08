@@ -48,68 +48,66 @@ const log = async (req, res) => {
 			message: 'Not enough data to calculate accuracy metrics',
 		});
 	}
-
 	let dates = [];
+	let dataPoints = [];
+
+	// Collect all unique dates
 	for (let i = 0; i < predictionHistoryData.length; i++) {
 		let data = predictionHistoryData[i];
-		let dateOnlyDayAndMonthAndYear = data.createdAt.toISOString().split('T')[0];
+		let dateOnlyDayAndMonthAndYear;
+
+		if (interval === '1D') {
+			dateOnlyDayAndMonthAndYear = data.createdAt
+				.toISOString()
+				.slice(0, 13)
+				.replace('T', ' ');
+		} else {
+			dateOnlyDayAndMonthAndYear = data.createdAt.toISOString().split('T')[0];
+		}
+
 		if (!dates.includes(dateOnlyDayAndMonthAndYear)) {
 			dates.push(dateOnlyDayAndMonthAndYear);
 		}
 	}
-	console.log(dates);
 
-	let dateArray = [];
+	// Create data points for each date
+	console.log(predictionHistoryData.length);
 	for (let i = 0; i < dates.length; i++) {
 		let date = dates[i];
-		dateArray.push({
+		let successCount = 0;
+		let failureCount = 0;
+
+		// Count success and failure predictions for the current date
+		for (let j = 0; j < predictionHistoryData.length; j++) {
+			let data = predictionHistoryData[j];
+			let dataDate;
+
+			if (interval === '1D') {
+				dataDate = data.createdAt.toISOString().slice(0, 13).replace('T', ' ');
+			} else {
+				dataDate = data.createdAt.toISOString().split('T')[0];
+			}
+
+			if (dataDate === date) {
+				if (data.isSuccess === '1') {
+					successCount++;
+				} else if (data.isSuccess === '0') {
+					failureCount++;
+				}
+			}
+		}
+
+		// Create data point object for the current date
+		dataPoints.push({
 			date: date,
-			successCount: 0,
-			failureCount: 0,
+			successCount: successCount,
+			failureCount: failureCount,
 		});
-	}
-
-	for (let i = 0; i < PredictionHistory.length; i++) {
-		let data = predictionHistoryData[i];
-		let nextData = predictionHistoryData[i + 1];
-		let dateOnlyDayAndMonthAndYear = data.createdAt.toISOString().split('T')[0];
-
-		if (data.prediction == 1) {
-			if (data.price < nextData.price) {
-				for (let j = 0; j < dateArray.length; j++) {
-					if (dateArray[j].date == dateOnlyDayAndMonthAndYear) {
-						dateArray[j].failureCount++;
-					}
-				}
-			} else {
-				for (let j = 0; j < dateArray.length; j++) {
-					if (dateArray[j].date == dateOnlyDayAndMonthAndYear) {
-						dateArray[j].successCount++;
-					}
-				}
-			}
-		}
-
-		if (data.prediction == 0) {
-			if (data.price > nextData.price) {
-				for (let j = 0; j < dateArray.length; j++) {
-					if (dateArray[j].date == dateOnlyDayAndMonthAndYear) {
-						dateArray[j].failureCount++;
-					}
-				}
-			} else {
-				for (let j = 0; j < dateArray.length; j++) {
-					if (dateArray[j].date == dateOnlyDayAndMonthAndYear) {
-						dateArray[j].successCount++;
-					}
-				}
-			}
-		}
 	}
 
 	return res.json({
 		success: true,
-		data: dateArray,
+		data: dataPoints,
 	});
 };
 
