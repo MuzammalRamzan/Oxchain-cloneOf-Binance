@@ -22,21 +22,63 @@ const log = async (req, res) => {
 		} else if (req.body.interval === '1h') {
 			timeInMs = 60 * 60 * 1000; // 1 hour in milliseconds
 		} else {
-			// handle invalid interval value
-		}
-		let coinCheck = await Prediction.find({}).sort({ createdAt: -1 });
-
-		//get different coin symbols from prediction history
-		let coinSymbols = [];
-		for (let i = 0; i < coinCheck.length; i++) {
-			let data = coinCheck[i];
-			if (!coinSymbols.includes(data.coin_symbol)) {
-				coinSymbols.push(data.coin_symbol);
-			}
+			return res.status(400).json({
+				status: 'fail',
+				message: '400 Bad Request',
+				showableMessage: 'Given interval is incorrect.',
+			});
 		}
 
-		console.log(coinSymbols);
+		// get coin symbol available in history data or just write in an array.
+		// let coinSymbols = await PredictionHistory.distinct("coin_symbol");
+		let coinSymbols = ['BTC'];
 
+		// preparing data for response
+		let predictionDataResponse = [];
+		for (let i = 0; i < coinSymbols.length; i++) {
+	
+			// getting last 4 predication for display cards.
+			let predictionHistoryData = await PredictionHistory.find({
+				coin_symbol: coinSymbols[i],
+				interval: req.body.interval,
+			})
+			.sort({ createdAt: -1 }).limit(4);
+
+			// getting coin data for image url
+			let coinInfo = await CoinList.findOne({
+				symbol: coinSymbols[i],
+			});
+
+			// number of success predictions in last 30 days
+			let noOfSuccessfullPredictions = await PredictionHistory.countDocuments({
+				coin_symbol: coinSymbols[i],
+				createdAt: { $gte: thirtyDaysAgo },
+				interval: req.body.interval,
+				isSuccess: "1",
+			});
+			// total number of predication in last 30 days
+			let totalNumberOfPredication = await PredictionHistory.countDocuments({
+				coin_symbol: coinSymbols[i],
+				createdAt: { $gte: thirtyDaysAgo },
+				interval: req.body.interval,
+			});
+
+			// finding accurancy in percentage
+			let accuracy = Math.round((noOfSuccessfullPredictions / totalNumberOfPredication) * 100);
+
+			predictionDataResponse.push({
+				coin_symbol: coinSymbols[i],
+				coinUrl: coinInfo.image_url,
+				 noOfSuccessfullPredictions,
+				 totalPredictions: totalNumberOfPredication,
+				 accuracy,
+				data: predictionHistoryData.sort(),
+			});
+			console.log(predictionHistoryData);
+
+		}
+
+		return res.status(200).json(predictionDataResponse);
 		let generalDataArray = [];
 		for (let i = 0; i < coinSymbols.length; i++) {
 			let foreachPredictionData = [];
