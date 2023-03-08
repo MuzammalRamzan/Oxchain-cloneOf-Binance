@@ -1,6 +1,6 @@
 const { default: mongoose } = require("mongoose");
 
-const QuoteModel = mongoose.Schema({
+const FutureQuoteModel = mongoose.Schema({
     symbol : {type : String},
     lastPrice : {type : String},
     bid : {type : String},
@@ -15,4 +15,4 @@ const QuoteModel = mongoose.Schema({
     market_type : {type: String}, //spot or future
 })
 
-module.exports = mongoose.model("QuoteModel", QuoteModel);
+module.exports = mongoose.model("FutureQuoteModel", FutureQuoteModel);

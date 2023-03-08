@@ -1,6 +1,6 @@
 const { default: mongoose } = require("mongoose");
 
-const OrderBookModel = mongoose.Schema({
+const SpotOrderBookModel = mongoose.Schema({
     symbol : {type : String},
     buyLimit : {type : String},
     sellLimit : {type : String},
@@ -10,4 +10,4 @@ const OrderBookModel = mongoose.Schema({
     created_at : {type: Date, default : Date.now()}
 })
 
-module.exports = mongoose.model("OrderBook", OrderBookModel);
+module.exports = mongoose.model("SpotOrderBook", SpotOrderBookModel);

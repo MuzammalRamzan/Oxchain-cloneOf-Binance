@@ -1,6 +1,6 @@
 const { default: mongoose } = require("mongoose");
 
-const MarketTradeModel = mongoose.Schema({
+const FutureMarketTradeModel = mongoose.Schema({
     eventTime : {type : Number},
     symbol : {type : String},
     price : {type : Number, default : 0.0},
@@ -10,4 +10,4 @@ const MarketTradeModel = mongoose.Schema({
 
 })
 
-module.exports = mongoose.model('MarketTradeModel', MarketTradeModel);
+module.exports = mongoose.model('FutureMarketTradeModel', FutureMarketTradeModel);
