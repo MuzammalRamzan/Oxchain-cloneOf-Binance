@@ -45,7 +45,7 @@ const addPrediction = async (req, res) => {
                 }
             }
             predicationHistory.isSuccess = isSuccess;
-            PredictionHistory.save();
+            predicationHistory.save();
         }else{
             let newPredictionHistory = new PredictionHistoryModel({
                 coin_symbol: symbol,
