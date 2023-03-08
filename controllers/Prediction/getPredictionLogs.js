@@ -5,23 +5,16 @@ const CoinList = require('../../models/CoinList');
 
 const log = async (req, res) => {
 	try {
-		const api_key = req.body.api_key;
-		const isAuthenticated = await authFile.apiKeyChecker(api_key);
-		if (!isAuthenticated) {
+		// validate API KEY
+		if (!await authFile.apiKeyChecker(req.body.api_key)) {
 			return res.status(403).json({
 				status: 'fail',
 				message: '403 Forbidden',
 				showableMessage: 'Forbidden 403, Please provide valid api key',
 			});
 		}
-		let timeInMs;
-		let thirtyDaysAgo = new Date();
-		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-		if (req.body.interval === '5m') {
-			timeInMs = 5 * 60 * 1000; // 5 minutes in milliseconds
-		} else if (req.body.interval === '1h') {
-			timeInMs = 60 * 60 * 1000; // 1 hour in milliseconds
-		} else {
+		// validate interval
+		if (!['5m', '1h'].includes(req.body.interval)) {
 			return res.status(400).json({
 				status: 'fail',
 				message: '400 Bad Request',
@@ -29,6 +22,10 @@ const log = async (req, res) => {
 			});
 		}
 
+		// get now - 30 days.
+		let thirtyDaysAgo = new Date();
+		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+		
 		// get coin symbol available in history data or just write in an array or take from request.body
 		let coinSymbols = [];
 		if(req.body.coin_symbol){
