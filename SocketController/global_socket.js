@@ -48,6 +48,7 @@ const { default: axios } = require("axios");
 const OrderBookModel = require("../models/BinanceData/OrderBookModel");
 const MarketDBConnection = require("../MarketDBConnection");
 const QuoteModel = require("../models/BinanceData/QuoteModel");
+const MarketTradeModel = require("../models/BinanceData/MarketTradeModel");
 var route = express();
 require('dotenv').config();
 var wss = null;
@@ -71,14 +72,14 @@ route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
 route.get("/price", async (req, res) => {
     try {
-        var symbol = req.query.symbol;
+        const symbol = req.query.symbol;
         if (symbol == null) {
             res.json({ 'status': 'fail', 'msg': 'symbol not found' });
             return;
         }
 
         symbol = symbol.replace('/', '').replace('_', '');
-        let data = await QuoteModel.findOne({ symbol: symbol });
+        const data = await QuoteModel.findOne({ symbol: symbol });
         return res.json({ 'status': 'success', 'data': data });
     } catch (err) {
         return res.json({ 'status': 'error', 'message': 'unknow error' });
@@ -112,7 +113,7 @@ route.get('/getCandleData', async (req, res) => {
 route.get('/24hr', async (req, res) => {
     try {
         let data = await axios("https://api.binance.com/api/v3/ticker/24hr");
-        var symbol = req.query.symbol;
+        const symbol = req.query.symbol;
         if (symbol != null) {
             let item = data.data.filter((x) => x.symbol == symbol);
             return res.json(item);
@@ -166,11 +167,15 @@ async function GlobalSocket() {
                             GetMarketPrices(ws, 'spot');
                         } else if (json.page == 'future_all_prices') {
                             GetMarketPrices(ws, 'future');
+                        }  else if (json.page == 'future_market_trade') {
+                            GetMarketTradeData(ws,json.pair, 'future');
+                        }
+                        else if (json.page == 'spot_market_trade') {
+                            GetMarketTradeData(ws,json.pair, 'spot');
                         }
                         else if (json.page == 'check_logout') {
                             CheckLogoutDevice(ws, json.user_id);
                         } else if (json.page == 'login_approve_check') {
-
                             loginApproveCheck(ws, json.device_id);
                         }
                     } catch (err) {
@@ -197,6 +202,22 @@ async function GlobalSocket() {
     }
 }
 
+async function GetMarketTradeData(ws, symbol ,market_type) {
+    try {
+        let items = await MarketTradeModel.findOne({ symbol : symbol, market_type: market_type }).select('symbol price amount isMaker')
+        ws.send(JSON.stringify({ type: market_type + "_market_trade", content: items }));
+        MarketTradeModel.watch([
+            { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
+        ]).on("change", async (data) => {
+            let items = await MarketTradeModel.findOne({symbol :symbol,  market_type: market_type }).select('symbol price amount isMaker');
+            if(items != null)
+            ws.send(JSON.stringify({ type: market_type + "_market_trade", content: items }));
+        })
+    } catch (err) {
+
+    }
+}
+
 async function GetMarketPrices(ws, market_type) {
     try {
         let items = await QuoteModel.find({ market_type: market_type }).select('symbol ask bid change changeDiff')
@@ -206,8 +227,6 @@ async function GetMarketPrices(ws, market_type) {
         ]).on("change", async (data) => {
             let items = await QuoteModel.find({ market_type: market_type }).select('symbol ask bid change changeDiff');
             ws.send(JSON.stringify({ type: market_type + "_all_prices", content: items }));
-            
-
         })
     } catch (err) {
 

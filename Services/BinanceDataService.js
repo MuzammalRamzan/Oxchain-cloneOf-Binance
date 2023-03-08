@@ -2,6 +2,7 @@ const { default: axios } = require("axios");
 const WebSocket = require("ws");
 const WebSocketServer = require("ws").Server;
 const MarketDBConnection = require("../MarketDBConnection");
+const MarketTradeModel = require("../models/BinanceData/MarketTradeModel");
 const OrderBookModel = require("../models/BinanceData/OrderBookModel");
 const QuoteModel = require("../models/BinanceData/QuoteModel");
 const Pairs = require("../models/Pairs");
@@ -28,6 +29,7 @@ async function BinanceDataSpot() {
     coins.forEach((val) => {
         params.push(val.symbolOne.toLowerCase() + "usdt@bookTicker");
         params.push(val.symbolOne.toLowerCase() + "usdt@ticker");
+        params.push(val.symbolOne.toLowerCase() + "usdt@trade");
     });
     const initSocketMessage = {
         method: "SUBSCRIBE",
@@ -69,6 +71,21 @@ async function BinanceDataSpot() {
                 }, { upsert: true });
 
 
+            }  else if (data.e == 'trade') {
+                await MarketTradeModel.updateOne({
+                    symbol: data.s,
+                    marketType: "spot",
+
+                }, {
+                    $set: {
+                        eventTime: data.E,
+                        price: data.p,
+                        amount: data.q,
+                        isMaker: data.m,
+                    }
+                }, {
+                    upsert: true
+                });
             } else {
                 console.log(data.e);
             }
@@ -96,6 +113,7 @@ async function BinanceDataFuture() {
     coins.forEach((val) => {
         params.push(val.symbolOne.toLowerCase() + "usdt@bookTicker");
         params.push(val.symbolOne.toLowerCase() + "usdt@ticker");
+        params.push(val.symbolOne.toLowerCase() + "usdt@trade");
     });
     const initSocketMessage = {
         method: "SUBSCRIBE",
@@ -123,8 +141,7 @@ async function BinanceDataFuture() {
             }
             else if (data.e === 'bookTicker') {
                 await OrderBookModel.updateOne({ symbol: data.s, market_type: 'future' }, { $set: { buyLimit: data.B, sellLimit: data.A, buyPrice: data.a, sellPrice: data.b, market_type: 'future' } }, { upsert: true });
-            }
-            else if (data.e === "24hrTicker") {
+            } else if (data.e === "24hrTicker") {
                 await QuoteModel.updateOne({ symbol: data.s, market_type: 'future' }, {
                     $set: {
                         bid: data.c,
@@ -141,6 +158,21 @@ async function BinanceDataFuture() {
                 }, { upsert: true });
 
 
+            } else if (data.e == 'trade') {
+                await MarketTradeModel.updateOne({
+                    symbol: data.s,
+                    marketType: "future",
+
+                }, {
+                    $set: {
+                        eventTime: data.E,
+                        price: data.p,
+                        amount: data.q,
+                        isMaker: data.m,
+                    }
+                }, {
+                    upsert: true
+                });
             } else {
                 console.log(data.e);
             }

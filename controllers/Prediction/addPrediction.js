@@ -10,6 +10,7 @@ const OrderModel = require('../../models/Orders');
 const Wallet = require('../../models/Wallet');
 let axios = require('axios');
 const AITradeLogsModel = require('../../models/AITradeLogs');
+const PredictionHistory = require('../../models/PredictionHistory');
 
 
 
@@ -22,6 +23,45 @@ const addPrediction = async (req, res) => {
 
     if (result === true) {
 
+        let predicationHistory = await PredictionHistoryModel.findOne({
+            coin_symbol: symbol,
+            interval: interval,
+        }).sort({ createdAt: -1}).exec();
+
+        let isSuccess;
+        if (predicationHistory) {
+            if(predicationHistory.prediction == 1){
+                if(priceData > predicationHistory.price){
+                    isSuccess = 1;
+                }else{
+                    isSuccess = 0;
+                }
+            }
+            if(predicationHistory.prediction == 0){
+                if(priceData < predicationHistory.price){
+                    isSuccess = 1;
+                }else{
+                    isSuccess = 0;
+                }
+            }
+            predicationHistory.isSuccess = isSuccess;
+            predicationHistory.save();
+        }else{
+            let newPredictionHistory = new PredictionHistoryModel({
+                coin_symbol: symbol,
+                prediction: prediction,
+                price: priceData,
+                interval: interval,
+                isSuccess:"pending",
+            });
+        }
+        return res.json({
+            status: "success",
+            message: "Prediction added",
+            showableMessage: "Prediction added",
+        });
+
+        
         let predictionCheck = await PredictionModel.findOne({
             coin_symbol: symbol,
             interval: interval

@@ -1,6 +1,8 @@
 const User = require("../../models/User");
 var authFile = require("../../auth.js");
 
+const VerificationIdModel = require("../../models/VerificationId");
+
 const getUserInfo = async function (req, res) {
   var user_id = req.body.user_id;
   var api_key_result = req.body.api_key;
@@ -17,6 +19,16 @@ const getUserInfo = async function (req, res) {
 
       var status = user["status"];
 
+      let verificationStatus = "Not Verified";
+
+      let verificationId = await VerificationIdModel.findOne({
+        user_id: user_id,
+      }).exec();
+
+      if (verificationId != null) {
+        verificationStatus = "verified";
+      }
+
       if (status == 1) {
         res.json({
           status: "success",
@@ -31,6 +43,7 @@ const getUserInfo = async function (req, res) {
             city: user["city"],
             country: user["country"],
             address: user["address"],
+            verificationStatus: verificationStatus,
           },
         });
       }
