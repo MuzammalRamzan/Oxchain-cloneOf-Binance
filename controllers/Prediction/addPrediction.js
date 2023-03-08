@@ -47,7 +47,7 @@ const addPrediction = async (req, res) => {
             prediction: prediction,
             price: priceData,
             interval: interval,
-            isSuccess: 'pending',
+            isSuccess: "pending",
         });
         await newPredictionHistory.save();
         return res.json({
