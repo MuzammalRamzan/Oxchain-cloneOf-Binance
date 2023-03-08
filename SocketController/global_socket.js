@@ -233,7 +233,7 @@ async function GetFutureOrderBooks(ws, pair) {
             FutureOrderBookModel.watch([
                 { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
             ]).on("change", async (data) => {
-                let book = await FutureOrderBookModel.findOne({ symbol: pair, market_type: 'future' });
+                let book = await FutureOrderBookModel.findOne({ symbol: symbol, market_type: 'future' });
                 if (book != null)
                     ws.send(JSON.stringify({ type: "future_order_book", content: book }, {'_id' : 0, '__v' : 0, 'created_at' : 0}));
             })
@@ -253,7 +253,7 @@ async function GetFutureMarketInfo(ws, pair) {
             FutureQuoteModel.watch([
                 { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
             ]).on("change", async (data) => {
-                let quote = await FutureQuoteModel.findOne({ symbol : pair, market_type: 'future' }, {'_id' : 0, '__v' : 0, 'created_at' : 0});
+                let quote = await FutureQuoteModel.findOne({ symbol : symbol, market_type: 'future' }, {'_id' : 0, '__v' : 0, 'created_at' : 0});
                 if (quote != null)
                     ws.send(JSON.stringify({ type: "future_market_info", content: quote }));
             })
@@ -306,7 +306,7 @@ async function GetSpotOrderBooks(ws, pair) {
             SpotOrderBookModel.watch([
                 { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
             ]).on("change", async (data) => {
-                let book = await SpotOrderBookModel.findOne({ symbol : pair, market_type: 'spot' }, {'_id' : 0, '__v' : 0, 'created_at' : 0});
+                let book = await SpotOrderBookModel.findOne({ symbol : symbol, market_type: 'spot' }, {'_id' : 0, '__v' : 0, 'created_at' : 0});
                 if (book != null)
                     ws.send(JSON.stringify({ type: "spot_order_book", content: book }));
             })
@@ -326,7 +326,7 @@ async function GetSpotMarketInfo(ws, pair) {
             SpotQuoteModel.watch([
                 { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
             ]).on("change", async (data) => {
-                let quote = await SpotQuoteModel.findOne({ symbol : pair,  market_type :'spot' }, {'_id' : 0, '__v' : 0, 'created_at' : 0});
+                let quote = await SpotQuoteModel.findOne({ symbol : symbol,  market_type :'spot' }, {'_id' : 0, '__v' : 0, 'created_at' : 0});
                 if(quote != null)
                 ws.send(JSON.stringify({ type: "spot_market_info", content: quote }));
             })
