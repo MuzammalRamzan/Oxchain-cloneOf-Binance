@@ -51,7 +51,13 @@ const addPrediction = async (req, res) => {
 				interval: interval,
 				isSuccess: 'pending',
 			});
+            await newPredictionHistory.save();
 		}
+        return res.json({
+			status: 'success',
+			message: 'Prediction added',
+			showableMessage: 'Prediction added',
+		});
 
 		let predictionCheck = await PredictionModel.findOne({
 			coin_symbol: symbol,
@@ -67,6 +73,7 @@ const addPrediction = async (req, res) => {
 
 		await newPredictionHistory.save();
 
+        
 		if (predictionCheck) {
 			predictionCheck.prediction = prediction;
 			predictionCheck.price = priceData;
