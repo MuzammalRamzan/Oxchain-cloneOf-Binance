@@ -29,10 +29,15 @@ const log = async (req, res) => {
 			});
 		}
 
-		// get coin symbol available in history data or just write in an array.
-		// let coinSymbols = await PredictionHistory.distinct("coin_symbol");
-		let coinSymbols = ['BTC'];
-
+		// get coin symbol available in history data or just write in an array or take from request.body
+		let coinSymbols = [];
+		if(req.body.coin_symbol){
+			coinSymbols = [req.body.coin_symbol];
+		}else{
+			// let coinSymbols = await PredictionHistory.distinct("coin_symbol");
+			coinSymbols = ['BTC'];
+		}
+		
 		// preparing data for response
 		let predictionDataResponse = [];
 		for (let i = 0; i < coinSymbols.length; i++) {
@@ -44,38 +49,45 @@ const log = async (req, res) => {
 			})
 			.sort({ createdAt: -1 }).limit(4);
 
-			// getting coin data for image url
-			let coinInfo = await CoinList.findOne({
-				symbol: coinSymbols[i],
-			});
+			// add data to array if records available
+			if(predictionHistoryData.length > 0){
+				// getting coin data for image url
+				let coinInfo = await CoinList.findOne({
+					symbol: coinSymbols[i],
+				});
 
-			// number of success predictions in last 30 days
-			let noOfSuccessfullPredictions = await PredictionHistory.countDocuments({
-				coin_symbol: coinSymbols[i],
-				createdAt: { $gte: thirtyDaysAgo },
-				interval: req.body.interval,
-				isSuccess: "1",
-			});
-			// total number of predication in last 30 days
-			let totalNumberOfPredication = await PredictionHistory.countDocuments({
-				coin_symbol: coinSymbols[i],
-				createdAt: { $gte: thirtyDaysAgo },
-				interval: req.body.interval,
-			});
+				// number of success predictions in last 30 days
+				let noOfSuccessfullPredictions = await PredictionHistory.countDocuments({
+					coin_symbol: coinSymbols[i],
+					createdAt: { $gte: thirtyDaysAgo },
+					interval: req.body.interval,
+					isSuccess: "1",
+				});
+				// total number of predication in last 30 days
+				let totalNumberOfPredication = await PredictionHistory.countDocuments({
+					coin_symbol: coinSymbols[i],
+					createdAt: { $gte: thirtyDaysAgo },
+					interval: req.body.interval,
+				});
 
-			// finding accurancy in percentage
-			let accuracy = Math.round((noOfSuccessfullPredictions / totalNumberOfPredication) * 100);
+				// finding accurancy in percentage
+				let accuracy = Math.round((noOfSuccessfullPredictions / totalNumberOfPredication) * 100);
 
-			predictionDataResponse.push({
-				coin_symbol: coinSymbols[i],
-				coinUrl: coinInfo.image_url,
-				 noOfSuccessfullPredictions,
-				 totalPredictions: totalNumberOfPredication,
-				 accuracy,
-				data: predictionHistoryData.sort(),
-			});
-			console.log(predictionHistoryData);
-
+				predictionDataResponse.push({
+					coin_symbol: coinSymbols[i],
+					coinUrl: coinInfo.image_url,
+					noOfSuccessfullPredictions,
+					totalPredictions: totalNumberOfPredication,
+					accuracy,
+					data: predictionHistoryData.sort(),
+				});
+			}else{
+				return res.status(200).json({
+					status: 'fail',
+					message: 'data not found',
+					showableMessage: 'No predication available for this coin',
+				});
+			}
 		}
 
 		return res.status(200).json(predictionDataResponse);
