@@ -97,6 +97,8 @@ const removePhone = require('./controllers/users/removePhone');
 const removeEmail = require('./controllers/users/removeEmail');
 const walletTowalletBetweenUsers = require('./controllers/WalletToWallet/transfer');
 
+const getAllWallet = require('./controllers/wallet/getAllWallet');
+
 const getAIOrders = require('./controllers/AITrade/getAIOrders');
 
 const addAvatar = require('./controllers/avatar/addAvatar');
@@ -305,6 +307,8 @@ route.all('/delete2fa', Delete2fa);
 
 route.all('/getWhatIsEnabled', getWhatIsEnabled);
 
+route.all('/getAllWallets', getAllWallet);
+
 route.all('/approveLoginRequest', ApproveLoginRequest);
 route.all('/addAnnouncement', addAnnouncement);
 route.all('/getAnnouncements', getAnnouncement);
@@ -474,7 +478,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) {}
+	async function (req, res) { }
 );
 route.post('/deleteOneStepWithdraw', deleteOneStepWithdraw);
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
