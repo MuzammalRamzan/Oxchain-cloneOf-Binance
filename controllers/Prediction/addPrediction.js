@@ -53,7 +53,7 @@ const addPrediction = async (req, res) => {
         return res.json({
 			status: 'success',
 			message: 'Prediction added',
-			showableMessage: 'Prediction added',
+			showableMessage: 'Prediction added successfully',
 		});
 
 		let predictionCheck = await PredictionModel.findOne({
