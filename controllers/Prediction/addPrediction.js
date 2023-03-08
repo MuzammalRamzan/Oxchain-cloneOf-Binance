@@ -21,9 +21,7 @@ const addPrediction = async (req, res) => {
 		let predicationHistory = await PredictionHistoryModel.findOne({
 			coin_symbol: symbol,
 			interval: interval,
-		})
-			.sort({ createdAt: -1 })
-			.exec();
+		}).sort({ createdAt: -1 }).exec();
 
 		let isSuccess;
 		if (predicationHistory) {
@@ -43,16 +41,15 @@ const addPrediction = async (req, res) => {
 			}
 			predicationHistory.isSuccess = isSuccess;
 			predicationHistory.save();
-		} else {
-			let newPredictionHistory = new PredictionHistoryModel({
-				coin_symbol: symbol,
-				prediction: prediction,
-				price: priceData,
-				interval: interval,
-				isSuccess: 'pending',
-			});
-            await newPredictionHistory.save();
 		}
+        let newPredictionHistory = new PredictionHistoryModel({
+            coin_symbol: symbol,
+            prediction: prediction,
+            price: priceData,
+            interval: interval,
+            isSuccess: 'pending',
+        });
+        await newPredictionHistory.save();
         return res.json({
 			status: 'success',
 			message: 'Prediction added',
@@ -64,12 +61,12 @@ const addPrediction = async (req, res) => {
 			interval: interval,
 		}).exec();
 
-		let newPredictionHistory = new PredictionHistoryModel({
-			coin_symbol: symbol,
-			prediction: prediction,
-			price: priceData,
-			interval: interval,
-		});
+		// let newPredictionHistory = new PredictionHistoryModel({
+		// 	coin_symbol: symbol,
+		// 	prediction: prediction,
+		// 	price: priceData,
+		// 	interval: interval,
+		// });
 
 		await newPredictionHistory.save();
 
