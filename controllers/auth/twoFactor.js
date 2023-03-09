@@ -13,8 +13,7 @@ const twoFactor = async function (req, res) {
   var mailPin = req.body.mailPin;
   var smsPin = req.body.smsPin;
 
-  let ip = req.body.ip;
-
+  var ip = req.headers["client-ip"] || "null";
   if (result === true) {
 
     var user = await User.findOne({
