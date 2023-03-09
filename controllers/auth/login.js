@@ -814,14 +814,7 @@ const login = async (req, res) => {
           user_id: user["_id"],
         }).exec();
 
-        console.log("notificationCheck", notificationCheck);
-
-        if (notificationCheck != null) {
-
-          if (notificationCheck.system_messages == 1 || notificationCheck.system_messages == "1") {
-            await mailer.sendMail(user.email, "Login", "Successfully logged in from " + ip);
-          }
-        }
+      
 
 
 
