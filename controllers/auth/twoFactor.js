@@ -4,6 +4,7 @@ const LoginLogs = require("../../models/LoginLogs");
 var authFile = require("../../auth.js");
 const MailVerificationModel = require("../../models/MailVerification");
 const SmsVerificationModel = require("../../models/SMSVerification");
+const mailer = require("../../mailer");
 
 const twoFactor = async function (req, res) {
   var twofapin = req.body.twofapin;
@@ -12,8 +13,11 @@ const twoFactor = async function (req, res) {
   var result = await authFile.apiKeyChecker(api_key_result);
   var mailPin = req.body.mailPin;
   var smsPin = req.body.smsPin;
+  var wantToTrust = req.body.wantToTrust;
+  var log_id = req.body.log_id;
 
-  let ip = req.body.ip;
+
+  let ip = req.headers['client-ip'];
 
   if (result === true) {
 
@@ -123,11 +127,13 @@ const twoFactor = async function (req, res) {
           },
         });
       }
-			await mailer.sendMail(
-				user.email,
-				'Login',
-				'Successfully logged in from ' + ip
-			);
+
+
+      await mailer.sendMail(
+        user.email,
+        'Login',
+        'Successfully logged in from ' + ip
+      );
 
       return res.json({ status: "success", data: "2fa_success" });
 
