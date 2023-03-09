@@ -93,7 +93,7 @@ const login = async (req, res) => {
 
   let getIP = await axios.get("http://ip-api.com/json/" + ip);
   if (getIP.data.status == "success") {
-    city = getIP.data.country + " " + getIP.data.city;
+    city = getIP.data.country + ", " + getIP.data.city;
   }
 
 
