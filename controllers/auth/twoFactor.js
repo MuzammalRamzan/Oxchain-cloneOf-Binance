@@ -9,13 +9,11 @@ const twoFactor = async function (req, res) {
   var twofapin = req.body.twofapin;
   var user_id = req.body.user_id;
   var api_key_result = req.body.api_key;
-  var wantToTrust = req.body.wantToTrust;
-  var log_id = req.body.log_id;
   var result = await authFile.apiKeyChecker(api_key_result);
   var mailPin = req.body.mailPin;
   var smsPin = req.body.smsPin;
 
-  let ip = req.headers['client-ip'];
+  let ip = req.body.ip;
 
   if (result === true) {
 
@@ -125,6 +123,11 @@ const twoFactor = async function (req, res) {
           },
         });
       }
+			await mailer.sendMail(
+				user.email,
+				'Login',
+				'Successfully logged in from ' + ip
+			);
 
       return res.json({ status: "success", data: "2fa_success" });
 
