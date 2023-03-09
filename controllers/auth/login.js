@@ -35,7 +35,8 @@ const MailVerificationModel = require("../../models/MailVerification");
 
 
 const moment = require("moment");
-//istanbul date format
+
+const momenttz = require("moment-timezone");
 
 const { getToken } = require("../../auth");
 
@@ -91,9 +92,11 @@ const login = async (req, res) => {
   }
 
 
+  let cCode = "";
   let getIP = await axios.get("http://ip-api.com/json/" + ip);
   if (getIP.data.status == "success") {
     city = getIP.data.country + ", " + getIP.data.city;
+    cCode = getIP.data.countryCode;
   }
 
 
@@ -310,14 +313,166 @@ const login = async (req, res) => {
 
       let dateNow = moment().format("YYYY-MM-DD HH:mm:ss");
 
-      //change created at to istanbul time
+      //get timezone of user with country
+
+      let timezoneList = [
+        { name: "Afghanistan", code: "AF", gmt: "(UTC+04:30)", moment: "Asia/Kabul" },
+        { name: "Albania", code: "AL", gmt: "(UTC+01:00)", moment: "Europe/Tirane" },
+        { name: "Algeria", code: "DZ", gmt: "(UTC+01:00)", moment: "Africa/Algiers" },
+        { name: "Argentina", code: "AR", gmt: "(UTC-03:00)", moment: "America/Argentina/Buenos_Aires" },
+        { name: "Armenia", code: "AM", gmt: "(UTC+04:00)", moment: "Asia/Yerevan" },
+        { name: "Australia", code: "AU", gmt: "(UTC+11:00)", moment: "Australia/Sydney" },
+        { name: "Austria", code: "AT", gmt: "(UTC+01:00)", moment: "Europe/Vienna" },
+        { name: "Azerbaijan", code: "AZ", gmt: "(UTC+04:00)", moment: "Asia/Baku" },
+        { name: "Bahrain", code: "BH", gmt: "(UTC+03:00)", moment: "Asia/Bahrain" },
+        { name: "Bangladesh", code: "BD", gmt: "(UTC+06:00)", moment: "Asia/Dhaka" },
+        { name: "Belarus", code: "BY", gmt: "(UTC+03:00)", moment: "Europe/Minsk" },
+        { name: "Belgium", code: "BE", gmt: "(UTC+01:00)", moment: "Europe/Brussels" },
+        { name: "Belize", code: "BZ", gmt: "(UTC-06:00)", moment: "America/Belize" },
+        { name: "Bhutan", code: "BT", gmt: "(UTC+06:00)", moment: "Asia/Thimphu" },
+        { name: "Bolivia", code: "BO", gmt: "(UTC-04:00)", moment: "America/La_Paz" },
+        { name: "Bosnia and Herzegovina", code: "BA", gmt: "(UTC+01:00)", moment: "Europe/Sarajevo" },
+        { name: "Botswana", code: "BW", gmt: "(UTC+02:00)", moment: "Africa/Gaborone" },
+        { name: "Brazil", code: "BR", gmt: "(UTC-02:00)", moment: "America/Sao_Paulo" },
+        { name: "Brunei", code: "BN", gmt: "(UTC+08:00)", moment: "Asia/Brunei" },
+        { name: "Bulgaria", code: "BG", gmt: "(UTC+02:00)", moment: "Europe/Sofia" },
+        { name: "Cambodia", code: "KH", gmt: "(UTC+07:00)", moment: "Asia/Phnom_Penh" },
+        { name: "Cameroon", code: "CM", gmt: "(UTC+01:00)", moment: "Africa/Douala" },
+        { name: "Canada", code: "CA", gmt: "(UTC-03:30)", moment: "America/St_Johns" },
+        { name: "Chile", code: "CL", gmt: "(UTC-04:00)", moment: "America/Santiago" },
+        { name: "China", code: "CN", gmt: "(UTC+08:00)", moment: "Asia/Shanghai" },
+        { name: "Colombia", code: "CO", gmt: "(UTC-05:00)", moment: "America/Bogota" },
+        { name: "Congo (DRC)", code: "CD", gmt: "(UTC+01:00)", moment: "Africa/Kinshasa" },
+        { name: "Costa Rica", code: "CR", gmt: "(UTC-06:00)", moment: "America/Costa_Rica" },
+        { name: "Côte d’Ivoire", code: "CI", gmt: "(UTC+00:00)", moment: "Africa/Abidjan" },
+        { name: "Croatia", code: "HR", gmt: "(UTC+01:00)", moment: "Europe/Zagreb" },
+        { name: "Cuba", code: "CU", gmt: "(UTC-05:00)", moment: "America/Havana" },
+        { name: "Czech Republic", code: "CZ", gmt: "(UTC+01:00)", moment: "Europe/Prague" },
+        { name: "Denmark", code: "DK", gmt: "(UTC+01:00)", moment: "Europe/Copenhagen" },
+        { name: "Djibouti", code: "DJ", gmt: "(UTC+03:00)", moment: "Africa/Djibouti" },
+        { name: "Dominican Republic", code: "DO", gmt: "(UTC-04:00)", moment: "America/Santo_Domingo" },
+        { name: "Ecuador", code: "EC", gmt: "(UTC-05:00)", moment: "America/Guayaquil" },
+        { name: "Egypt", code: "EG", gmt: "(UTC+02:00)", moment: "Africa/Cairo" },
+        { name: "El Salvador", code: "SV", gmt: "(UTC-06:00)", moment: "America/El_Salvador" },
+        { name: "Eritrea", code: "ER", gmt: "(UTC+03:00)", moment: "Africa/Asmara" },
+        { name: "Estonia", code: "EE", gmt: "(UTC+02:00)", moment: "Europe/Tallinn" },
+        { name: "Ethiopia", code: "ET", gmt: "(UTC+03:00)", moment: "Africa/Addis_Ababa" },
+        { name: "Faroe Islands", code: "FO", gmt: "(UTC+00:00)", moment: "Atlantic/Faroe" },
+        { name: "Finland", code: "FI", gmt: "(UTC+02:00)", moment: "Europe/Helsinki" },
+        { name: "France", code: "FR", gmt: "(UTC+01:00)", moment: "Europe/Paris" },
+        { name: "Georgia", code: "GE", gmt: "(UTC+04:00)", moment: "Asia/Tbilisi" },
+        { name: "Germany", code: "DE", gmt: "(UTC+01:00)", moment: "Europe/Berlin" },
+        { name: "Greece", code: "GR", gmt: "(UTC+02:00)", moment: "Europe/Athens" },
+        { name: "Greenland", code: "GL", gmt: "(UTC-03:00)", moment: "America/Godthab" },
+        { name: "Guatemala", code: "GT", gmt: "(UTC-06:00)", moment: "America/Guatemala" },
+        { name: "Haiti", code: "HT", gmt: "(UTC-05:00)", moment: "America/Port-au-Prince" },
+        { name: "Honduras", code: "HN", gmt: "(UTC-06:00)", moment: "America/Tegucigalpa" },
+        { name: "Hong Kong SAR", code: "HK", gmt: "(UTC+08:00)", moment: "Asia/Hong_Kong" },
+        { name: "Hungary", code: "HU", gmt: "(UTC+01:00)", moment: "Europe/Budapest" },
+        { name: "Iceland", code: "IS", gmt: "(UTC+00:00)", moment: "Atlantic/Reykjavik" },
+        { name: "India", code: "IN", gmt: "(UTC+05:30)", moment: "Asia/Kolkata" },
+        { name: "Indonesia", code: "ID", gmt: "(UTC+07:00)", moment: "Asia/Jakarta" },
+        { name: "Iran", code: "IR", gmt: "(UTC+03:30)", moment: "Asia/Tehran" },
+        { name: "Iraq", code: "IQ", gmt: "(UTC+03:00)", moment: "Asia/Baghdad" },
+        { name: "Ireland", code: "IE", gmt: "(UTC+00:00)", moment: "Europe/Dublin" },
+        { name: "Israel", code: "IL", gmt: "(UTC+02:00)", moment: "Asia/Jerusalem" },
+        { name: "Italy", code: "IT", gmt: "(UTC+01:00)", moment: "Europe/Rome" },
+        { name: "Jamaica", code: "JM", gmt: "(UTC-05:00)", moment: "America/Jamaica" },
+        { name: "Japan", code: "JP", gmt: "(UTC+09:00)", moment: "Asia/Tokyo" },
+        { name: "Jordan", code: "JO", gmt: "(UTC+02:00)", moment: "Asia/Amman" },
+        { name: "Kazakhstan", code: "KZ", gmt: "(UTC+06:00)", moment: "Asia/Almaty" },
+        { name: "Kenya", code: "KE", gmt: "(UTC+03:00)", moment: "Africa/Nairobi" },
+        { name: "Korea", code: "KR", gmt: "(UTC+09:00)", moment: "Asia/Seoul" },
+        { name: "Kuwait", code: "KW", gmt: "(UTC+03:00)", moment: "Asia/Kuwait" },
+        { name: "Kyrgyzstan", code: "KG", gmt: "(UTC+06:00)", moment: "Asia/Bishkek" },
+        { name: "Laos", code: "LA", gmt: "(UTC+07:00)", moment: "Asia/Vientiane" },
+        { name: "Latvia", code: "LV", gmt: "(UTC+02:00)", moment: "Europe/Riga" },
+        { name: "Lebanon", code: "LB", gmt: "(UTC+02:00)", moment: "Asia/Beirut" },
+        { name: "Libya", code: "LY", gmt: "(UTC+02:00)", moment: "Africa/Tripoli" },
+        { name: "Liechtenstein", code: "LI", gmt: "(UTC+01:00)", moment: "Europe/Vaduz" },
+        { name: "Lithuania", code: "LT", gmt: "(UTC+02:00)", moment: "Europe/Vilnius" },
+        { name: "Luxembourg", code: "LU", gmt: "(UTC+01:00)", moment: "Europe/Luxembourg" },
+        { name: "Macao SAR", code: "MO", gmt: "(UTC+08:00)", moment: "Asia/Macau" },
+        { name: "Macedonia, FYRO", code: "MK", gmt: "(UTC+01:00)", moment: "Europe/Skopje" },
+        { name: "Malaysia", code: "MY", gmt: "(UTC+08:00)", moment: "Asia/Kuala_Lumpur" },
+        { name: "Maldives", code: "MV", gmt: "(UTC+05:00)", moment: "Indian/Maldives" },
+        { name: "Mali", code: "ML", gmt: "(UTC+00:00)", moment: "Africa/Bamako" },
+        { name: "Malta", code: "MT", gmt: "(UTC+01:00)", moment: "Europe/Malta" },
+        { name: "Mexico", code: "MX", gmt: "(UTC-06:00)", moment: "America/Mexico_City" },
+        { name: "Moldova", code: "MD", gmt: "(UTC+02:00)", moment: "Europe/Chisinau" },
+        { name: "Monaco", code: "MC", gmt: "(UTC+01:00)", moment: "Europe/Monaco" },
+        { name: "Mongolia", code: "MN", gmt: "(UTC+08:00)", moment: "Asia/Ulaanbaatar" },
+        { name: "Montenegro", code: "ME", gmt: "(UTC+01:00)", moment: "Europe/Podgorica" },
+        { name: "Morocco", code: "MA", gmt: "(UTC+00:00)", moment: "Africa/Casablanca" },
+        { name: "Myanmar", code: "MM", gmt: "(UTC+06:30)", moment: "Asia/Rangoon" },
+        { name: "Nepal", code: "NP", gmt: "(UTC+05:45)", moment: "Asia/Kathmandu" },
+        { name: "Netherlands", code: "NL", gmt: "(UTC+01:00)", moment: "Europe/Amsterdam" },
+        { name: "New Zealand", code: "NZ", gmt: "(UTC+12:00)", moment: "Pacific/Auckland" },
+        { name: "Nicaragua", code: "NI", gmt: "(UTC-06:00)", moment: "America/Managua" },
+        { name: "Nigeria", code: "NG", gmt: "(UTC+01:00)", moment: "Africa/Lagos" },
+        { name: "Norway", code: "NO", gmt: "(UTC+01:00)", moment: "Europe/Oslo" },
+        { name: "Oman", code: "OM", gmt: "(UTC+04:00)", moment: "Asia/Muscat" },
+        { name: "Pakistan", code: "PK", gmt: "(UTC+05:00)", moment: "Asia/Karachi" },
+        { name: "Panama", code: "PA", gmt: "(UTC-05:00)", moment: "America/Panama" },
+        { name: "Paraguay", code: "PY", gmt: "(UTC-04:00)", moment: "America/Asuncion" },
+        { name: "Peru", code: "PE", gmt: "(UTC-05:00)", moment: "America/Lima" },
+        { name: "Philippines", code: "PH", gmt: "(UTC+08:00)", moment: "Asia/Manila" },
+        { name: "Poland", code: "PL", gmt: "(UTC+01:00)", moment: "Europe/Warsaw" },
+        { name: "Portugal", code: "PT", gmt: "(UTC+00:00)", moment: "Europe/Lisbon" },
+        { name: "Puerto Rico", code: "PR", gmt: "(UTC-04:00)", moment: "America/Puerto_Rico" },
+        { name: "Qatar", code: "QA", gmt: "(UTC+03:00)", moment: "Asia/Qatar" },
+        { name: "Réunion", code: "RE", gmt: "(UTC+04:00)", moment: "Indian/Reunion" },
+        { name: "Romania", code: "RO", gmt: "(UTC+02:00)", moment: "Europe/Bucharest" },
+        { name: "Russia", code: "RU", gmt: "(UTC+02:00)", moment: "Europe/Moscow" },
+        { name: "Rwanda", code: "RW", gmt: "(UTC+02:00)", moment: "Africa/Kigali" },
+        { name: "Saudi Arabia", code: "SA", gmt: "(UTC+03:00)", moment: "Asia/Riyadh" },
+        { name: "Senegal", code: "SN", gmt: "(UTC+00:00)", moment: "Africa/Dakar" },
+        { name: "Serbia", code: "RS", gmt: "(UTC+01:00)", moment: "Europe/Belgrade" },
+        { name: "Singapore", code: "SG", gmt: "(UTC+08:00)", moment: "Asia/Singapore" },
+        { name: "Slovakia", code: "SK", gmt: "(UTC+01:00)", moment: "Europe/Bratislava" },
+        { name: "Slovenia", code: "SI", gmt: "(UTC+01:00)", moment: "Europe/Ljubljana" },
+        { name: "Somalia", code: "SO", gmt: "(UTC+03:00)", moment: "Africa/Mogadishu" },
+        { name: "South Africa", code: "ZA", gmt: "(UTC+02:00)", moment: "Africa/Johannesburg" },
+        { name: "Spain", code: "ES", gmt: "(UTC+01:00)", moment: "Europe/Madrid" },
+        { name: "Sri Lanka", code: "LK", gmt: "(UTC+05:30)", moment: "Asia/Colombo" },
+        { name: "Sweden", code: "SE", gmt: "(UTC+01:00)", moment: "Europe/Stockholm" },
+        { name: "Switzerland", code: "CH", gmt: "(UTC+01:00)", moment: "Europe/Zurich" },
+        { name: "Syria", code: "SY", gmt: "(UTC+02:00)", moment: "Asia/Damascus" },
+        { name: "Taiwan", code: "TW", gmt: "(UTC+08:00)", moment: "Asia/Taipei" },
+        { name: "Tajikistan", code: "TJ", gmt: "(UTC+05:00)", moment: "Asia/Dushanbe" },
+        { name: "Thailand", code: "TH", gmt: "(UTC+07:00)", moment: "Asia/Bangkok" },
+        { name: "Trinidad and Tobago", code: "TT", gmt: "(UTC-04:00)", moment: "America/Port_of_Spain" },
+        { name: "Tunisia", code: "TN", gmt: "(UTC+01:00)", moment: "Africa/Tunis" },
+        { name: "Turkey", code: "TR", gmt: "(UTC+02:00)", moment: "Europe/Istanbul" },
+        { name: "Turkmenistan", code: "TM", gmt: "(UTC+05:00)", moment: "Asia/Ashgabat" },
+        { name: "Ukraine", code: "UA", gmt: "(UTC+02:00)", moment: "Europe/Kiev" },
+        { name: "United Arab Emirates", code: "AE", gmt: "(UTC+04:00)", moment: "Asia/Dubai" },
+        { name: "United Kingdom", code: "GB", gmt: "(UTC+00:00)", moment: "Europe/London" },
+        { name: "United States", code: "US", gmt: "(UTC-05:00)", moment: "America/New_York" },
+        { name: "Uruguay", code: "UY", gmt: "(UTC-03:00)", moment: "America/Montevideo" },
+        { name: "Uzbekistan", code: "UZ", gmt: "(UTC+05:00)", moment: "Asia/Tashkent" },
+        { name: "Venezuela", code: "VE", gmt: "(UTC-04:00)", moment: "America/Caracas" },
+        { name: "Vietnam", code: "VN", gmt: "(UTC+07:00)", moment: "Asia/Ho_Chi_Minh" },
+        { name: "Yemen", code: "YE", gmt: "(UTC+03:00)", moment: "Asia/Aden" },
+        { name: "Zimbabwe", code: "ZW", gmt: "(UTC+02:00)", moment: "Africa/Harare" }
+      ];
+
+
+
+
 
       let createdAt = "";
       if (logs.length > 0) {
 
-        createdAt = moment(logs[0]["createdAt"]).add(3, "hours");
-        logs[0]["createdAt"] = createdAt;
 
+        //moment.tz.setDefault("Europe/Istanbul");
+
+        let timezone = timezoneList.find((item) => item.code == cCode);
+        console.log("timezone", timezone.moment);
+        //set the timezone
+        momenttz.tz.setDefault(timezone.moment.toString());
+        createdAt = moment(logs[0]["createdAt"]);
+        logs[0]["createdAt"] = createdAt;
       }
 
 
@@ -423,6 +578,8 @@ const login = async (req, res) => {
         }
       }
 
+
+      //get timezone of user from
       var data = {
         response: "success",
         email: user.email,
