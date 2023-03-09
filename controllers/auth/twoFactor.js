@@ -16,9 +16,7 @@ const twoFactor = async function (req, res) {
   var wantToTrust = req.body.wantToTrust;
   var log_id = req.body.log_id;
 
-
-  let ip = req.headers['client-ip'];
-
+  var ip = req.headers["client-ip"] || "null";
   if (result === true) {
 
     var user = await User.findOne({
