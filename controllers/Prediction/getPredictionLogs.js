@@ -48,6 +48,10 @@ const log = async (req, res) => {
 
 			// add data to array if records available
 			if(predictionHistoryData.length > 0){
+
+				// updating isSuccess Pending updated at by adding required interval.
+				predictionHistoryData[0].updatedAt = new Date(predictionHistoryData[0].createdAt.getTime() + ((req.body.interval === "5m") ? 5 : 60) * 60000);
+
 				// getting coin data for image url
 				let coinInfo = await CoinList.findOne({
 					symbol: coinSymbols[i],

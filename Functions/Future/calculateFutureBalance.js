@@ -26,6 +26,10 @@ const calculateFutureBalance = async(wallet) => {
     if (wallet == null) return 0;
     let balance = parseFloat(wallet.amount) + parseFloat(getOpenOrders[0].total);
     if (balance < 0) return 0;
+
+    //8 decimal places max
+    balance = balance.toFixed(8);
+    
     return balance;
 }
 

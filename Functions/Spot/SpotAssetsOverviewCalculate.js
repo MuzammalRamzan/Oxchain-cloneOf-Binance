@@ -51,13 +51,13 @@ const SpotAssetsOverviewCalculate = async (wallets) => {
         totalBtcValue = totalUsdValue / btcPrice;
 
         return {
-            totalUSD: totalUsdValue,
-            totalBTC: totalBtcValue,
+            totalUSD: totalUsdValue.toFixed(8),
+            totalBTC: totalBtcValue.toFixed(8),
         };
     } catch (err) {
         return {
-            totalUSD: totalUsdValue,
-            totalBTC: totalBtcValue,
+            totalUSD: totalUsdValue.toFixed(8),
+            totalBTC: totalBtcValue.toFixed(8),
         };
     }
 }
