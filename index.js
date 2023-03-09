@@ -239,6 +239,7 @@ const getTopNews = require('./controllers/news/getTopNews.js');
 const getAllTopics = require('./controllers/academy/getAllTopics');
 
 //AI TRADE
+const joinAITrade = require('./controllers/AITrade/joinAITrade.js');
 const getAIWallet = require('./controllers/AITrade/getWallet.js');
 const transferBalanceAI = require('./controllers/AITrade/transferBalance.js');
 const getAITransferLogs = require('./controllers/AITrade/getTransferLogs.js');
@@ -253,6 +254,7 @@ const getTopMarketGainers = require('./controllers/market/getTopMarketGainers.js
 
 const ApproveLoginRequest = require('./controllers/auth/approveLoginRequest.js');
 const GetCandleData = require('./controllers/pair/getCandleData.js');
+const LeaveAITrade = require('./controllers/AITrade/leaveAITrade.js');
 
 route.use(
 	session({
@@ -291,6 +293,8 @@ route.get('/', (req, res) => {
 });
 
 //AI Trade
+route.post('/joinAITrade', joinAITrade);
+route.post('/leaveAITrade', LeaveAITrade);
 route.all('/getAIWallet', getAIWallet);
 route.all('/transferBalanceAI', transferBalanceAI);
 route.all('/getAITransferLogs', getAITransferLogs);
