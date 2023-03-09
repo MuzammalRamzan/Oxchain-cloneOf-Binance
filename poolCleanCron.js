@@ -12,6 +12,8 @@ async function PoolCleanCron() {
         data.forEach(async datum => {
             await datum.delete();
         })
+        process.exit(0)
+
     } catch(err) {
         console.log(err);
     }

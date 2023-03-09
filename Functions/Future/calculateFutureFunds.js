@@ -5,7 +5,7 @@ async function calculateFutureFund(wallet) {
     let assets = [];
 
 
-    let order = await FutureOrder.find({ user_id: wallet.user_id,  method: "market",  status: 0 });
+    let order = await FutureOrder.find({ user_id: wallet.user_id, method: "market", status: 0 });
     let totalUsed = 0.0;
     let totalPNL = 0.0;
     let totalBalance = wallet.amount;
@@ -19,6 +19,10 @@ async function calculateFutureFund(wallet) {
         available -= totalPNL;
         totalAmount += parseFloat(element.amount);
     }
+
+    //fixed to 8 decimal places
+    totalBalance = totalBalance.toFixed(8);
+    available = available.toFixed(8);
 
     let inOrder = totalAmount;
     let coinInfo = await CoinList.findOne({ _id: wallet.coin_id });
