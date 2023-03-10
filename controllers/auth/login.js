@@ -136,11 +136,13 @@ const login = async (req, res) => {
 
       user = await User.findOne({
         email: req.body.user,
+        deleted: false,
       }).exec();
       if (user) {
         user = await User.findOne({
           email: req.body.user,
           password: utilities.hashData(req.body.password),
+          deleted: false,
         }).exec();
         if (!user) {
           return res.json({
@@ -156,11 +158,13 @@ const login = async (req, res) => {
     else {
       user = await User.findOne({
         phone_number: req.body.user,
+        deleted: false,
       }).exec();
       if (user) {
         user = await User.findOne({
           phone_number: req.body.user,
           password: utilities.hashData(req.body.password),
+          deleted: false,
         }).exec();
 
         if (!user) {
