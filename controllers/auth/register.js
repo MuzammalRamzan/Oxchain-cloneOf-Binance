@@ -72,8 +72,11 @@ const registerController = async (req, res) => {
 				});
 			}
 
+			//check email unique if deleted is not true
+
 			let checkEmailUnique = await User.findOne({
 				email: data,
+				deleted: false,
 			}).exec();
 
 			if (checkEmailUnique) {
@@ -163,6 +166,7 @@ const registerController = async (req, res) => {
 			let checkPhoneUnique = await User.findOne({
 				country_code: req.body.country_code,
 				phone_number: req.body.data,
+				deleted: false,
 			}).exec();
 
 			if (checkPhoneUnique) {
