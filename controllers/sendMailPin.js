@@ -19,6 +19,7 @@ const sendMailPin = async (req, res) => {
 
 		let userCheck = await UserModel.findOne({
 			email: email,
+			deleted: false,
 		}).exec();
 
 		if (userCheck) {

@@ -22,6 +22,7 @@ const sendSMSPin = async (req, res) => {
     let userCheck = await UserModel.findOne({
       country_code: country_code,
       phone_number: phone_number,
+      deleted: false,
     }).exec();
 
     if (userCheck) {
