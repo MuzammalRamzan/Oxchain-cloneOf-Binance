@@ -67,6 +67,7 @@ const updateNews = require('./adminController/news/updateNews');
 const deleteAllNews = require('./adminController/news/deleteAllNews');
 const getNews = require('./adminController/news/getNews');
 const addTopic = require('./adminController/academy/addTopic');
+const getTopics = require('./adminController/academy/getTopics');
 const updateTopic = require('./adminController/academy/updateTopic');
 const deleteTopic = require('./adminController/academy/deleteNews');
 const deleteAllTopics = require('./adminController/academy/deleteAllTopics');
@@ -159,6 +160,7 @@ route.all("/updateNews/:id", upload.none(), updateNews);
 route.all("/deleteNews/:id", upload.none(), deleteNews);
 route.all("/deleteAllNews", upload.none(), deleteAllNews);
 route.all('/addTopic', upload.none(), addTopic)
+route.all('/getTopics', upload.none(), getTopics);
 route.all("/updateTopic/:id", upload.none(), updateTopic)
 route.all("/deleteTopic/:id", upload.none(), deleteTopic)
 route.all("/deleteAllTopics", upload.none(), deleteAllTopics)
