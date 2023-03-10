@@ -3,7 +3,7 @@ var RankAwards = require('../../models/RankAwards.js');
 const getRankAwardImages = async (req, res) => {
 	//function to return totalRegistereduser, usersWithDeposits,UsersWithoutDeposits
 
-	var apiKey = req.body.apiKey;
+	var apiKey = req.body.api_key;
 
 	var apiKeyControl = await authFile.apiKeyChecker(apiKey);
 
