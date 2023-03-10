@@ -59,6 +59,9 @@ const updateFAQs = require('./adminController/FAQS/updateFAQs');
 const deleteFAQs = require('./adminController/FAQS/deleteFAQs');
 //posts
 const createPost = require('./adminController/Posts/createPost');
+//rank awards
+const uploadRankAwardImages = require('./adminController/Rank Awards/uploadRankAwardImages');
+
 //trades
 const getTrades = require('./adminController/Trades/getTrades');
 const addNews = require('./adminController/news/addNews');
@@ -147,6 +150,8 @@ route.all('/createAgent', upload.none(), createAgent);
 route.all('/getAllAgents', upload.none(), getAllAgents);
 //create news,blogs or posts
 route.all('/createPost', upload.none(), createPost);
+//create rank awards
+route.all('/uploadRankAwardImages', upload.none(), uploadRankAwardImages);
 //Trades
 route.all('/getTrades', upload.none(), getTrades);
 //FAQS apis router

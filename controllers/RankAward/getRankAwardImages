@@ -1,0 +1,26 @@
+var authFile = require('../../auth');
+var RankAwards = require('../../models/RankAwards.js');
+const getRankAwardImages = async (req, res) => {
+	//function to return totalRegistereduser, usersWithDeposits,UsersWithoutDeposits
+
+	var apiKey = req.body.apiKey;
+
+	var apiKeyControl = await authFile.apiKeyChecker(apiKey);
+
+	if (apiKeyControl == false) {
+		return res.json({
+			status: 'error',
+			message: 'Api key is wrong',
+      showableMessage:"Api key is wrong"
+		});
+	}
+
+	// var user = await UserModel.findOne({ _id: userId });
+const rankAwards=await RankAwards.find({}).lean()
+
+	res.json({
+		status: 'success',
+		data:rankAwards
+	});
+};
+module.exports = getRankAwardImages
