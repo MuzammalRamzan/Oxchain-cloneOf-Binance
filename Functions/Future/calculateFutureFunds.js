@@ -21,13 +21,16 @@ async function calculateFutureFund(wallet) {
     }
 
     //fixed to 8 decimal places
-    totalBalance = totalBalance.toFixed(8);
-    available = available.toFixed(8);
+    totalBalance = splitLengthNumber(totalBalance);
+    available = splitLengthNumber(available);
 
     let inOrder = totalAmount;
     let coinInfo = await CoinList.findOne({ _id: wallet.coin_id });
     assets.push({ "symbol": coinInfo.symbol, "totalBalance": totalBalance, "availableBalance": available, 'inOrder': inOrder });
     return assets;
+}
+function splitLengthNumber(q) {
+    return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
 }
 
 module.exports = calculateFutureFund;

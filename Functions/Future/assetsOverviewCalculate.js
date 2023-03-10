@@ -12,11 +12,15 @@ const FutureAssetsOverviewCalculate = async (user_id) => {
 
             //fixed to max 8 decimal places
 
-            totalUSD: future.amount.toFixed(8),
-            totalBTC: btcValue.toFixed(8),
+            totalUSD: splitLengthNumber(future.amount),
+            totalBTC: splitLengthNumber(btcValue),
         }
     } catch (err) {
 
     }
 }
+function splitLengthNumber(q) {
+    return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
+}
+
 module.exports = FutureAssetsOverviewCalculate;

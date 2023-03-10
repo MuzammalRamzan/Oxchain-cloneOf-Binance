@@ -9,12 +9,15 @@ async function SpotWalletJoin(_wallets) {
     wallets.push({
       id: item._id,
       coin_id: item.coin_id,
-      balance: item.amount.toFixed(8),
+      balance: splitLengthNumber(item.amount),
       symbolName: pairInfo.name,
     });
   }
   return wallets;
 
+}
+function splitLengthNumber(q) {
+  return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
 }
 
 module.exports = SpotWalletJoin;

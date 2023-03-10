@@ -28,9 +28,12 @@ const calculateFutureBalance = async(wallet) => {
     if (balance < 0) return 0;
 
     //8 decimal places max
-    balance = balance.toFixed(8);
+    balance = splitLengthNumber(balance);
     
     return balance;
+}
+function splitLengthNumber(q) {
+    return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
 }
 
 module.exports = calculateFutureBalance;

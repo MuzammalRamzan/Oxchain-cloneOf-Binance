@@ -51,14 +51,18 @@ const SpotAssetsOverviewCalculate = async (wallets) => {
         totalBtcValue = totalUsdValue / btcPrice;
 
         return {
-            totalUSD: totalUsdValue.toFixed(8),
-            totalBTC: totalBtcValue.toFixed(8),
+            totalUSD: splitLengthNumber(totalUsdValue),
+            totalBTC: splitLengthNumber(totalBtcValue),
         };
     } catch (err) {
         return {
-            totalUSD: totalUsdValue.toFixed(8),
-            totalBTC: totalBtcValue.toFixed(8),
+            totalUSD: splitLengthNumber(totalUsdValue),
+            totalBTC: splitLengthNumber(totalBtcValue),
         };
     }
 }
+function splitLengthNumber(q) {
+    return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
+}
+
 module.exports = SpotAssetsOverviewCalculate;
