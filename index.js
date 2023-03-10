@@ -226,7 +226,7 @@ const SpotLimitMarketOrders = require('./controllers/orders/history/spotLimitMar
 const SpotTradeHistory = require('./controllers/orders/history/spotTradeHistory.js');
 const getPairDetails = require('./controllers/pair/getPairDetails.js');
 const GetUserLevel = require('./controllers/users/getUserLevel.js');
-
+const getRankAwardImages=require('./controllers/RankAward/getRankAwardImages')
 const getUserNotification = require('./controllers/users/getUserNotification');
 const readUserNotification = require('./controllers/users/readUserNotification');
 const SpotCurrentOrders = require('./controllers/orders/history/spotCurrentOrders.js');
@@ -601,6 +601,7 @@ route.all('/getAllTopics', upload.none(), getAllTopics);
 route.all('/getMarket', upload.none(), getMarket);
 route.all('/getTopMarketGainers', upload.none(), getTopMarketGainers);
 route.all('/getTopics', upload.none(), getTopics);
+route.all('/getRankAwardImages',upload.none(),getRankAwardImages)
 route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
 	if (symbol == null || symbol == '') {
