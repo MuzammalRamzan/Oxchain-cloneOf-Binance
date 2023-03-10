@@ -72,8 +72,10 @@ const deleteAllTopics = require('./adminController/academy/deleteAllTopics');
 const updateSupportTicket = require('./adminController/updateSupportTicket');
 
 const upload = multer();
-route.use(bodyParser.json());
-route.use(bodyParser.urlencoded({ extended: true }));
+
+//getting payload too large error on x-www-form-urlencoded data 
+route.use(bodyParser.urlencoded({ extended: true, limit: '500mb' }));
+route.use(bodyParser.json({ limit: '500mb' }));
 
 route.use(function (err, req, res, next) {
 	if (err.name === 'UnauthorizedError') {
