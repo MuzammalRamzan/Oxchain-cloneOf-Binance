@@ -1,5 +1,7 @@
 const User = require('../../models/User');
 const RegisteredAddress = require('../../models/RegisteredAddress');
+const MailVerification=require('../../models/MailVerification')
+const SMSVerification=require('../../models/SMSVerification')
 var authFile = require('../../auth.js');
 
 const addNewRegisteredAddress = async function (req, res) {
@@ -50,7 +52,7 @@ const addNewRegisteredAddress = async function (req, res) {
 				check1 = await MailVerification.findOne({
 					user_id: user_id,
 					reason: reason,
-					pin: req.body.mailPin,
+					pin:emailPin,
 					status: 0,
 				}).exec();
 				if (!check1)
@@ -65,7 +67,7 @@ const addNewRegisteredAddress = async function (req, res) {
 				check3 = await SMSVerification.findOne({
 					user_id: user_id,
 					reason: reason,
-					pin: req.body.smsPin,
+					pin: phonePin,
 					status: 0,
 				}).exec();
 
