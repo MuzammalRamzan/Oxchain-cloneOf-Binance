@@ -12,23 +12,6 @@ const AcademySchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: [
-      'altcoin',
-      'binance',
-      'bitcoin',
-      'blockchain',
-      'consensus',
-      'cryptography',
-      'defi',
-      'economics',
-      'essentials',
-      'ethereum',
-      'history',
-      'metaverse',
-      'mining',
-      'nft',
-      'tech',
-    ],
   },
   dificulty: {
     type: String,
