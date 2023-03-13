@@ -1,12 +1,12 @@
 const MarginOrder = require("../../models/MarginOrder");
 const Orders = require("../../models/Orders");
-
 const Pairs = require("../../models/Pairs");
 const Wallet = require("../../models/Wallet");
 
 const cancelAllStopLimit = async function (req, res) {
   var user_id = req.body.user_id;
-  let orders = await Orders.findAll({
+  
+  let orders = await Orders.find({
     _id: req.body.order_id,
     user_id: req.body.user_id,
     type: "stop_limit",

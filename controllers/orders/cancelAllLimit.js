@@ -22,7 +22,9 @@ const cancelAllLimit = async function (req, res) {
       }
     ]
 
-  }).exec();
+  });
+
+
   for (var i = 0; i < orders.length; i++) {
     let order = orders[i];
     let wallet = null;
@@ -30,7 +32,7 @@ const cancelAllLimit = async function (req, res) {
     try {
       let amount = parseFloat(order.amount);
       if (amount == null || amount == '') {
-        order.status = 2;
+        order.status = -1;
         await order.save();
         continue;
       }
@@ -42,34 +44,33 @@ const cancelAllLimit = async function (req, res) {
           user_id: order.user_id,
         });
         if (wallet == null) {
-          order.status = 2;
+          order.status = -1;
           await order.save();
           continue;
         }
         wallet.amount = parseFloat(wallet.amount) + (parseFloat(order.target_price) * amount);
         await wallet.save();
+        order.status = -1;
+        await order.save();
       } else {
         wallet = await Wallet.findOne({
           coin_id: pair.symbolOneID,
           user_id: order.user_id,
         });
         if (wallet == null) {
-          order.status = 2;
+          order.status = -1;
           await order.save();
           continue;
         }
         wallet.amount = parseFloat(wallet.amount) + parseFloat(amount);
         await wallet.save();
-        order.status = 2;
+        order.status = -1;
         await order.save();
 
       }
     } catch (err) {
-      console.log(order);
-      console.log(wallet);
       console.log(err.message);
       return res.json({ status: 'fail', message: err.message });
-      return;
 
     }
   }

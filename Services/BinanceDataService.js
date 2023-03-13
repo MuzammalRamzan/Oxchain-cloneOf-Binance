@@ -2,19 +2,24 @@ const { default: axios } = require("axios");
 const WebSocket = require("ws");
 const WebSocketServer = require("ws").Server;
 const MarketDBConnection = require("../MarketDBConnection");
-const MarketTradeModel = require("../models/BinanceData/MarketTradeModel");
-const OrderBookModel = require("../models/BinanceData/OrderBookModel");
-const QuoteModel = require("../models/BinanceData/QuoteModel");
+const FutureMarketTradeModel = require("../models/BinanceData/FutureMarketTradeModel");
+const FutureOrderBookModel = require("../models/BinanceData/FutureOrderBookModel");
+const FutureQuoteModel = require("../models/BinanceData/FutureQuoteModel");
+const SpotMarketTradeModel = require("../models/BinanceData/SpotMarketTradeModel");
+const SpotOrderBookModel = require("../models/BinanceData/SpotOrderBookModel");
+const SpotQuoteModel = require("../models/BinanceData/SpotQuoteModel");
 const Pairs = require("../models/Pairs");
 require('dotenv').config();
 
 async function BinanceService() {
     await MarketDBConnection()
+    
     BinanceDataFuture();
     BinanceDataSpot();
 }
 BinanceService();
 async function BinanceDataSpot() {
+
     let pairsData = await axios.get('https://api.oxhain.com/getPairs');
     coins = pairsData.data.data;
     let onlyCoins = [];
