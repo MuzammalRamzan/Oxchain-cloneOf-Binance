@@ -157,6 +157,7 @@ const FuturePercentClose = require('./controllers/orders/futurePercentClose.js')
 const FutureAmountClose = require('./controllers/orders/futureAmountClose.js');
 const Settings = require('./controllers/settings');
 const SetFavoritePair = require('./controllers/pair/setFavoritePair.js');
+const SetMultipleFavoritePair = require('./controllers/pair/setMultipleFavoritePair');
 const GetFavoritePairs = require('./controllers/pair/getFavoritePairs.js');
 const myReferrals = require('./controllers/referrals/myReferrals');
 const getAdminSettings = require('./controllers/getAdminSettings');
@@ -226,7 +227,7 @@ const SpotLimitMarketOrders = require('./controllers/orders/history/spotLimitMar
 const SpotTradeHistory = require('./controllers/orders/history/spotTradeHistory.js');
 const getPairDetails = require('./controllers/pair/getPairDetails.js');
 const GetUserLevel = require('./controllers/users/getUserLevel.js');
-const getRankAwardImages=require('./controllers/RankAward/getRankAwardImages')
+const getRankAwardImages = require('./controllers/RankAward/getRankAwardImages')
 const getUserNotification = require('./controllers/users/getUserNotification');
 const readUserNotification = require('./controllers/users/readUserNotification');
 const SpotCurrentOrders = require('./controllers/orders/history/spotCurrentOrders.js');
@@ -477,7 +478,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) {}
+	async function (req, res) { }
 );
 route.post('/deleteOneStepWithdraw', deleteOneStepWithdraw);
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
@@ -492,6 +493,7 @@ route.all('/readNotifications', upload.none(), readNotifications);
 route.all('/clearNotifications', upload.none(), clearNotifications);
 
 route.all('/setFavoritePair', upload.none(), SetFavoritePair);
+route.all('/setMultipleFavoritePair', upload.none(), SetMultipleFavoritePair);
 route.all('/getFavoritePairs', upload.none(), GetFavoritePairs);
 route.all('/getPairs', upload.none(), getPairs);
 route.all('/addPair', upload.none(), addPair);
@@ -601,7 +603,7 @@ route.all('/getAllTopics', upload.none(), getAllTopics);
 route.all('/getMarket', upload.none(), getMarket);
 route.all('/getTopMarketGainers', upload.none(), getTopMarketGainers);
 route.all('/getTopics', upload.none(), getTopics);
-route.all('/getRankAwardImages',upload.none(),getRankAwardImages)
+route.all('/getRankAwardImages', upload.none(), getRankAwardImages)
 route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
 	if (symbol == null || symbol == '') {
