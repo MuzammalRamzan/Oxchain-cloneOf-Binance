@@ -15,6 +15,7 @@ const getPairs = async function (req, res) {
     }
 
     let obj = {
+      
       id: list[i]._id,
       name: list[i].name,
       symbolOne: coinOne.symbol,
