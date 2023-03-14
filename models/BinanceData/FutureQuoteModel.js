@@ -12,6 +12,8 @@ const FutureQuoteModel = mongoose.Schema({
     change : {type : String},  
     changeDiff : {type : String},  
     volume : {type : String},  
+    fundingRate :{type : Number},
+    nextFundingTime :{type : Number},
     market_type : {type: String}, //spot or future
 })
 

@@ -15,7 +15,7 @@ async function BinanceService() {
     await MarketDBConnection()
     
     BinanceDataFuture();
-    BinanceDataSpot();
+    //BinanceDataSpot();
 }
 BinanceService();
 async function BinanceDataSpot() {
@@ -116,9 +116,10 @@ async function BinanceDataFuture() {
     params.push("btcusdt@ticker");
     */
     coins.forEach((val) => {
-        params.push(val.symbolOne.toLowerCase() + "usdt@bookTicker");
-        params.push(val.symbolOne.toLowerCase() + "usdt@ticker");
-        params.push(val.symbolOne.toLowerCase() + "usdt@trade");
+        //params.push(val.symbolOne.toLowerCase() + "usdt@bookTicker");
+        //params.push(val.symbolOne.toLowerCase() + "usdt@ticker");
+        //params.push(val.symbolOne.toLowerCase() + "usdt@trade");
+        params.push(val.symbolOne.toLowerCase() + "usdt@markPrice");
     });
     const initSocketMessage = {
         method: "SUBSCRIBE",
@@ -138,7 +139,8 @@ async function BinanceDataFuture() {
 
     b_ws.onmessage = async function (event) {
         const data = JSON.parse(event.data).data;
-
+        console.log(data);
+        return;
         if (data != null && data != "undefined") {
             if (data.A && data.a && data.b && data.B && !data.e) {
 

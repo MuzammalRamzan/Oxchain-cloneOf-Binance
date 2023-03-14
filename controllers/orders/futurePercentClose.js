@@ -28,22 +28,32 @@ const FuturePercentClose = async (req, res) => {
     if (percent == 100) {
         order.status = 1;
         await order.save();
-        wallet.amount = parseFloat(wallet.amount) + (parseFloat(order.amount) * marketPrice);
+        wallet.amount = splitLengthNumber(parseFloat(wallet.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl)));
         await wallet.save();
         res.send({ status: 'success', data: 'OK' });
 
 
     } else {
-        console.log(order.amount, percent);
-        let total = parseFloat(order.amount) * percent / 100.0;
-        order.amount = parseFloat(order.amount) - total;
+
+        let orderTotal = order.usedUSDT + order.pnl;
+        let totalUSDT = parseFloat(orderTotal) * percent / 100.0;
+        let totalAmount = parseFloat(order.amount) * percent / 100.0;
+        order.usedUSDT = splitLengthNumber(order.usedUSDT + order.pnl);
+        order.pnl = 0;
+        order.usedUSDT = splitLengthNumber(parseFloat(totalUSDT));
+        order.amount = splitLengthNumber(parseFloat(order.amount) - totalAmount);
         await order.save();
-        wallet.amount = parseFloat(wallet.amount) + (total * marketPrice);
+        console.log(wallet.amount, (orderTotal - totalUSDT));
+        wallet.amount = splitLengthNumber(parseFloat(wallet.amount) + (orderTotal - totalUSDT));
         await wallet.save();
+
         res.send({ status: 'success', data: 'OK' });
     }
 
 
+}
+function splitLengthNumber(q) {
+    return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
 }
 
 module.exports = FuturePercentClose;
