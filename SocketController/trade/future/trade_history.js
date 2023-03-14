@@ -28,14 +28,9 @@ const FutureTradeHistory = async (sockets, user_id) => {
 
     let orders = await FutureOrder.find(request);
     let assets = await TradeHistoryFillTable(orders);
-console.log(assets);
-console.log(tkn)
-console.log({ token: tkn, process: "future_trade_history" });
-    var roomInUsers = await SocketRoomsModel.find({ token: tkn, process: "future_trade_history" });
-    console.log(roomInUsers)
+    var roomInUsers = await SocketRoomsModel.find({ token: tkn, process: "future_trade_history" }).exec();
     roomInUsers.forEach((room) => {
-        console.log(room.token);
-        sockets.in(room.token).emit("future_trade_history", assets);
+        sockets.in(room.token).emit("future_trade_history", { page: "future", type: 'trade_history', content: assets });
     });
 
 

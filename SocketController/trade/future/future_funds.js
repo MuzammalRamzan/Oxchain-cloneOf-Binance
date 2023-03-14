@@ -13,7 +13,7 @@ const FutureAssets = async (sockets, user_id) => {
     
     var roomInUsers = await SocketRoomsModel.find({ token:token, process: "future_assets" });
     roomInUsers.forEach((room) => {
-      sockets.in(room.token).emit("future_assets", assets);
+      sockets.in(room.token).emit("future_assets", { page: "future", type: 'assets', content: assets });
     });
     
 }

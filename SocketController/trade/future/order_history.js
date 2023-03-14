@@ -1,4 +1,5 @@
 const FutureOrder = require("../../../models/FutureOrder");
+const SocketRoomsModel = require("../../../models/SocketRoomsModel");
 
 const FutureOrderHistory = async (sockets, user_id, filter) => {
     let request = { user_id: user_id };
@@ -35,12 +36,9 @@ const FutureOrderHistory = async (sockets, user_id, filter) => {
     */
    
     let orders = await FutureOrder.find(request);
-    
-    sockets.in(user_id).emit("future",{ page: "future", type: 'order_history', content: orders });
-    FutureOrder.watch([{ $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } } }]).on('change', async data => {
-        let orders = await FutureOrder.find(request);
-        if (orders.length > 0)
-        sockets.in(user_id).emit("future",{ page: "future", type: 'order_history', content: orders });
+    var roomInUsers = await SocketRoomsModel.find({ token: tkn, process: "future_order_history" }).exec();
+    roomInUsers.forEach((room) => {
+        sockets.in(room.token).emit("future_order_history", { page: "future", type: 'order_history', content: orders });
     });
 
 }

@@ -21,7 +21,7 @@ const FutureTransactionHistory = async (sockets, user_id, filter) => {
     
     var roomInUsers = await SocketRoomsModel.find({ token: token, process: "future_transaction_history" });
     roomInUsers.forEach((room) => {
-        sockets.in(room.token).emit("future_transaction_history", table);
+        sockets.in(room.token).emit("future_transaction_history", { page: "future", type: 'transaction_history', content: table });
     });
 }
 module.exports = FutureTransactionHistory;

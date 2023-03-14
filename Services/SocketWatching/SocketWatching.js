@@ -146,6 +146,11 @@ async function SocketWatchController() {
     FutureOrder.watch([{ $match: { operationType: { $in: ['insert', 'update'] } } }]).on('change', async data => {
         let releated = await FutureOrder.findOne({ _id: data.documentKey._id });
 
+        roomInUsers.filter((r) => r.process == 'future_order_history' && r.user_id == releated.user_id).forEach(async (room) => {
+            let orders = await FutureOrder.find({ user_id: room.user_id});
+            sockets.in(room.token).emit('future_order_history', { page: "future", type: 'order_history', content: orders });
+        });
+        
         roomInUsers.filter((r) => r.process == 'future_open_orders' && r.user_id == releated.user_id).forEach(async (room) => {
             let orders = await FutureOrder.find({ user_id: room.user_id, $or: [{ method: "limit" }, { method: "stop_limit" }], status: 1 });
             sockets.in(room.token).emit('future_open_orders', { page: "future", type: 'open_orders', content: orders });
