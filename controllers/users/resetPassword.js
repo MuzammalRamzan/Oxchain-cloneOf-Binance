@@ -8,24 +8,10 @@ const SMSVerification = require("../../models/SMSVerification");
 const mailer = require("../../mailer");
 
 const resetPassword = async function (req, res) {
-  var password = utilities.hashData(req.body.password);
-
   var type = req.body.type;
   var api_key_result = req.body.api_key;
 
   var result = await authFile.apiKeyChecker(api_key_result);
-
-
-
-  if (password == undefined || password == null || password == "") {
-
-    return res.json({
-      status: "fail",
-      message: "password_required",
-      showableMessage: "Password is required",
-    });
-  }
-
 
 
   let user = "";
@@ -61,8 +47,7 @@ const resetPassword = async function (req, res) {
         phone_number: req.body.phone_number,
       }).exec();
     }
-
-    if (user != null) {
+    if (user) {
 
       var email = user["email"];
       var phone = user["phone_number"];
@@ -128,16 +113,29 @@ const resetPassword = async function (req, res) {
         check3.status = 1;
         check3.save();
       }
-
-      user.password = password;
-
-      user.save();
-
-      if (user.email != undefined && user.email != null && user.email != "") {
-        mailer.sendMail(user.email, "Reset Password", "Your password has been resetted. If you didn't do this, please contact us immediately.");
+      if(req.body.password){
+        console.log("2")
+        var password = utilities.hashData(req.body.password);
+        if (password == undefined || password == null || password == "") {
+  
+          return res.json({
+            status: "fail",
+            message: "password_required",
+            showableMessage: "Password is required",
+          });
+        }
+  
+        user.password = password;
+  
+        user.save();
+  
+        if (user.email != undefined && user.email != null && user.email != "") {
+          mailer.sendMail(user.email, "Reset Password", "Your password has been resetted. If you didn't do this, please contact us immediately.");
+        }
+        return res.json({ status: "success", message: "password_changed", showableMessage: "Password Changed" });
+      }else if(check3){
+        return res.json({ status: "success", message: "All pins are correct", showableMessage: "Pins are correct" });
       }
-
-      return res.json({ status: "success", message: "password_changed", showableMessage: "Password Changed" });
     }
     else {
       return res.json({ status: "fail", message: "user_not_found", showableMessage: "User not found" });
