@@ -9,9 +9,10 @@ async function PoolCleanCron() {
         dt.setDate(dt.getDate() - 1);
         let yesterday = dt.getTime();
         let data = await SocketRoomsModel.find({ created_at: { $lt: yesterday } });
-        data.forEach(async datum => {
-            await datum.delete();
-        })
+        for(var k = 0; k < data.length; k++) {
+            await data[k].delete();
+        }
+        
         process.exit(0)
 
     } catch(err) {

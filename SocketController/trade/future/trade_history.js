@@ -5,7 +5,7 @@ const MarginOrder = require("../../../models/MarginOrder");
 const SocketRoomsModel = require("../../../models/SocketRoomsModel");
 
 const FutureTradeHistory = async (sockets, user_id) => {
-    let token = user_id;
+    let tkn = user_id;
     user_id = user_id.substring(0, user_id.indexOf('-'));
     let request = { user_id: user_id, method: "market" };
     /*
@@ -27,11 +27,14 @@ const FutureTradeHistory = async (sockets, user_id) => {
     */
 
     let orders = await FutureOrder.find(request);
-    let assets = TradeHistoryFillTable(orders);
-
-
-    var roomInUsers = await SocketRoomsModel.find({ token: token, process: "future_trade_history" });
+    let assets = await TradeHistoryFillTable(orders);
+console.log(assets);
+console.log(tkn)
+console.log({ token: tkn, process: "future_trade_history" });
+    var roomInUsers = await SocketRoomsModel.find({ token: tkn, process: "future_trade_history" });
+    console.log(roomInUsers)
     roomInUsers.forEach((room) => {
+        console.log(room.token);
         sockets.in(room.token).emit("future_trade_history", assets);
     });
 

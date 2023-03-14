@@ -24,7 +24,7 @@ async function SocketWatchController() {
     var roomInUsers = await SocketRoomsModel.find();
     SocketRoomsModel.watch([
         {
-            $match: { operationType: { $in: ['insert', 'update', 'remove', 'delete'] } }
+            $match: { operationType: { $in: ['insert', 'update'] } }
         }
     ]).on('change', async data => {
         roomInUsers = await SocketRoomsModel.find();

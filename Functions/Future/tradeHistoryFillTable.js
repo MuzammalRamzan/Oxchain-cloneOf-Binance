@@ -1,4 +1,4 @@
-function TradeHistoryFillTable(orders) {
+async function TradeHistoryFillTable(orders) {
     let assets = [];
     for (var i = 0; i < orders.length; i++) {
         let order = orders[i];
