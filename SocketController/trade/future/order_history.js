@@ -1,7 +1,9 @@
 const FutureOrder = require("../../../models/FutureOrder");
 const SocketRoomsModel = require("../../../models/SocketRoomsModel");
 
-const FutureOrderHistory = async (sockets, user_id, filter) => {
+const FutureOrderHistory = async (sockets, user_id) => {
+    let tkn = user_id;
+    user_id = user_id.substring(0, user_id.indexOf('-'));
     let request = { user_id: user_id };
     /*
     if (filter['symbol'] != null) {
