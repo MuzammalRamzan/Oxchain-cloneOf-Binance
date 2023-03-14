@@ -256,6 +256,7 @@ const getTopMarketGainers = require('./controllers/market/getTopMarketGainers.js
 const ApproveLoginRequest = require('./controllers/auth/approveLoginRequest.js');
 const GetCandleData = require('./controllers/pair/getCandleData.js');
 const LeaveAITrade = require('./controllers/AITrade/leaveAITrade.js');
+const EditSpotOrder = require('./controllers/orders/editSpotOrder.js');
 
 route.use(
 	session({
@@ -461,6 +462,7 @@ route.post('/spotHistory', async (req, res) => {
 		return;
 	}
 });
+route.post('/editSpotOrder', EditSpotOrder);
 route.post('/deleteLimit', deleteLimit);
 route.post('/deleteMarginLimit', deleteMarginLimit);
 route.all('/addOrders', upload.none(), addOrders);
