@@ -21,18 +21,6 @@ const deleteActiveDevice = async function (req, res) {
       device.save();
 
 
-
-      //update status of login logs with this device id
-      await LoginLogs.updateMany({
-        user_id: req.body.user_id,
-        deviceId: req.body.device_id,
-      }, {
-        $set: {
-          status: "pending",
-        },
-      });
-
-
       res.json({ status: "success", message: "device_deleted" });
     } else {
       res.json({ status: "fail", message: "no_device_found" });

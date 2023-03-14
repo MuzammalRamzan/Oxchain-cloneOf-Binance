@@ -265,7 +265,12 @@ const login = async (req, res) => {
         deviceId: requestDeviceId,
       }).exec();
 
+      let randomString = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+
       if (checkDevice == null) {
+
+
         let device = new Device({
           user_id: user._id,
           deviceId: requestDeviceId,
@@ -277,6 +282,8 @@ const login = async (req, res) => {
           loginRequest: "",
           ip: ip,
           city: city,
+          key: randomString,
+          time: Date.now(),
         });
         await device.save();
 
@@ -284,7 +291,18 @@ const login = async (req, res) => {
       }
       else {
         device_id = checkDevice._id;
+
+        //update device
+        checkDevice.key = randomString;
+        checkDevice.time = Date.now();
+        await checkDevice.save();
       }
+
+      let checkActiveDevice = await Device.findOne({
+        user_id: user._id,
+        deviceId: requestDeviceId,
+        status: 1,
+      }).exec();
 
       req.session.device_id = device_id;
 
@@ -514,7 +532,9 @@ const login = async (req, res) => {
 
       console.log("User: " + user._id);
       console.log("Login Loglar: " + loginLogCheck);
-      if (loginLogCheck == null) {
+
+
+      if (checkActiveDevice == null) {
 
         console.log("Login Logu Yok");
         //burada pin göndereceğiz 
@@ -583,6 +603,20 @@ const login = async (req, res) => {
       }
 
 
+      let deviceKey = randomString;
+
+      if (user.twofa) {
+        deviceKey = "";
+      }
+
+      if (mailVerificationSent) {
+        deviceKey = "";
+      }
+
+      if (smsVerificationSent) {
+        deviceKey = "";
+      }
+
       //get timezone of user from
       var data = {
         response: "success",
@@ -607,6 +641,8 @@ const login = async (req, res) => {
         verificationStatus: verificationStatus,
         mailVerificationSent: mailVerificationSent,
         smsVerificationSent: smsVerificationSent,
+        key: deviceKey,
+
       };
 
 

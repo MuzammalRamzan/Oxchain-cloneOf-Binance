@@ -6,6 +6,7 @@ const Wallet = require("./models/Wallet");
 const mailer = require("./mailer");
 const User = require("./models/User");
 const Network = require("./models/Network");
+const Device = require("./models/Device");
 function hashData(string) {
   return createHash("sha256").update(string).digest("hex");
 }
@@ -39,7 +40,7 @@ async function addDeposit(
     address: address,
     status: 1,
     currency: coin_name,
-    netowrk_id : networkId,
+    netowrk_id: networkId,
     fromAddress: fromAddress
   });
 
@@ -60,15 +61,15 @@ async function addDeposit(
               }
             }
           );
-          let userInfo = await User.findOne({_id : user_id});
-          let networkInfo = await Network.findOne({_id : networkId}); 
+          let userInfo = await User.findOne({ _id: user_id });
+          let networkInfo = await Network.findOne({ _id: networkId });
           let html = "<p>New deposit added</p>\n<b>User :</b> " + userInfo.email + "</b><br>";
           html += "<b>Coin : </b> " + coin_name + " (" + networkInfo.symbol + ")<br>";
           html += "<b>Amount : </b> " + amount + "<br>";
           html += "<b>Hash : </b> " + txid + "<br>";
-          
-          mailer.sendMail("support@oxhain.com", "New Deposit ("+coin_name+")", html);
-          mailer.sendMail("f.damar@hotmail.com", "New Deposit ("+coin_name+")", html);
+
+          mailer.sendMail("support@oxhain.com", "New Deposit (" + coin_name + ")", html);
+          mailer.sendMail("f.damar@hotmail.com", "New Deposit (" + coin_name + ")", html);
         }
       });
     } else {
@@ -100,8 +101,33 @@ async function addDeposit(
   });
 }
 
+async function checkKey(key, device_id) {
+
+  let checkDevice = await Device.findOne(
+    { _id: device_id, status: 1, key },
+  ).exec();
+
+  if (checkDevice == null) {
+    return false;
+  }
+  else {
+    let dateNow = new Date();
+
+    let date = new Date(checkDevice.time);
+
+
+    let diff = dateNow.getTime() - date.getTime();
+
+    if (diff > 14400000) {
+      return "expired";
+    }
+  }
+
+}
+
 module.exports = {
   hashData: hashData,
   makeId: makeId,
   addDeposit: addDeposit,
+  checkKey: checkKey,
 };

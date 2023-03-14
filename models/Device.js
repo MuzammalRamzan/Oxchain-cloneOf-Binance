@@ -13,6 +13,8 @@ const DeviceSchema = new mongoose.Schema({
   loginTime: { type: Date, required: false },
   lastLoginTime: { type: Date, required: false },
   loginRequest: { type: Number, required: false, default: 0 },
+  key: { type: String, required: false },
+  time: { type: Date, required: false },
   status: { type: String, required: false, default: 0 },
   createdAt: {
     type: Date,

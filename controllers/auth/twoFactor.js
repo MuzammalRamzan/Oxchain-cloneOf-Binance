@@ -5,6 +5,7 @@ var authFile = require("../../auth.js");
 const MailVerificationModel = require("../../models/MailVerification");
 const SmsVerificationModel = require("../../models/SMSVerification");
 const mailer = require("../../mailer");
+var utilities = require("../../utilities");
 
 const twoFactor = async function (req, res) {
   var twofapin = req.body.twofapin;
@@ -15,6 +16,9 @@ const twoFactor = async function (req, res) {
   var smsPin = req.body.smsPin;
   var wantToTrust = req.body.wantToTrust;
   var log_id = req.body.log_id;
+
+
+  let key = req.headers['key'];
 
   var ip = req.headers["client-ip"] || "null";
   if (result === true) {
@@ -44,8 +48,14 @@ const twoFactor = async function (req, res) {
       }).exec();
 
 
+      let deviceCheck = await Device.findOne({
+        user_id: user._id,
+        status: 1,
+        deviceId: req.body.device_id,
+      }).exec();
 
-      if (loginLogCheck == null) {
+
+      if (deviceCheck == null) {
 
         if (user.email != null && user.email != undefined && user.email != "") {
 
@@ -99,7 +109,10 @@ const twoFactor = async function (req, res) {
       let device = await Device.find({
         user_id: user_id,
         deviceId: req.body.device_id,
+        status: 0
       }).exec();
+
+
 
       if (loginLog.length > 0) {
 
@@ -133,7 +146,14 @@ const twoFactor = async function (req, res) {
         'Successfully logged in from ' + ip
       );
 
-      return res.json({ status: "success", data: "2fa_success" });
+
+
+
+      return res.json({
+        status: "success", data: {
+          key: deviceCheck.key
+        }, showableMessage: "Login Success"
+      });
 
 
     } else {
