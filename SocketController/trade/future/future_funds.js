@@ -11,7 +11,7 @@ const FutureAssets = async (sockets, user_id) => {
     let wallets = await FutureWalletModel.findOne({ user_id: user_id, status: 1 });
     let assets = await calculateFutureFund(wallets);
     
-    var roomInUsers = await SocketRoomsModel.find({ token:token, process: "future_assets" });
+    var roomInUsers = await SocketRoomsModel.find({ token:token, process: "future_assets" }).limit(10);
     roomInUsers.forEach((room) => {
       sockets.in(room.token).emit("future_assets", { page: "future", type: 'assets', content: assets });
     });

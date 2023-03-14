@@ -38,7 +38,7 @@ const FutureOrderHistory = async (sockets, user_id) => {
     */
    
     let orders = await FutureOrder.find(request);
-    var roomInUsers = await SocketRoomsModel.find({ token: tkn, process: "future_order_history" }).exec();
+    var roomInUsers = await SocketRoomsModel.find({ token: tkn, process: "future_order_history" }).limit(10);
     roomInUsers.forEach((room) => {
         sockets.in(room.token).emit("future_order_history", { page: "future", type: 'order_history', content: orders });
     });
