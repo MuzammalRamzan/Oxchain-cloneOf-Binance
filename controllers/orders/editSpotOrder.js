@@ -1,3 +1,4 @@
+const { default: axios } = require("axios");
 const SetTradeVolumeAndRefProgram = require("../../Functions/setTradeVolumeAndRefProgram");
 const Orders = require("../../models/Orders");
 const Pairs = require("../../models/Pairs");
@@ -153,5 +154,6 @@ const EditSpotOrder = async (req, res) => {
 function splitLengthNumber(q) {
     return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
 }
+
 
 module.exports = EditSpotOrder;
