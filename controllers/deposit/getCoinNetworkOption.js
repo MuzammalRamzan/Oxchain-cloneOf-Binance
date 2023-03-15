@@ -22,6 +22,7 @@ const getCoinNetworkOption = async (req, res) => {
         network_name: network.name,
         network_symbol: network.symbol,
         image_url: coinNetwork[i].image_url,
+        confirmations: coinNetwork[i].confirmations,
       };
 
       returnArray.push(networkArray);
