@@ -5,7 +5,7 @@ const UserModel = require("../../models/User");
 const SetFavoritePair = async (req, res) => {
   try {
     let user_id = req.body.user_id;
-    let coin_id = req.body.coin_id;
+    let symbol = req.body.symbol;
     let page = req.body.page;
     let removeAll = req.body.removeAll;
 
@@ -30,7 +30,7 @@ const SetFavoritePair = async (req, res) => {
     }
 
     let pairData = await Pairs.findOne({
-      name: coin_id.replace('_', '/'),
+      name: symbol.replace('_', '/'),
     });
 
     if (pairData == null) {
