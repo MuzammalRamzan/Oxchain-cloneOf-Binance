@@ -103,7 +103,7 @@ const sendSMS = async function (req, res) {
             if (err) {
               console.log("Error " + err);
             } else {
-              console.log("sms sent");
+              console.log("SMS sentt");
             }
           }
         );
@@ -119,7 +119,7 @@ const sendSMS = async function (req, res) {
               if (err) {
                 res.json({ status: "fail", message: err });
               } else {
-                res.json({ status: "success", data: "sms_sent" });
+                res.json({ status: "success", data: "SMS sentt" });
               }
             }
           );
@@ -134,7 +134,7 @@ const sendSMS = async function (req, res) {
             if (err) {
               res.json({ status: "fail", message: err });
             } else {
-              res.json({ status: "success", data: "sms_sent" });
+              res.json({ status: "success", data: "SMS sent" });
             }
           });
         }
