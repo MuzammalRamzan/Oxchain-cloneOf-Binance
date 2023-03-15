@@ -5,7 +5,8 @@ const CoinList = require("../../models/CoinList");
 const GetFavoritePairs = async (req, res) => {
   try {
     let user_id = req.body.user_id;
-    let favs = await FavoriteCoin.find({ user_id: user_id });
+    let page = req.body.page;
+    let favs = await FavoriteCoin.find({ user_id: user_id, page : page });
 
     let returnData = [];
     for (let i = 0; i < favs.length; i++) {
