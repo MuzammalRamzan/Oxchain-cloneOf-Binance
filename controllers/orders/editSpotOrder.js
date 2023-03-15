@@ -208,6 +208,7 @@ const EditSpotOrder = async (req, res) => {
             total = target_price * amount;
             let refund = total - beforeTotal;
             relevantOrder.target_price = target_price;
+            relevantOrder.stop_limit = stop_limit;
             relevantOrder.amount = amount;
             towallet.amount = splitLengthNumber(towallet.amount) - splitLengthNumber(refund);
             await towallet.save();
@@ -229,6 +230,7 @@ const EditSpotOrder = async (req, res) => {
 
             let beforeAmount = relevantOrder.amount;
             let refund = amount - beforeAmount;
+            relevantOrder.stop_limit = stop_limit;
             relevantOrder.target_price = target_price;
             relevantOrder.amount = amount;
             fromWallet.amount = splitLengthNumber(fromWallet.amount) - refund;
