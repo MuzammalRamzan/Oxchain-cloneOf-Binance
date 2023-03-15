@@ -2,7 +2,7 @@ const FutureOrder = require("../../models/FutureOrder");
 const FutureWalletModel = require("../../models/FutureWalletModel");
 
 const cancelFutureLimit = async function (req, res) {
-  
+
   let doc = await FutureOrder.findOneAndUpdate(
     {
       _id: req.body.order_id,
@@ -13,13 +13,14 @@ const cancelFutureLimit = async function (req, res) {
     { $set: { status: -1 } }
   ).exec();
   if (doc) {
-    
-    let userBalance = await FutureWalletModel.findOne({
-      user_id: doc.user_id,
-    }).exec();
+    if (doc.relevant_order_id == null) {
+      let userBalance = await FutureWalletModel.findOne({
+        user_id: doc.user_id,
+      }).exec();
 
-    userBalance.amount = userBalance.amount + doc.usedUSDT;
-    await userBalance.save();
+      userBalance.amount = userBalance.amount + doc.usedUSDT;
+      await userBalance.save();
+    }
   }
   doc = await FutureOrder.findOneAndUpdate(
     {
@@ -31,12 +32,14 @@ const cancelFutureLimit = async function (req, res) {
     { $set: { status: -1 } }
   ).exec();
   if (doc) {
-    let userBalance = await FutureWalletModel.findOne({
-      user_id: doc.user_id,
-    }).exec();
+    if (doc.relevant_order_id == null) {
+      let userBalance = await FutureWalletModel.findOne({
+        user_id: doc.user_id,
+      }).exec();
 
-    userBalance.amount = userBalance.amount + doc.usedUSDT;
-    await userBalance.save();
+      userBalance.amount = userBalance.amount + doc.usedUSDT;
+      await userBalance.save();
+    }
   }
 
   res.json({ status: "success", message: "removed" });

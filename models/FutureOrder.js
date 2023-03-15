@@ -26,6 +26,7 @@ const FutureOrderSchema = new mongoose.Schema({
   adjusted: { type: Number, required: false, default: 0.0 },
   pnl: { type: Number, default: 0.0, required: false, maxlength: 8 },
   status: { type: Number, required: false, default: 0 },
+  relevant_order_id : {type : mongoose.Schema.Types.ObjectId, ref :"FutureOrder" },
   createdAt: {
     type: Date,
     default: Date.now,
