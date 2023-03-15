@@ -8,11 +8,13 @@ async function calculateFutureFund(wallet) {
     let order = await FutureOrder.find({ user_id: wallet.user_id, method: "market", status: 0 });
     let totalUsed = 0.0;
     let totalPNL = 0.0;
+    let totalJustPNL = 0.0;
     let totalBalance = wallet.amount;
     let available = wallet.amount;
     let totalAmount = 0.0;
     for (var k = 0; k < order.length; k++) {
         let element = order[k];
+        totalJustPNL += parseFloat(element.pnl);
         totalPNL += parseFloat(element.usedUSDT) + parseFloat(element.pnl);
         totalUsed += parseFloat(element.usedUSDT);
         totalBalance += totalPNL;
@@ -26,7 +28,7 @@ async function calculateFutureFund(wallet) {
 
     let inOrder = totalAmount;
     let coinInfo = await CoinList.findOne({ _id: wallet.coin_id });
-    assets.push({ "symbol": coinInfo.symbol, "totalBalance": totalBalance, "availableBalance": available, 'inOrder': inOrder });
+    assets.push({ "walletBalance" :  (totalUsed + wallet.amount) , "unrealizedPnl" : totalJustPNL, "marginBalance" : totalBalance,"totalBalance": totalBalance, "availableBalance": available, 'inOrder': inOrder });
     return assets;
 }
 function splitLengthNumber(q) {
