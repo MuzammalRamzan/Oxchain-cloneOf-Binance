@@ -44,6 +44,7 @@ const getUserInfo = async function (req, res) {
             country: user["country"],
             address: user["address"],
             verificationStatus: verificationStatus,
+            registrationDate: user["createdAt"],
           },
         });
       }
