@@ -105,7 +105,7 @@ const sendMail = async function (req, res) {
               if (err) {
                 res.json({ status: "fail", message: err });
               } else {
-                res.json({ status: "success", data: "mail_sent" });
+                res.json({ status: "success", data: "Mail sent" });
               }
             }
           );
@@ -120,7 +120,7 @@ const sendMail = async function (req, res) {
             if (err) {
               res.json({ status: "fail", message: err });
             } else {
-              res.json({ status: "success", data: "mail_sent" });
+              res.json({ status: "success", data: "Mail sent" });
             }
           });
         }
