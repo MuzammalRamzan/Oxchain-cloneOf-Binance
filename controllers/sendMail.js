@@ -77,7 +77,7 @@ const sendMail = async function (req, res) {
           newPin.save();
         }
 
-        res.json({ status: "success", data: "mail_send", showableMessage: "Mail send" });
+        res.json({ status: "success", data: "mail_send", showableMessage: "Mail sent" });
       }
       else {
 
@@ -105,7 +105,7 @@ const sendMail = async function (req, res) {
               if (err) {
                 res.json({ status: "fail", message: err });
               } else {
-                res.json({ status: "success", data: "mail_sendd" });
+                res.json({ status: "success", data: "mail_sent" });
               }
             }
           );
@@ -120,7 +120,7 @@ const sendMail = async function (req, res) {
             if (err) {
               res.json({ status: "fail", message: err });
             } else {
-              res.json({ status: "success", data: "mail_send" });
+              res.json({ status: "success", data: "mail_sent" });
             }
           });
         }

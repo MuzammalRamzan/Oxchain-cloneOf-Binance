@@ -83,7 +83,7 @@ const sendSMS = async function (req, res) {
           newPin.save();
         }
 
-        res.json({ status: "success", data: "sms_send", showableMessage: "SMS send" });
+        res.json({ status: "success", data: "sms_send", showableMessage: "SMS sent" });
       }
       else {
         phone_number = user.phone_number;
@@ -119,7 +119,7 @@ const sendSMS = async function (req, res) {
               if (err) {
                 res.json({ status: "fail", message: err });
               } else {
-                res.json({ status: "success", data: "sms_send_d" });
+                res.json({ status: "success", data: "sms_sent" });
               }
             }
           );
@@ -134,7 +134,7 @@ const sendSMS = async function (req, res) {
             if (err) {
               res.json({ status: "fail", message: err });
             } else {
-              res.json({ status: "success", data: "sms_send" });
+              res.json({ status: "success", data: "sms_sent" });
             }
           });
         }
