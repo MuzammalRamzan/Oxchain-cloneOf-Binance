@@ -180,12 +180,10 @@ const LimitFutureOrder = async (req, res) => {
         target_price = parseFloat(target_price);
 
         if (target_price <= 0) {
-            res.json({ status: "fail", message: "Please enter a greather zero" });
-            return;
+            return res.json({ status: "fail", message: "Please enter a greather zero" });
         }
 
         if (getRelevantOrder.type == 'buy') {
-
             if (target_price < price) {
                 if (percent == 100) {
                     getRelevantOrder.status = 1;
@@ -203,7 +201,6 @@ const LimitFutureOrder = async (req, res) => {
                 } else {
                     let amount = (((getRelevantOrder.amount) * percent) / 100);
                     let usedUSDT = (amount * target_price) / getRelevantOrder.leverage;
-                    console.log(amount,usedUSDT,getRelevantOrder.amount )
                     //Miktarda sell oluştur
                     let order = new FutureOrder({
                         pair_id: getPair._id,
@@ -222,7 +219,7 @@ const LimitFutureOrder = async (req, res) => {
                         amount: amount,
                         open_price: target_price,
                         status: 0,
-                        relevant_order_id : getRelevantOrder._id
+                        relevant_order_id: getRelevantOrder._id
                     });
                     await order.save();
                     //Pozisyonu azalt
@@ -233,7 +230,7 @@ const LimitFutureOrder = async (req, res) => {
                     let marginWallet = await FutureWalletModel.findOne({
                         user_id: user_id,
                     }).exec();
-    
+
                     marginWallet.pnl = splitLengthNumber(marginWallet.pnl - getRelevantOrder.pnl);
                     marginWallet.amount = splitLengthNumber(marginWallet.amount + order.pnl + order.usedUSDT);
                     await marginWallet.save();
@@ -242,57 +239,131 @@ const LimitFutureOrder = async (req, res) => {
 
             } else {
 
-            }
-        } else {
-            if (target_price > price && percent == 100) {
-                getRelevantOrder.status = 1;
-                await getRelevantOrder.save();
-                let marginWallet = await FutureWalletModel.findOne({
+                //Limit oluştur
+                amount = (((getRelevantOrder.amount)) * percent / 100 );
+                let usedUSDT = (amount * target_price) / getRelevantOrder.leverage;
+                let order = new FutureOrder({
+                    pair_id: getPair._id,
+                    pair_name: getPair.name,
+                    type: type,
+                    future_type: future_type,
+                    method: "limit",
                     user_id: user_id,
-                }).exec();
+                    usedUSDT: usedUSDT,
+                    required_margin: usedUSDT,
+                    isolated: 0.0,
+                    sl: req.body.sl ?? 0,
+                    tp: req.body.tp ?? 0,
+                    target_price: target_price,
+                    leverage: leverage,
+                    relevant_order_id: getRelevantOrder._id,
+                    amount: amount,
+                    open_price: target_price,
+                    status: 1,
+                });
+                await order.save();
 
-                marginWallet.pnl = splitLengthNumber(marginWallet.pnl - getRelevantOrder.pnl);
-                marginWallet.amount = splitLengthNumber(marginWallet.amount + getRelevantOrder.pnl + getRelevantOrder.usedUSDT);
-                await marginWallet.save();
+                if (apiResult === false) {
+                    apiRequest.status = 1;
+                    await apiRequest.save();
+                }
+                return res.json({ status: "success", data: order });
+            }
+        } 
+        
+        
+        
+        
+        else {
+            if (target_price > price) {
+                if (percent == 100) {
+                    getRelevantOrder.status = 1;
+                    await getRelevantOrder.save();
+                    let marginWallet = await FutureWalletModel.findOne({
+                        user_id: user_id,
+                    }).exec();
 
-                res.json({ status: "success", message: "OK" });
-                return;
+                    marginWallet.pnl = marginWallet.pnl - getRelevantOrder.pnl;
+                    marginWallet.amount = marginWallet.amount + getRelevantOrder.pnl + getRelevantOrder.usedUSDT;
+                    await marginWallet.save();
+
+                    res.json({ status: "success", message: "OK" });
+                    return;
+                } else {
+                    let amount = (((getRelevantOrder.amount) * percent) / 100);
+                    let usedUSDT = (amount * target_price) / getRelevantOrder.leverage;
+                    //Miktarda sell oluştur
+                    let order = new FutureOrder({
+                        pair_id: getPair._id,
+                        pair_name: getPair.name,
+                        type: "buy",
+                        future_type: getRelevantOrder.future_type,
+                        method: "limit",
+                        user_id: getRelevantOrder.user_id,
+                        usedUSDT: usedUSDT,
+                        required_margin: usedUSDT,
+                        isolated: getRelevantOrder.usedUSDT,
+                        sl: getRelevantOrder.sl ?? 0,
+                        tp: getRelevantOrder.tp ?? 0,
+                        target_price: target_price,
+                        leverage: getRelevantOrder.leverage,
+                        amount: amount,
+                        open_price: target_price,
+                        status: 0,
+                        relevant_order_id: getRelevantOrder._id
+                    });
+                    await order.save();
+                    //Pozisyonu azalt
+                    getRelevantOrder.amount = splitLengthNumber(getRelevantOrder.amount - amount);
+                    getRelevantOrder.usedUSDT = getRelevantOrder.usedUSDT - usedUSDT;
+                    await getRelevantOrder.save();
+
+                    let marginWallet = await FutureWalletModel.findOne({
+                        user_id: user_id,
+                    }).exec();
+
+                    marginWallet.pnl = splitLengthNumber(marginWallet.pnl - getRelevantOrder.pnl);
+                    marginWallet.amount = splitLengthNumber(marginWallet.amount + order.pnl + order.usedUSDT);
+                    await marginWallet.save();
+                    return res.json({ status: "success", message: order });
+                }
+
+            } else {
+
+                //Limit oluştur
+                amount = (((getRelevantOrder.amount)) * percent / 100 );
+                let usedUSDT = (amount * target_price) / getRelevantOrder.leverage;
+                let order = new FutureOrder({
+                    pair_id: getPair._id,
+                    pair_name: getPair.name,
+                    type: type,
+                    future_type: future_type,
+                    method: "limit",
+                    user_id: user_id,
+                    usedUSDT: usedUSDT,
+                    required_margin: usedUSDT,
+                    isolated: 0.0,
+                    sl: req.body.sl ?? 0,
+                    tp: req.body.tp ?? 0,
+                    target_price: target_price,
+                    leverage: leverage,
+                    relevant_order_id: getRelevantOrder._id,
+                    amount: amount,
+                    open_price: target_price,
+                    status: 1,
+                });
+                await order.save();
+
+                if (apiResult === false) {
+                    apiRequest.status = 1;
+                    await apiRequest.save();
+                }
+                return res.json({ status: "success", data: order });
             }
         }
 
 
-        amount = (((getRelevantOrder.amount * getRelevantOrder.open_price) * percent) / 100 / target_price) * getRelevantOrder.leverage;
-        let usedUSDT = (amount * target_price) / getRelevantOrder.leverage;
-        console.log(usedUSDT, amount, target_price, getRelevantOrder.leverage)
-        userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
-        await userBalance.save();
-        let order = new FutureOrder({
-            pair_id: getPair._id,
-            pair_name: getPair.name,
-            type: type,
-            future_type: future_type,
-            method: method,
-            user_id: user_id,
-            usedUSDT: usedUSDT,
-            required_margin: usedUSDT,
-            isolated: 0.0,
-            sl: req.body.sl ?? 0,
-            tp: req.body.tp ?? 0,
-            target_price: target_price,
-            leverage: leverage,
-            relevant_order_id: getRelevantOrder._id,
-            amount: amount,
-            open_price: target_price,
-            status: 1,
-        });
-        await order.save();
 
-        if (apiResult === false) {
-            apiRequest.status = 1;
-            await apiRequest.save();
-        }
-        res.json({ status: "success", data: order });
-        return;
     }
 
 }
