@@ -21,6 +21,8 @@ const transferWallet = async function (req, res) {
     user_id: user_id,
     type: "transfer",
     amount: amount,
+    from:from,
+    to:to
   });
 
   
