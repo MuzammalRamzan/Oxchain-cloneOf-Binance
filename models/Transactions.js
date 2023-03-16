@@ -6,6 +6,8 @@ const TransactionSchema = new mongoose.Schema({
   type: { type: String, required: false, default: null },
   amount: { type: Number, required: false, default: null },
   asset: { type: String, required: false, default: "USDT" },
+  from: { type: String, required: false},
+  to: { type: String, required: false},
   status: { type: Number, required: false, default: 1 },
   createdAt: {
     type: Date,

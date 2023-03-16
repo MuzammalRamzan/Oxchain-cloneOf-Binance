@@ -86,6 +86,7 @@ const getVerificationMethod = require('./controllers/auth/getVerificationMethod'
 const createApplicant = require('./controllers/kyc/createApplicant');
 const addDocument = require('./controllers/kyc/addDocument');
 const getApplicantStatus = require('./controllers/kyc/getApplicantStatus');
+const getTransactions=require('./controllers/transactions/getTransactions.js')
 const walletToWallet = require('./controllers/transfer/index');
 const getRegisteredAddresses = require('./controllers/registeredAddress/getRegisteredAddresses');
 const googleAuth = require('./controllers/auth/googleAuth');
@@ -333,6 +334,7 @@ route.all('/deleteAccountForTest', DeleteAccountTest);
 
 route.all('/securityActivities', securityActivities);
 route.all('/walletToWallet', walletToWallet);
+route.all('/walletToWallet/getTransactions',getTransactions);
 
 route.all('/getSiteNotificationSettings', getSiteNotificationSettings);
 route.all('/updateSiteNotificationSettings', updateSiteNotificationSettings);
