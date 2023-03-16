@@ -1,7 +1,8 @@
-const TransactionsModel = require("../models/transactions");
+const TransactionsModel = require("../../models/Transactions");
+var authFile = require("../../auth.js");
 
 const getTransactions = async function (req, res) {
-  let { user_id, api_key } = req.body;
+  let { user_id, api_key, type } = req.body;
 
   const result = await authFile.apiKeyChecker(api_key);
 
@@ -11,11 +12,15 @@ const getTransactions = async function (req, res) {
     return res.json({ status: "fail", message: "fill_all_blanks" });
   }
 
-  const transactions = await TransactionsModel.find({
-    user_id: user_id,
-  }).lean();
+  let query = { user_id };
 
-  res.json({ status: "success", transactions: transactions });
+  if (type) {
+    query.type = type;
+  }
+
+  const transactions = await TransactionsModel.find(query).lean();
+
+  res.json({ status: "success", transactions });
 };
 
 module.exports = getTransactions;
