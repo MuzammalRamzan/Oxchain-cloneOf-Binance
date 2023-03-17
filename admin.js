@@ -69,7 +69,6 @@ const deleteNews = require('./adminController/news/deleteNews');
 const updateNews = require('./adminController/news/updateNews');
 const deleteAllNews = require('./adminController/news/deleteAllNews');
 const getNews = require('./adminController/news/getNews');
-const getSingleNews=require('./adminController/news/getSingleNews')
 const addTopic = require('./adminController/academy/addTopic');
 const getTopics = require('./adminController/academy/getTopics');
 const updateTopic = require('./adminController/academy/updateTopic');
@@ -106,8 +105,6 @@ route.all('/GetRecidency', upload.none(), GetRecidency);
 route.all('/DenyRecidency', upload.none(), DenyRecidency);
 
 route.all('/getNews', upload.none(), getNews);
-route.all('/getSingleNews',upload.none(),getSingleNews)
-
 route.all('/getUserKYCandRecidency', upload.none(), getUserKYCandRecidency);
 route.all('/getUser', upload.none(), getUser);
 
