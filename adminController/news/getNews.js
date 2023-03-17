@@ -5,7 +5,7 @@ const authFile = require('../../auth');
 
 const getNews = async (req, res) => {
 
-    const { user_id, api_key } = req.body;
+    const { user_id, api_key,newsId } = req.body;
 
     const isAuthenticated = await authFile.apiKeyChecker(api_key);
     if (!isAuthenticated) {
@@ -27,9 +27,14 @@ const getNews = async (req, res) => {
             showableMessage: "You are not authorized"
         });
     }
+    const filter={}
+    filter.status=1
+    if(newsId){
+        filter._id=newsId
+    }
+   
 
-
-    const news = await NewsModal.find({ status: 1 }).sort({ createdAt: -1 });
+    const news = await NewsModal.find(filter).sort({ createdAt: -1 });
 
     if (news) {
         return res.status(200).json({

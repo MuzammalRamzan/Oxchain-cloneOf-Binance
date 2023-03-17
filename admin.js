@@ -105,7 +105,6 @@ route.all('/GetRecidency', upload.none(), GetRecidency);
 route.all('/DenyRecidency', upload.none(), DenyRecidency);
 
 route.all('/getNews', upload.none(), getNews);
-
 route.all('/getUserKYCandRecidency', upload.none(), getUserKYCandRecidency);
 route.all('/getUser', upload.none(), getUser);
 
