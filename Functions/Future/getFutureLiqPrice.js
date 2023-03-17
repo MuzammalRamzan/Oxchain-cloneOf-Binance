@@ -66,13 +66,8 @@ async function GetFutureLiqPrice(orders) {
       let pnl = order.amount * side * (lastPrice - order.open_price);
       let initialMargin = (lastPrice - order.open_price) * side * order.leverage;
       //let initialMargin = parseFloat(((lastPrice) - order.open_price) * side * order.usedUSDT);
-      let roe =
-        parseFloat(pnl) /
-        parseFloat(initialMargin) /
-        (parseFloat(order.usedUSDT) *
-          parseFloat(order.leverage) *
-          parseFloat(lastPrice) *
-          (1 / parseFloat(order.leverage)));
+      let roe = parseFloat(pnl) / parseFloat(initialMargin) / (parseFloat(order.usedUSDT) * parseFloat(order.leverage) * parseFloat(lastPrice) *(1.0 / parseFloat(order.leverage)));
+      roe = splitLengthNumber(roe)
       let mark_price =
         order.type == "buy"
           ? global.MarketData[order.pair_name.replace("/", "")].ask
@@ -156,5 +151,8 @@ async function GetFutureLiqPrice(orders) {
     order.liqPrice = liqPrice;
     return order;
   }
-
+  function splitLengthNumber(q) {
+    return q.toString().length > 4 ? parseFloat(q.toString().substring(0, 4)) : q;
+  }
+  
   module.exports = GetFutureLiqPrice;
