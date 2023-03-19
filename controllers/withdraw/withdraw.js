@@ -74,6 +74,30 @@ const withdraw = async (req, res) => {
   let isOneStep = false;
 
 
+
+  let key = req.headers["key"];
+
+  if (!key) {
+    return res.json({ status: "fail", message: "key_not_found" });
+  }
+
+  if (!req.body.device_id || !req.body.user_id) {
+    return res.json({ status: "fail", message: "invalid_params (key, user id, device id)" });
+  }
+
+  let checkKey = await authFile.verifyKey(key, req.body.device_id, req.body.user_id);
+
+
+  if (checkKey === "expired") {
+    return res.json({ status: "fail", message: "key_expired" });
+  }
+
+  if (!checkKey) {
+    return res.json({ status: "fail", message: "invalid_key" });
+  }
+
+
+
   if (user_id == null || coin_id == null || network_id == null || to == null || amount == null) {
     res.json({ status: "fail", message: "invalid_params", showableMessage: "Fill all fields" });
     return;
@@ -147,7 +171,7 @@ const withdraw = async (req, res) => {
         "http://global.oxhain.com:8542/price?symbol=" +
         checkCoin.symbol + "USDT"
       );
-      price = getPrice.data.data.ask;
+      price = getPrice.data.ask;
     }
 
 
@@ -181,7 +205,7 @@ const withdraw = async (req, res) => {
       else {
 
         let getPrice = await axios("http://global.oxhain.com:8542/price?symbol=" + coinInfo.symbol + "USDT");
-        price = getPrice.data.data.ask;
+        price = getPrice.data.ask;
       }
 
       let amountUSDT = parseFloat(last24HoursWithdraw[i].amount) * parseFloat(price);

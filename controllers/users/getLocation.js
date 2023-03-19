@@ -9,6 +9,7 @@ const getLocation = async (req, res) => {
   if (!apiKeyCheck)
     return res.json({ status: "error", message: "Api key is wrong" });
 
+
   const geo = geoip.lookup(req.ip);
   return res.json({ status: "success", data: geo });
 };

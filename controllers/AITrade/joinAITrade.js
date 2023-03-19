@@ -1,7 +1,36 @@
 const AITradeParticipants = require("../../models/AITradeParticipants");
+var authFile = require("../../auth.js");
 
 const JoinAITrade = async (req, res) => {
     try {
+
+
+        let result = await authFile.apiKeyChecker(req.body.api_key);
+        if (result != true)
+            return res.json({ status: "fail", message: "Invalid api key" });
+
+        let key = req.headers["key"];
+
+        if (!key) {
+            return res.json({ status: "fail", message: "key_not_found" });
+        }
+
+        if (!req.body.device_id || !req.body.user_id) {
+            return res.json({ status: "fail", message: "invalid_params (key, user id, device_id)" });
+        }
+
+        let checkKey = await authFile.verifyKey(key, req.body.device_id, req.body.user_id);
+
+
+        if (checkKey === "expired") {
+            return res.json({ status: "fail", message: "key_expired" });
+        }
+
+        if (!checkKey) {
+            return res.json({ status: "fail", message: "invalid_key" });
+        }
+
+
         let uid = req.body.user_id;
 
         let symbol = req.body.symbol;
@@ -41,7 +70,7 @@ const JoinAITrade = async (req, res) => {
         }
         return res.json({ status: 'fail', 'message': 'already exists' })
 
-    } catch(err) {
+    } catch (err) {
         return res.json({ status: 'fail', 'message': err.message })
     }
 }

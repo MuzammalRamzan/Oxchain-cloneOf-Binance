@@ -11,7 +11,7 @@ const SpotAssetsOverviewCalculate = async (wallets) => {
         let totalBtcValue = 0.0;
         let totalUsdValue = 0.0;
         let priceData = await axios("http://global.oxhain.com:8542/price?symbol=BTCUSDT");
-        let btcPrice = priceData.data.data.ask;
+        let btcPrice = priceData.data.ask;
         let walletData = {};
 
         wallets.forEach(async (key, value) => {

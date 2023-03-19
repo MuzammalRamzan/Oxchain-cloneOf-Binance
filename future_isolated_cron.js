@@ -62,7 +62,7 @@ async function Run(orders) {
         order.pair_name.replace("/", "")
       );
       if (item != null && item != "") {
-        let price = item.data.data.ask;
+        let price = item.data.ask;
         if (order.stop_limit != 0) {
           if (order.type == "buy") {
             if (price >= order.target_price) {
@@ -298,7 +298,7 @@ async function Run(orders) {
         order.pair_name.replace("/", "")
       );
       if (item != null && item != "") {
-        let price = item.data.data.ask;
+        let price = item.data.ask;
         if (order.type == "buy") {
           if (price <= order.stop_limit) {
             order.method = "limit";
@@ -325,7 +325,7 @@ async function Run(orders) {
       "http://global.oxhain.com:8542/price?symbol=" +
       order.pair_name.replace("/", "")
     );
-    let price = getPrice.data.data.ask;
+    let price = getPrice.data.ask;
 
     if (orders[n].type == "buy") {
       if (order.adjusted != 0) {

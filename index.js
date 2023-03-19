@@ -26,91 +26,93 @@ const getClosedMarginOrders = require('./controllers/orders/getClosedMarginOrder
 const getOpenMarginOrders = require('./controllers/orders/getOpenMarginOrders');
 const closeMarginOrder = require('./controllers/orders/closeMarginOrder');
 const addMarginOrder = require('./controllers/orders/addMarginOrder');
-const withdraw = require('./controllers/withdraw/withdraw');
-const deleteLimit = require('./controllers/orders/deleteLimit');
+
+
+const withdraw = require('./controllers/withdraw/withdraw'); //added
+const deleteLimit = require('./controllers/orders/deleteLimit'); //added
 const deleteMarginLimit = require('./controllers/orders/deleteMarginLimit');
-const addOrders = require('./controllers/orders/addOrders');
-const disableAccount = require('./controllers/accountActivities/disableAccount');
-const enableAccount = require('./controllers/accountActivities/enableAccount');
-const deleteAccount = require('./controllers/users/deleteAccount');
-const addNewRegisteredAddress = require('./controllers/registeredAddress/addNewRegisteredAddress');
-const deleteRegisteredAddress = require('./controllers/registeredAddress/deleteRegisteredAddress');
-const addNotification = require('./controllers/addNotification');
-const getNotification = require('./controllers/getNotification');
-const getOrders = require('./controllers/orders/getOrders');
-const getUSDTBalance = require('./controllers/wallet/getUSDTBalance');
-const getPairs = require('./controllers/pair/getPairs');
-const addPair = require('./controllers/pair/addPair');
-const getDigits = require('./controllers/pair/getDigits');
-const getCoinList = require('./controllers/coin/getCoinList');
-const getCoinInfo = require('./controllers/coin/getCoinInfo');
-const getWallet = require('./controllers/wallet/getWallet');
+const addOrders = require('./controllers/orders/addOrders');  //added
+const disableAccount = require('./controllers/accountActivities/disableAccount'); //added
+const enableAccount = require('./controllers/accountActivities/enableAccount'); //added
+const deleteAccount = require('./controllers/users/deleteAccount'); //added
+const addNewRegisteredAddress = require('./controllers/registeredAddress/addNewRegisteredAddress'); //added
+const deleteRegisteredAddress = require('./controllers/registeredAddress/deleteRegisteredAddress'); //added
+const addNotification = require('./controllers/addNotification'); //added
+const getNotification = require('./controllers/getNotification'); //added
+const getOrders = require('./controllers/orders/getOrders'); //added
+const getUSDTBalance = require('./controllers/wallet/getUSDTBalance'); //added
+const getPairs = require('./controllers/pair/getPairs');  //added
+const addPair = require('./controllers/pair/addPair'); //added
+const getDigits = require('./controllers/pair/getDigits'); //added
+const getCoinList = require('./controllers/coin/getCoinList'); //added
+const getCoinInfo = require('./controllers/coin/getCoinInfo'); //added
+const getWallet = require('./controllers/wallet/getWallet'); //added
 const twoFactor = require('./controllers/auth/twoFactor');
-const update2fa = require('./controllers/auth/update2fa');
-const cancelAllLimit = require('./controllers/orders/cancelAllLimit');
-const cancelAllStopLimit = require('./controllers/orders/cancelAllStopLimit');
-const cancelOrder = require('./controllers/orders/cancelOrder');
-const addSecurityKey = require('./controllers/securityKey/addSecurityKey');
-const updateSecurityKey = require('./controllers/securityKey/updateSecurityKey');
-const lastActivities = require('./controllers/lastActivities');
-const activities = require('./controllers/accountActivities/activities');
-const updatePhone = require('./controllers/users/updatePhone');
+const update2fa = require('./controllers/auth/update2fa'); //added
+const cancelAllLimit = require('./controllers/orders/cancelAllLimit'); //added
+const cancelAllStopLimit = require('./controllers/orders/cancelAllStopLimit'); //added
+const cancelOrder = require('./controllers/orders/cancelOrder'); //added
+const addSecurityKey = require('./controllers/securityKey/addSecurityKey'); //added
+const updateSecurityKey = require('./controllers/securityKey/updateSecurityKey'); //added
+const lastActivities = require('./controllers/lastActivities'); //added
+const activities = require('./controllers/accountActivities/activities'); //added
+const updatePhone = require('./controllers/users/updatePhone'); //added
 const resetPassword = require('./controllers/users/resetPassword');
-const changeEmail = require('./controllers/users/changeEmail');
-const changePassword = require('./controllers/users/changePassword');
+const changeEmail = require('./controllers/users/changeEmail'); //added
+const changePassword = require('./controllers/users/changePassword'); //added
 const getUserId = require('./controllers/users/getUserId');
-const getUserInfo = require('./controllers/users/getUserInfo');
-const updateUserInfo = require('./controllers/users/updateUserInfo');
-const getLastLogin = require('./controllers/getLastLogin');
-const checkSecurityKey = require('./controllers/securityKey/checkSecurityKey');
-const getSecurityKey = require('./controllers/securityKey/getSecurityKey');
-const deleteSecurityKey = require('./controllers/securityKey/deleteSecurityKey');
-const changeAvatar = require('./controllers/users/changeAvatar');
-const changeNickname = require('./controllers/users/changeNickname');
+const getUserInfo = require('./controllers/users/getUserInfo'); //added
+const updateUserInfo = require('./controllers/users/updateUserInfo'); //added
+const getLastLogin = require('./controllers/getLastLogin'); //added
+const checkSecurityKey = require('./controllers/securityKey/checkSecurityKey'); //added
+const getSecurityKey = require('./controllers/securityKey/getSecurityKey'); //added
+const deleteSecurityKey = require('./controllers/securityKey/deleteSecurityKey'); //added
+const changeAvatar = require('./controllers/users/changeAvatar'); //added
+const changeNickname = require('./controllers/users/changeNickname'); //added
 const addWithdraw = require('./controllers/withdraw/addWithdraw');
 const get2fa = require('./controllers/auth/get2fa');
 const sendSMS = require('./controllers/sendSMS');
 const sendMail = require('./controllers/sendMail');
-const changePhone = require('./controllers/users/changePhone');
+const changePhone = require('./controllers/users/changePhone'); //added
 const getDepositsUSDT = require('./controllers/coin/getDepositsUSDT');
 const depositCoinList = require('./controllers/deposit/getCoinList');
 const depositCoinNetworkOptions = require('./controllers/deposit/getCoinNetworkOption');
 const addCoinNetworkOption = require('./controllers/deposit/addCoinNetworkOption');
-const addNetwork = require('./controllers/deposit/addNetwork');
+const addNetwork = require('./controllers/deposit/addNetwork'); //added
 const depositNetworkList = require('./controllers/deposit/getNetworkList');
 const depositWalletAddress = require('./controllers/deposit/getWalletAddress');
 const getMarginOrders = require('./controllers/orders/getMarginOrders');
-const getActiveDevice = require('./controllers/deviceManagement/getActiveDevice');
-const deleteActiveDevice = require('./controllers/deviceManagement/deleteActiveDevice');
-const getVerificationMethod = require('./controllers/auth/getVerificationMethod');
-const createApplicant = require('./controllers/kyc/createApplicant');
-const addDocument = require('./controllers/kyc/addDocument');
-const getApplicantStatus = require('./controllers/kyc/getApplicantStatus');
-const getTransactions=require('./controllers/transactions/getTransactions.js')
-const walletToWallet = require('./controllers/transfer/index');
-const getRegisteredAddresses = require('./controllers/registeredAddress/getRegisteredAddresses');
+const getActiveDevice = require('./controllers/deviceManagement/getActiveDevice'); //added
+const deleteActiveDevice = require('./controllers/deviceManagement/deleteActiveDevice'); //added
+const getVerificationMethod = require('./controllers/auth/getVerificationMethod'); //added
+const createApplicant = require('./controllers/kyc/createApplicant'); //added
+const addDocument = require('./controllers/kyc/addDocument'); //added
+const getApplicantStatus = require('./controllers/kyc/getApplicantStatus'); //added
+const getTransactions = require('./controllers/transactions/getTransactions.js'); //added
+const walletToWallet = require('./controllers/transfer/index'); //added
+const getRegisteredAddresses = require('./controllers/registeredAddress/getRegisteredAddresses'); //added
 const googleAuth = require('./controllers/auth/googleAuth');
 const appleAuth = require('./controllers/auth/appleAuth');
-const searchPosts = require('./controllers/posts/searchPost.js');
-const securityActivities = require('./controllers/accountActivities/securityActivities');
-const getWalletsBalance = require('./controllers/GetUserBalances/getWalletsbalances.js');
-const removePhone = require('./controllers/users/removePhone');
-const removeEmail = require('./controllers/users/removeEmail');
-const walletTowalletBetweenUsers = require('./controllers/WalletToWallet/transfer');
+const searchPosts = require('./controllers/posts/searchPost.js'); //added
+const securityActivities = require('./controllers/accountActivities/securityActivities'); //added
+const getWalletsBalance = require('./controllers/GetUserBalances/getWalletsbalances.js'); //added
+const removePhone = require('./controllers/users/removePhone'); //added
+const removeEmail = require('./controllers/users/removeEmail'); //added
+const walletTowalletBetweenUsers = require('./controllers/WalletToWallet/transfer'); //added
 
-const getAllWallet = require('./controllers/wallet/getAllWallet');
+const getAllWallet = require('./controllers/wallet/getAllWallet'); //added
 
-const getAIOrders = require('./controllers/AITrade/getAIOrders');
+const getAIOrders = require('./controllers/AITrade/getAIOrders'); //added
 
-const addAvatar = require('./controllers/avatar/addAvatar');
-const getAvatar = require('./controllers/avatar/getAvatarList');
+const addAvatar = require('./controllers/avatar/addAvatar'); //added
+const getAvatar = require('./controllers/avatar/getAvatarList'); //added
 
-const addAnnouncement = require('./controllers/announcement/addAnnouncement');
-const getAnnouncement = require('./controllers/announcement/getAnnouncement');
-const getLocation = require('./controllers/users/getLocation');
+const addAnnouncement = require('./controllers/announcement/addAnnouncement'); //added
+const getAnnouncement = require('./controllers/announcement/getAnnouncement'); //added
+const getLocation = require('./controllers/users/getLocation'); //added
 
-const getSiteNotificationSettings = require('./controllers/siteNotifications/get');
-const updateSiteNotificationSettings = require('./controllers/siteNotifications/update');
+const getSiteNotificationSettings = require('./controllers/siteNotifications/get'); //added
+const updateSiteNotificationSettings = require('./controllers/siteNotifications/update'); //added
 
 const getWhatIsEnabled = require('./controllers/whatIsEnabled/get');
 
@@ -133,68 +135,69 @@ var port = process.env.PORT;
 route.use(bodyParser.json({ limit: '50mb' }));
 route.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-const topReferrals = require('./controllers/referrals/topReferrals.js');
-const getReferral = require('./controllers/referrals/getReferral.js');
-const addBonus = require('./controllers/bonus/addBonus.js');
-const addBonusType = require('./controllers/bonusTypes/addBonusType.js');
-const getBonusHistory = require('./controllers/bonus/getBonusHistory.js');
+const topReferrals = require('./controllers/referrals/topReferrals.js'); //added
+const getReferral = require('./controllers/referrals/getReferral.js'); //added
+const addBonus = require('./controllers/bonus/addBonus.js'); //added
+const addBonusType = require('./controllers/bonusTypes/addBonusType.js'); //added
+const getBonusHistory = require('./controllers/bonus/getBonusHistory.js'); //added
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
 const session = require('express-session');
 const addMarginCrossOrder = require('./controllers/orders/addMarginCrossOrder.js');
 const addMarginIsolatedOrder = require('./controllers/orders/addMarginIsolatedOrder.js');
-const addFutureOrder = require('./controllers/orders/addFutureOrder.js');
-const cancelFutureLimit = require('./controllers/orders/cancelFutureLimit.js');
-const closeFutureOrder = require('./controllers/orders/closeFutureOrder.js');
+const addFutureOrder = require('./controllers/orders/addFutureOrder.js'); //added
+const cancelFutureLimit = require('./controllers/orders/cancelFutureLimit.js'); //added
+const closeFutureOrder = require('./controllers/orders/closeFutureOrder.js'); //added
 const AdjustMargin = require('./controllers/orders/adjust_margin.js');
-const editOneStepWithdraw = require('./controllers/withdraw/editOneStepWithdraw');
-const deleteOneStepWithdraw = require('./controllers/withdraw/deleteOneStepWithdraw.js');
-const getOneStepWithdraw = require('./controllers/withdraw/getOneStepWithdraw');
-const editWithdrawalWhiteList = require('./controllers/withdraw/editWithdrawalWhiteList');
-const getWithdrawalWhiteList = require('./controllers/withdraw/getWithdrawalWhiteList');
-const UpdateStop = require('./controllers/orders/updateStop.js');
-const FuturePercentClose = require('./controllers/orders/futurePercentClose.js');
-const FutureAmountClose = require('./controllers/orders/futureAmountClose.js');
-const Settings = require('./controllers/settings');
-const SetFavoritePair = require('./controllers/pair/setFavoritePair.js');
-const SetMultipleFavoritePair = require('./controllers/pair/setMultipleFavoritePair');
-const GetFavoritePairs = require('./controllers/pair/getFavoritePairs.js');
-const myReferrals = require('./controllers/referrals/myReferrals');
+const editOneStepWithdraw = require('./controllers/withdraw/editOneStepWithdraw'); //added
+const deleteOneStepWithdraw = require('./controllers/withdraw/deleteOneStepWithdraw.js'); //added
+const getOneStepWithdraw = require('./controllers/withdraw/getOneStepWithdraw'); //added
+const editWithdrawalWhiteList = require('./controllers/withdraw/editWithdrawalWhiteList'); //added
+const getWithdrawalWhiteList = require('./controllers/withdraw/getWithdrawalWhiteList'); //added
+const UpdateStop = require('./controllers/orders/updateStop.js'); //added
+const FuturePercentClose = require('./controllers/orders/futurePercentClose.js'); //added
+const FutureAmountClose = require('./controllers/orders/futureAmountClose.js'); //added
+const Settings = require('./controllers/settings'); //added
+const SetFavoritePair = require('./controllers/pair/setFavoritePair.js'); //added
+const SetMultipleFavoritePair = require('./controllers/pair/setMultipleFavoritePair'); //added
+const GetFavoritePairs = require('./controllers/pair/getFavoritePairs.js'); //added
+const myReferrals = require('./controllers/referrals/myReferrals'); //added
 const getAdminSettings = require('./controllers/getAdminSettings');
-const referralRewards = require('./controllers/referrals/referralRewards');
-const readNotifications = require('./controllers/readNotifications');
-const clearNotifications = require('./controllers/clearNotifications');
-const addVerificationId = require('./controllers/verificationId/addVerificationId');
-const getVerificationIds = require('./controllers/verificationId/getVerificationIds');
+const referralRewards = require('./controllers/referrals/referralRewards'); //added
+const readNotifications = require('./controllers/readNotifications'); //added
+const clearNotifications = require('./controllers/clearNotifications'); //added
+const addVerificationId = require('./controllers/verificationId/addVerificationId'); //added
+const getVerificationIds = require('./controllers/verificationId/getVerificationIds'); //added
+
 const topReferralEarners = require('./controllers/referrals/topReferralEarners');
-const myReferralEarns = require('./controllers/referrals/myReferralEarns');
-const getAllLevelReferrals = require('./controllers/referrals/getAllLevelRefferals.js');
-const getEarningsGraphData = require('./controllers/referrals/getEarningsGraphData.js');
-const getMembersGraphData = require('./controllers/referrals/getMembersGraphData.js');
-const getDirectMemberGraph = require('./controllers/referrals/getDirectMemberGraph.js');
+const myReferralEarns = require('./controllers/referrals/myReferralEarns'); //added
+const getAllLevelReferrals = require('./controllers/referrals/getAllLevelRefferals.js'); //added
+const getEarningsGraphData = require('./controllers/referrals/getEarningsGraphData.js'); //added
+const getMembersGraphData = require('./controllers/referrals/getMembersGraphData.js'); //added
+const getDirectMemberGraph = require('./controllers/referrals/getDirectMemberGraph.js'); //added
 
 const getAllRefUser = require('./controllers/referrals/getAllRefUser.js');
-const getDirectReferralStats = require('./controllers/referrals/getDirectReferralStats.js');
+const getDirectReferralStats = require('./controllers/referrals/getDirectReferralStats.js'); //added
 
-const checklast24hourswithdraws = require('./controllers/withdraw/checklast24hourswithdraws.js');
+const checklast24hourswithdraws = require('./controllers/withdraw/checklast24hourswithdraws.js'); //added
 
-const getKYCStatus = require('./controllers/kyc/getStatus');
-const getApiKeys = require('./controllers/api/getApiKeys');
+const getKYCStatus = require('./controllers/kyc/getStatus'); //added
+const getApiKeys = require('./controllers/api/getApiKeys'); //added
 
-const getDashboard = require('./controllers/dashboard/getDashboard');
+const getDashboard = require('./controllers/dashboard/getDashboard'); //added
 
 const newPrediction = require('./controllers/Prediction/addPrediction');
-const getPrediction = require('./controllers/Prediction/getPrediction');
+const getPrediction = require('./controllers/Prediction/getPrediction'); //added
 
 const getPredictionHistory = require('./controllers/Prediction/getPredictionHistory');
 const getPredictionLogs = require('./controllers/Prediction/getPredictionLogs');
 const getPredictionAccuracyMetrics = require('./controllers/Prediction/getPredictionAccuracyMetrics');
-const addNewApiKey = require('./controllers/api/addNewApiKey');
-const editApiKey = require('./controllers/api/editApiKey');
-const deleteAllKeys = require('./controllers/api/deleteAllKeys');
+const addNewApiKey = require('./controllers/api/addNewApiKey'); //added
+const editApiKey = require('./controllers/api/editApiKey'); //added
+const deleteAllKeys = require('./controllers/api/deleteAllKeys'); //added
 
-const Delete2fa = require('./controllers/auth/delete2fa');
+const Delete2fa = require('./controllers/auth/delete2fa'); //added
 const getAllFaqs = require('./controllers/FAQ/getFAQs.js');
 
 const DeleteAccountTest = require('./controllers/auth/deleteAccountTest');
@@ -203,62 +206,63 @@ const DeleteAccountTest = require('./controllers/auth/deleteAccountTest');
 
 const clearKYCAndRecidency = require('./controllers/kyc/clearKYCAndRecidency.js');
 
-const UploadKYC = require('./controllers/kyc/UploadKYC');
-const UploadRecidency = require('./controllers/kyc/uploadRecidency');
+const UploadKYC = require('./controllers/kyc/UploadKYC'); //added 
+const UploadRecidency = require('./controllers/kyc/uploadRecidency'); //added
 
-const marketingMailStatus = require('./controllers/marketingMails/mailStatus');
-const changeMarketingMailStatus = require('./controllers/marketingMails/changeStatus');
+const marketingMailStatus = require('./controllers/marketingMails/mailStatus'); //added
+const changeMarketingMailStatus = require('./controllers/marketingMails/changeStatus'); //added
 
 const Subscription = require('./models/Subscription.js');
 const { addAdmin } = require('./adminController/Admin.js');
 const Login = require('./adminController/Login.js');
 //Ambassador
-const CampusRequestJoin = require('./controllers/campusAmbassador/request_join.js');
-const isAmbassador = require('./controllers/campusAmbassador/isAmbassador.js');
-const UpdateSocialMedia = require('./controllers/users/updateSocialMedia.js');
+const CampusRequestJoin = require('./controllers/campusAmbassador/request_join.js'); //added
+const isAmbassador = require('./controllers/campusAmbassador/isAmbassador.js'); //added
+const UpdateSocialMedia = require('./controllers/users/updateSocialMedia.js'); //added
 const checkTwitterAccount = require('./Functions/checkTwitterAccount.js');
 const { default: axios } = require('axios');
-const GetDepositHistory = require('./controllers/deposit/getDepositHistory.js');
-const GetWithdrawHistory = require('./controllers/withdraw/getWithdrawHistory.js');
-const addSupportTicket = require('./controllers/dashboard/addSupportTicket.js');
-const getSupportTicket = require('./controllers/dashboard/getSupportTicket.js');
-const deleteSupportTicket = require('./controllers/dashboard/deleteSupportTicket.js');
-const addSystemFeedback = require('./controllers/dashboard/systemFeedback.js');
-const SpotLimitMarketOrders = require('./controllers/orders/history/spotLimitMarketOrders.js');
-const SpotTradeHistory = require('./controllers/orders/history/spotTradeHistory.js');
+const GetDepositHistory = require('./controllers/deposit/getDepositHistory.js'); //added
+const GetWithdrawHistory = require('./controllers/withdraw/getWithdrawHistory.js'); //added
+const addSupportTicket = require('./controllers/dashboard/addSupportTicket.js'); //added
+const getSupportTicket = require('./controllers/dashboard/getSupportTicket.js'); //added
+const deleteSupportTicket = require('./controllers/dashboard/deleteSupportTicket.js'); //added
+const addSystemFeedback = require('./controllers/dashboard/systemFeedback.js'); //added
+const SpotLimitMarketOrders = require('./controllers/orders/history/spotLimitMarketOrders.js'); //added
+const SpotTradeHistory = require('./controllers/orders/history/spotTradeHistory.js'); //added
 const getPairDetails = require('./controllers/pair/getPairDetails.js');
-const GetUserLevel = require('./controllers/users/getUserLevel.js');
+const GetUserLevel = require('./controllers/users/getUserLevel.js'); //added
 const getRankAwardImages = require('./controllers/RankAward/getRankAwardImages')
-const getUserNotification = require('./controllers/users/getUserNotification');
-const readUserNotification = require('./controllers/users/readUserNotification');
-const SpotCurrentOrders = require('./controllers/orders/history/spotCurrentOrders.js');
-const SpotOrderHistory = require('./controllers/orders/history/spotOrderHistory.js');
-const DerivativesClosedPNL = require('./controllers/orders/history/derivativesClosedPL.js');
-const DerivativesOrderHistory = require('./controllers/orders/history/derivativesOrderHistory.js');
+const getUserNotification = require('./controllers/users/getUserNotification'); //added
+const readUserNotification = require('./controllers/users/readUserNotification'); //added
+const SpotCurrentOrders = require('./controllers/orders/history/spotCurrentOrders.js'); //added
+const SpotOrderHistory = require('./controllers/orders/history/spotOrderHistory.js'); //added
+
+const DerivativesClosedPNL = require('./controllers/orders/history/derivativesClosedPL.js'); //added
+const DerivativesOrderHistory = require('./controllers/orders/history/derivativesOrderHistory.js'); //added
 const getAllNews = require('./controllers/news/getAllNews');
 const getNews = require('./controllers/news/getNewsByCategory');
 const getTopNews = require('./controllers/news/getTopNews.js');
 const getAllTopics = require('./controllers/academy/getAllTopics');
 
 //AI TRADE
-const joinAITrade = require('./controllers/AITrade/joinAITrade.js');
-const getAIWallet = require('./controllers/AITrade/getWallet.js');
-const transferBalanceAI = require('./controllers/AITrade/transferBalance.js');
-const getAITransferLogs = require('./controllers/AITrade/getTransferLogs.js');
+const joinAITrade = require('./controllers/AITrade/joinAITrade.js'); //added
+const getAIWallet = require('./controllers/AITrade/getWallet.js'); //added 
+const transferBalanceAI = require('./controllers/AITrade/transferBalance.js'); //added
+const getAITransferLogs = require('./controllers/AITrade/getTransferLogs.js'); //added
 
-const getAISettings = require('./controllers/AITrade/getAISettings.js');
-const setAISettings = require('./controllers/AITrade/setSettings.js');
-const updateAISettings = require('./controllers/AITrade/updateSettings.js');
+const getAISettings = require('./controllers/AITrade/getAISettings.js'); //added
+const setAISettings = require('./controllers/AITrade/setSettings.js'); //added
+const updateAISettings = require('./controllers/AITrade/updateSettings.js'); //added
 const getTopics = require('./controllers/academy/getTopicsByCategory.js');
-const CloseAllFutureOrders = require('./controllers/orders/closeAllFutureOrders.js');
+const CloseAllFutureOrders = require('./controllers/orders/closeAllFutureOrders.js'); //added
 const getMarket = require('./controllers/market/getMarket.js');
 const getTopMarketGainers = require('./controllers/market/getTopMarketGainers.js');
 
 const ApproveLoginRequest = require('./controllers/auth/approveLoginRequest.js');
 const GetCandleData = require('./controllers/pair/getCandleData.js');
-const LeaveAITrade = require('./controllers/AITrade/leaveAITrade.js');
-const EditSpotOrder = require('./controllers/orders/editSpotOrder.js');
-const LimitFutureOrder = require('./controllers/orders/limitFutureOrder.js');
+const LeaveAITrade = require('./controllers/AITrade/leaveAITrade.js'); //added
+const EditSpotOrder = require('./controllers/orders/editSpotOrder.js'); //added
+const LimitFutureOrder = require('./controllers/orders/limitFutureOrder.js'); //added
 
 route.use(
 	session({
@@ -334,7 +338,7 @@ route.all('/deleteAccountForTest', DeleteAccountTest);
 
 route.all('/securityActivities', securityActivities);
 route.all('/walletToWallet', walletToWallet);
-route.all('/walletToWallet/getTransactions',getTransactions);
+route.all('/walletToWallet/getTransactions', getTransactions);
 
 route.all('/getSiteNotificationSettings', getSiteNotificationSettings);
 route.all('/updateSiteNotificationSettings', updateSiteNotificationSettings);

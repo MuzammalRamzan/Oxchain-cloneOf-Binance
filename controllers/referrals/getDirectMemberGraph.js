@@ -15,6 +15,29 @@ const getDirectMemberGraph = async (req, res) => {
 				showableMessage: 'Forbidden 403, Please provide valid api key',
 			});
 		}
+
+		let key = req.headers["key"];
+
+		if (!key) {
+			return res.json({ status: "fail", message: "key_not_found" });
+		}
+
+		if (!req.body.device_id || !req.body.user_id) {
+			return res.json({ status: "fail", message: "invalid_params (key, user id, device_id)" });
+		}
+
+		let checkKey = await authFile.verifyKey(key, req.body.device_id, req.body.user_id);
+
+
+		if (checkKey === "expired") {
+			return res.json({ status: "fail", message: "key_expired" });
+		}
+
+		if (!checkKey) {
+			return res.json({ status: "fail", message: "invalid_key" });
+		}
+
+
 		const userRef = await UserRef.findOne({ user_id });
 		// Get the level 1 referrals
 		referrals = await Referral.find({

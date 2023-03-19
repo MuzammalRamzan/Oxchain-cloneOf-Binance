@@ -12,6 +12,28 @@ const update2fa = async function (req, res) {
   var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
+
+    let key = req.headers["key"];
+
+    if (!key) {
+      return res.json({ status: "fail", message: "key_not_found" });
+    }
+
+    if (!req.body.device_id || !req.body.user_id) {
+      return res.json({ status: "fail", message: "invalid_params (key, user id, device_id)" });
+    }
+
+    let checkKey = await authFile.verifyKey(key, req.body.device_id, req.body.user_id);
+
+
+    if (checkKey === "expired") {
+      return res.json({ status: "fail", message: "key_expired" });
+    }
+
+    if (!checkKey) {
+      return res.json({ status: "fail", message: "invalid_key" });
+    }
+
     const filter = { _id: user_id };
     const update = { twofa: twofa };
 
@@ -73,12 +95,12 @@ const update2fa = async function (req, res) {
       user.twofa = twofa;
       await user.save();
 
-      res.json({ status: "success", message: "2fa_updated", showableMessage: "2FA Enabled" });
+      return res.json({ status: "success", message: "2fa_updated", showableMessage: "2FA Enabled" });
     } else {
-      res.json({ status: "fail", message: "wrong_auth_pin", showableMessage: "Wrong Auth Pin" });
+      return res.json({ status: "fail", message: "wrong_auth_pin", showableMessage: "Wrong Auth Pin" });
     }
   } else {
-    res.json({ status: "fail", message: "403 Forbidden", showableMessage: "Forbidden 403" });
+    return res.json({ status: "fail", message: "403 Forbidden", showableMessage: "Forbidden 403" });
   }
 };
 

@@ -69,7 +69,7 @@ async function Run(orders) {
       let item = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace("/", ""));
 
       if (item != null && item != '') {
-        let price = item.data.data.ask;
+        let price = item.data.ask;
 
         if (order.stop_limit != 0) {
           if (order.type == 'buy') {
@@ -102,11 +102,11 @@ async function Run(orders) {
               const fee = order.usedUSDT * (order.type == 'buy' ? 0.02 : 0.07) / 100.0;
               let totalUsedUSDT = usedUSDT - fee;
 
-              order.fee = fee; 
+              order.fee = fee;
               order.usedUSDT = totalUsedUSDT;
               order.status = 0;
               await order.save();
-              
+
               let n_order = new FutureOrder({
                 pair_id: order.pair_id,
                 pair_name: order.pair_name,
@@ -318,7 +318,7 @@ async function Run(orders) {
       //let item = list.find(x => x.s == order.pair_name.replace('/', ''));
       let item = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
-        let price = item.data.data.ask;
+        let price = item.data.ask;
         if (order.type == 'buy') {
           if (price <= order.stop_limit) {
             order.method = 'limit';
@@ -360,7 +360,7 @@ async function Run(orders) {
     let marginWalletAmount = wallet.amount;
 
     //buraya isoleden gelen aktif emirlerin ana yatırma bakiyesini eklemeliyiz çünkü bütün margin wallet bakiyesini değiştiriyor bu fonksiyon
-    
+
     wallet.pnl = splitLengthNumber(data.total);
     await wallet.save();
 

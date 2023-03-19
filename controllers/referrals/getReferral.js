@@ -28,6 +28,7 @@ const getReferral = async function (req, res) {
   var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
+
     var ref_user = await Referral.find({ reffer: refCode }).exec();
 
     if (ref_user != null) {

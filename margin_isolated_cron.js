@@ -61,7 +61,7 @@ async function Run(orders) {
       if (order.status == 0) continue;
       let item = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
-        let price = item.data.data.ask;
+        let price = item.data.ask;
         if (order.stop_limit != 0) {
           if (order.type == 'buy') {
             if (price >= order.target_price) {
@@ -305,7 +305,7 @@ async function Run(orders) {
     else if (order.method == 'stop_limit') {
       let item = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
-        let price = item.data.data.ask;
+        let price = item.data.ask;
         if (order.type == 'buy') {
           if (price <= order.stop_limit) {
             order.method = 'limit';

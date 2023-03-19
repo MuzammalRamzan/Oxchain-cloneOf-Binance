@@ -52,6 +52,28 @@ const addOrders = async function (req, res) {
       }
     }
 
+
+    let key = req.headers["key"];
+
+    if (!key) {
+      return res.json({ status: "fail", message: "key_not_found" });
+    }
+
+    if (!req.body.device_id || !req.body.user_id) {
+      return res.json({ status: "fail", message: "invalid_params (key, user id, device_id)" });
+    }
+
+    let checkKey = await authFile.verifyKey(key, req.body.device_id, req.body.user_id);
+
+
+    if (checkKey === "expired") {
+      return res.json({ status: "fail", message: "key_expired" });
+    }
+
+    if (!checkKey) {
+      return res.json({ status: "fail", message: "invalid_key" });
+    }
+
     let percent = req.body.percent;
     let amount = req.body.amount;
 
@@ -73,7 +95,7 @@ const addOrders = async function (req, res) {
       'http://global.oxhain.com:8542/price?symbol=' + urlPair;
     let result = await axios(url);
     console.log(result.data)
-    var price = result.data.data.ask;
+    var price = result.data.ask;
 
     let target_price = req.body.target_price ?? 0.0;
 
@@ -144,11 +166,11 @@ const addOrders = async function (req, res) {
       }
 
       if (req.body.method == "buy") {
-        return await AddStopLimitBuyOrder(req,res,getPair, api_result, apiRequest, price);
+        return await AddStopLimitBuyOrder(req, res, getPair, api_result, apiRequest, price);
       }
 
       else if (req.body.method == "sell") {
-        return await AddStopLimitSellOrder(req,res,getPair, api_result, apiRequest, price);
+        return await AddStopLimitSellOrder(req, res, getPair, api_result, apiRequest, price);
       }
 
 

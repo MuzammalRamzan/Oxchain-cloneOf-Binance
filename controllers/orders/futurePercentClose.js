@@ -1,8 +1,39 @@
 const { default: axios } = require("axios");
 const FutureOrder = require("../../models/FutureOrder");
 const FutureWalletModel = require("../../models/FutureWalletModel");
+var authFile = require("../../auth.js");
 
 const FuturePercentClose = async (req, res) => {
+
+
+    let api_key_result = req.body.api_key;
+    let result = await authFile.apiKeyChecker(api_key_result);
+    if (result == false) {
+        return res.json({ status: "fail", message: "Forbidden 403" });
+    }
+
+    let key = req.headers["key"];
+
+    if (!key) {
+        return res.json({ status: "fail", message: "key_not_found" });
+    }
+
+    if (!req.body.device_id || !req.body.user_id) {
+        return res.json({ status: "fail", message: "invalid_params (key, user id, device_id)" });
+    }
+
+    let checkKey = await authFile.verifyKey(key, req.body.device_id, req.body.user_id);
+
+
+    if (checkKey === "expired") {
+        return res.json({ status: "fail", message: "key_expired" });
+    }
+
+    if (!checkKey) {
+        return res.json({ status: "fail", message: "invalid_key" });
+    }
+
+
     let user_id = req.body.user_id;
     let order_id = req.body.order_id;
     let percent = req.body.percent ?? 0.0;
@@ -20,7 +51,7 @@ const FuturePercentClose = async (req, res) => {
         return;
     }
     let binanceData = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace('/', ''));
-    let marketPrice = parseFloat(binanceData.data.data.ask);
+    let marketPrice = parseFloat(binanceData.data.ask);
 
     console.log(order.amount, percent, marketPrice);
 

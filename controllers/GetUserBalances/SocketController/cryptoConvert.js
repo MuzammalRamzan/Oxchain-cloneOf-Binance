@@ -20,7 +20,7 @@ const cryptoConvert = async (firstCoinSymbol, secondCoinSymbol) => {
 		let findBinanceItem = await axios(
 			productionURL + firstCoinSymbol + secondCoinSymbol
 		);
-		return findBinanceItem.data.data.ask;
+		return findBinanceItem.data.ask;
 	}
 };
 module.exports = cryptoConvert;

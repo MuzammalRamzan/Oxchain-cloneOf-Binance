@@ -4,6 +4,7 @@ const addBonusType = async (req, res) => {
     var api_key_result = req.body.api_key;
     var result = await authFile.apiKeyChecker(api_key_result);
     if (result === true) {
+
         let title = req.body.title;
         let amount = req.body.amount;
         let add_type = req.body.add_type;

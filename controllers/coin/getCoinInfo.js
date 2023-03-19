@@ -7,6 +7,8 @@ const getCoinInfo = async function (req, res) {
   var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
+
+
     CoinList.findOne({ coin_id: req.body.coin_id })
       .then((coins) => {
         res.json({ status: "success", data: coins });

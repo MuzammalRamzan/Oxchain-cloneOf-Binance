@@ -5,7 +5,37 @@ const Pairs = require("../../models/Pairs");
 const Wallet = require("../../models/Wallet");
 const setFeeCredit = require("../bonus/setFeeCredit");
 
+var authFile = require("../../auth");
+
 const EditSpotOrder = async (req, res) => {
+
+
+    let result = await authFile.apiKeyChecker(req.body.api_key);
+
+    if (result !== true)
+        return res.json({ 'status': 'fail', 'message': 'Invalid API key' });
+
+    let key = req.headers["key"];
+
+    if (!key) {
+        return res.json({ status: "fail", message: "key_not_found" });
+    }
+
+    if (!req.body.device_id || !req.body.user_id) {
+        return res.json({ status: "fail", message: "invalid_params (key, user id, device_id)" });
+    }
+
+    let checkKey = await authFile.verifyKey(key, req.body.device_id, req.body.user_id);
+
+
+    if (checkKey === "expired") {
+        return res.json({ status: "fail", message: "key_expired" });
+    }
+
+    if (!checkKey) {
+        return res.json({ status: "fail", message: "invalid_key" });
+    }
+
     let required = ['user_id', 'order_id', 'percent', 'target_price'];
 
 
@@ -31,7 +61,7 @@ const EditSpotOrder = async (req, res) => {
         let url =
             'http://global.oxhain.com:8542/price?symbol=' + urlPair;
         let result = await axios(url);
-        let price = result.data.data.ask;
+        let price = result.data.ask;
 
 
 
@@ -176,7 +206,7 @@ const EditSpotOrder = async (req, res) => {
         let url =
             'http://global.oxhain.com:8542/price?symbol=' + urlPair;
         let result = await axios(url);
-        let price = result.data.data.ask;
+        let price = result.data.ask;
 
         var getPair = await Pairs.findOne({ name: relevantOrder.pair_name }).exec();
         var fromWallet = await Wallet.findOne({

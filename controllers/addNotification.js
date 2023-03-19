@@ -12,6 +12,9 @@ const addNotification = async function (req, res) {
   let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
+
+
+
     const newNotification = new Notification({
       notificationTitle: req.body.notificationTitle,
       notificationMessage: req.body.notificationMessage,

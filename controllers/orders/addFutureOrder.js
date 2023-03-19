@@ -49,6 +49,28 @@ const addFutureOrder = async (req, res) => {
     let apiResult = await authFile.apiKeyChecker(api_key_result);
     let apiRequest = "";
     if (apiResult === false) {
+
+        let key = req.headers["key"];
+
+        if (!key) {
+            return res.json({ status: "fail", message: "key_not_found" });
+        }
+
+        if (!req.body.device_id || !req.body.user_id) {
+            return res.json({ status: "fail", message: "invalid_params (key, user id, device_id)" });
+        }
+
+        let checkKey = await authFile.verifyKey(key, req.body.device_id, req.body.user_id);
+
+
+        if (checkKey === "expired") {
+            return res.json({ status: "fail", message: "key_expired" });
+        }
+
+        if (!checkKey) {
+            return res.json({ status: "fail", message: "invalid_key" });
+        }
+
         let checkApiKeys = "";
 
         checkApiKeys = await ApiKeysModel.findOne({
@@ -129,7 +151,7 @@ const addFutureOrder = async (req, res) => {
     let url =
         'http://global.oxhain.com:8542/price?symbol=' + urlPair;
     result = await axios(url);
-    var price = parseFloat(result.data.data.ask);
+    var price = parseFloat(result.data.ask);
     if (future_type == "isolated") {
         if (method == "limit") {
             if (req.body.target_price == undefined || req.body.target_price == "" || req.body.target_price == null) {
@@ -724,7 +746,7 @@ const addFutureOrder = async (req, res) => {
                     pair_id: getPair._id,
                     pair_name: getPair.name,
                     type: type,
-                    fee : fee,
+                    fee: fee,
                     future_type: future_type,
                     method: method,
                     user_id: user_id,
@@ -740,7 +762,7 @@ const addFutureOrder = async (req, res) => {
                     status: 0
                 });
                 await order.save();
-                
+
                 await setFeeCredit(req.body.user_id, getPair._id, fee);
                 if (apiResult === false) {
                     apiRequest.status = 1;

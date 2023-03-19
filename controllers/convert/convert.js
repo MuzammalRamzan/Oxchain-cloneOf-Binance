@@ -25,7 +25,7 @@ const convert = async (req, res) => {
 
         if (wallet.amount >= amount) {
             let priceData = await axios("http://18.130.193.166:8542/price?symbol=" + value + "USDT");
-            let btcPrice = priceData.data.data.ask;
+            let btcPrice = priceData.data.ask;
             console.log("priceData", btcPrice)
             btcPrice = amount / btcPrice;
             // wallet.amount = btcPrice;

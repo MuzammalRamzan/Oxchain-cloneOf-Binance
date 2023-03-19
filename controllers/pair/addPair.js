@@ -6,6 +6,7 @@ const addPair = async function (req, res) {
   var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
+
     const newPair = new Pairs({
       name: req.body.name,
       symbolOne: req.body.symbolOne,

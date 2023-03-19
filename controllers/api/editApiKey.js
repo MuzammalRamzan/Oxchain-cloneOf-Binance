@@ -3,10 +3,39 @@ const ApiKeyModel = require('../../models/ApiKeys');
 let MailVerification = require('../../models/MailVerification');
 let SMSVerification = require('../../models/SMSVerification');
 
+var authFile = require('../../auth.js');
 
 const editApiKey = async (req, res) => {
 
     const { api_key, key_id, user_id, trade, deposit, withdraw, transfer, get_balance, futures, status } = req.body;
+
+
+    const apiKeyChecker = await authFile.apiKeyChecker(api_key);
+    if (!apiKeyChecker) {
+        return res.json({ status: "fail", message: "Forbidden 403", showableMessage: "Forbidden 403" });
+    }
+
+    let key = req.headers["key"];
+
+    if (!key) {
+        return res.json({ status: "fail", message: "key_not_found" });
+    }
+
+    if (!req.body.device_id || !req.body.user_id) {
+        return res.json({ status: "fail", message: "invalid_params (key, user id, device_id)" });
+    }
+
+    let checkKey = await authFile.verifyKey(key, req.body.device_id, req.body.user_id);
+
+
+    if (checkKey === "expired") {
+        return res.json({ status: "fail", message: "key_expired" });
+    }
+
+    if (!checkKey) {
+        return res.json({ status: "fail", message: "invalid_key" });
+    }
+
 
     if (!api_key) return res.json({ status: 'error', message: 'Api key is null' });
     if (!user_id) return res.json({ status: 'error', message: 'User id is null' });

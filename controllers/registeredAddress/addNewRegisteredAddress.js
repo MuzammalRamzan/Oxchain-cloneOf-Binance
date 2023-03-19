@@ -1,7 +1,7 @@
 const User = require('../../models/User');
 const RegisteredAddress = require('../../models/RegisteredAddress');
-const MailVerification=require('../../models/MailVerification')
-const SMSVerification=require('../../models/SMSVerification')
+const MailVerification = require('../../models/MailVerification')
+const SMSVerification = require('../../models/SMSVerification')
 var authFile = require('../../auth.js');
 
 const addNewRegisteredAddress = async function (req, res) {
@@ -22,6 +22,27 @@ const addNewRegisteredAddress = async function (req, res) {
 	let result = await authFile.apiKeyChecker(api_key);
 
 	if (result === true) {
+
+		let key = req.headers["key"];
+
+		if (!key) {
+			return res.json({ status: "fail", message: "key_not_found" });
+		}
+
+		if (!req.body.device_id || !req.body.user_id) {
+			return res.json({ status: "fail", message: "invalid_params (key, user id, device_id)" });
+		}
+
+		let checkKey = await authFile.verifyKey(key, req.body.device_id, req.body.user_id);
+
+
+		if (checkKey === "expired") {
+			return res.json({ status: "fail", message: "key_expired" });
+		}
+
+		if (!checkKey) {
+			return res.json({ status: "fail", message: "invalid_key" });
+		}
 		let user = await User.findOne({ _id: user_id });
 
 		if (user) {
@@ -52,7 +73,7 @@ const addNewRegisteredAddress = async function (req, res) {
 				check1 = await MailVerification.findOne({
 					user_id: user_id,
 					reason: reason,
-					pin:emailPin,
+					pin: emailPin,
 					status: 0,
 				}).exec();
 				if (!check1)

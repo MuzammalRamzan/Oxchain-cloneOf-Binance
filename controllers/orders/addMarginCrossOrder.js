@@ -45,7 +45,7 @@ const addMarginCrossOrder = async (req, res) => {
     let url =
         'http://global.oxhain.com:8542/price?symbol=' + urlPair;
     result = await axios(url);
-    var price = parseFloat(result.data.data.ask);
+    var price = parseFloat(result.data.ask);
     
     if (method == "limit") {
         target_price = parseFloat(target_price);

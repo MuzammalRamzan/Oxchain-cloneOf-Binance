@@ -20,6 +20,27 @@ const LimitFutureOrder = async (req, res) => {
         return;
     }
 
+    let key = req.headers["key"];
+
+    if (!key) {
+        return res.json({ status: "fail", message: "key_not_found" });
+    }
+
+    if (!req.body.device_id || !req.body.user_id) {
+        return res.json({ status: "fail", message: "invalid_params (key, user id, device_id)" });
+    }
+
+    let checkKey = await authFile.verifyKey(key, req.body.device_id, req.body.user_id);
+
+
+    if (checkKey === "expired") {
+        return res.json({ status: "fail", message: "key_expired" });
+    }
+
+    if (!checkKey) {
+        return res.json({ status: "fail", message: "invalid_key" });
+    }
+
     if (req.body.order_id == undefined || req.body.order_id == "" || req.body.order_id == null) {
         res.json({ status: "fail", message: "Please enter future type" });
         return;
@@ -124,7 +145,7 @@ const LimitFutureOrder = async (req, res) => {
     let url =
         'http://global.oxhain.com:8542/price?symbol=' + urlPair;
     result = await axios(url);
-    var price = parseFloat(result.data.data.ask);
+    var price = parseFloat(result.data.ask);
     if (future_type == "isolated") {
         if (method == "limit") {
             if (req.body.target_price == undefined || req.body.target_price == "" || req.body.target_price == null) {
@@ -240,7 +261,7 @@ const LimitFutureOrder = async (req, res) => {
             } else {
 
                 //Limit oluştur
-                amount = (((getRelevantOrder.amount)) * percent / 100 );
+                amount = (((getRelevantOrder.amount)) * percent / 100);
                 let usedUSDT = (amount * target_price) / getRelevantOrder.leverage;
                 let order = new FutureOrder({
                     pair_id: getPair._id,
@@ -269,11 +290,11 @@ const LimitFutureOrder = async (req, res) => {
                 }
                 return res.json({ status: "success", data: order });
             }
-        } 
-        
-        
-        
-        
+        }
+
+
+
+
         else {
             if (target_price > price) {
                 if (percent == 100) {
@@ -331,7 +352,7 @@ const LimitFutureOrder = async (req, res) => {
             } else {
 
                 //Limit oluştur
-                amount = (((getRelevantOrder.amount)) * percent / 100 );
+                amount = (((getRelevantOrder.amount)) * percent / 100);
                 let usedUSDT = (amount * target_price) / getRelevantOrder.leverage;
                 let order = new FutureOrder({
                     pair_id: getPair._id,

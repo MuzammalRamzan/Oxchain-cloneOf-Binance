@@ -6,6 +6,7 @@ const topReferrals = async (req, res) => {
 
   if (result == true) {
 
+
     //find the top reffer users on Referral model and sort them by the number of referrals they have
     let refCountData = await Referral.aggregate([
       {
