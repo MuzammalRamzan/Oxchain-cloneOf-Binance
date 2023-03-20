@@ -94,8 +94,8 @@ const addOrders = async function (req, res) {
     let url =
       'http://global.oxhain.com:8542/price?symbol=' + urlPair;
     let result = await axios(url);
-    console.log(result.data)
-    var price = result.data.ask;
+    console.log(result.data.data)
+    var price = result.data.data.ask;
 
     let target_price = req.body.target_price ?? 0.0;
 

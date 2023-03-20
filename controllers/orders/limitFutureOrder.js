@@ -145,7 +145,7 @@ const LimitFutureOrder = async (req, res) => {
     let url =
         'http://global.oxhain.com:8542/price?symbol=' + urlPair;
     result = await axios(url);
-    var price = parseFloat(result.data.ask);
+    var price = parseFloat(result.data.data.ask);
     if (future_type == "isolated") {
         if (method == "limit") {
             if (req.body.target_price == undefined || req.body.target_price == "" || req.body.target_price == null) {

@@ -61,7 +61,7 @@ const EditSpotOrder = async (req, res) => {
         let url =
             'http://global.oxhain.com:8542/price?symbol=' + urlPair;
         let result = await axios(url);
-        let price = result.data.ask;
+        let price = result.data.data.ask;
 
 
 
@@ -206,7 +206,7 @@ const EditSpotOrder = async (req, res) => {
         let url =
             'http://global.oxhain.com:8542/price?symbol=' + urlPair;
         let result = await axios(url);
-        let price = result.data.ask;
+        let price = result.data.data.ask;
 
         var getPair = await Pairs.findOne({ name: relevantOrder.pair_name }).exec();
         var fromWallet = await Wallet.findOne({

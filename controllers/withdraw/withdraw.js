@@ -171,7 +171,7 @@ const withdraw = async (req, res) => {
         "http://global.oxhain.com:8542/price?symbol=" +
         checkCoin.symbol + "USDT"
       );
-      price = getPrice.data.ask;
+      price = getPrice.data.data.ask;
     }
 
 
@@ -205,7 +205,7 @@ const withdraw = async (req, res) => {
       else {
 
         let getPrice = await axios("http://global.oxhain.com:8542/price?symbol=" + coinInfo.symbol + "USDT");
-        price = getPrice.data.ask;
+        price = getPrice.data.data.ask;
       }
 
       let amountUSDT = parseFloat(last24HoursWithdraw[i].amount) * parseFloat(price);

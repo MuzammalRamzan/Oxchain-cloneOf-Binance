@@ -51,7 +51,7 @@ const FuturePercentClose = async (req, res) => {
         return;
     }
     let binanceData = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace('/', ''));
-    let marketPrice = parseFloat(binanceData.data.ask);
+    let marketPrice = parseFloat(binanceData.data.data.ask);
 
     console.log(order.amount, percent, marketPrice);
 

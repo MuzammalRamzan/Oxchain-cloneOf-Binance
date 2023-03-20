@@ -51,7 +51,7 @@ const CloseAllFutureOrders = async (req, res) => {
             let url =
                 'http://global.oxhain.com:8542/price?symbol=' + urlPair;
             result = await axios(url);
-            var price = result.data.ask;
+            var price = result.data.data.ask;
             let doc = await FutureOrder.findOneAndUpdate(
                 { _id: order._id },
                 { $set: { status: 1, close_time: Date.now(), close_price: price } }

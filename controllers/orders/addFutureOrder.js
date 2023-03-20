@@ -151,7 +151,7 @@ const addFutureOrder = async (req, res) => {
     let url =
         'http://global.oxhain.com:8542/price?symbol=' + urlPair;
     result = await axios(url);
-    var price = parseFloat(result.data.ask);
+    var price = parseFloat(result.data.data.ask);
     if (future_type == "isolated") {
         if (method == "limit") {
             if (req.body.target_price == undefined || req.body.target_price == "" || req.body.target_price == null) {
@@ -738,7 +738,7 @@ const addFutureOrder = async (req, res) => {
             } else {
 
                 userBalance = await FutureWalletModel.findOne({
-                    user_id: req.body.user_id,
+                    user_id: user_id,
                 }).exec();
                 userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
                 await userBalance.save();

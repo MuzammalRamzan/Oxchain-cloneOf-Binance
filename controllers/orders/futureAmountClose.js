@@ -60,7 +60,7 @@ const FutureAmountClose = async (req, res) => {
     "http://global.oxhain.com:8542/price?symbol=" + pairname
   );
 
-  let marketPrice = parseFloat(binanceData.data.ask);
+  let marketPrice = parseFloat(binanceData.data.data.ask);
 
   amount = parseFloat(amount);
 

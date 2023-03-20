@@ -623,7 +623,7 @@ route.get('/price', async function (req, res) {
 		'http://global.oxhain.com:8542/price?symbol=' + symbol
 	);
 	console.log(priceData.data);
-	if (priceData.data.status == 'success') {
+	if (priceData.data.data.status == 'success') {
 		return res.json({ status: 'succes', data: priceData.data.data });
 	}
 

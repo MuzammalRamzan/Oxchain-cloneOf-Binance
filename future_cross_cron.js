@@ -69,7 +69,7 @@ async function Run(orders) {
       let item = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace("/", ""));
 
       if (item != null && item != '') {
-        let price = item.data.ask;
+        let price = item.data.data.ask;
 
         if (order.stop_limit != 0) {
           if (order.type == 'buy') {
@@ -318,7 +318,7 @@ async function Run(orders) {
       //let item = list.find(x => x.s == order.pair_name.replace('/', ''));
       let item = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace("/", ""));
       if (item != null && item != '') {
-        let price = item.data.ask;
+        let price = item.data.data.ask;
         if (order.type == 'buy') {
           if (price <= order.stop_limit) {
             order.method = 'limit';
