@@ -4,6 +4,9 @@ var authFile = require("../../auth");
 
 const getPairs = async function (req, res) {
 
+
+  let api_key_result = req.body.api_key;
+
   let result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
