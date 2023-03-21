@@ -1,36 +1,63 @@
 const Wallet = require('../../models/Wallet');
+const User = require('../../models/User');
 const FutureWalletModel = require('../../models/FutureWalletModel');
 const MarginIsolated = require('../../models/MarginIsolatedWallet');
 const MarginCross = require('../../models/MarginCrossWallet');
 var authFile = require('../../auth.js');
-const getTrade = (model) => {
-	// Find all documents in the provided model
+const mongoose = require('mongoose');
+
+const getTrade = (model, page, perPage) => {
+	// Calculate the number of items to skip based on the current page number and items per page
+	const skip = (page - 1) * perPage;
+
+	// Find all documents in the provided model, skipping the appropriate number of items based on the current page number
 	return (
 		model
 			.find({})
+			.skip(skip)
+			.limit(perPage)
 			// Select the specified fields from the documents
-			.select('coin_id user_id amount type pnl createdAt')
-			// Populate the user_id and coin_id fields with the corresponding User and CoinList documents
-			// Select the specified fields from the populated documents
+			.select('user_id amount type pnl createdAt coin_id')
+			// Populate the coin_id field with the corresponding CoinList document
 			.populate([
-				{
-					path: 'user_id',
-					model: 'User',
-					select: 'name surname email -_id',
-				},
 				{
 					path: 'coin_id',
 					model: 'CoinList',
 					select: 'symbol -_id',
 				},
 			])
+			.then(async (trades) => {
+				// Use Promise.all() to await all User.findOne() calls
+				const users = await Promise.all(
+					trades.map((trade) =>
+						User.findOne({
+							_id: mongoose.Types.ObjectId(trade.user_id),
+						})
+					)
+				);
+
+				// Map over the trades and extract the necessary fields
+				return trades.map((trade, index) => {
+					const user = users[index];
+					return {
+						symbol: trade?.coin_id?.symbol,
+						user_id: trade?.user_id,
+						user: user ? [user.name, user.surname, user.email] : null,
+						amount: trade?.amount,
+						type: trade?.type,
+						pnl: trade?.pnl,
+						createdAt: trade?.createdAt,
+						deleted_user: user === null,
+					};
+				});
+			})
 	);
 };
 
 const getTrades = async (req, res) => {
 	try {
 		// Destructure the request body to get the type and apiKey
-		const { type, apiKey } = req.body;
+		const { type, apiKey, page, recordPerPage } = req.body;
 
 		// Check if the provided apiKey is valid
 		const isAuthenticated = await authFile.apiKeyChecker(apiKey);
@@ -57,7 +84,7 @@ const getTrades = async (req, res) => {
 		if (!type) {
 			// Create an array of promises for each model type
 			const promises = Object.keys(tradeModels).map(async (modelType) => {
-				return await getTrade(tradeModels[modelType]);
+				return await getTrade(tradeModels[modelType], page, recordPerPage);
 			});
 			// Wait for all promises to resolve
 			trades = await Promise.all(promises);
@@ -65,7 +92,7 @@ const getTrades = async (req, res) => {
 			trades = [].concat.apply([], trades);
 		} else {
 			// If a type is provided, get the trades for that model
-			trades = await getTrade(tradeModels[type]);
+			trades = await getTrade(tradeModels[type], page, recordPerPage);
 		}
 
 		// If no trades are found
