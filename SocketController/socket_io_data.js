@@ -36,6 +36,7 @@ const GetAssets = require("./wallet/getAssets");
 const GetAssetsOverView = require("./wallet/getAssetsOverview");
 const GetDerivatives = require("./wallet/getDerivatives");
 const SocketRoomsModel = require("../models/SocketRoomsModel");
+const SpotMyTrades = require("./trade/spot/spot_my_trades");
 
 require("dotenv").config();
 
@@ -76,6 +77,15 @@ async function Main() {
             await checkRoomOrJoin('derivatives', socket, user_id);
             GetDerivatives(io.sockets, user_id);
         });
+
+
+        socket.on('spot_my_trades', async (params) => {
+            let pair_name = params.substr(0,params.indexOf(','));
+            let user_id = params.substr(params.indexOf(',') + 1, params.length - params.indexOf(','));
+            await checkRoomOrJoin('spot_my_trades', socket, user_id);
+            SpotMyTrades(io.sockets, user_id, pair_name);
+        });
+
 
         socket.on('spot_open_orders', async (user_id) => {
             await checkRoomOrJoin('spot_open_orders', socket, user_id);

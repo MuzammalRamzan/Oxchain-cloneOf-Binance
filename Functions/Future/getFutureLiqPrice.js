@@ -86,7 +86,7 @@ async function GetFutureLiqPrice(orders) {
         entry_price: order.open_price,
         mark_price: mark_price,
         liq_price: order.liqPrice,
-        margin_ratio: (order.liqPrice * 100) / mark_price,
+        margin_ratio: (order.usedUSDT * 100) / mark_price,
         roe: roe,
         margin: order.usedUSDT,
         tp: order.tp,
