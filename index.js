@@ -263,6 +263,7 @@ const GetCandleData = require('./controllers/pair/getCandleData.js');
 const LeaveAITrade = require('./controllers/AITrade/leaveAITrade.js'); //added
 const EditSpotOrder = require('./controllers/orders/editSpotOrder.js'); //added
 const LimitFutureOrder = require('./controllers/orders/limitFutureOrder.js'); //added
+const cancelAllFutureLimit = require('./controllers/orders/cancelAllFutureLimit.js');
 
 route.use(
 	session({
@@ -455,6 +456,7 @@ route.post('/updateStop', UpdateStop);
 route.post('/futurePercentClose', FuturePercentClose);
 route.post('/futureAmountClose', FutureAmountClose);
 
+route.post('/cancelAllFutureLimit', cancelAllFutureLimit);
 route.post('/addFutureOrder', addFutureOrder);
 route.post('/limitFutureOrder', LimitFutureOrder);
 route.post('/cancelFutureLimit', cancelFutureLimit);
