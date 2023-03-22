@@ -1,3 +1,4 @@
+const { default: axios } = require("axios");
 const FutureOrder = require("../../models/FutureOrder");
 const FutureWalletModel = require("../../models/FutureWalletModel");
 
@@ -60,12 +61,11 @@ async function GetFutureLiqPrice(orders) {
           orders[i] = await GetFutureCrossLiqPrice(order);
         }
       }
-      let mark_price =
-      order.type == "buy"
-        ? global.MarketData[order.pair_name.replace("/", "")].ask
-        : global.MarketData[order.pair_name.replace("/", "")].bid;
+      let priceData = await axios("http://global.oxhain.com:8542/future_price?symbol=" + order.pair_name)
+
+      let mark_price = parseFloat(priceData.data.data.ask);
       let side = order.type == "buy" ? 1.0 : -1.0;
-      let lastPrice = global.MarketData[order.pair_name.replace("/", "")].ask;
+      let lastPrice = mark_price;
       let pnl = order.amount * side * (lastPrice - order.open_price);
       let initialMargin = (lastPrice - order.open_price) * side * order.amount;
       let imr = 1.0 / order.leverage;

@@ -36,9 +36,9 @@ const SpotAssetsOverviewCalculate = async (wallets) => {
                 walletData[value].balance = walletData[value].amount;
                 totalUsdValue += walletData[value].amount;
             } else {
-                //priceData = await axios("http://global.oxhain.com:8542/price?symbol=" + value + "USDT");
-                priceData = global.MarketData[value + "USDT"];
-                let price = priceData.ask;
+                priceData = await axios("http://global.oxhain.com:8542/price?symbol=" + value + "USDT");
+                
+                let price = parseFloat(priceData.data.data.ask);
 
                 if (price > 0) {
                     walletData[value].balance =

@@ -6,7 +6,9 @@ const FutureAssetsOverviewCalculate = async (user_id) => {
         let future = await FutureWalletModel.findOne({ user_id: user_id });
         //let priceData = await axios("http://global.oxhain.com:8542/price?symbol=BTCUSDT");
 
-        let btcPrice = global.MarketData["BTCUSDT"].ask
+        let priceData = await axios("http://global.oxhain.com:8542/future_price?symbol=BTCUSDT")
+        
+        let btcPrice = parseFloat(priceData.data.data.ask);
         let btcValue = future.amount / btcPrice;
         return {
 

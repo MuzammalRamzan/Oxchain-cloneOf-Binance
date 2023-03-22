@@ -245,7 +245,7 @@ async function fillMarketPrices() {
     };
 }
 
-fillMarketPrices();
+//fillMarketPrices();
 
 async function checkRoomOrJoin(process, socket, id) {
     if (id.indexOf('-') <= 0) return;
