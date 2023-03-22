@@ -380,7 +380,6 @@ async function Run(orders, priceList) {
       } else {
         let liqPrice =
           order.open_price - order.open_price / (order.leverage * 1.0);
-
         pnl = splitLengthNumber((price - order.open_price) * order.amount);
         let reverseUsedUSDT = order.usedUSDT * -1;
 
@@ -458,8 +457,7 @@ async function Run(orders, priceList) {
           }
         } else {
           let liqPrice =
-            order.open_price +
-            (order.usedUSDT) * (order.open_price / (order.leverage * 1.0));
+            order.open_price + order.open_price / (order.leverage * 1.0);
           if (order.open_price >= liqPrice) {
 
             let user = await User.findOne({ _id: order.user_id });
