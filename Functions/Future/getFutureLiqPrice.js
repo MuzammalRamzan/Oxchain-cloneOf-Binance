@@ -71,7 +71,8 @@ async function GetFutureLiqPrice(orders) {
       let imr = 1.0 / order.leverage;
       let entryMargin = initialMargin / (parseFloat(order.usedUSDT * order.leverage) * 1.0 / parseFloat(lastPrice) * imr);
       //let initialMargin = parseFloat(((lastPrice) - order.open_price) * side * order.usedUSDT);
-      let roe = parseFloat(pnl) / (order.amount * mark_price);
+      let wallet = await FutureWalletModel.findOne({user_id : order.user_id});
+      let roe =  wallet.amount / parseFloat(pnl);
       //roe = parseFloat(pnl) / parseFloat(order.usedUSDT) * 100;
       roe = splitLengthNumber(roe)
       
