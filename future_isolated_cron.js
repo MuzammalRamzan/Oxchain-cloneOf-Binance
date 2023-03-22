@@ -22,10 +22,11 @@ const FutureWalletId = "62ff3c742bebf06a81be98fd";
 async function initialize() {
   if (process.env.NODE_ENV == 'development')
     process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
-    await Connection.connection();
+  await Connection.connection();
 
+  let request = { future_type: "isolated", method: "market", status: 0 };
 
-    var b_ws = new WebSocket("wss://global.oxhain.com:7010");
+  var b_ws = new WebSocket("wss://global.oxhain.com:7010");
   b_ws.onopen = (event) => {
     b_ws.send(JSON.stringify({ page: "future_all_prices" }));
   };
@@ -37,18 +38,20 @@ async function initialize() {
   b_ws.onmessage = async function (event) {
     const data = JSON.parse(event.data);
     if (data != null && data != "undefined") {
-      await Run(data.content);
+      let orders = await FutureOrder.find(request);
+      await Run(orders, data.content);
 
     }
   };
 
-  
+
 }
 
 
 
 
-async function Run(priceList) {
+async function Run(orders, priceList) {
+  if(priceList == null) return;
   let limitOrders = await FutureOrder.find({
     $and: [
       {
@@ -328,14 +331,17 @@ async function Run(priceList) {
   for (var n = 0; n < orders.length; n++) {
     if (orders[n].method != "market") continue;
     if (orders[n].status != 0) continue;
-    let pnl = 0;
-
     let order = orders[n];
+    let pnl = 0;
+    let getPrice = priceList.find((x) => x.symbol == order.pair_name.replace('/', ''));
+    if(getPrice == null || getPrice.length == 0) continue;
+    /*
     let getPrice = await axios(
       "http://global.oxhain.com:8542/price?symbol=" +
       order.pair_name.replace("/", "")
     );
-    let price = getPrice.data.data.ask;
+    */
+    let price = getPrice.ask;
 
     if (orders[n].type == "buy") {
       if (order.adjusted != 0) {
