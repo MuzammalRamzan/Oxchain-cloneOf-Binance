@@ -407,12 +407,14 @@ const addFutureOrder = async (req, res) => {
 
                         let ilkIslem = reverseOreders.usedUSDT;
                         let tersIslem = totalUsedUSDT;
-                        let data = ilkIslem - tersIslem;
+                        let data = tersIslem - ilkIslem ;
+                        if(data < 0) 
+                        data *= -1;
                         userBalance = await FutureWalletModel.findOne({
 
                             user_id: req.body.user_id,
                         }).exec();
-                        userBalance.amount = splitLengthNumber(userBalance.amount + data);
+                        userBalance.amount = splitLengthNumber(userBalance.amount + (ilkIslem -  data));
                         await userBalance.save();
                         reverseOreders.fee += fee;
                         reverseOreders.type = type;
