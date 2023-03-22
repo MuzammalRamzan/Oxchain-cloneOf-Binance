@@ -456,7 +456,7 @@ async function Run(priceList) {
         }
         await order.save();
       } else {
-        let price = item.data.bid;
+        let price = item.bid;
         let pnl = (order.open_price - price) * order.amount;
         order.pnl = splitLengthNumber(pnl);
         let tp = parseFloat(order.tp);
