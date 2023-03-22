@@ -249,12 +249,12 @@ async function Run(orders, priceList) {
               } else {
                 let ilkIslem = reverseOreders.usedUSDT;
                 let tersIslem = order.usedUSDT;
-                let data = ilkIslem - tersIslem;
+                let data = tersIslem - ilkIslem;
                 userBalance = await FutureWalletModel.findOne({
                   coin_id: FutureWalletId,
                   user_id: order.user_id,
                 }).exec();
-                userBalance.amount = userBalance.amount + data;
+                userBalance.amount = userBalance.amount + (ilkIslem -  data);
                 await userBalance.save();
 
                 reverseOreders.type = order.type;
