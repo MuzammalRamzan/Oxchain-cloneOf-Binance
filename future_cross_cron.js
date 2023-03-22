@@ -100,7 +100,7 @@ async function Run(orders) {
               }
 
               const fee = order.usedUSDT * (order.type == 'buy' ? 0.02 : 0.07) / 100.0;
-              let totalUsedUSDT = usedUSDT - fee;
+              let totalUsedUSDT = order.usedUSDT - fee;
 
               order.fee = fee;
               order.usedUSDT = totalUsedUSDT;
@@ -154,7 +154,8 @@ async function Run(orders) {
 
               }
               const fee = order.usedUSDT * (order.type == 'buy' ? 0.02 : 0.07) / 100.0;
-              let totalUsedUSDT = usedUSDT - fee;
+              console.log(order.usedUSDT, fee)
+              let totalUsedUSDT = order.usedUSDT - fee;
               order.fee = fee;
               order.usedUSDT = totalUsedUSDT;
               order.status = 0;
