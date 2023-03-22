@@ -68,8 +68,8 @@ async function GetFutureLiqPrice(orders) {
       let imr = 1.0 / order.leverage;
       let entryMargin = initialMargin / (parseFloat(order.usedUSDT * order.leverage) * 1.0 / parseFloat(lastPrice) * imr);
       //let initialMargin = parseFloat(((lastPrice) - order.open_price) * side * order.usedUSDT);
-      let roe = parseFloat(pnl) / entryMargin;
-      roe = parseFloat(pnl) / parseFloat(order.usedUSDT) * 100;
+      let roe = parseFloat(pnl) / (order.amount * mark_price);
+      //roe = parseFloat(pnl) / parseFloat(order.usedUSDT) * 100;
       roe = splitLengthNumber(roe)
       let mark_price =
         order.type == "buy"
