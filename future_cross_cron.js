@@ -12,19 +12,57 @@ const UserNotifications = require("./models/UserNotifications");
 const SiteNotificaitonModel = require("./models/SiteNotifications");
 const User = require("./models/User");
 const mailer = require("./mailer");
+const { default: mongoose } = require("mongoose");
 
 const io = new Server();
 
 const FutureWalletId = "62ff3c742bebf06a81be98fd";
 async function initialize() {
+  process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
+
   await Connection.connection();
 
   let request = { future_type: "cross", method: "market", status: 0 };
+  var b_ws = new WebSocket("wss://global.oxhain.com:7010");
+
+
+  b_ws.onopen = (event) => {
+    b_ws.send(JSON.stringify({ page: "future_all_prices" }));
+  };
+
+  // Reconnect connection when disconnect connection
+  b_ws.onclose = () => {
+    //b_ws.send(JSON.stringify(initSocketMessage));
+  };
+  b_ws.onmessage = async function (event) {
+    const data = JSON.parse(event.data);
+    if (data != null && data != "undefined") {
+      await Run(data.content);
+
+    }
+  };
+
+  /*
+  const oxhainMain = mongoose.createConnection("mongodb://" +
+  process.env.DOCUMENT_DB_UID
+  + ":" +
+  process.env.DOCUMENT_DB_PASS
+  + "@" + process.env.DBIP + "/?retryWrites=true&w=majority")
+
+
+
+  const oxhainGlobal = mongoose.createConnection("mongodb://" +
+  process.env.MARKET_DB_UID
+  + ":" +
+  process.env.MARKET_DB_PASS
+  + "@" + process.env.MARKETDBIP + "/?retryWrites=true&w=majority")
 
   setInterval(async function () {
     let orders = await FutureOrder.find(request).exec();
     await Run(orders);
   }, 3000);
+
+  */
   /*
   let isInsert = FutureOrder.watch([
     { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
@@ -39,7 +77,9 @@ async function initialize() {
 
 }
 
-async function Run(orders) {
+async function Run(priceList) {
+  if (priceList == null || priceList.length == 0) return;
+
   let limitOrders = await FutureOrder.find(
     {
       $and: [
@@ -350,6 +390,9 @@ async function Run(orders) {
   ]);
   let totalPNL = 0.0;
   for (var i = 0; i < getOpenOrders.length; i++) {
+    let findBinanceItem = priceList.filter(x => x.symbol == order.pair_name.replace('/', ''));
+    
+    if (findBinanceItem.length == 0) continue;
     let data = getOpenOrders[i];
     let total = splitLengthNumber(splitLengthNumber(parseFloat(data.total))) + splitLengthNumber(parseFloat(data.usedUSDT));
 
@@ -385,56 +428,56 @@ async function Run(orders) {
     for (var k = 0; k < userOrders.length; k++) {
       let order = userOrders[k];
       if (order.status == 1) continue;
-      //let findBinanceItem = list.filter(x => x.s == order.pair_name.replace('/', ''));
-      let findBinanceItem = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace("/", ""));
-      if (findBinanceItem != null) {
-        let item = findBinanceItem.data;
-        if (order.type == 'buy') {
-          let price = parseFloat(item.data.ask);
-          let pnl = splitLengthNumber((price - order.open_price) * order.amount);
-          order.pnl = splitLengthNumber(pnl);
-          let tp = parseFloat(order.tp);
-          let sl = parseFloat(order.sl);
-          if (tp != 0 && price >= tp) {
-            order.status = 1;
-            let w = await FutureWalletModel.findOne({ user_id: order.user_id });
-            let newBalance = parseFloat(w.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
-            w.amount = splitLengthNumber(newBalance);
 
-            await w.save();
-          }
-          if (sl != 0 && price <= sl) {
+      //let findBinanceItem = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace("/", ""));
 
-            order.status = 1;
-            let w = await FutureWalletModel.findOne({ user_id: order.user_id });
-            let newBalance = parseFloat(w.amount) + (parseFloat(order.usedUSDT) - parseFloat(order.pnl));
-            w.amount = splitLengthNumber(newBalance);
-            await w.save();
-          }
-          await order.save();
-        } else {
-          let price = item.data.bid;
-          let pnl = (order.open_price - price) * order.amount;
-          order.pnl = splitLengthNumber(pnl);
-          let tp = parseFloat(order.tp);
-          let sl = parseFloat(order.sl);
-          if (tp != 0 && price <= tp) {
-            order.status = 1;
-            let w = await FutureWalletModel.findOne({ user_id: order.user_id });
-            let newBalance = parseFloat(w.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
-            w.amount = splitLengthNumber(newBalance);
-            await w.save();
-          }
-          if (sl != 0 && price >= sl) {
-            order.status = 1;
-            let w = await FutureWalletModel.findOne({ user_id: order.user_id });
-            let newBalance = parseFloat(w.amount) + (parseFloat(order.usedUSDT) - parseFloat(order.pnl));
-            w.amount = splitLengthNumber(newBalance);
-            await w.save();
-          }
-          await order.save();
+      let item = findBinanceItem[0];
+      if (order.type == 'buy') {
+        let price = parseFloat(item.ask);
+        let pnl = splitLengthNumber((price - order.open_price) * order.amount);
+        order.pnl = splitLengthNumber(pnl);
+        let tp = parseFloat(order.tp);
+        let sl = parseFloat(order.sl);
+        if (tp != 0 && price >= tp) {
+          order.status = 1;
+          let w = await FutureWalletModel.findOne({ user_id: order.user_id });
+          let newBalance = parseFloat(w.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
+          w.amount = splitLengthNumber(newBalance);
+
+          await w.save();
         }
+        if (sl != 0 && price <= sl) {
+
+          order.status = 1;
+          let w = await FutureWalletModel.findOne({ user_id: order.user_id });
+          let newBalance = parseFloat(w.amount) + (parseFloat(order.usedUSDT) - parseFloat(order.pnl));
+          w.amount = splitLengthNumber(newBalance);
+          await w.save();
+        }
+        await order.save();
+      } else {
+        let price = item.data.bid;
+        let pnl = (order.open_price - price) * order.amount;
+        order.pnl = splitLengthNumber(pnl);
+        let tp = parseFloat(order.tp);
+        let sl = parseFloat(order.sl);
+        if (tp != 0 && price <= tp) {
+          order.status = 1;
+          let w = await FutureWalletModel.findOne({ user_id: order.user_id });
+          let newBalance = parseFloat(w.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
+          w.amount = splitLengthNumber(newBalance);
+          await w.save();
+        }
+        if (sl != 0 && price >= sl) {
+          order.status = 1;
+          let w = await FutureWalletModel.findOne({ user_id: order.user_id });
+          let newBalance = parseFloat(w.amount) + (parseFloat(order.usedUSDT) - parseFloat(order.pnl));
+          w.amount = splitLengthNumber(newBalance);
+          await w.save();
+        }
+        await order.save();
       }
+
 
     }
   }
