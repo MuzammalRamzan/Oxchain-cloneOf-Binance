@@ -24,7 +24,7 @@ async function initialize() {
   setInterval(async function () {
     let orders = await FutureOrder.find(request).exec();
     await Run(orders);
-  }, 1000);
+  }, 3000);
   /*
   let isInsert = FutureOrder.watch([
     { $match: { operationType: { $in: ["insert", "update", "remove", "delete"] } } },
