@@ -49,6 +49,7 @@ async function sendNewMail(email, title, body) {
 
     <p style='margin:0 auto; margin-top:5px; margin-bottom:15px; color:gray;'>© 2022 Oxhain Exchange. All rights reserved.</p>
     </div>`;
+
   var mailOptions = {
     from: "support@oxhain.com",
     to: email,
@@ -58,12 +59,17 @@ async function sendNewMail(email, title, body) {
 
   transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
+      console.log(error);
       return "false";
     } else {
       return "true";
     }
   });
+  transporter.close();
+
 }
+
+
 
 async function sendNewSMS(country_code, phone, body) {
 
