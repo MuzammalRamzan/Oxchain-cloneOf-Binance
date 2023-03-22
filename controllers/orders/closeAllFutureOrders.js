@@ -44,7 +44,9 @@ const CloseAllFutureOrders = async (req, res) => {
         }
 
         let orders = await FutureOrder.find({ user_id: uid, method: "market", status: 0 });
-        orders.forEach(async (order) => {
+        
+        for(var i = 0; i < orders.length; i++) {
+            let order = orders[i];
             let getPair = await Pairs.findOne({ _id: order.pair_id }).exec();
             var urlPair = getPair.name.replace("/", "");
 
@@ -72,7 +74,7 @@ const CloseAllFutureOrders = async (req, res) => {
                 marginWallet.amount = marginWallet.amount + doc.pnl + doc.usedUSDT;
                 await marginWallet.save();
             }
-        });
+        }
 
 
 
