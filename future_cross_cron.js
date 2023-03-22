@@ -385,9 +385,7 @@ async function Run(priceList) {
   ]);
   let totalPNL = 0.0;
   for (var i = 0; i < getOpenOrders.length; i++) {
-    let findBinanceItem = priceList.filter(x => x.symbol == order.pair_name.replace('/', ''));
     
-    if (findBinanceItem.length == 0) continue;
     let data = getOpenOrders[i];
     let total = splitLengthNumber(splitLengthNumber(parseFloat(data.total))) + splitLengthNumber(parseFloat(data.usedUSDT));
 
@@ -422,8 +420,11 @@ async function Run(priceList) {
     let userOrders = await FutureOrder.find({ user_id: data._id, method: 'market', future_type: 'cross' }).exec();
     for (var k = 0; k < userOrders.length; k++) {
       let order = userOrders[k];
+      
       if (order.status == 1) continue;
-
+      let findBinanceItem = priceList.filter(x => x.symbol == order.pair_name.replace('/', ''));
+    
+      if (findBinanceItem.length == 0) continue;
       //let findBinanceItem = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace("/", ""));
 
       let item = findBinanceItem[0];
