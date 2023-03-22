@@ -74,12 +74,17 @@ async function GetFutureLiqPrice(orders) {
       let wallet = await FutureWalletModel.findOne({user_id : order.user_id});
       let roe = 0.0;
       if(order.future_type == 'cross') 
-       roe =  pnl * 100 / (wallet.amount)
+       roe =  parseFloat(pnl * 100 / (wallet.amount))
        else  
-       roe =  pnl * 100 / (order.usedUSDT)
+       roe =  parseFloat(pnl * 100 / (order.usedUSDT))
       //roe = parseFloat(pnl) / parseFloat(order.usedUSDT) * 100;
-      roe = splitLengthNumber(roe)
+      
       /*
+      if(order.user_id == "63c54ab095a6a433b5cf0a00")
+      console.log(roe, pnl, wallet.amount);
+      
+      //roe = splitLengthNumber(roe)
+      
       if(order.user_id == "63c54ab095a6a433b5cf0a00")
       console.log(roe, pnl, wallet.amount);
       */
@@ -94,7 +99,7 @@ async function GetFutureLiqPrice(orders) {
         mark_price: mark_price,
         liq_price: order.liqPrice,
         margin_ratio: (order.usedUSDT * 100) / mark_price,
-        roe: roe,
+        roe: parseFloat(roe),
         margin: order.usedUSDT,
         tp: order.tp,
         sl: order.sl,
@@ -163,7 +168,7 @@ async function GetFutureLiqPrice(orders) {
     return order;
   }
   function splitLengthNumber(q) {
-    return q.toString().length > 4 ? parseFloat(q.toString().substring(0, 4)) : q;
+    return q.toString().length > 4 ? parseFloat(q.toString().substring(0, 4)) : parseFloat(q);
   }
   
   module.exports = GetFutureLiqPrice;

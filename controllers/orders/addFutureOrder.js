@@ -304,7 +304,7 @@ const addFutureOrder = async (req, res) => {
             amount =
                 ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
             let usedUSDT = (amount * price) / req.body.leverage;
-            const fee = usedUSDT * (type == 'buy' ? 0.02 : 0.07) / 100.0;
+            const fee = usedUSDT * (type == 'buy' ? 0.03 : 0.06) / 100.0;
             let totalUsedUSDT = usedUSDT - fee;
             let reverseOreders = await FutureOrder.findOne({
                 user_id: req.body.user_id,
@@ -603,7 +603,7 @@ const addFutureOrder = async (req, res) => {
             let amount =
                 ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
             let usedUSDT = (amount * price) / req.body.leverage;
-            const fee = usedUSDT * (type == 'buy' ? 0.02 : 0.07) / 100.0;
+            const fee = usedUSDT * (type == 'buy' ? 0.03 : 0.06) / 100.0;
             let totalUsedUSDT = usedUSDT - fee;
 
             let reverseOreders = await FutureOrder.findOne({
