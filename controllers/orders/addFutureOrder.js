@@ -16,32 +16,32 @@ function splitLengthNumber(q) {
 const addFutureOrder = async (req, res) => {
 
     if (req.body.api_key == undefined || req.body.api_key == "" || req.body.api_key == null) {
-        res.json({ status: "fail", message: "Forbidden 403" });
+        return res.json({ status: "fail", message: "Forbidden 403" });
         return;
     }
 
     if (req.body.future_type == undefined || req.body.future_type == "" || req.body.future_type == null) {
-        res.json({ status: "fail", message: "Please enter future type" });
+        return res.json({ status: "fail", message: "Please enter future type" });
         return;
     }
 
     if (req.body.user_id == undefined || req.body.user_id == "" || req.body.user_id == null) {
-        res.json({ status: "fail", message: "Please enter user id" });
+        return res.json({ status: "fail", message: "Please enter user id" });
         return;
     }
 
     if (req.body.type == undefined || req.body.type == "" || req.body.type == null) {
-        res.json({ status: "fail", message: "Please enter type" });
+        return res.json({ status: "fail", message: "Please enter type" });
         return;
     }
 
     if (req.body.method == undefined || req.body.method == "" || req.body.method == null) {
-        res.json({ status: "fail", message: "Please enter method" });
+        return res.json({ status: "fail", message: "Please enter method" });
         return;
     }
 
     if (req.body.leverage == undefined || req.body.leverage == "" || req.body.leverage == null) {
-        res.json({ status: "fail", message: "Please enter leverage" });
+        return res.json({ status: "fail", message: "Please enter leverage" });
         return;
     }
 
@@ -89,7 +89,7 @@ const addFutureOrder = async (req, res) => {
             await apiRequest.save();
         }
         else {
-            res.json({ status: "fail", message: "Forbidden 403" });
+            return res.json({ status: "fail", message: "Forbidden 403" });
             return;
         }
     }
@@ -105,7 +105,7 @@ const addFutureOrder = async (req, res) => {
     let symbol = req.body.symbol;
 
     if (amount <= 0 || percent <= 0) {
-        res.json({ status: "fail", message: "Invalid amount" });
+        return res.json({ status: "fail", message: "Invalid amount" });
         return;
     }
 
@@ -116,14 +116,14 @@ const addFutureOrder = async (req, res) => {
         let val = getSameOrder[h];
         if (val.method == 'market') {
             if (val.status == 0) {
-                res.json({ status: "fail", message: "You currently have a transaction for this symbol" });
+                return res.json({ status: "fail", message: "You currently have a transaction for this symbol" });
                 return;
             }
         }
 
         if (val.method == 'limit' || val.method == 'stop_limit') {
             if (val.status == 1) {
-                res.json({ status: "fail", message: "You currently have a transaction for this symbol" });
+                return res.json({ status: "fail", message: "You currently have a transaction for this symbol" });
                 return;
             }
         }
@@ -133,7 +133,7 @@ const addFutureOrder = async (req, res) => {
 
     let getPair = await Pairs.findOne({ name: symbol }).exec();
     if (getPair == null) {
-        res.json({ status: "fail", message: "invalid_pair" });
+        return res.json({ status: "fail", message: "invalid_pair" });
         return;
     }
 
@@ -143,7 +143,7 @@ const addFutureOrder = async (req, res) => {
     }).exec();
 
     if (userBalance.amount <= 0) {
-        res.json({ status: "fail", message: "Invalid balance" });
+        return res.json({ status: "fail", message: "Invalid balance" });
         return;
     }
     var urlPair = getPair.name.replace("/", "");
@@ -155,14 +155,14 @@ const addFutureOrder = async (req, res) => {
     if (future_type == "isolated") {
         if (method == "limit") {
             if (req.body.target_price == undefined || req.body.target_price == "" || req.body.target_price == null) {
-                res.json({ status: "fail", message: "Please enter target price" });
+                return res.json({ status: "fail", message: "Please enter target price" });
                 return;
             }
 
             target_price = parseFloat(target_price);
 
             if (target_price <= 0) {
-                res.json({ status: "fail", message: "Please enter a greather zero" });
+                return res.json({ status: "fail", message: "Please enter a greather zero" });
                 return;
             }
 
@@ -199,17 +199,17 @@ const addFutureOrder = async (req, res) => {
                 apiRequest.status = 1;
                 await apiRequest.save();
             }
-            res.json({ status: "success", data: order });
+            return res.json({ status: "success", data: order });
             return;
         } else if (method == "stop_limit") {
 
             if (req.body.target_price == undefined || req.body.target_price == "" || req.body.target_price == null) {
-                res.json({ status: "fail", message: "Please enter target price" });
+                return res.json({ status: "fail", message: "Please enter target price" });
                 return;
             }
 
             if (req.body.stop_limit == undefined || req.body.stop_limit == "" || req.body.stop_limit == null) {
-                res.json({ status: "fail", message: "Please enter stop limit" });
+                return res.json({ status: "fail", message: "Please enter stop limit" });
                 return;
             }
 
@@ -217,7 +217,7 @@ const addFutureOrder = async (req, res) => {
             target_price = parseFloat(target_price);
 
             if (target_price <= 0) {
-                res.json({
+                return res.json({
                     status: "fail",
                     message: "Limit price must be greater than 0.",
                 });
@@ -225,7 +225,7 @@ const addFutureOrder = async (req, res) => {
             }
 
             if (stop_limit <= 0) {
-                res.json({
+                return res.json({
                     status: "fail",
                     message: "Stop limit must be greater than 0.",
                 });
@@ -234,7 +234,7 @@ const addFutureOrder = async (req, res) => {
 
             if (type == "buy") {
                 if (stop_limit < target_price) {
-                    res.json({
+                    return res.json({
                         status: "fail",
                         message: "Stop limit price can't be greater then target price",
                     });
@@ -242,7 +242,7 @@ const addFutureOrder = async (req, res) => {
                 }
 
                 if (target_price >= price) {
-                    res.json({
+                    return res.json({
                         status: "fail",
                         message: "Buy limit order must be below the price",
                     });
@@ -252,14 +252,14 @@ const addFutureOrder = async (req, res) => {
 
             if (type == "sell") {
                 if (stop_limit > target_price) {
-                    res.json({
+                    return res.json({
                         status: "fail",
                         message: "Stop limit price can't be smaller then target price",
                     });
                     return;
                 }
                 if (target_price <= price) {
-                    res.json({
+                    return res.json({
                         status: "fail",
                         message: "Price can't be smaller than stop price",
                     });
@@ -298,7 +298,7 @@ const addFutureOrder = async (req, res) => {
                 apiRequest.status = 1;
                 await apiRequest.save();
             }
-            res.json({ status: "success", data: order });
+            return res.json({ status: "success", data: order });
             return;
         } else if (req.body.method == "market") {
             amount =
@@ -316,7 +316,7 @@ const addFutureOrder = async (req, res) => {
 
             if (reverseOreders) {
                 if (reverseOreders.leverage > leverage) {
-                    res.json({ status: "fail", message: "Leverage cannot be smaller" });
+                    return res.json({ status: "fail", message: "Leverage cannot be smaller" });
                     return;
                 }
                 if (reverseOreders.type == type) {
@@ -346,7 +346,7 @@ const addFutureOrder = async (req, res) => {
                         await apiRequest.save();
                     }
                     await setFeeCredit(user_id, getPair._id, fee);
-                    res.json({ status: "success", data: reverseOreders });
+                    return res.json({ status: "success", data: reverseOreders });
                     return;
                 } else {
                     //Tersine ise
@@ -371,7 +371,7 @@ const addFutureOrder = async (req, res) => {
                             await apiRequest.save();
                         }
                         await setFeeCredit(user_id, getPair._id, fee);
-                        res.json({ status: "success", data: reverseOreders });
+                        return res.json({ status: "success", data: reverseOreders });
                         return;
                     }
 
@@ -394,7 +394,7 @@ const addFutureOrder = async (req, res) => {
                             await apiRequest.save();
                         }
                         await setFeeCredit(user_id, getPair._id, fee);
-                        res.json({ status: "success", data: reverseOreders });
+                        return res.json({ status: "success", data: reverseOreders });
                         return;
                     } else {
                         /*
@@ -408,7 +408,6 @@ const addFutureOrder = async (req, res) => {
                         let ilkIslem = reverseOreders.usedUSDT;
                         let tersIslem = totalUsedUSDT;
                         let data = ilkIslem - tersIslem;
-
                         userBalance = await FutureWalletModel.findOne({
 
                             user_id: req.body.user_id,
@@ -431,7 +430,7 @@ const addFutureOrder = async (req, res) => {
                             await apiRequest.save();
                         }
                         await setFeeCredit(user_id, getPair._id, fee);
-                        res.json({ status: "success", data: reverseOreders });
+                        return res.json({ status: "success", data: reverseOreders });
                         return;
                     }
                 }
@@ -467,7 +466,7 @@ const addFutureOrder = async (req, res) => {
                     apiRequest.status = 1;
                     await apiRequest.save();
                 }
-                res.json({ status: "success", data: order });
+                return res.json({ status: "success", data: order });
                 return;
             }
         }
@@ -476,7 +475,7 @@ const addFutureOrder = async (req, res) => {
             target_price = parseFloat(target_price);
 
             if (target_price <= 0) {
-                res.json({ status: "fail", message: "Please enter a greather zero" });
+                return res.json({ status: "fail", message: "Please enter a greather zero" });
                 return;
             }
 
@@ -511,7 +510,7 @@ const addFutureOrder = async (req, res) => {
                 apiRequest.status = 1;
                 await apiRequest.save();
             }
-            res.json({ status: "success", data: order });
+            return res.json({ status: "success", data: order });
             return;
         } else if (method == "stop_limit") {
             target_price = parseFloat(target_price);
@@ -613,9 +612,10 @@ const addFutureOrder = async (req, res) => {
                 method: "market",
                 status: 0,
             }).exec();
+
             if (reverseOreders) {
                 if (reverseOreders.leverage > leverage) {
-                    res.json({ status: "fail", message: "Leverage cannot be smaller" });
+                    return res.json({ status: "fail", message: "Leverage cannot be smaller" });
                     return;
                 }
                 if (reverseOreders.type == type) {
@@ -644,7 +644,7 @@ const addFutureOrder = async (req, res) => {
                         await apiRequest.save();
                     }
                     await setFeeCredit(user_id, getPair._id, fee);
-                    res.json({ status: "success", data: reverseOreders });
+                    return res.json({ status: "success", data: reverseOreders });
                     return;
                 } else {
                     //Tersine ise
@@ -668,7 +668,7 @@ const addFutureOrder = async (req, res) => {
                             await apiRequest.save();
                         }
                         await setFeeCredit(user_id, getPair._id, fee);
-                        res.json({ status: "success", data: reverseOreders });
+                        return res.json({ status: "success", data: reverseOreders });
                         return;
                     }
 
@@ -691,7 +691,7 @@ const addFutureOrder = async (req, res) => {
                             await apiRequest.save();
                         }
                         await setFeeCredit(user_id, getPair._id, fee);
-                        res.json({ status: "success", data: reverseOreders });
+                        return res.json({ status: "success", data: reverseOreders });
                         return;
                     } else {
                         /*
@@ -701,14 +701,17 @@ const addFutureOrder = async (req, res) => {
           
           
                         */
-
-                        let ilkIslem = reverseOreders.usedUSDT;
+                        let ilkIslem = reverseOreders.usedUSDT + reverseOreders.pnl;
                         let tersIslem = totalUsedUSDT;
-                        let data = ilkIslem - tersIslem;
+                        let data = tersIslem - ilkIslem;
+                        if(data < 0) {
+                            data *= -1;
+                        }
                         userBalance = await FutureWalletModel.findOne({
                             user_id: req.body.user_id,
                         }).exec();
-                        userBalance.amount = splitLengthNumber(userBalance.amount + data);
+                        userBalance.amount = userBalance.amount + (ilkIslem - data);
+                        //userBalance.amount = splitLengthNumber(userBalance.amount + data);
                         await userBalance.save();
 
                         reverseOreders.type = type;
@@ -726,12 +729,11 @@ const addFutureOrder = async (req, res) => {
                             await apiRequest.save();
                         }
                         await setFeeCredit(user_id, getPair._id, fee);
-                        res.json({ status: "success", data: reverseOreders });
+                        return res.json({ status: "success", data: reverseOreders });
                         return;
                     }
                 }
             } else {
-
                 userBalance = await FutureWalletModel.findOne({
                     user_id: user_id,
                 }).exec();
@@ -757,14 +759,13 @@ const addFutureOrder = async (req, res) => {
                     status: 0
                 });
                 await order.save();
-
                 await setFeeCredit(req.body.user_id, getPair._id, fee);
                 if (apiResult === false) {
                     apiRequest.status = 1;
                     await apiRequest.save();
                 }
                 await setFeeCredit(user_id, getPair._id, fee);
-                res.json({ status: "success", data: order });
+                return res.json({ status: "success", data: order });
                 return;
             }
         } else {
