@@ -60,7 +60,10 @@ async function GetFutureLiqPrice(orders) {
           orders[i] = await GetFutureCrossLiqPrice(order);
         }
       }
-  
+      let mark_price =
+      order.type == "buy"
+        ? global.MarketData[order.pair_name.replace("/", "")].ask
+        : global.MarketData[order.pair_name.replace("/", "")].bid;
       let side = order.type == "buy" ? 1.0 : -1.0;
       let lastPrice = global.MarketData[order.pair_name.replace("/", "")].ask;
       let pnl = order.amount * side * (lastPrice - order.open_price);
@@ -71,10 +74,7 @@ async function GetFutureLiqPrice(orders) {
       let roe = parseFloat(pnl) / (order.amount * mark_price);
       //roe = parseFloat(pnl) / parseFloat(order.usedUSDT) * 100;
       roe = splitLengthNumber(roe)
-      let mark_price =
-        order.type == "buy"
-          ? global.MarketData[order.pair_name.replace("/", "")].ask
-          : global.MarketData[order.pair_name.replace("/", "")].bid;
+      
       assets.push({
         _id: order._id,
         symbol: order.pair_name,
