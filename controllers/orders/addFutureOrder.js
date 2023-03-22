@@ -517,53 +517,49 @@ const addFutureOrder = async (req, res) => {
             target_price = parseFloat(target_price);
 
             if (target_price <= 0) {
-                res.json({
+                return res.json({
                     status: "fail",
                     message: "Limit price must be greater than 0.",
                 });
-                return;
             }
 
             if (stop_limit <= 0) {
-                res.json({
+                return res.json({
                     status: "fail",
                     message: "Stop limit must be greater than 0.",
                 });
-                return;
             }
 
             if (type == "buy") {
                 if (stop_limit < target_price) {
-                    res.json({
+                    return res.json({
                         status: "fail",
                         message: "Stop limit price can't be greater then target price",
                     });
-                    return;
                 }
 
                 if (target_price >= price) {
-                    res.json({
+                    return res.json({
                         status: "fail",
                         message: "Buy limit order must be below the price",
                     });
-                    return;
                 }
             }
 
             if (type == "sell") {
                 if (stop_limit > target_price) {
-                    res.json({
+                    return res.json({
                         status: "fail",
                         message: "Stop limit price can't be smaller then target price",
                     });
-                    return;
+                    
                 }
                 if (target_price <= price) {
-                    res.json({
+                    return res.json({
                         status: "fail",
                         message: "Price can't be smaller than stop price",
                     });
-                    return;
+                    
                 }
             }
 
@@ -601,9 +597,8 @@ const addFutureOrder = async (req, res) => {
                 apiRequest.status = 1;
                 await apiRequest.save();
             }
-            res.json({ status: "success", data: order });
-            return;
-        } else if (req.body.method == "market") {
+            return res.json({ status: "success", data: order });
+        } else if (method == "market") {
 
             let amount =
                 ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
@@ -772,7 +767,11 @@ const addFutureOrder = async (req, res) => {
                 res.json({ status: "success", data: order });
                 return;
             }
+        } else {
+            return res.json({'status' : 'fail', 'message' : 'Cannot method'})    
         }
+    } else {
+        return res.json({'status' : 'fail', 'message' : 'Cannot future type'})
     }
 
 }
