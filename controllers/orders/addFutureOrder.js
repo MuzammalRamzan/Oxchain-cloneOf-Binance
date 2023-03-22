@@ -481,6 +481,16 @@ const addFutureOrder = async (req, res) => {
                 return;
             }
 
+            if(type == 'buy') {
+                if(target_price >= price) {
+                    return res.json({ status: "fail", message: "Please enter a lower price" });
+                }
+            } else if(type == 'sell') {
+                if(target_price <= price) {
+                    return res.json({ status: "fail", message: "Please enter a greather price" });
+                }
+            }
+
             amount =
                 ((userBalance.amount * percent) / 100 / target_price) *
                 req.body.leverage;
