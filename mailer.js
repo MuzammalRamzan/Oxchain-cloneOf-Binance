@@ -6,8 +6,8 @@ async function sendNewMail(email, title, body) {
   var transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "support@oxhain.com",
-      pass: "Ql3w5wwe@",
+      user: "no-reply@oxhain.com",
+      pass: "0dG^A88ay3By",
     },
   });
 
