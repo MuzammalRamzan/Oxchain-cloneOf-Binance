@@ -18,14 +18,10 @@ const io = new Server();
 
 const FutureWalletId = "62ff3c742bebf06a81be98fd";
 async function initialize() {
-  process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
-
+  if(process.env.NODE_ENV == 'development')
+    process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
   await Connection.connection();
-
-  let request = { future_type: "cross", method: "market", status: 0 };
   var b_ws = new WebSocket("wss://global.oxhain.com:7010");
-
-
   b_ws.onopen = (event) => {
     b_ws.send(JSON.stringify({ page: "future_all_prices" }));
   };

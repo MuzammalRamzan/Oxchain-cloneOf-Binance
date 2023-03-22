@@ -20,25 +20,35 @@ const io = new Server();
 
 const FutureWalletId = "62ff3c742bebf06a81be98fd";
 async function initialize() {
-  await Connection.connection();
+  if (process.env.NODE_ENV == 'development')
+    process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
+    await Connection.connection();
 
-  let request = { future_type: "isolated", method: "market", status: 0 };
-  let orders = await FutureOrder.find(request).exec();
 
-  let isInsert = FutureOrder.watch([
-    {
-      $match: {
-        operationType: { $in: ["insert", "update", "remove", "delete"] },
-      },
-    },
-  ]).on("change", async (data) => {
-    //orders = data;
-    orders = await FutureOrder.find(request).exec();
-    await Run(orders);
-  });
-  await Run(orders);
+    var b_ws = new WebSocket("wss://global.oxhain.com:7010");
+  b_ws.onopen = (event) => {
+    b_ws.send(JSON.stringify({ page: "future_all_prices" }));
+  };
+
+  // Reconnect connection when disconnect connection
+  b_ws.onclose = () => {
+    //b_ws.send(JSON.stringify(initSocketMessage));
+  };
+  b_ws.onmessage = async function (event) {
+    const data = JSON.parse(event.data);
+    if (data != null && data != "undefined") {
+      await Run(data.content);
+
+    }
+  };
+
+  
 }
-async function Run(orders) {
+
+
+
+
+async function Run(priceList) {
   let limitOrders = await FutureOrder.find({
     $and: [
       {
@@ -370,11 +380,11 @@ async function Run(orders) {
         let reverseUsedUSDT = order.usedUSDT * -1;
 
         if (order.open_price <= liqPrice) {
-          
+
           order.status = 1;
         }
         if (pnl <= reverseUsedUSDT) {
-          
+
           order.status = 1;
         }
       }
