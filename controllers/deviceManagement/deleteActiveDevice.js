@@ -34,7 +34,7 @@ const deleteActiveDevice = async function (req, res) {
 
     let device = await Device.findOne({
       user_id: req.body.user_id,
-      _id: req.body.device_id,
+      deviceId: req.body.device_id,
       status: 1,
     }).exec();
 
