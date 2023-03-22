@@ -55,6 +55,8 @@ const getUserInfo = async function (req, res) {
         res.json({
           status: "success",
           data: {
+            user_id: user["_id"],
+            showableUserId: user["showableUserId"],
             avatar: user["avatar"],
             nickname: user["nickname"],
             name: user["name"],
