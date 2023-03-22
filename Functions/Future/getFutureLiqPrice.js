@@ -72,10 +72,17 @@ async function GetFutureLiqPrice(orders) {
       let entryMargin = initialMargin / (parseFloat(order.usedUSDT * order.leverage) * 1.0 / parseFloat(lastPrice) * imr);
       //let initialMargin = parseFloat(((lastPrice) - order.open_price) * side * order.usedUSDT);
       let wallet = await FutureWalletModel.findOne({user_id : order.user_id});
-      let roe =  pnl * 100 / (wallet.amount + pnl)
+      let roe = 0.0;
+      if(order.future_type == 'cross') 
+       roe =  pnl * 100 / (wallet.amount)
+       else  
+       roe =  pnl * 100 / (order.usedUSDT)
       //roe = parseFloat(pnl) / parseFloat(order.usedUSDT) * 100;
       roe = splitLengthNumber(roe)
-      
+      /*
+      if(order.user_id == "63c54ab095a6a433b5cf0a00")
+      console.log(roe, pnl, wallet.amount);
+      */
       assets.push({
         _id: order._id,
         symbol: order.pair_name,
