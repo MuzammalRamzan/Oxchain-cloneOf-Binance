@@ -100,11 +100,9 @@ async function Run(priceList) {
 
     if (order.method == 'limit') {
       if (order.status == 0) continue;
-      //let item = list.find(x => x.s == order.pair_name.replace('/', ''));
-      let item = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace("/", ""));
-
+      let item = priceList.find(x => x.symbol == order.pair_name.replace('/', ''));
       if (item != null && item != '') {
-        let price = item.data.data.ask;
+        let price = item.ask;
 
         if (order.stop_limit != 0) {
           if (order.type == 'buy') {
