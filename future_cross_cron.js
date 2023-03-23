@@ -310,6 +310,7 @@ async function Run(priceList) {
                 continue;
 
               } else {
+                console.log("bura 234");
                 let ilkIslem = reverseOreders.usedUSDT;
                 let tersIslem = order.usedUSDT;
                 let data = tersIslem - ilkIslem;
