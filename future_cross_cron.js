@@ -321,7 +321,7 @@ async function Run(priceList) {
                   user_id: order.user_id,
                 }).exec();
                 console.log(userBalance.amount)
-                userBalance.amount = userBalance.amount - data + (tersIslem * 2);
+                userBalance.amount = userBalance.amount - (data * 2) + (tersIslem * 2);
                 await userBalance.save();
 
                 reverseOreders.type = order.type;
