@@ -13,11 +13,13 @@ const SiteNotificaitonModel = require("./models/SiteNotifications");
 const User = require("./models/User");
 const mailer = require("./mailer");
 const { default: mongoose } = require("mongoose");
+const { sleep } = require("sleep");
 
 const io = new Server();
 
 const FutureWalletId = "62ff3c742bebf06a81be98fd";
 async function initialize() {
+  
     process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
   await Connection.connection();
   var b_ws = new WebSocket("wss://global.oxhain.com:7010");
@@ -33,10 +35,12 @@ async function initialize() {
     const data = JSON.parse(event.data);
     if (data != null && data != "undefined") {
       await Run(data.content);
-
+      //sleep(2000);
     }
   };
 
+
+  //setInterval()
 
   /*
   const oxhainMain = mongoose.createConnection("mongodb://" +
@@ -72,8 +76,10 @@ async function initialize() {
 
 
 }
-
+var isRun = false;
 async function Run(priceList) {
+  if(isRun) return;
+  isRun = true;
   if (priceList == null || priceList.length == 0) return;
 
   let limitOrders = await FutureOrder.find(
@@ -132,7 +138,7 @@ async function Run(priceList) {
                 }
 
               }
-
+              console.log("Limit Deneme ");
               const fee = order.usedUSDT * (order.type == 'buy' ? 0.02 : 0.07) / 100.0;
               let totalUsedUSDT = order.usedUSDT - fee;
 
@@ -160,7 +166,9 @@ async function Run(priceList) {
                 status: 1,
               });
               await n_order.save();
+              
               continue;
+
             }
           } else if (order.type == 'sell') {
             if (price <= order.target_price) {
@@ -494,7 +502,7 @@ async function Run(priceList) {
 
     }
   }
-
+  isRun = false;
 }
 
 
