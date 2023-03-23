@@ -4,8 +4,8 @@ var authFile = require("../../auth.js");
 
 const cancelAllFutureLimit = async function (req, res) {
 
-    let user_id = req.body.user_id;
-    if(user_id == null || user_id == '') return res.json({ status: "false", message: "User not found" });
+  let user_id = req.body.user_id;
+  if (user_id == null || user_id == '') return res.json({ status: "false", message: "User not found" });
   var api_key_result = req.body.api_key;
   var result = await authFile.apiKeyChecker(api_key_result);
   if (result == false) {
@@ -27,20 +27,22 @@ const cancelAllFutureLimit = async function (req, res) {
 
   });
 
-  for(var o = 0; o < orders.length; o++) {
+  for (var o = 0; o < orders.length; o++) {
     let order = orders[o];
     order.status = -1;
-    if(order.FutureOrder == null) {
-        
+    if (order.FutureOrder == null) {
+
+      if (order.isFallOutWallet) {
         let userBalance = await FutureWalletModel.findOne({
-            user_id: user_id,
-          }).exec();
-    
-          userBalance.amount = userBalance.amount + order.usedUSDT;
-          await userBalance.save();
+          user_id: user_id,
+        }).exec();
+
+        userBalance.amount = userBalance.amount + order.usedUSDT;
+        await userBalance.save();
+      }
     }
     await order.save();
-    
+
   }
 
 

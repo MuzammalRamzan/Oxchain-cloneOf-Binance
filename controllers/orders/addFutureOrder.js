@@ -407,14 +407,14 @@ const addFutureOrder = async (req, res) => {
 
                         let ilkIslem = reverseOreders.usedUSDT;
                         let tersIslem = totalUsedUSDT;
-                        let data = tersIslem - ilkIslem ;
-                        if(data < 0) 
-                        data *= -1;
+                        let data = tersIslem - ilkIslem;
+                        if (data < 0)
+                            data *= -1;
                         userBalance = await FutureWalletModel.findOne({
 
                             user_id: req.body.user_id,
                         }).exec();
-                        userBalance.amount = splitLengthNumber(userBalance.amount + (ilkIslem -  data));
+                        userBalance.amount = splitLengthNumber(userBalance.amount + (ilkIslem - data));
                         await userBalance.save();
                         reverseOreders.fee += fee;
                         reverseOreders.type = type;
@@ -481,12 +481,12 @@ const addFutureOrder = async (req, res) => {
                 return;
             }
 
-            if(type == 'buy') {
-                if(target_price >= price) {
+            if (type == 'buy') {
+                if (target_price >= price) {
                     return res.json({ status: "fail", message: "Please enter a lower price" });
                 }
-            } else if(type == 'sell') {
-                if(target_price <= price) {
+            } else if (type == 'sell') {
+                if (target_price <= price) {
                     return res.json({ status: "fail", message: "Please enter a greather price" });
                 }
             }
@@ -496,8 +496,18 @@ const addFutureOrder = async (req, res) => {
                 req.body.leverage;
             let usedUSDT = (amount * target_price) / req.body.leverage;
 
-            userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
-            await userBalance.save();
+            let getSameMakretOrders = await FutureOrder.findOne({ method: 'market', pair_name: getPair.name, status: 0, type: (type == 'buy' ? 'sell' : 'buy') });
+            if (getSameMakretOrders == null) {
+                isFallOutWallet = true;
+                userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
+                await userBalance.save();
+
+            } else {
+                isFallOutWallet = false;
+            }
+
+
+
             let order = new FutureOrder({
                 pair_id: getPair._id,
                 pair_name: getPair.name,
@@ -505,7 +515,8 @@ const addFutureOrder = async (req, res) => {
                 future_type: future_type,
                 method: method,
                 user_id: user_id,
-                usedUSDT: usedUSDT,
+                usedUSDT: usedUSDT ?? 0,
+                isFallOutWallet: isFallOutWallet,
                 required_margin: usedUSDT,
                 isolated: 0.0,
                 sl: req.body.sl ?? 0,
@@ -563,14 +574,14 @@ const addFutureOrder = async (req, res) => {
                         status: "fail",
                         message: "Stop limit price can't be smaller then target price",
                     });
-                    
+
                 }
                 if (target_price <= price) {
                     return res.json({
                         status: "fail",
                         message: "Price can't be smaller than stop price",
                     });
-                    
+
                 }
             }
 
@@ -716,7 +727,7 @@ const addFutureOrder = async (req, res) => {
                         let ilkIslem = reverseOreders.usedUSDT + reverseOreders.pnl;
                         let tersIslem = totalUsedUSDT;
                         let data = tersIslem - ilkIslem;
-                        if(data < 0) {
+                        if (data < 0) {
                             data *= -1;
                         }
                         userBalance = await FutureWalletModel.findOne({
@@ -781,10 +792,10 @@ const addFutureOrder = async (req, res) => {
                 return;
             }
         } else {
-            return res.json({'status' : 'fail', 'message' : 'Cannot method'})    
+            return res.json({ 'status': 'fail', 'message': 'Cannot method' })
         }
     } else {
-        return res.json({'status' : 'fail', 'message' : 'Cannot future type'})
+        return res.json({ 'status': 'fail', 'message': 'Cannot future type' })
     }
 
 }
