@@ -160,6 +160,7 @@ async function Run(priceList) {
                 status: 1,
               });
               await n_order.save();
+              continue;
             }
           } else if (order.type == 'sell') {
             if (price <= order.target_price) {
@@ -213,6 +214,7 @@ async function Run(priceList) {
                 status: 1,
               });
               await n_order.save();
+              continue;
             }
           }
         } else {
@@ -253,7 +255,7 @@ async function Run(priceList) {
               await reverseOreders.save();
               order.status = 0;
               await order.save();
-
+              continue;
             } else {
               //Tersine ise
               let checkusdt = (reverseOreders.usedUSDT + reverseOreders.pnl) * reverseOreders.leverage;
@@ -272,12 +274,17 @@ async function Run(priceList) {
                 await reverseOreders.save();
                 order.status = 0;
                 await order.save();
+                continue;
               }
 
               else if (checkusdt > order.usedUSDT * order.leverage) {
+                console.log("bura 1");
                 let writeUsedUSDT =
                   reverseOreders.usedUSDT + reverseOreders.pnl - order.usedUSDT;
+                  
                 if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
+
+
                 reverseOreders.usedUSDT = writeUsedUSDT;
                 reverseOreders.amount =
                   (writeUsedUSDT * reverseOreders.leverage) / price;
@@ -285,20 +292,29 @@ async function Run(priceList) {
                   coin_id: FutureWalletId,
                   user_id: order.user_id,
                 }).exec();
-                userBalance.amount = userBalance.amount + reverseOreders.usedUSDT + order.usedUSDT;
+                
+
+                
+                userBalance.amount = userBalance.amount + (order.usedUSDT * 2);
+                console.log("Bakiye : ", userBalance.amount);
                 await userBalance.save();
                 await reverseOreders.save();
                 order.status = 0;
                 await order.save();
+                console.log("save")
+                continue;
+
               } else {
                 let ilkIslem = reverseOreders.usedUSDT;
                 let tersIslem = order.usedUSDT;
                 let data = tersIslem - ilkIslem;
+                console.log(data, tersIslem, ilkIslem)
                 if(data < 0) data *= -1;
                 userBalance = await FutureWalletModel.findOne({
                   coin_id: FutureWalletId,
                   user_id: order.user_id,
                 }).exec();
+                console.log(userBalance.amount)
                 userBalance.amount = userBalance.amount + (ilkIslem - data);
                 await userBalance.save();
 
@@ -313,6 +329,7 @@ async function Run(priceList) {
                 await reverseOreders.save();
                 order.status = 0;
                 await order.save();
+                continue;
               }
             }
           } else {
@@ -345,6 +362,7 @@ async function Run(priceList) {
             await n_order.save();
             order.status = 0;
             await order.save();
+            continue;
           }
         }
       }
