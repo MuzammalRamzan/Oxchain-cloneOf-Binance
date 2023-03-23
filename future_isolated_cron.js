@@ -20,7 +20,7 @@ const io = new Server();
 
 const FutureWalletId = "62ff3c742bebf06a81be98fd";
 async function initialize() {
-    process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
+  process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
   await Connection.connection();
 
   let request = { future_type: "isolated", method: "market", status: 0 };
@@ -50,7 +50,7 @@ async function initialize() {
 
 
 async function Run(orders, priceList) {
-  if(priceList == null) return;
+  if (priceList == null) return;
   let limitOrders = await FutureOrder.find({
     $and: [
       {
@@ -66,13 +66,11 @@ async function Run(orders, priceList) {
   });
 
   for (var i = 0; i < limitOrders.length; i++) {
+
     let order = limitOrders[i];
     if (order.method == "limit") {
       if (order.status == 0) continue;
-      let item = await axios(
-        "http://global.oxhain.com:8542/price?symbol=" +
-        order.pair_name.replace("/", "")
-      );
+      let item = priceList.find(x => x.symbol == order.pair_name.replace('/', ''));
       if (item != null && item != "") {
         let price = item.data.data.ask;
         if (order.stop_limit != 0) {
@@ -250,12 +248,12 @@ async function Run(orders, priceList) {
                 let ilkIslem = reverseOreders.usedUSDT;
                 let tersIslem = order.usedUSDT;
                 let data = tersIslem - ilkIslem;
-                if(data < 0) data *= -1;
+                if (data < 0) data *= -1;
                 userBalance = await FutureWalletModel.findOne({
                   coin_id: FutureWalletId,
                   user_id: order.user_id,
                 }).exec();
-                userBalance.amount = userBalance.amount + (ilkIslem -  data);
+                userBalance.amount = userBalance.amount + (ilkIslem - data);
                 await userBalance.save();
 
                 reverseOreders.type = order.type;
@@ -334,7 +332,7 @@ async function Run(orders, priceList) {
     let order = orders[n];
     let pnl = 0;
     let getPrice = priceList.find((x) => x.symbol == order.pair_name.replace('/', ''));
-    if(getPrice == null || getPrice.length == 0) continue;
+    if (getPrice == null || getPrice.length == 0) continue;
     /*
     let getPrice = await axios(
       "http://global.oxhain.com:8542/price?symbol=" +
