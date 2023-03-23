@@ -149,7 +149,7 @@ const addFutureOrder = async (req, res) => {
     var urlPair = getPair.name.replace("/", "");
 
     let url =
-        'http://global.oxhain.com:8542/price?symbol=' + urlPair;
+        'http://global.oxhain.com:8542/future_price?symbol=' + urlPair;
     result = await axios(url);
     var price = parseFloat(result.data.data.ask);
     if (future_type == "isolated") {
