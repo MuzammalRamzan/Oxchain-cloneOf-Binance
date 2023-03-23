@@ -76,10 +76,7 @@ async function initialize() {
 
 
 }
-var isRun = false;
 async function Run(priceList) {
-  if(isRun) return;
-  isRun = true;
   if (priceList == null || priceList.length == 0) return;
 
   let limitOrders = await FutureOrder.find(
@@ -502,7 +499,6 @@ async function Run(priceList) {
 
     }
   }
-  isRun = false;
 }
 
 
