@@ -22,12 +22,14 @@ const cancelFutureLimit = async function (req, res) {
   ).exec();
   if (doc) {
     if (doc.relevant_order_id == null) {
-      let userBalance = await FutureWalletModel.findOne({
-        user_id: doc.user_id,
-      }).exec();
+      if (doc.isFallOutWallet) {
+        let userBalance = await FutureWalletModel.findOne({
+          user_id: doc.user_id,
+        }).exec();
 
-      userBalance.amount = userBalance.amount + doc.usedUSDT;
-      await userBalance.save();
+        userBalance.amount = userBalance.amount + doc.usedUSDT;
+        await userBalance.save();
+      }
     }
   }
   doc = await FutureOrder.findOneAndUpdate(
@@ -41,12 +43,14 @@ const cancelFutureLimit = async function (req, res) {
   ).exec();
   if (doc) {
     if (doc.relevant_order_id == null) {
-      let userBalance = await FutureWalletModel.findOne({
-        user_id: doc.user_id,
-      }).exec();
+      if (doc.isFallOutWallet) {
+        let userBalance = await FutureWalletModel.findOne({
+          user_id: doc.user_id,
+        }).exec();
 
-      userBalance.amount = userBalance.amount + doc.usedUSDT;
-      await userBalance.save();
+        userBalance.amount = userBalance.amount + doc.usedUSDT;
+        await userBalance.save();
+      }
     }
   }
 
