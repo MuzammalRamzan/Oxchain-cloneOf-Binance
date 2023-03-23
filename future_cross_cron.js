@@ -18,6 +18,26 @@ const { sleep } = require("sleep");
 const io = new Server();
 
 const FutureWalletId = "62ff3c742bebf06a81be98fd";
+
+async function init() {
+  let req = await axios('http://global.oxhain.com:7010/future_all_price');
+  let priceData = req.data;
+  print(priceData);
+
+/*
+  const oxhainMain = mongoose.createConnection("mongodb://" +process.env.DOCUMENT_DB_UID+ ":" + process.env.DOCUMENT_DB_PASS+ "@" + process.env.DBIP + "/?retryWrites=true&w=majority")
+  const oxhainMarket = mongoose.createConnection("mongodb://" +process.env.DOCUMENT_DB_UID+ ":" + process.env.DOCUMENT_DB_PASS+ "@" + process.env.DBIP + "/?retryWrites=true&w=majority")
+
+  let ordersModel = mongoose.Schema('')
+  let marketModel = mongoose.Schema('')
+*/
+/*
+  await Run(data.content);
+  await init();
+  */
+}
+init();
+
 async function initialize() {
   
     process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
@@ -507,4 +527,4 @@ function splitLengthNumber(q) {
   return q.toString().length > 4 ? parseFloat(q.toString().substring(0, 4)) : q;
 }
 
-initialize();
+//initialize();

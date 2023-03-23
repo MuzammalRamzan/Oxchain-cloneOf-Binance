@@ -71,6 +71,18 @@ route.get("/future_price", async (req, res) => {
         return res.json({ 'status': 'error', 'message': 'unknow error' });
     }
 });
+
+
+route.get("/future_all_price", async (req, res) => {
+    try {
+
+        const data = await FutureQuoteModel.find();
+        return res.json({ 'status': 'success', 'data': data });
+    } catch (err) {
+        console.log(err)
+        return res.json({ 'status': 'error', 'message': 'unknow error' });
+    }
+});
 route.get('/getCandleData', async (req, res) => {
     try {
         let symbol = req.query.symbol;
