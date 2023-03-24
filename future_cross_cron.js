@@ -398,7 +398,7 @@ async function Run(priceList) {
       //let item = list.find(x => x.s == order.pair_name.replace('/', ''));
       let item = priceList.find(x => x.symbol == order.pair_name.replace('/', ''));
       if (item != null && item != '') {
-        let price = item.data.ask;
+        let price = item.ask;
         if (order.type == 'buy') {
           if (price <= order.stop_limit) {
             order.method = 'limit';
