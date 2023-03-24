@@ -486,8 +486,8 @@ const addFutureOrder = async (req, res) => {
 
 
                     amount =
-                        ((userBalance.amount * percent) / 100 / target_price) * req.body.leverage;
-                    let usedUSDT = (amount * target_price) / req.body.leverage;
+                        ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
+                    let usedUSDT = (amount * price) / req.body.leverage;
                     const fee = usedUSDT * (type == 'buy' ? 0.03 : 0.06) / 100.0;
                     let totalUsedUSDT = usedUSDT - fee;
                     let reverseOreders = await FutureOrder.findOne({
@@ -510,12 +510,12 @@ const addFutureOrder = async (req, res) => {
                             let oldLeverage = reverseOreders.leverage;
                             let newUsedUSDT = oldUsedUSDT + totalUsedUSDT + oldPNL;
                             reverseOreders.usedUSDT = newUsedUSDT;
-                            reverseOreders.open_price = target_price;
+                            reverseOreders.open_price = price;
                             reverseOreders.fee += fee;
                             reverseOreders.pnl = 0;
                             reverseOreders.leverage = leverage;
                             reverseOreders.open_time = Date.now();
-                            reverseOreders.amount = splitLengthNumber((newUsedUSDT * leverage) / target_price);
+                            reverseOreders.amount = splitLengthNumber((newUsedUSDT * leverage) / price);
 
                             userBalance = await FutureWalletModel.findOne({
 
@@ -565,7 +565,7 @@ const addFutureOrder = async (req, res) => {
                                 if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
                                 reverseOreders.usedUSDT = writeUsedUSDT;
                                 reverseOreders.amount =
-                                    (writeUsedUSDT * reverseOreders.leverage) / target_price;
+                                    (writeUsedUSDT * reverseOreders.leverage) / price;
                                 userBalance = await FutureWalletModel.findOne({
 
                                     user_id: req.body.user_id,
@@ -608,7 +608,7 @@ const addFutureOrder = async (req, res) => {
                                 if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
                                 reverseOreders.usedUSDT = writeUsedUSDT;
                                 //reverseOreders.amount = ((((reverseOreders.usedUSDT + reverseOreders.pnl) * leverage) - (usedUSDT * leverage)) / price);
-                                reverseOreders.amount = splitLengthNumber((writeUsedUSDT * leverage) / target_price);
+                                reverseOreders.amount = splitLengthNumber((writeUsedUSDT * leverage) / price);
                                 await reverseOreders.save();
 
                                 if (apiResult === false) {
@@ -642,7 +642,7 @@ const addFutureOrder = async (req, res) => {
                             target_price: 0.0,
                             leverage: leverage,
                             amount: amount,
-                            open_price: target_price,
+                            open_price: price,
                             status: 0
                         });
                         await order.save();
@@ -662,8 +662,8 @@ const addFutureOrder = async (req, res) => {
                 if (target_price <= price) {
 
                     amount =
-                        ((userBalance.amount * percent) / 100 / target_price) * req.body.leverage;
-                    let usedUSDT = (amount * target_price) / req.body.leverage;
+                        ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
+                    let usedUSDT = (amount * price) / req.body.leverage;
                     const fee = usedUSDT * (type == 'buy' ? 0.03 : 0.06) / 100.0;
                     let totalUsedUSDT = usedUSDT - fee;
                     let reverseOreders = await FutureOrder.findOne({
@@ -686,12 +686,12 @@ const addFutureOrder = async (req, res) => {
                             let oldLeverage = reverseOreders.leverage;
                             let newUsedUSDT = oldUsedUSDT + totalUsedUSDT + oldPNL;
                             reverseOreders.usedUSDT = newUsedUSDT;
-                            reverseOreders.open_price = target_price;
+                            reverseOreders.open_price = price;
                             reverseOreders.fee += fee;
                             reverseOreders.pnl = 0;
                             reverseOreders.leverage = leverage;
                             reverseOreders.open_time = Date.now();
-                            reverseOreders.amount = splitLengthNumber((newUsedUSDT * leverage) / target_price);
+                            reverseOreders.amount = splitLengthNumber((newUsedUSDT * leverage) / price);
 
                             userBalance = await FutureWalletModel.findOne({
 
@@ -741,7 +741,7 @@ const addFutureOrder = async (req, res) => {
                                 if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
                                 reverseOreders.usedUSDT = writeUsedUSDT;
                                 reverseOreders.amount =
-                                    (writeUsedUSDT * reverseOreders.leverage) / target_price;
+                                    (writeUsedUSDT * reverseOreders.leverage) / price;
                                 userBalance = await FutureWalletModel.findOne({
 
                                     user_id: req.body.user_id,
@@ -784,7 +784,7 @@ const addFutureOrder = async (req, res) => {
                                 if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
                                 reverseOreders.usedUSDT = writeUsedUSDT;
                                 //reverseOreders.amount = ((((reverseOreders.usedUSDT + reverseOreders.pnl) * leverage) - (usedUSDT * leverage)) / price);
-                                reverseOreders.amount = splitLengthNumber((writeUsedUSDT * leverage) / target_price);
+                                reverseOreders.amount = splitLengthNumber((writeUsedUSDT * leverage) / price);
                                 await reverseOreders.save();
 
                                 if (apiResult === false) {
@@ -818,7 +818,7 @@ const addFutureOrder = async (req, res) => {
                             target_price: 0.0,
                             leverage: leverage,
                             amount: amount,
-                            open_price: target_price,
+                            open_price: price,
                             status: 0
                         });
                         await order.save();
