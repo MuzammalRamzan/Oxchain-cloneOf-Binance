@@ -19,6 +19,23 @@ const UserNotifications = require("./models/UserNotifications");
 const io = new Server();
 
 const FutureWalletId = "62ff3c742bebf06a81be98fd";
+
+
+async function Start() {
+
+  let req = await axios('http://global.oxhain.com:8542/future_all_price');
+    let priceData = req.data;
+    await Run(priceData.data);
+    await Start()
+}
+
+async function init(){
+  await Connection.connection();
+  await Start();
+} 
+init();
+
+
 async function initialize() {
   process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
   await Connection.connection();
@@ -505,4 +522,4 @@ function splitLengthNumber(q) {
   return q.toString().length > 4 ? parseFloat(q.toString().substring(0, 4)) : q;
 }
 
-initialize();
+//initialize();
