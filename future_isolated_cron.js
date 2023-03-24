@@ -24,15 +24,17 @@ const FutureWalletId = "62ff3c742bebf06a81be98fd";
 async function Start() {
 
   let req = await axios('http://global.oxhain.com:8542/future_all_price');
-    let priceData = req.data;
-    await Run(priceData.data);
-    await Start()
+  let priceData = req.data;
+  let request = { future_type: "isolated", method: "market", status: 0 };
+  let orders = await FutureOrder.find(request);
+  await Run(orders, priceData.data);
+  await Start()
 }
 
-async function init(){
+async function init() {
   await Connection.connection();
   await Start();
-} 
+}
 init();
 
 
@@ -89,7 +91,7 @@ async function Run(orders, priceList) {
       if (order.status == 0) continue;
       let item = priceList.find(x => x.symbol == order.pair_name.replace('/', ''));
       if (item != null && item != "") {
-        let price = item.data.data.ask;
+        let price = item.ask;
         if (order.stop_limit != 0) {
           if (order.type == "buy") {
             if (price >= order.target_price) {
@@ -207,6 +209,7 @@ async function Run(orders, priceList) {
 
           if (reverseOreders) {
 
+
             if (reverseOreders.type == order.type) {
               let oldAmount = reverseOreders.amount;
               let oldUsedUSDT = reverseOreders.usedUSDT;
@@ -230,6 +233,7 @@ async function Run(orders, priceList) {
                 (reverseOreders.usedUSDT + reverseOreders.pnl) *
                 reverseOreders.leverage;
               if (checkusdt == order.usedUSDT * order.leverage) {
+                console.log("Burası 211");
                 reverseOreders.status = 1;
 
                 let userBalance = await FutureWalletModel.findOne({
@@ -245,6 +249,8 @@ async function Run(orders, priceList) {
                 order.status = 0;
                 await order.save();
               } else if (checkusdt > order.usedUSDT * order.leverage) {
+
+                console.log("Burası 111");
                 let writeUsedUSDT =
                   reverseOreders.usedUSDT + reverseOreders.pnl - order.usedUSDT;
                 if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
@@ -255,8 +261,9 @@ async function Run(orders, priceList) {
                   coin_id: FutureWalletId,
                   user_id: order.user_id,
                 }).exec();
-                userBalance.amount =
-                  userBalance.amount + reverseOreders.usedUSDT + order.usedUSDT;
+
+                userBalance.amount = userBalance.amount + (order.usedUSDT * 2);
+
                 await userBalance.save();
                 await reverseOreders.save();
                 order.status = 0;
@@ -270,7 +277,7 @@ async function Run(orders, priceList) {
                   coin_id: FutureWalletId,
                   user_id: order.user_id,
                 }).exec();
-                userBalance.amount = userBalance.amount + (ilkIslem - data);
+                userBalance.amount = userBalance.amount - (data * 2) + (tersIslem * 2);
                 await userBalance.save();
 
                 reverseOreders.type = order.type;
@@ -321,12 +328,11 @@ async function Run(orders, priceList) {
         }
       }
     } else if (order.method == "stop_limit") {
-      let item = await axios(
-        "http://global.oxhain.com:8542/price?symbol=" +
-        order.pair_name.replace("/", "")
-      );
+      let item = priceList.find(x => x.symbol == order.pair_name.replace('/', ''));
+
       if (item != null && item != "") {
-        let price = item.data.data.ask;
+
+        let price = item.ask;
         if (order.type == "buy") {
           if (price <= order.stop_limit) {
             order.method = "limit";

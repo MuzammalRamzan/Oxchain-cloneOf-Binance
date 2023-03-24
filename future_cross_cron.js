@@ -18,17 +18,17 @@ const io = new Server();
 const FutureWalletId = "62ff3c742bebf06a81be98fd";
 
 async function Start() {
-  
+
   let req = await axios('http://global.oxhain.com:8542/future_all_price');
-    let priceData = req.data;
-    await Run(priceData.data);
-    await Start()
-    /*
-  while (true) {
-    let req = await axios('http://global.oxhain.com:8542/future_all_price');
-    let priceData = req.data;
-    await Run(priceData.data);
-  }
+  let priceData = req.data;
+  await Run(priceData.data);
+  await Start()
+  /*
+while (true) {
+  let req = await axios('http://global.oxhain.com:8542/future_all_price');
+  let priceData = req.data;
+  await Run(priceData.data);
+}
 */
   /*
     const oxhainMain = mongoose.createConnection("mongodb://" +process.env.DOCUMENT_DB_UID+ ":" + process.env.DOCUMENT_DB_PASS+ "@" + process.env.DBIP + "/?retryWrites=true&w=majority")
@@ -42,10 +42,10 @@ async function Start() {
     await init();
     */
 }
-async function init(){
+async function init() {
   await Connection.connection();
   await Start();
-} 
+}
 init();
 
 async function initialize() {
@@ -396,9 +396,9 @@ async function Run(priceList) {
     }
     else if (order.method == 'stop_limit') {
       //let item = list.find(x => x.s == order.pair_name.replace('/', ''));
-      let item = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace("/", ""));
+      let item = priceList.find(x => x.symbol == order.pair_name.replace('/', ''));
       if (item != null && item != '') {
-        let price = item.data.data.ask;
+        let price = item.data.ask;
         if (order.type == 'buy') {
           if (price <= order.stop_limit) {
             order.method = 'limit';
@@ -414,7 +414,7 @@ async function Run(priceList) {
     }
   }
 
-  
+
 
   let getOpenOrders = await FutureOrder.aggregate([
     {
