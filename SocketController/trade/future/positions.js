@@ -14,9 +14,10 @@ const FuturePositions = async (sockets, user_id) => {
     status: 0,
   });
   let assets = await GetFutureLiqPrice(orders);
-  
-    
-  var roomInUsers = await SocketRoomsModel.find({ token:token, process: "future_positions" });
+
+  console.log("future_positions", assets);
+
+  var roomInUsers = await SocketRoomsModel.find({ token: token, process: "future_positions" });
   roomInUsers.forEach((room) => {
     sockets.in(room.token).emit("future_positions", { page: "future", type: "positions", content: assets });
   });

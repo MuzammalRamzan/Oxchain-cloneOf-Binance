@@ -407,14 +407,14 @@ const addFutureOrder = async (req, res) => {
 
                         let ilkIslem = reverseOreders.usedUSDT;
                         let tersIslem = totalUsedUSDT;
-                        let data = tersIslem - ilkIslem ;
-                        if(data < 0) 
-                        data *= -1;
+                        let data = tersIslem - ilkIslem;
+                        if (data < 0)
+                            data *= -1;
                         userBalance = await FutureWalletModel.findOne({
 
                             user_id: req.body.user_id,
                         }).exec();
-                        userBalance.amount = splitLengthNumber(userBalance.amount + (ilkIslem -  data));
+                        userBalance.amount = splitLengthNumber(userBalance.amount + (ilkIslem - data));
                         await userBalance.save();
                         reverseOreders.fee += fee;
                         reverseOreders.type = type;
@@ -481,13 +481,356 @@ const addFutureOrder = async (req, res) => {
                 return;
             }
 
-            if(type == 'buy') {
-                if(target_price >= price) {
-                    return res.json({ status: "fail", message: "Please enter a lower price" });
+            if (type == 'buy') {
+                if (target_price >= price) {
+
+
+                    amount =
+                        ((userBalance.amount * percent) / 100 / target_price) * req.body.leverage;
+                    let usedUSDT = (amount * target_price) / req.body.leverage;
+                    const fee = usedUSDT * (type == 'buy' ? 0.03 : 0.06) / 100.0;
+                    let totalUsedUSDT = usedUSDT - fee;
+                    let reverseOreders = await FutureOrder.findOne({
+                        user_id: req.body.user_id,
+                        pair_id: getPair._id,
+                        future_type: future_type,
+                        method: "market",
+                        status: 0,
+                    });
+
+                    if (reverseOreders) {
+                        if (reverseOreders.leverage > leverage) {
+                            return res.json({ status: "fail", message: "Leverage cannot be smaller" });
+                            return;
+                        }
+                        if (reverseOreders.type == type) {
+                            let oldAmount = reverseOreders.amount;
+                            let oldUsedUSDT = reverseOreders.usedUSDT;
+                            let oldPNL = reverseOreders.pnl;
+                            let oldLeverage = reverseOreders.leverage;
+                            let newUsedUSDT = oldUsedUSDT + totalUsedUSDT + oldPNL;
+                            reverseOreders.usedUSDT = newUsedUSDT;
+                            reverseOreders.open_price = target_price;
+                            reverseOreders.fee += fee;
+                            reverseOreders.pnl = 0;
+                            reverseOreders.leverage = leverage;
+                            reverseOreders.open_time = Date.now();
+                            reverseOreders.amount = splitLengthNumber((newUsedUSDT * leverage) / target_price);
+
+                            userBalance = await FutureWalletModel.findOne({
+
+                                user_id: req.body.user_id,
+                            }).exec();
+                            userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
+                            await userBalance.save();
+
+                            await reverseOreders.save();
+                            if (apiResult === false) {
+                                apiRequest.status = 1;
+                                await apiRequest.save();
+                            }
+                            await setFeeCredit(user_id, getPair._id, fee);
+                            return res.json({ status: "success", data: reverseOreders });
+                            return;
+                        } else {
+                            //Tersine ise
+                            let checkusdt =
+                                (reverseOreders.usedUSDT + reverseOreders.pnl) *
+                                reverseOreders.leverage;
+                            if (checkusdt == totalUsedUSDT * leverage) {
+                                reverseOreders.status = 1;
+                                userBalance = await FutureWalletModel.findOne({
+
+                                    user_id: req.body.user_id,
+                                }).exec();
+                                userBalance.amount =
+                                    userBalance.amount +
+                                    reverseOreders.pnl +
+                                    reverseOreders.usedUSDT;
+                                await userBalance.save();
+                                reverseOreders.fee += fee;
+                                await reverseOreders.save();
+                                if (apiResult === false) {
+                                    apiRequest.status = 1;
+                                    await apiRequest.save();
+                                }
+                                await setFeeCredit(user_id, getPair._id, fee);
+                                return res.json({ status: "success", data: reverseOreders });
+                                return;
+                            }
+
+                            if (checkusdt > usedUSDT * leverage) {
+                                let writeUsedUSDT =
+                                    reverseOreders.usedUSDT + reverseOreders.pnl - totalUsedUSDT;
+                                if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
+                                reverseOreders.usedUSDT = writeUsedUSDT;
+                                reverseOreders.amount =
+                                    (writeUsedUSDT * reverseOreders.leverage) / target_price;
+                                userBalance = await FutureWalletModel.findOne({
+
+                                    user_id: req.body.user_id,
+                                }).exec();
+                                userBalance.amount = splitLengthNumber(userBalance.amount + usedUSDT);
+                                await userBalance.save();
+                                await reverseOreders.save();
+                                if (apiResult === false) {
+                                    apiRequest.status = 1;
+                                    await apiRequest.save();
+                                }
+                                await setFeeCredit(user_id, getPair._id, fee);
+                                return res.json({ status: "success", data: reverseOreders });
+                                return;
+                            } else {
+                                /*
+                                  20 lik işlem var
+                                  50 luk ters işlem açıyor
+                                  toplam da 10 luk pozisyon olacak
+                  
+                  
+                                */
+
+                                let ilkIslem = reverseOreders.usedUSDT;
+                                let tersIslem = totalUsedUSDT;
+                                let data = tersIslem - ilkIslem;
+                                if (data < 0)
+                                    data *= -1;
+                                userBalance = await FutureWalletModel.findOne({
+
+                                    user_id: req.body.user_id,
+                                }).exec();
+                                userBalance.amount = splitLengthNumber(userBalance.amount + (ilkIslem - data));
+                                await userBalance.save();
+                                reverseOreders.fee += fee;
+                                reverseOreders.type = type;
+                                reverseOreders.leverage = leverage;
+                                let writeUsedUSDT =
+                                    reverseOreders.usedUSDT + reverseOreders.pnl - totalUsedUSDT;
+                                if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
+                                reverseOreders.usedUSDT = writeUsedUSDT;
+                                //reverseOreders.amount = ((((reverseOreders.usedUSDT + reverseOreders.pnl) * leverage) - (usedUSDT * leverage)) / price);
+                                reverseOreders.amount = splitLengthNumber((writeUsedUSDT * leverage) / target_price);
+                                await reverseOreders.save();
+
+                                if (apiResult === false) {
+                                    apiRequest.status = 1;
+                                    await apiRequest.save();
+                                }
+                                await setFeeCredit(user_id, getPair._id, fee);
+                                return res.json({ status: "success", data: reverseOreders });
+                                return;
+                            }
+                        }
+                    } else {
+                        userBalance = await FutureWalletModel.findOne({
+                            user_id: req.body.user_id,
+                        }).exec();
+                        userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
+                        await userBalance.save();
+                        let order = new FutureOrder({
+                            pair_id: getPair._id,
+                            pair_name: getPair.name,
+                            fee: fee,
+                            type: type,
+                            future_type: future_type,
+                            method: method,
+                            user_id: user_id,
+                            usedUSDT: totalUsedUSDT,
+                            required_margin: totalUsedUSDT,
+                            isolated: totalUsedUSDT,
+                            sl: req.body.sl ?? 0,
+                            tp: req.body.tp ?? 0,
+                            target_price: 0.0,
+                            leverage: leverage,
+                            amount: amount,
+                            open_price: target_price,
+                            status: 0
+                        });
+                        await order.save();
+
+                        await setFeeCredit(user_id, getPair._id, fee);
+                        if (apiResult === false) {
+                            apiRequest.status = 1;
+                            await apiRequest.save();
+                        }
+                        return res.json({ status: "success", data: order });
+                        return;
+                    }
+
+
                 }
-            } else if(type == 'sell') {
-                if(target_price <= price) {
-                    return res.json({ status: "fail", message: "Please enter a greather price" });
+            } else if (type == 'sell') {
+                if (target_price <= price) {
+
+                    amount =
+                        ((userBalance.amount * percent) / 100 / target_price) * req.body.leverage;
+                    let usedUSDT = (amount * target_price) / req.body.leverage;
+                    const fee = usedUSDT * (type == 'buy' ? 0.03 : 0.06) / 100.0;
+                    let totalUsedUSDT = usedUSDT - fee;
+                    let reverseOreders = await FutureOrder.findOne({
+                        user_id: req.body.user_id,
+                        pair_id: getPair._id,
+                        future_type: future_type,
+                        method: "market",
+                        status: 0,
+                    });
+
+                    if (reverseOreders) {
+                        if (reverseOreders.leverage > leverage) {
+                            return res.json({ status: "fail", message: "Leverage cannot be smaller" });
+                            return;
+                        }
+                        if (reverseOreders.type == type) {
+                            let oldAmount = reverseOreders.amount;
+                            let oldUsedUSDT = reverseOreders.usedUSDT;
+                            let oldPNL = reverseOreders.pnl;
+                            let oldLeverage = reverseOreders.leverage;
+                            let newUsedUSDT = oldUsedUSDT + totalUsedUSDT + oldPNL;
+                            reverseOreders.usedUSDT = newUsedUSDT;
+                            reverseOreders.open_price = target_price;
+                            reverseOreders.fee += fee;
+                            reverseOreders.pnl = 0;
+                            reverseOreders.leverage = leverage;
+                            reverseOreders.open_time = Date.now();
+                            reverseOreders.amount = splitLengthNumber((newUsedUSDT * leverage) / target_price);
+
+                            userBalance = await FutureWalletModel.findOne({
+
+                                user_id: req.body.user_id,
+                            }).exec();
+                            userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
+                            await userBalance.save();
+
+                            await reverseOreders.save();
+                            if (apiResult === false) {
+                                apiRequest.status = 1;
+                                await apiRequest.save();
+                            }
+                            await setFeeCredit(user_id, getPair._id, fee);
+                            return res.json({ status: "success", data: reverseOreders });
+                            return;
+                        } else {
+                            //Tersine ise
+                            let checkusdt =
+                                (reverseOreders.usedUSDT + reverseOreders.pnl) *
+                                reverseOreders.leverage;
+                            if (checkusdt == totalUsedUSDT * leverage) {
+                                reverseOreders.status = 1;
+                                userBalance = await FutureWalletModel.findOne({
+
+                                    user_id: req.body.user_id,
+                                }).exec();
+                                userBalance.amount =
+                                    userBalance.amount +
+                                    reverseOreders.pnl +
+                                    reverseOreders.usedUSDT;
+                                await userBalance.save();
+                                reverseOreders.fee += fee;
+                                await reverseOreders.save();
+                                if (apiResult === false) {
+                                    apiRequest.status = 1;
+                                    await apiRequest.save();
+                                }
+                                await setFeeCredit(user_id, getPair._id, fee);
+                                return res.json({ status: "success", data: reverseOreders });
+                                return;
+                            }
+
+                            if (checkusdt > usedUSDT * leverage) {
+                                let writeUsedUSDT =
+                                    reverseOreders.usedUSDT + reverseOreders.pnl - totalUsedUSDT;
+                                if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
+                                reverseOreders.usedUSDT = writeUsedUSDT;
+                                reverseOreders.amount =
+                                    (writeUsedUSDT * reverseOreders.leverage) / target_price;
+                                userBalance = await FutureWalletModel.findOne({
+
+                                    user_id: req.body.user_id,
+                                }).exec();
+                                userBalance.amount = splitLengthNumber(userBalance.amount + usedUSDT);
+                                await userBalance.save();
+                                await reverseOreders.save();
+                                if (apiResult === false) {
+                                    apiRequest.status = 1;
+                                    await apiRequest.save();
+                                }
+                                await setFeeCredit(user_id, getPair._id, fee);
+                                return res.json({ status: "success", data: reverseOreders });
+                                return;
+                            } else {
+                                /*
+                                  20 lik işlem var
+                                  50 luk ters işlem açıyor
+                                  toplam da 10 luk pozisyon olacak
+                  
+                  
+                                */
+
+                                let ilkIslem = reverseOreders.usedUSDT;
+                                let tersIslem = totalUsedUSDT;
+                                let data = tersIslem - ilkIslem;
+                                if (data < 0)
+                                    data *= -1;
+                                userBalance = await FutureWalletModel.findOne({
+
+                                    user_id: req.body.user_id,
+                                }).exec();
+                                userBalance.amount = splitLengthNumber(userBalance.amount + (ilkIslem - data));
+                                await userBalance.save();
+                                reverseOreders.fee += fee;
+                                reverseOreders.type = type;
+                                reverseOreders.leverage = leverage;
+                                let writeUsedUSDT =
+                                    reverseOreders.usedUSDT + reverseOreders.pnl - totalUsedUSDT;
+                                if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
+                                reverseOreders.usedUSDT = writeUsedUSDT;
+                                //reverseOreders.amount = ((((reverseOreders.usedUSDT + reverseOreders.pnl) * leverage) - (usedUSDT * leverage)) / price);
+                                reverseOreders.amount = splitLengthNumber((writeUsedUSDT * leverage) / target_price);
+                                await reverseOreders.save();
+
+                                if (apiResult === false) {
+                                    apiRequest.status = 1;
+                                    await apiRequest.save();
+                                }
+                                await setFeeCredit(user_id, getPair._id, fee);
+                                return res.json({ status: "success", data: reverseOreders });
+                                return;
+                            }
+                        }
+                    } else {
+                        userBalance = await FutureWalletModel.findOne({
+                            user_id: req.body.user_id,
+                        }).exec();
+                        userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
+                        await userBalance.save();
+                        let order = new FutureOrder({
+                            pair_id: getPair._id,
+                            pair_name: getPair.name,
+                            fee: fee,
+                            type: type,
+                            future_type: future_type,
+                            method: method,
+                            user_id: user_id,
+                            usedUSDT: totalUsedUSDT,
+                            required_margin: totalUsedUSDT,
+                            isolated: totalUsedUSDT,
+                            sl: req.body.sl ?? 0,
+                            tp: req.body.tp ?? 0,
+                            target_price: 0.0,
+                            leverage: leverage,
+                            amount: amount,
+                            open_price: target_price,
+                            status: 0
+                        });
+                        await order.save();
+
+                        await setFeeCredit(user_id, getPair._id, fee);
+                        if (apiResult === false) {
+                            apiRequest.status = 1;
+                            await apiRequest.save();
+                        }
+                        return res.json({ status: "success", data: order });
+                        return;
+                    }
                 }
             }
 
@@ -563,14 +906,14 @@ const addFutureOrder = async (req, res) => {
                         status: "fail",
                         message: "Stop limit price can't be smaller then target price",
                     });
-                    
+
                 }
                 if (target_price <= price) {
                     return res.json({
                         status: "fail",
                         message: "Price can't be smaller than stop price",
                     });
-                    
+
                 }
             }
 
@@ -716,7 +1059,7 @@ const addFutureOrder = async (req, res) => {
                         let ilkIslem = reverseOreders.usedUSDT + reverseOreders.pnl;
                         let tersIslem = totalUsedUSDT;
                         let data = tersIslem - ilkIslem;
-                        if(data < 0) {
+                        if (data < 0) {
                             data *= -1;
                         }
                         userBalance = await FutureWalletModel.findOne({
@@ -781,10 +1124,10 @@ const addFutureOrder = async (req, res) => {
                 return;
             }
         } else {
-            return res.json({'status' : 'fail', 'message' : 'Cannot method'})    
+            return res.json({ 'status': 'fail', 'message': 'Cannot method' })
         }
     } else {
-        return res.json({'status' : 'fail', 'message' : 'Cannot future type'})
+        return res.json({ 'status': 'fail', 'message': 'Cannot future type' })
     }
 
 }
