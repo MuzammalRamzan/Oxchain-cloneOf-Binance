@@ -186,16 +186,21 @@ const addFutureOrder = async (req, res) => {
 
             }
 
+
+
             amount =
                 ((userBalance.amount * percent) / 100 / target_price) *
                 req.body.leverage;
             amount = splitLengthNumber(amount);
             let usedUSDT = (amount * target_price) / req.body.leverage;
 
-            userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
+            const fee = usedUSDT * leverage * (type == 'buy' ? 0.03 : 0.06) / 100.0;
+
+            userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT - fee);
             await userBalance.save();
 
             let order = new FutureOrder({
+                fee: fee,
                 pair_id: getPair._id,
                 pair_name: getPair.name,
                 type: type,
