@@ -164,7 +164,7 @@ async function Run(priceList) {
                 }
 
               }
-              const fee = order.usedUSDT * (order.type == 'buy' ? 0.03 : 0.06) / 100.0;
+              const fee = ((order.usedUSDT * order.leverage) * (order.type == 'buy' ? 0.03 : 0.06)) / 100.0;
               let totalUsedUSDT = order.usedUSDT - fee;
 
               order.fee = fee;
@@ -221,7 +221,7 @@ async function Run(priceList) {
                 }
 
               }
-              const fee = order.usedUSDT * (order.type == 'buy' ? 0.03 : 0.06) / 100.0;
+              const fee = ((order.usedUSDT * order.leverage) * (order.type == 'buy' ? 0.03 : 0.06)) / 100.0;
               let totalUsedUSDT = order.usedUSDT - fee;
               order.fee = fee;
               order.usedUSDT = totalUsedUSDT;

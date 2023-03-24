@@ -118,6 +118,9 @@ async function Run(orders, priceList) {
                 }
 
               }
+              const fee = ((order.usedUSDT * order.leverage) * (order.type == 'buy' ? 0.03 : 0.06)) / 100.0;
+              let totalUsedUSDT = order.usedUSDT - fee;
+              order.fee = fee;
               order.status = 0;
               await order.save();
               let n_order = new FutureOrder({
@@ -127,9 +130,9 @@ async function Run(orders, priceList) {
                 future_type: order.future_type,
                 method: order.method,
                 user_id: order.user_id,
-                usedUSDT: order.usedUSDT,
-                required_margin: order.usedUSDT,
-                isolated: order.isolated,
+                usedUSDT: totalUsedUSDT,
+                required_margin: totalUsedUSDT,
+                isolated: totalUsedUSDT,
                 sl: order.sl ?? 0,
                 tp: order.tp ?? 0,
                 target_price: order.target_price,
@@ -165,6 +168,10 @@ async function Run(orders, priceList) {
                 }
 
               }
+              const fee = ((order.usedUSDT * order.leverage) * (order.type == 'buy' ? 0.03 : 0.06)) / 100.0;
+              let totalUsedUSDT = order.usedUSDT - fee;
+              order.fee = fee;
+
               order.status = 0;
               await order.save();
               let n_order = new FutureOrder({
@@ -174,9 +181,9 @@ async function Run(orders, priceList) {
                 future_type: order.future_type,
                 method: order.method,
                 user_id: order.user_id,
-                usedUSDT: order.usedUSDT,
-                required_margin: order.usedUSDT,
-                isolated: order.isolated,
+                usedUSDT: totalUsedUSDT,
+                required_margin: totalUsedUSDT,
+                isolated: totalUsedUSDT,
                 sl: order.sl ?? 0,
                 tp: order.tp ?? 0,
                 target_price: order.target_price,
