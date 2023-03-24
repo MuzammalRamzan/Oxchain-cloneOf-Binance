@@ -1,27 +1,27 @@
-var nodemailer = require("nodemailer");
+var nodemailer = require('nodemailer');
 // const { Vonage } = require("@vonage/server-sdk");
-var axios = require("axios");
+var axios = require('axios');
 
 async function sendNewMail(email, title, body) {
-  var transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: "no-reply@oxhain.com",
-      pass: "0dG^A88ay3By",
-    },
-  });
+	var transporter = nodemailer.createTransport({
+		service: 'gmail',
+		auth: {
+			user: 'no-reply@oxhain.com',
+			pass: '0dG^A88ay3By',
+		},
+	});
 
-  let htmlTemplate =
-    `<div style='width:500px; height:auto; background-color:white; border:1px solid #9932CC; border-radius:5px; margin:0 auto; text-align:center;'>
+	let htmlTemplate =
+		`<div style='width:500px; height:auto; background-color:white; border:1px solid #9932CC; border-radius:5px; margin:0 auto; text-align:center;'>
    
     <h1 style='color:gray'>Oxhain Exchange</h1>
     <img src='https://pbs.twimg.com/profile_images/1584899893746978817/1Rv7NKve_400x400.jpg' style='width:100px; height:100px; margin:0 auto;'>
     <p style='margin:0 auto; margin-top:15px; font-size:18px;'><b>` +
-    title +
-    `</b></p>
+		title +
+		`</b></p>
     <p style='margin:0 auto; margin-top:5px; color:gray;'>` +
-    body +
-    `</p></br>
+		body +
+		`</p></br>
 
     <div style='width:90%; height:1px; background-color:#9932CC; margin:0 auto;'></div></br>
     
@@ -50,62 +50,56 @@ async function sendNewMail(email, title, body) {
     <p style='margin:0 auto; margin-top:5px; margin-bottom:15px; color:gray;'>© 2022 Oxhain Exchange. All rights reserved.</p>
     </div>`;
 
-  var mailOptions = {
-    from: "support@oxhain.com",
-    to: email,
-    subject: title,
-    html: htmlTemplate,
-  };
+	var mailOptions = {
+		from: 'support@oxhain.com',
+		to: email,
+		subject: title,
+		html: htmlTemplate,
+	};
 
-  transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      console.log(error);
-      return "false";
-    } else {
-      return "true";
-    }
-  });
-  transporter.close();
-
+	transporter.sendMail(mailOptions, function (error, info) {
+		if (error) {
+			console.log(error);
+			return 'false';
+		} else {
+			return 'true';
+		}
+	});
+	transporter.close();
 }
 
-
-
 async function sendNewSMS(country_code, phone, body) {
+	let resData = '';
+	let resError = '';
 
-  let resData = "";
-  let resError = "";
+	await axios
+		.post(
+			'https://rest.messagebird.com/messages',
+			{
+				originator: 'Oxhain',
+				recipients: [country_code + phone],
+				body: body,
+			},
+			{
+				headers: {
+					Authorization: 'AccessKey Ccq2VsSFHn0xsUdmmT33ZUvgw',
+				},
+			}
+		)
+		.then((res) => {
+			resData = res.data;
+		})
+		.catch((err) => {
+			resError = err;
+		});
 
-
-  await axios
-    .post(
-      "https://rest.messagebird.com/messages",
-      {
-        originator: "Oxhain",
-        recipients: [country_code + phone],
-        body: body,
-      },
-      {
-        headers: {
-          Authorization: "AccessKey Ccq2VsSFHn0xsUdmmT33ZUvgw",
-        },
-      }
-    )
-    .then((res) => {
-      resData = res.data;
-    })
-    .catch((err) => {
-      resError = err;
-    });
-
-
-  return new Promise((resolve) => {
-    if (resData) {
-      resolve(resData);
-    } else {
-      resolve(resError);
-    }
-  });
+	return new Promise((resolve) => {
+		if (resData) {
+			resolve(resData);
+		} else {
+			resolve(resError);
+		}
+	});
 }
 
 // const Vonage = require("@vonage/server-sdk");
@@ -130,6 +124,6 @@ async function sendNewSMS(country_code, phone, body) {
 //   return true;
 // }
 module.exports = {
-  sendMail: sendNewMail,
-  sendSMS: sendNewSMS,
+	sendMail: sendNewMail,
+	sendSMS: sendNewSMS,
 };
