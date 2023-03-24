@@ -215,6 +215,12 @@ async function Run(orders, priceList) {
           userBalance.amount = userBalance.amount - order.usedUSDT;
           await userBalance.save();
           */
+
+
+          const fee = order.usedUSDT * order.leverage * (order.type == 'buy' ? 0.03 : 0.06) / 100.0;
+
+          let orderCoinAmount = (order.usedUSDT - fee) * order.leverage / price;
+
           let n_order = new FutureOrder({
             pair_id: order.pair_id,
             pair_name: order.pair_name,
@@ -223,16 +229,17 @@ async function Run(orders, priceList) {
             future_type: order.future_type,
             method: "market",
             user_id: order.user_id,
-            usedUSDT: order.usedUSDT,
-            required_margin: order.usedUSDT,
-            isolated: order.usedUSDT,
+            usedUSDT: order.usedUSDT - fee,
+            required_margin: order.usedUSDT - fee,
+            isolated: order.usedUSDT - fee,
             sl: order.sl,
             tp: order.tp,
-            limit_id : order._id,
+            limit_id: order._id,
             target_price: order.target_price,
             leverage: order.leverage,
-            amount: order.amount,
+            amount: orderCoinAmount,
             open_price: price,
+            fee: fee,
           });
           await n_order.save();
           order.status = 0;
