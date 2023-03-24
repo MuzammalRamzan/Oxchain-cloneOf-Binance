@@ -130,6 +130,7 @@ async function Run(orders, priceList) {
             await reverseOreders.save();
             order.status = 0;
             await order.save();
+            continue;
           } else {
             //Tersine ise
             let checkusdt =
@@ -150,6 +151,7 @@ async function Run(orders, priceList) {
               await reverseOreders.save();
               order.status = 0;
               await order.save();
+              continue;
             } else if (checkusdt > order.usedUSDT * order.leverage) {
 
               let writeUsedUSDT =
@@ -169,6 +171,7 @@ async function Run(orders, priceList) {
               await reverseOreders.save();
               order.status = 0;
               await order.save();
+              continue;
             } else {
               let ilkIslem = reverseOreders.usedUSDT;
               let tersIslem = order.usedUSDT;
@@ -193,6 +196,7 @@ async function Run(orders, priceList) {
               await reverseOreders.save();
               order.status = 0;
               await order.save();
+              continue;
             }
           }
         } else {
@@ -225,6 +229,7 @@ async function Run(orders, priceList) {
           await n_order.save();
           order.status = 0;
           await order.save();
+          continue;
         }
       }
     } else if (order.method == "stop_limit") {
