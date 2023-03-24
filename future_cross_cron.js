@@ -19,28 +19,40 @@ const io = new Server();
 
 const FutureWalletId = "62ff3c742bebf06a81be98fd";
 
-async function init() {
-  let req = await axios('http://global.oxhain.com:7010/future_all_price');
-  let priceData = req.data;
-  print(priceData);
-
-/*
-  const oxhainMain = mongoose.createConnection("mongodb://" +process.env.DOCUMENT_DB_UID+ ":" + process.env.DOCUMENT_DB_PASS+ "@" + process.env.DBIP + "/?retryWrites=true&w=majority")
-  const oxhainMarket = mongoose.createConnection("mongodb://" +process.env.DOCUMENT_DB_UID+ ":" + process.env.DOCUMENT_DB_PASS+ "@" + process.env.DBIP + "/?retryWrites=true&w=majority")
-
-  let ordersModel = mongoose.Schema('')
-  let marketModel = mongoose.Schema('')
+async function Start() {
+  
+  let req = await axios('http://global.oxhain.com:8542/future_all_price');
+    let priceData = req.data;
+    await Run(priceData.data);
+    await Start()
+    /*
+  while (true) {
+    let req = await axios('http://global.oxhain.com:8542/future_all_price');
+    let priceData = req.data;
+    await Run(priceData.data);
+  }
 */
-/*
-  await Run(data.content);
-  await init();
+  /*
+    const oxhainMain = mongoose.createConnection("mongodb://" +process.env.DOCUMENT_DB_UID+ ":" + process.env.DOCUMENT_DB_PASS+ "@" + process.env.DBIP + "/?retryWrites=true&w=majority")
+    const oxhainMarket = mongoose.createConnection("mongodb://" +process.env.DOCUMENT_DB_UID+ ":" + process.env.DOCUMENT_DB_PASS+ "@" + process.env.DBIP + "/?retryWrites=true&w=majority")
+  
+    let ordersModel = mongoose.Schema('')
+    let marketModel = mongoose.Schema('')
   */
+  /*
+    await Run(data.content);
+    await init();
+    */
 }
+async function init(){
+  await Connection.connection();
+  await Start();
+} 
 init();
 
 async function initialize() {
-  
-    process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
+
+  process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
   await Connection.connection();
   var b_ws = new WebSocket("wss://global.oxhain.com:7010");
   b_ws.onopen = (event) => {
@@ -97,8 +109,7 @@ async function initialize() {
 
 }
 async function Run(priceList) {
-  if (priceList == null || priceList.length == 0) return;
-
+  //if (priceList == null || priceList.length == 0) return;
   let limitOrders = await FutureOrder.find(
     {
       $and: [
@@ -155,8 +166,7 @@ async function Run(priceList) {
                 }
 
               }
-              console.log("Limit Deneme ");
-              const fee = order.usedUSDT * (order.type == 'buy' ? 0.02 : 0.07) / 100.0;
+              const fee = order.usedUSDT * (order.type == 'buy' ? 0.03 : 0.06) / 100.0;
               let totalUsedUSDT = order.usedUSDT - fee;
 
               order.fee = fee;
@@ -183,7 +193,7 @@ async function Run(priceList) {
                 status: 1,
               });
               await n_order.save();
-              
+
               continue;
 
             }
@@ -213,8 +223,7 @@ async function Run(priceList) {
                 }
 
               }
-              const fee = order.usedUSDT * (order.type == 'buy' ? 0.02 : 0.07) / 100.0;
-              console.log(order.usedUSDT, fee)
+              const fee = order.usedUSDT * (order.type == 'buy' ? 0.03 : 0.06) / 100.0;
               let totalUsedUSDT = order.usedUSDT - fee;
               order.fee = fee;
               order.usedUSDT = totalUsedUSDT;
@@ -303,10 +312,9 @@ async function Run(priceList) {
               }
 
               else if (checkusdt > order.usedUSDT * order.leverage) {
-                console.log("bura 1");
                 let writeUsedUSDT =
                   reverseOreders.usedUSDT + reverseOreders.pnl - order.usedUSDT;
-                  
+
                 if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
 
 
@@ -317,30 +325,25 @@ async function Run(priceList) {
                   coin_id: FutureWalletId,
                   user_id: order.user_id,
                 }).exec();
-                
 
-                
+
+
                 userBalance.amount = userBalance.amount + (order.usedUSDT * 2);
-                console.log("Bakiye : ", userBalance.amount);
                 await userBalance.save();
                 await reverseOreders.save();
                 order.status = 0;
                 await order.save();
-                console.log("save")
                 continue;
 
               } else {
-                console.log("bura 234");
                 let ilkIslem = reverseOreders.usedUSDT;
                 let tersIslem = order.usedUSDT;
                 let data = tersIslem - ilkIslem;
-                console.log(data, tersIslem, ilkIslem)
-                if(data < 0) data *= -1;
+                if (data < 0) data *= -1;
                 userBalance = await FutureWalletModel.findOne({
                   coin_id: FutureWalletId,
                   user_id: order.user_id,
                 }).exec();
-                console.log(userBalance.amount)
                 userBalance.amount = userBalance.amount - (data * 2) + (tersIslem * 2);
                 await userBalance.save();
 
@@ -413,6 +416,8 @@ async function Run(priceList) {
     }
   }
 
+  
+
   let getOpenOrders = await FutureOrder.aggregate([
     {
       $match: { status: 0, method: "market", future_type: "cross" },
@@ -428,7 +433,7 @@ async function Run(priceList) {
   ]);
   let totalPNL = 0.0;
   for (var i = 0; i < getOpenOrders.length; i++) {
-    
+
     let data = getOpenOrders[i];
     let total = splitLengthNumber(splitLengthNumber(parseFloat(data.total))) + splitLengthNumber(parseFloat(data.usedUSDT));
 
@@ -463,10 +468,10 @@ async function Run(priceList) {
     let userOrders = await FutureOrder.find({ user_id: data._id, method: 'market', future_type: 'cross' }).exec();
     for (var k = 0; k < userOrders.length; k++) {
       let order = userOrders[k];
-      
+
       if (order.status == 1) continue;
       let findBinanceItem = priceList.filter(x => x.symbol == order.pair_name.replace('/', ''));
-    
+
       if (findBinanceItem.length == 0) continue;
       //let findBinanceItem = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace("/", ""));
 
@@ -520,6 +525,7 @@ async function Run(priceList) {
 
     }
   }
+
 }
 
 
