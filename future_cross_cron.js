@@ -132,6 +132,7 @@ async function Run(priceList) {
 
     if (order.method == 'limit') {
       if (order.status == 0) continue;
+
       let item = priceList.find(x => x.symbol == order.pair_name.replace('/', ''));
       if (item != null && item != '') {
         let price = item.ask;
@@ -244,14 +245,19 @@ async function Run(priceList) {
             }
           }
         } else {
+
+
+          let checkFillOrder = await FutureOrder.findOne({ limit_id: order._id, method: 'market' });
+          if (checkFillOrder != null) {
+            console.log("Order var cross");
+            continue;
+          }
+
           userBalance = await FutureWalletModel.findOne({
             coin_id: FutureWalletId,
             user_id: order.user_id,
           }).exec();
-          /*
-          userBalance.amount = userBalance.amount - order.usedUSDT;
-          await userBalance.save();
-          */
+          
           let n_order = new FutureOrder({
             pair_id: order.pair_id,
             pair_name: order.pair_name,
@@ -265,6 +271,7 @@ async function Run(priceList) {
             isolated: order.usedUSDT,
             sl: order.sl,
             tp: order.tp,
+            limit_id: order._id,
             target_price: order.target_price,
             leverage: order.leverage,
             amount: order.amount,

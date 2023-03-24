@@ -25,6 +25,7 @@ const FutureOrderSchema = new mongoose.Schema({
   liqPrice: { type: Number, required: false, default: 0.0 },
   adjusted: { type: Number, required: false, default: 0.0 },
   pnl: { type: Number, default: 0.0, required: false, maxlength: 8 },
+  limit_id : {type : String, default : null, required : false},
   status: { type: Number, required: false, default: 0 },
   isFallOutWallet : {type : Boolean, default : true},
   relevant_order_id : {type : mongoose.Schema.Types.ObjectId, ref :"FutureOrder" },

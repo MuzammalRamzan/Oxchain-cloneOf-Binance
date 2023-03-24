@@ -200,6 +200,13 @@ async function Run(orders, priceList) {
             }
           }
         } else {
+
+          let checkFillOrder = await FutureOrder.findOne({ limit_id: order._id, method: 'market' });
+          if (checkFillOrder != null) {
+            console.log("Order var");
+            continue;
+          }
+
           userBalance = await FutureWalletModel.findOne({
             coin_id: FutureWalletId,
             user_id: order.user_id,
@@ -221,6 +228,7 @@ async function Run(orders, priceList) {
             isolated: order.usedUSDT,
             sl: order.sl,
             tp: order.tp,
+            limit_id : order._id,
             target_price: order.target_price,
             leverage: order.leverage,
             amount: order.amount,
