@@ -12,8 +12,6 @@ const UserNotifications = require("./models/UserNotifications");
 const SiteNotificaitonModel = require("./models/SiteNotifications");
 const User = require("./models/User");
 const mailer = require("./mailer");
-const { default: mongoose } = require("mongoose");
-const { sleep } = require("sleep");
 
 const io = new Server();
 
