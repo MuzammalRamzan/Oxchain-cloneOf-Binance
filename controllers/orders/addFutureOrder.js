@@ -171,6 +171,7 @@ const addFutureOrder = async (req, res) => {
                 if (target_price <= price) {
 
                     target_price = price;
+                    method = 'market';
                 }
 
             }
@@ -180,6 +181,7 @@ const addFutureOrder = async (req, res) => {
                 if (target_price >= price) {
 
                     target_price = price;
+                    method = 'market';
                 }
 
             }
