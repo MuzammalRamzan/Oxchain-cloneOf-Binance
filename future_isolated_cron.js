@@ -92,246 +92,139 @@ async function Run(orders, priceList) {
       let item = priceList.find(x => x.symbol == order.pair_name.replace('/', ''));
       if (item != null && item != "") {
         let price = item.ask;
-        if (order.stop_limit != 0) {
-          if (order.type == "buy") {
-            if (price >= order.target_price) {
-              let user = await User.findOne({ _id: order.user_id });
-              let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
+        if (order.type == "buy") {
+          if (price >= order.target_price) {
+            continue;
+          }
+        } else if (order.type == "sell") {
+          if (price <= order.target_price) {
+            continue;
+          }
+        }
+
+        let reverseOreders = await FutureOrder.findOne({
+          user_id: order.user_id,
+          pair_id: order.pair_id,
+          future_type: order.future_type,
+          method: "market",
+          status: 0,
+        });
+
+        if (reverseOreders) {
 
 
-              if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
+          if (reverseOreders.type == order.type) {
+            let oldAmount = reverseOreders.amount;
+            let oldUsedUSDT = reverseOreders.usedUSDT;
+            let oldPNL = splitLengthNumber(reverseOreders.pnl);
+            let oldLeverage = reverseOreders.leverage;
+            let newUsedUSDT = oldUsedUSDT + order.usedUSDT + oldPNL;
 
-                if (SiteNotificaitonsCheck.trade == 1) {
-                  let newNotification = new UserNotifications({
-                    user_id: user._id,
-                    title: "Order filled",
-                    message: "Your order has been filled",
-                    read: false
-                  });
+            reverseOreders.usedUSDT = newUsedUSDT;
+            reverseOreders.open_price = price;
+            reverseOreders.pnl = 0;
+            reverseOreders.leverage = order.leverage;
+            reverseOreders.open_time = Date.now();
+            reverseOreders.amount = (newUsedUSDT * order.leverage) / price;
 
-                  await newNotification.save();
+            await reverseOreders.save();
+            order.status = 0;
+            await order.save();
+          } else {
+            //Tersine ise
+            let checkusdt =
+              (reverseOreders.usedUSDT + reverseOreders.pnl) *
+              reverseOreders.leverage;
+            if (checkusdt == order.usedUSDT * order.leverage) {
+              reverseOreders.status = 1;
 
-                  if (user.email != null && user.email != '') {
-                    mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
-                  }
-
-                }
-
-              }
-              const fee = ((order.usedUSDT * order.leverage) * (order.type == 'buy' ? 0.03 : 0.06)) / 100.0;
-              let totalUsedUSDT = order.usedUSDT - fee;
-              order.fee = fee;
+              let userBalance = await FutureWalletModel.findOne({
+                coin_id: FutureWalletId,
+                user_id: req.body.user_id,
+              }).exec();
+              userBalance.amount =
+                userBalance.amount +
+                reverseOreders.pnl +
+                reverseOreders.usedUSDT;
+              await userBalance.save();
+              await reverseOreders.save();
               order.status = 0;
               await order.save();
-              let n_order = new FutureOrder({
-                pair_id: order.pair_id,
-                pair_name: order.pair_name,
-                type: order.type,
-                future_type: order.future_type,
-                method: order.method,
+            } else if (checkusdt > order.usedUSDT * order.leverage) {
+
+              let writeUsedUSDT =
+                reverseOreders.usedUSDT + reverseOreders.pnl - order.usedUSDT;
+              if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
+              reverseOreders.usedUSDT = writeUsedUSDT;
+              reverseOreders.amount =
+                (writeUsedUSDT * reverseOreders.leverage) / price;
+              let userBalance = await FutureWalletModel.findOne({
+                coin_id: FutureWalletId,
                 user_id: order.user_id,
-                usedUSDT: totalUsedUSDT,
-                required_margin: totalUsedUSDT,
-                isolated: totalUsedUSDT,
-                sl: order.sl ?? 0,
-                tp: order.tp ?? 0,
-                target_price: order.target_price,
-                leverage: order.leverage,
-                amount: order.amount,
-                open_price: order.target_price,
-                status: 1,
-              });
-              await n_order.save();
-            }
-          } else if (order.type == "sell") {
-            if (price <= order.target_price) {
-              let user = await User.findOne({ _id: order.user_id });
-              let SiteNotificaitonsCheck = await SiteNotificaitonModel.findOne({ user_id: user._id });
+              }).exec();
 
+              userBalance.amount = userBalance.amount + (order.usedUSDT * 2);
 
-              if (SiteNotificaitonsCheck != null && SiteNotificaitonsCheck != '') {
-
-                if (SiteNotificaitonsCheck.trade == 1) {
-                  let newNotification = new UserNotifications({
-                    user_id: user._id,
-                    title: "Order Filled",
-                    message: "Your order has been filled",
-                    read: false
-                  });
-
-                  await newNotification.save();
-
-                  if (user.email != null && user.email != '') {
-                    mailer.sendMail(user.email, "Order Filled", "Your order has been filled");
-                  }
-
-                }
-
-              }
-              const fee = ((order.usedUSDT * order.leverage) * (order.type == 'buy' ? 0.03 : 0.06)) / 100.0;
-              let totalUsedUSDT = order.usedUSDT - fee;
-              order.fee = fee;
-
-              order.status = 0;
-              await order.save();
-              let n_order = new FutureOrder({
-                pair_id: order.pair_id,
-                pair_name: order.pair_name,
-                type: order.type,
-                future_type: order.future_type,
-                method: order.method,
-                user_id: order.user_id,
-                usedUSDT: totalUsedUSDT,
-                required_margin: totalUsedUSDT,
-                isolated: totalUsedUSDT,
-                sl: order.sl ?? 0,
-                tp: order.tp ?? 0,
-                target_price: order.target_price,
-                leverage: order.leverage,
-                amount: order.amount,
-                open_price: order.target_price,
-                status: 1,
-              });
-              await n_order.save();
-            }
-          }
-        } else {
-          if (order.type == "buy") {
-            if (price >= order.target_price) {
-              continue;
-            }
-          } else if (order.type == "sell") {
-            if (price <= order.target_price) {
-              continue;
-            }
-          }
-
-          let reverseOreders = await FutureOrder.findOne({
-            user_id: order.user_id,
-            pair_id: order.pair_id,
-            future_type: order.future_type,
-            method: "market",
-            status: 0,
-          });
-
-          if (reverseOreders) {
-
-
-            if (reverseOreders.type == order.type) {
-              let oldAmount = reverseOreders.amount;
-              let oldUsedUSDT = reverseOreders.usedUSDT;
-              let oldPNL = splitLengthNumber(reverseOreders.pnl);
-              let oldLeverage = reverseOreders.leverage;
-              let newUsedUSDT = oldUsedUSDT + order.usedUSDT + oldPNL;
-
-              reverseOreders.usedUSDT = newUsedUSDT;
-              reverseOreders.open_price = price;
-              reverseOreders.pnl = 0;
-              reverseOreders.leverage = order.leverage;
-              reverseOreders.open_time = Date.now();
-              reverseOreders.amount = (newUsedUSDT * order.leverage) / price;
-
+              await userBalance.save();
               await reverseOreders.save();
               order.status = 0;
               await order.save();
             } else {
-              //Tersine ise
-              let checkusdt =
-                (reverseOreders.usedUSDT + reverseOreders.pnl) *
-                reverseOreders.leverage;
-              if (checkusdt == order.usedUSDT * order.leverage) {
-                console.log("Burası 211");
-                reverseOreders.status = 1;
+              let ilkIslem = reverseOreders.usedUSDT;
+              let tersIslem = order.usedUSDT;
+              let data = tersIslem - ilkIslem;
+              if (data < 0) data *= -1;
+              userBalance = await FutureWalletModel.findOne({
+                coin_id: FutureWalletId,
+                user_id: order.user_id,
+              }).exec();
+              userBalance.amount = userBalance.amount - (data * 2) + (tersIslem * 2);
+              await userBalance.save();
 
-                let userBalance = await FutureWalletModel.findOne({
-                  coin_id: FutureWalletId,
-                  user_id: req.body.user_id,
-                }).exec();
-                userBalance.amount =
-                  userBalance.amount +
-                  reverseOreders.pnl +
-                  reverseOreders.usedUSDT;
-                await userBalance.save();
-                await reverseOreders.save();
-                order.status = 0;
-                await order.save();
-              } else if (checkusdt > order.usedUSDT * order.leverage) {
-
-                console.log("Burası 111");
-                let writeUsedUSDT =
-                  reverseOreders.usedUSDT + reverseOreders.pnl - order.usedUSDT;
-                if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
-                reverseOreders.usedUSDT = writeUsedUSDT;
-                reverseOreders.amount =
-                  (writeUsedUSDT * reverseOreders.leverage) / price;
-                let userBalance = await FutureWalletModel.findOne({
-                  coin_id: FutureWalletId,
-                  user_id: order.user_id,
-                }).exec();
-
-                userBalance.amount = userBalance.amount + (order.usedUSDT * 2);
-
-                await userBalance.save();
-                await reverseOreders.save();
-                order.status = 0;
-                await order.save();
-              } else {
-                let ilkIslem = reverseOreders.usedUSDT;
-                let tersIslem = order.usedUSDT;
-                let data = tersIslem - ilkIslem;
-                if (data < 0) data *= -1;
-                userBalance = await FutureWalletModel.findOne({
-                  coin_id: FutureWalletId,
-                  user_id: order.user_id,
-                }).exec();
-                userBalance.amount = userBalance.amount - (data * 2) + (tersIslem * 2);
-                await userBalance.save();
-
-                reverseOreders.type = order.type;
-                reverseOreders.leverage = order.leverage;
-                let writeUsedUSDT =
-                  reverseOreders.usedUSDT + reverseOreders.pnl - order.usedUSDT;
-                if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
-                reverseOreders.usedUSDT = writeUsedUSDT;
-                //reverseOreders.amount = ((((reverseOreders.usedUSDT + reverseOreders.pnl) * leverage) - (usedUSDT * leverage)) / price);
-                reverseOreders.amount =
-                  (writeUsedUSDT * order.leverage) / price;
-                await reverseOreders.save();
-                order.status = 0;
-                await order.save();
-              }
+              reverseOreders.type = order.type;
+              reverseOreders.leverage = order.leverage;
+              let writeUsedUSDT =
+                reverseOreders.usedUSDT + reverseOreders.pnl - order.usedUSDT;
+              if (writeUsedUSDT < 0) writeUsedUSDT *= -1;
+              reverseOreders.usedUSDT = writeUsedUSDT;
+              //reverseOreders.amount = ((((reverseOreders.usedUSDT + reverseOreders.pnl) * leverage) - (usedUSDT * leverage)) / price);
+              reverseOreders.amount =
+                (writeUsedUSDT * order.leverage) / price;
+              await reverseOreders.save();
+              order.status = 0;
+              await order.save();
             }
-          } else {
-            userBalance = await FutureWalletModel.findOne({
-              coin_id: FutureWalletId,
-              user_id: order.user_id,
-            }).exec();
-            /*
-            userBalance.amount = userBalance.amount - order.usedUSDT;
-            await userBalance.save();
-            */
-            let n_order = new FutureOrder({
-              pair_id: order.pair_id,
-              pair_name: order.pair_name,
-              //type: order.type == 'buy' ? 'sell' : 'buy',
-              type: order.type,
-              future_type: order.future_type,
-              method: "market",
-              user_id: order.user_id,
-              usedUSDT: order.usedUSDT,
-              required_margin: order.usedUSDT,
-              isolated: order.usedUSDT,
-              sl: order.sl,
-              tp: order.tp,
-              target_price: order.target_price,
-              leverage: order.leverage,
-              amount: order.amount,
-              open_price: price,
-            });
-            await n_order.save();
-            order.status = 0;
-            await order.save();
           }
+        } else {
+          userBalance = await FutureWalletModel.findOne({
+            coin_id: FutureWalletId,
+            user_id: order.user_id,
+          }).exec();
+          /*
+          userBalance.amount = userBalance.amount - order.usedUSDT;
+          await userBalance.save();
+          */
+          let n_order = new FutureOrder({
+            pair_id: order.pair_id,
+            pair_name: order.pair_name,
+            //type: order.type == 'buy' ? 'sell' : 'buy',
+            type: order.type,
+            future_type: order.future_type,
+            method: "market",
+            user_id: order.user_id,
+            usedUSDT: order.usedUSDT,
+            required_margin: order.usedUSDT,
+            isolated: order.usedUSDT,
+            sl: order.sl,
+            tp: order.tp,
+            target_price: order.target_price,
+            leverage: order.leverage,
+            amount: order.amount,
+            open_price: price,
+          });
+          await n_order.save();
+          order.status = 0;
+          await order.save();
         }
       }
     } else if (order.method == "stop_limit") {

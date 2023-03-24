@@ -18,7 +18,7 @@ const FutureOrderSchema = new mongoose.Schema({
   stop_limit: { type: Number, required: false, default: 0.0 },
   leverage: { type: Number, required: true, default: 5 },
   required_margin: { type: Number, required: true },
-  usedUSDT: { type: Number, required: false, default: null, maxlength: 8 },
+  usedUSDT: { type: Number, required: true, maxlength: 8 },
   close_price: { type: Number, required: false },
   close_time: { type: Date },
   fee: {type: Number, default : 0.0},
