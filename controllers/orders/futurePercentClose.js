@@ -113,12 +113,12 @@ const FuturePercentClose = async (req, res) => {
                 future_type: order.future_type,
                 method: "market",
                 user_id: user_id,
-                usedUSDT: order.usedUSDT + order.pnl,
-                required_margin: order.required_margin,
-                isolated: order.isolated,
+                usedUSDT: totalUSDT,
+                required_margin: totalUSDT,
+                isolated: totalUSDT,
                 target_price: 0.0,
                 leverage: order.leverage,
-                amount: order.amount,
+                amount: totalAmount,
                 open_price: marketPrice,
                 status: 1
             }
