@@ -62,6 +62,7 @@ const FuturePercentClose = async (req, res) => {
         wallet.amount = splitLengthNumber(parseFloat(wallet.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl)));
         await wallet.save();
         let leverage = order.leverage;
+        let type = order.type;
         const fee = (order.usedUSDT + order.pnl) * leverage * (type == 'buy' ? 0.03 : 0.06) / 100.0;
 
         //CREATE NEW ORDER AS MARKET AND OPPOSITE SIDE
