@@ -61,15 +61,67 @@ const closeFutureOrder = async (req, res) => {
       let marginWallet = await FutureWalletModel.findOne({
         user_id: doc.user_id,
       }).exec();
-      marginWallet.amount = marginWallet.amount + (doc.pnl + doc.usedUSDT);
+
+      let usedUSDT = doc.usedUSDT;
+      let leverage = doc.leverage;
+      let type = doc.type;
+
+      const fee = usedUSDT * leverage * (type == 'buy' ? 0.03 : 0.06) / 100.0;
+
+
+      //add new future order but closed 
+      let newOrder = new FutureOrder({
+        user_id: doc.user_id,
+        pair_id: doc.pair_id,
+        type: doc.type == "buy" ? "sell" : "buy",
+        method: doc.method,
+        open_price: doc.open_price,
+        amount: doc.amount,
+        leverage: doc.leverage,
+        liqPrice: doc.liqPrice,
+        required_margin: doc.required_margin,
+        usedUSDT: doc.usedUSDT,
+        pnl: 0,
+        status: 1,
+      });
+
+      await newOrder.save();
+
+      marginWallet.amount = marginWallet.amount + doc.pnl + doc.usedUSDT - fee;
       await marginWallet.save();
     } else {
       let marginWallet = await FutureWalletModel.findOne({
         user_id: doc.user_id,
       }).exec();
 
+
+      let usedUSDT = doc.usedUSDT;
+      let leverage = doc.leverage;
+      let type = doc.type;
+
+      const fee = usedUSDT * leverage * (type == 'buy' ? 0.03 : 0.06) / 100.0;
+
+
+      //add new future order but closed 
+      let newOrder = new FutureOrder({
+        user_id: doc.user_id,
+        pair_id: doc.pair_id,
+        type: doc.type == "buy" ? "sell" : "buy",
+        method: doc.method,
+        open_price: doc.open_price,
+        amount: doc.amount,
+        leverage: doc.leverage,
+        liqPrice: doc.liqPrice,
+        required_margin: doc.required_margin,
+        usedUSDT: doc.usedUSDT,
+        pnl: 0,
+        status: 1,
+      });
+
+      await newOrder.save();
+
       marginWallet.pnl = marginWallet.pnl - doc.pnl;
-      marginWallet.amount = marginWallet.amount + doc.pnl + doc.usedUSDT;
+      marginWallet.amount = marginWallet.amount + doc.pnl + doc.usedUSDT - fee;
       await marginWallet.save();
     }
 
