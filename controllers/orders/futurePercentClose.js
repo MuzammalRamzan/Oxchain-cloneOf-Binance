@@ -61,6 +61,30 @@ const FuturePercentClose = async (req, res) => {
         await order.save();
         wallet.amount = splitLengthNumber(parseFloat(wallet.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl)));
         await wallet.save();
+        const fee = (order.usedUSDT + pnl) * leverage * (type == 'buy' ? 0.03 : 0.06) / 100.0;
+
+        //CREATE NEW ORDER AS MARKET AND OPPOSITE SIDE
+        let newOrder = new FutureOrder(
+            {
+                pair_name: order.name,
+                fee: fee,
+                type: order.type == "buy" ? "sell" : "buy",
+                future_type: order.future_type,
+                method: "market",
+                user_id: user_id,
+                usedUSDT: order.usedUSDT + order.pnl,
+                required_margin: order.required_margin,
+                isolated: order.isolated,
+                target_price: 0.0,
+                leverage: order.leverage,
+                amount: order.amount,
+                open_price: marketPrice,
+                status: 1
+            }
+        )
+
+        await newOrder.save();
+
         res.send({ status: 'success', data: 'OK' });
 
 
@@ -78,32 +102,34 @@ const FuturePercentClose = async (req, res) => {
         wallet.amount = splitLengthNumber(parseFloat(wallet.amount) + (orderTotal - totalUSDT));
         await wallet.save();
 
+        const fee = (order.usedUSDT + pnl) * leverage * (type == 'buy' ? 0.03 : 0.06) / 100.0;
+
+        //CREATE NEW ORDER AS MARKET AND OPPOSITE SIDE
+        let newOrder = new FutureOrder(
+            {
+                pair_name: order.name,
+                fee: fee,
+                type: order.type == "buy" ? "sell" : "buy",
+                future_type: order.future_type,
+                method: "market",
+                user_id: user_id,
+                usedUSDT: order.usedUSDT + order.pnl,
+                required_margin: order.required_margin,
+                isolated: order.isolated,
+                target_price: 0.0,
+                leverage: order.leverage,
+                amount: order.amount,
+                open_price: marketPrice,
+                status: 1
+            }
+        )
+
+        await newOrder.save();
+
         res.send({ status: 'success', data: 'OK' });
     }
 
-    const fee = (order.usedUSDT + pnl) * leverage * (type == 'buy' ? 0.03 : 0.06) / 100.0;
 
-    //CREATE NEW ORDER AS MARKET AND OPPOSITE SIDE
-    let newOrder = new FutureOrder(
-        {
-            pair_name: order.name,
-            fee: fee,
-            type: order.type == "buy" ? "sell" : "buy",
-            future_type: order.future_type,
-            method: "market",
-            user_id: user_id,
-            usedUSDT: order.usedUSDT + order.pnl,
-            required_margin: order.required_margin,
-            isolated: order.isolated,
-            target_price: 0.0,
-            leverage: order.leverage,
-            amount: order.amount,
-            open_price: marketPrice,
-            status: 1
-        }
-    )
-
-    await newOrder.save();
 
 
 }
