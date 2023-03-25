@@ -68,12 +68,20 @@ const closeFutureOrder = async (req, res) => {
 
       const fee = usedUSDT * leverage * (type == 'buy' ? 0.03 : 0.06) / 100.0;
 
+      console.log("buradayız");
+
+      let newType = "";
+      if (doc.type == "buy") {
+        newType = "sell";
+      } else {
+        newType = "buy";
+      }
 
       //add new future order but closed 
       let newOrder = new FutureOrder({
         user_id: doc.user_id,
         pair_id: doc.pair_id,
-        type: doc.type == "buy" ? "sell" : "buy",
+        type: newType,
         method: doc.method,
         open_price: doc.open_price,
         amount: doc.amount,
