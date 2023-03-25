@@ -68,7 +68,8 @@ const FuturePercentClose = async (req, res) => {
         //CREATE NEW ORDER AS MARKET AND OPPOSITE SIDE
         let newOrder = new FutureOrder(
             {
-                pair_name: order.name,
+                pair_id: order.pair_id,
+                pair_name: order.pair_name,
                 fee: fee,
                 type: order.type == "buy" ? "sell" : "buy",
                 future_type: order.future_type,
