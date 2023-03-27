@@ -47,7 +47,7 @@ const getUserInfo = async function (req, res) {
         user_id: user_id,
       }).exec();
 
-      if (verificationId == 1 || verificationId == "1") {
+      if (verificationId.status == 1 || verificationId.status == "1") {
         verificationStatus = "verified";
       }
 
