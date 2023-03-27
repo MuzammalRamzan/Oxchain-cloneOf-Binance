@@ -8,6 +8,7 @@ var authFile = require("../../auth");
 const cancelAllLimit = async function (req, res) {
 
 
+  let api_key_result = req.body.api_key;
   var result = await authFile.apiKeyChecker(api_key_result);
 
   if (result === true) {
