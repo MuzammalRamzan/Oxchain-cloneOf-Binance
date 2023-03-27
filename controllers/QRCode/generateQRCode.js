@@ -16,8 +16,6 @@ const generateQRCode = async (req, res) => {
 			qrToken: QRtoken,
 		});
 		newQRCode.save();
-
-		let start = new Date();
 		const query ={ "createdAt": { "$lt": new Date(Date.now() - 86400000) }}
     	await QRCodes.deleteMany(query);
 		// Generate the QR code
