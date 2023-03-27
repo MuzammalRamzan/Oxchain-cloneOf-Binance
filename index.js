@@ -27,11 +27,11 @@ const getOpenMarginOrders = require('./controllers/orders/getOpenMarginOrders');
 const closeMarginOrder = require('./controllers/orders/closeMarginOrder');
 const addMarginOrder = require('./controllers/orders/addMarginOrder');
 
-
+const generateQRCode = require('./controllers/QRCode/generateQRCode.js');
 const withdraw = require('./controllers/withdraw/withdraw'); //added
 const deleteLimit = require('./controllers/orders/deleteLimit'); //added
 const deleteMarginLimit = require('./controllers/orders/deleteMarginLimit');
-const addOrders = require('./controllers/orders/addOrders');  //added
+const addOrders = require('./controllers/orders/addOrders'); //added
 const disableAccount = require('./controllers/accountActivities/disableAccount'); //added
 const enableAccount = require('./controllers/accountActivities/enableAccount'); //added
 const deleteAccount = require('./controllers/users/deleteAccount'); //added
@@ -41,7 +41,7 @@ const addNotification = require('./controllers/addNotification'); //added
 const getNotification = require('./controllers/getNotification'); //added
 const getOrders = require('./controllers/orders/getOrders'); //added
 const getUSDTBalance = require('./controllers/wallet/getUSDTBalance'); //added
-const getPairs = require('./controllers/pair/getPairs');  //added
+const getPairs = require('./controllers/pair/getPairs'); //added
 const addPair = require('./controllers/pair/addPair'); //added
 const getDigits = require('./controllers/pair/getDigits'); //added
 const getCoinList = require('./controllers/coin/getCoinList'); //added
@@ -125,6 +125,7 @@ const GoogleStrategy = require('passport-google-oidc');
 
 Connection.connection();
 var route = express();
+route.use(bodyParser.json({ limit: '50mb' }));
 const delay = (duration) => {
 	return new Promise((resolve) => setTimeout(resolve, duration));
 };
@@ -206,7 +207,7 @@ const DeleteAccountTest = require('./controllers/auth/deleteAccountTest');
 
 const clearKYCAndRecidency = require('./controllers/kyc/clearKYCAndRecidency.js');
 
-const UploadKYC = require('./controllers/kyc/UploadKYC'); //added 
+const UploadKYC = require('./controllers/kyc/UploadKYC'); //added
 const UploadRecidency = require('./controllers/kyc/uploadRecidency'); //added
 
 const marketingMailStatus = require('./controllers/marketingMails/mailStatus'); //added
@@ -231,7 +232,7 @@ const SpotLimitMarketOrders = require('./controllers/orders/history/spotLimitMar
 const SpotTradeHistory = require('./controllers/orders/history/spotTradeHistory.js'); //added
 const getPairDetails = require('./controllers/pair/getPairDetails.js');
 const GetUserLevel = require('./controllers/users/getUserLevel.js'); //added
-const getRankAwardImages = require('./controllers/RankAward/getRankAwardImages')
+const getRankAwardImages = require('./controllers/RankAward/getRankAwardImages');
 const getUserNotification = require('./controllers/users/getUserNotification'); //added
 const readUserNotification = require('./controllers/users/readUserNotification'); //added
 const SpotCurrentOrders = require('./controllers/orders/history/spotCurrentOrders.js'); //added
@@ -246,7 +247,7 @@ const getAllTopics = require('./controllers/academy/getAllTopics');
 
 //AI TRADE
 const joinAITrade = require('./controllers/AITrade/joinAITrade.js'); //added
-const getAIWallet = require('./controllers/AITrade/getWallet.js'); //added 
+const getAIWallet = require('./controllers/AITrade/getWallet.js'); //added
 const transferBalanceAI = require('./controllers/AITrade/transferBalance.js'); //added
 const getAITransferLogs = require('./controllers/AITrade/getTransferLogs.js'); //added
 
@@ -300,6 +301,8 @@ route.use(function (err, req, res, next) {
 route.get('/', (req, res) => {
 	res.send('success');
 });
+
+route.all('/generateQRCode', generateQRCode);
 
 //AI Trade
 route.post('/joinAITrade', joinAITrade);
@@ -490,7 +493,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) { }
+	async function (req, res) {}
 );
 route.post('/deleteOneStepWithdraw', deleteOneStepWithdraw);
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
@@ -615,7 +618,7 @@ route.all('/getAllTopics', upload.none(), getAllTopics);
 route.all('/getMarket', upload.none(), getMarket);
 route.all('/getTopMarketGainers', upload.none(), getTopMarketGainers);
 route.all('/getTopics', upload.none(), getTopics);
-route.all('/getRankAwardImages', upload.none(), getRankAwardImages)
+route.all('/getRankAwardImages', upload.none(), getRankAwardImages);
 route.get('/price', async function (req, res) {
 	let symbol = req.query.symbol;
 	if (symbol == null || symbol == '') {
