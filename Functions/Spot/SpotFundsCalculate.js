@@ -1,7 +1,9 @@
+const { default: axios } = require("axios");
 const CoinList = require("../../models/CoinList");
 
 async function SpotFundsCalculate(wallets) {
     let assets = [];
+    
     let btcPriceData = await axios("http://global.oxhain.com:8542/price?symbol=BTCUSDT")
     for (var i = 0; i < wallets.length; i++) {
 
