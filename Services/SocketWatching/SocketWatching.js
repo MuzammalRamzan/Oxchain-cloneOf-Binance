@@ -24,7 +24,7 @@ async function SocketWatchController() {
     var roomInUsers = await SocketRoomsModel.find();
     SocketRoomsModel.watch([
         {
-            $match: { operationType: { $in: ['insert', 'update'] } }
+            $match: { operationType: { $in: ['insert', 'replace' ,'update'] } }
         }
     ]).on('change', async data => {
         roomInUsers = await SocketRoomsModel.find();
@@ -32,7 +32,7 @@ async function SocketWatchController() {
 
     //Spot Order
 
-    Orders.watch([{ $match: { operationType: { $in: ['insert', 'update'] } } }]).on('change', async data => {
+    Orders.watch([{ $match: { operationType: { $in: ['insert', 'replace' ,'update'] } } }]).on('change', async data => {
         let item_id = data.documentKey._id;
         let select = await Orders.findOne({ _id: item_id }).exec();
 
@@ -89,7 +89,7 @@ async function SocketWatchController() {
         });
 
         roomInUsers.filter((r) => r.process == 'spot_funds' && r.user_id == select.user_id).forEach(async (room) => {
-            
+
             let assets = await SpotFundsCalculate(wallets);
             sockets.in(room.token).emit('spot_funds', { page: "spot", type: 'funds', content: assets });
         });
@@ -143,14 +143,14 @@ async function SocketWatchController() {
     });
 
 
-    FutureOrder.watch([{ $match: { operationType: { $in: ['insert', 'update'] } } }]).on('change', async data => {
+    FutureOrder.watch([{ $match: { operationType: { $in: ['insert', 'update', 'replace'] } } }]).on('change', async data => {
         let releated = await FutureOrder.findOne({ _id: data.documentKey._id });
 
         roomInUsers.filter((r) => r.process == 'future_order_history' && r.user_id == releated.user_id).forEach(async (room) => {
-            let orders = await FutureOrder.find({ user_id: room.user_id});
+            let orders = await FutureOrder.find({ user_id: room.user_id });
             sockets.in(room.token).emit('future_order_history', { page: "future", type: 'order_history', content: orders });
         });
-        
+
         roomInUsers.filter((r) => r.process == 'future_open_orders' && r.user_id == releated.user_id).forEach(async (room) => {
             let orders = await FutureOrder.find({ user_id: room.user_id, $or: [{ method: "limit" }, { method: "stop_limit" }], status: 1 });
             sockets.in(room.token).emit('future_open_orders', { page: "future", type: 'open_orders', content: orders });
