@@ -46,7 +46,7 @@ async function verifyKey(key, device_id, user_id) {
 
       let minutes = timeDiff / (1000 * 60);
 
-      if (minutes > 30) {
+      if (minutes > 180) { // 180 minutes / 3 hours
         resolve("expired");
       }
 
