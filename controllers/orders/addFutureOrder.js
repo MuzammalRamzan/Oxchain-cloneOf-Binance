@@ -1096,6 +1096,8 @@ const addFutureOrder = async (req, res) => {
                         status: 1,
                     });
 
+                    await newOrder.save();
+
                     //Tersine ise
                     let checkusdt =
                         (reverseOreders.usedUSDT + reverseOreders.pnl) *
