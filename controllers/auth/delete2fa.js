@@ -54,6 +54,7 @@ const update2fa = async function (req, res) {
                 check1 = await MailVerificationModel.findOne({
                     user_id: user_id,
                     reason: "delete_2fa",
+                    pin: req.body.mailpin,
                     status: 0
                 }).exec();
 
@@ -68,7 +69,8 @@ const update2fa = async function (req, res) {
                 check3 = await SMSVerificationModel.findOne({
                     user_id: user_id,
                     reason: "delete_2fa",
-                    status: 0
+                    status: 0,
+                    pin: req.body.smsPin
                 }).exec();
 
                 if (!check3) {
