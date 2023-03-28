@@ -42,14 +42,21 @@ const deleteRegisteredAddress = async function (req, res) {
                 _id: req.body.address_id,
                 user_id: req.body.user_id
             });
-        }
 
-        if (address) {
+            if (!address) {
+                return res.json({
+                    status: "fail",
+                    message: "Address not found",
+                    showableMessage: "Address not found"
+                });
+            }
+
+
             let deleted = await RegisteredAddress.deleteOne({
                 _id: req.body.address_id
             });
             if (deleted) {
-                res.json({
+                return res.json({
                     status: "success",
                     message: "Address deleted",
                     showableMessage: "Address deleted"
@@ -57,7 +64,7 @@ const deleteRegisteredAddress = async function (req, res) {
             }
         }
     } else {
-        res.json({
+        return res.json({
             status: "fail",
             message: "invalid_api_key",
             showableMessage: "Invalid api key"
