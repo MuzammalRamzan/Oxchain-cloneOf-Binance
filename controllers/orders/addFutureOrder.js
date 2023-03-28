@@ -350,6 +350,29 @@ const addFutureOrder = async (req, res) => {
                     return;
                 } else {
                     //Tersine ise
+
+                    //create a new order
+                    let newOrder = new FutureOrder({
+                        pair_id: getPair._id,
+                        pair_name: getPair.name,
+                        type: type,
+                        future_type: future_type,
+                        method: method,
+                        user_id: user_id,
+                        usedUSDT: usedUSDT - fee,
+                        required_margin: usedUSDT - fee,
+                        fee: fee,
+                        isolated: 0.0,
+                        sl: req.body.sl ?? 0,
+                        tp: req.body.tp ?? 0,
+                        leverage: leverage,
+                        amount: amount,
+                        open_price: price,
+                        status: 1,
+                    });
+
+                    await newOrder.save();
+
                     let checkusdt =
                         (reverseOreders.usedUSDT + reverseOreders.pnl) *
                         reverseOreders.leverage;
