@@ -51,7 +51,7 @@ const deleteRegisteredAddress = async function (req, res) {
                 });
             }
 
-
+             
             let deleted = await RegisteredAddress.deleteOne({
                 _id: req.body.address_id
             });
