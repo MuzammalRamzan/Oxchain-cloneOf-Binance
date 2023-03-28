@@ -17,9 +17,10 @@ const generateQRCode = async (req, res) => {
 		});
 		newQRCode.save();
 		const query ={ "createdAt": { "$lt": new Date(Date.now() - 86400000) }}
+		let qrGen = req.get('host') + "/" + QRtoken;
     	await QRCodes.deleteMany(query);
 		// Generate the QR code
-		const qrCode = await QRCode.toDataURL(QRtoken);
+		const qrCode = await QRCode.toDataURL(qrGen);
 
 		// Return the QR code data
 		res.json({ qrCode });
