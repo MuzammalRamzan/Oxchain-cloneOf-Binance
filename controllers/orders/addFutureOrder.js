@@ -337,11 +337,34 @@ const addFutureOrder = async (req, res) => {
                     reverseOreders.amount = splitLengthNumber((newUsedUSDT * leverage) / price);
 
                     userBalance = await FutureWalletModel.findOne({
-
                         user_id: req.body.user_id,
                     }).exec();
                     userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
                     await userBalance.save();
+
+
+
+                    //new order
+                    let newOrder = new FutureOrder({
+                        pair_id: getPair._id,
+                        pair_name: getPair.name,
+                        type: type,
+                        future_type: future_type,
+                        method: method,
+                        user_id: user_id,
+                        usedUSDT: usedUSDT - fee,
+                        required_margin: usedUSDT - fee,
+                        fee: fee,
+                        isolated: 0.0,
+                        sl: req.body.sl ?? 0,
+                        tp: req.body.tp ?? 0,
+                        leverage: leverage,
+                        amount: amount,
+                        open_price: price,
+                        status: 1,
+                    });
+
+                    await newOrder.save();
 
                     await reverseOreders.save();
                     if (apiResult === false) {
@@ -1003,6 +1026,28 @@ const addFutureOrder = async (req, res) => {
                     return;
                 }
                 if (reverseOreders.type == type) {
+
+                    //create new order
+                    let newOrder = new FutureOrder({
+                        pair_id: getPair._id,
+                        pair_name: getPair.name,
+                        type: type,
+                        future_type: future_type,
+                        method: method,
+                        user_id: user_id,
+                        usedUSDT: totalUsedUSDT,
+                        required_margin: totalUsedUSDT,
+                        isolated: 0.0,
+                        sl: req.body.sl ?? 0,
+                        tp: req.body.tp ?? 0,
+                        target_price: price,
+                        leverage: leverage,
+                        amount: amount,
+                        open_price: price,
+                        status: 1,
+                    });
+                    await newOrder.save();
+
                     let oldAmount = reverseOreders.amount;
                     let oldUsedUSDT = reverseOreders.usedUSDT;
                     let oldPNL = reverseOreders.pnl;
