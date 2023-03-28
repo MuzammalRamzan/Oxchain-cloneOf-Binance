@@ -7,6 +7,7 @@ const QRCodes = new mongoose.Schema({
     deviceOs: { type: String, required: false },
     deviceVersion: { type: String, required: false },
     ip: { type: String, required: true }, 
+    location: { type: String, required: false }, 
     qrToken: {type: String, required: true},
     status: {type: String, required: true, default:0},
     createdAt: {

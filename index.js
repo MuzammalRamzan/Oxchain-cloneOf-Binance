@@ -27,7 +27,9 @@ const getOpenMarginOrders = require('./controllers/orders/getOpenMarginOrders');
 const closeMarginOrder = require('./controllers/orders/closeMarginOrder');
 const addMarginOrder = require('./controllers/orders/addMarginOrder');
 
-const generateQRCode = require('./controllers/QRCode/generateQRCode.js');
+const generateQRCode = require('./controllers/auth/qrLogin/generateQRCode.js');
+const validateQRCode = require('./controllers/auth/qrLogin/validateQRCode.js');
+
 const withdraw = require('./controllers/withdraw/withdraw'); //added
 const deleteLimit = require('./controllers/orders/deleteLimit'); //added
 const deleteMarginLimit = require('./controllers/orders/deleteMarginLimit');
@@ -302,7 +304,10 @@ route.get('/', (req, res) => {
 	res.send('success');
 });
 
-route.all('/generateQRCode', generateQRCode);
+//QR Login Auth
+route.post('/generateQRCode', generateQRCode);
+route.post('/validateQRCode', validateQRCode);
+
 
 //AI Trade
 route.post('/joinAITrade', joinAITrade);
