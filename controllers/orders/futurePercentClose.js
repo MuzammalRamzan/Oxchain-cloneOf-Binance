@@ -61,12 +61,16 @@ const FuturePercentClose = async (req, res) => {
         if (percent == 100) {
             console.log("%100, kapanıyor");
             order.status = 1;
-            await order.save();
+            let save = await order.save();
             console.log("Aktarılacak miktar: ", (parseFloat(order.usedUSDT) + parseFloat(order.pnl)));
             console.log("Order ID : ", order._id);
             console.log("Wallet ID : ", wallet._id);
             wallet.amount = parseFloat(wallet.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
-            await wallet.save();
+            let saveWallet = await wallet.save();
+
+            console.log("Wallet : ", saveWallet);
+            console.log("Order : ", save);
+
             let leverage = order.leverage;
             let type = order.type == "buy" ? "sell" : "buy";
             const fee = (order.usedUSDT + order.pnl) * leverage * (type == 'buy' ? 0.03 : 0.06) / 100.0;
