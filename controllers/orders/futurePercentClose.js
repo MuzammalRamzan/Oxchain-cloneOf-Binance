@@ -46,11 +46,13 @@ const FuturePercentClose = async (req, res) => {
 
         if (order == null) {
             res.json({ status: 'fail', message: 'Order not found' });
+            console.log("Order not found");
             return;
         }
 
         let wallet = await FutureWalletModel.findOne({ user_id: user_id });
         if (wallet == null) {
+            console.log("Wallet not found");
             res.json({ status: 'fail', message: 'User not found' });
             return;
         }
