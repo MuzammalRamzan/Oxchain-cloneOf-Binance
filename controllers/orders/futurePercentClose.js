@@ -74,7 +74,7 @@ const FuturePercentClose = async (req, res) => {
                 return res.json({ status: 'fail', message: 'Order not found', alert: "Order not found" });
             }
 
-            let updateWallet = FutureWalletModel.findOneAndUpdate(
+            let updateWallet = await FutureWalletModel.findOneAndUpdate(
                 { user_id: user_id, _id: wallet._id },
                 {
                     $inc: { amount: (parseFloat(order.usedUSDT) + parseFloat(order.pnl)) }
@@ -89,7 +89,6 @@ const FuturePercentClose = async (req, res) => {
             console.log("Aktarılacak miktar: ", (parseFloat(order.usedUSDT) + parseFloat(order.pnl)));
             console.log("Order ID : ", order._id);
             console.log("Wallet ID : ", wallet._id);
-            console.log("Wallet : ", saveWallet);
             console.log("Order : ", save);
 
             let leverage = order.leverage;
