@@ -83,6 +83,7 @@ const changeCrossLeverage = async (req, res) => {
     ).exec();
 
 
+    console.log(FutureOrderCheck);
 
 
     if (!FutureOrderCheck) {
