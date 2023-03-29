@@ -86,7 +86,7 @@ const changeCrossLeverage = async (req, res) => {
     console.log(FutureOrderCheck);
 
 
-    if (!FutureOrderCheck) {
+    if (FutureOrderCheck == null || FutureOrderCheck.length == 0) {
 
         return res.json({
             status: "success",
