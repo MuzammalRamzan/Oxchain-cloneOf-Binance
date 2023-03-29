@@ -3,7 +3,9 @@ const FutureOrder = require("../../models/FutureOrder");
 const FutureWalletModel = require("../../models/FutureWalletModel");
 var authFile = require("../../auth.js");
 
+const cache = 0;
 const FuturePercentClose = async (req, res) => {
+    cache += 1;
 
     try {
 
@@ -174,6 +176,7 @@ const FuturePercentClose = async (req, res) => {
     }
 
 
+    console.log(cache);
 
 }
 function splitLengthNumber(q) {
