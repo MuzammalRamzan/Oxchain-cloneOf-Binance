@@ -271,6 +271,8 @@ const cancelAllFutureLimit = require('./controllers/orders/cancelAllFutureLimit.
 
 const changeCrossLeverage = require('./controllers/orders/changeCrossLeverage.js'); //added
 
+const getLeverage = require('./controllers/orders/getLeverage.js'); //added
+
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -309,6 +311,7 @@ route.get('/', (req, res) => {
 
 //QR Login Auth
 route.post('/changeCrossLeverage', changeCrossLeverage);
+route.post('/getLeverage', getLeverage);
 route.post('/generateQRCode', generateQRCode);
 route.post('/validateQRCode', validateQRCode);
 route.post('/authorizeQRCode', authorizeQRCode);
