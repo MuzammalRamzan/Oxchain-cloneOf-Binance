@@ -302,10 +302,13 @@ const addFutureOrder = async (req, res) => {
             return;
         } else if (req.body.method == "market") {
             amount =
-                ((userBalance.amount * percent) / 100 / price) * req.body.leverage;
+                ((userBalance.amount * percent) / 100 / price) * req.body.leverage; //buraya bakmalıyız
             let usedUSDT = (amount * price) / req.body.leverage;
             const fee = usedUSDT * leverage * (type == 'buy' ? 0.03 : 0.06) / 100.0;
             let totalUsedUSDT = usedUSDT - fee;
+
+            //calculate amount after fee
+            amount = (totalUsedUSDT * leverage) / price;
             let reverseOreders = await FutureOrder.findOne({
                 user_id: req.body.user_id,
                 pair_id: getPair._id,
@@ -334,11 +337,34 @@ const addFutureOrder = async (req, res) => {
                     reverseOreders.amount = splitLengthNumber((newUsedUSDT * leverage) / price);
 
                     userBalance = await FutureWalletModel.findOne({
-
                         user_id: req.body.user_id,
                     }).exec();
                     userBalance.amount = splitLengthNumber(userBalance.amount - usedUSDT);
                     await userBalance.save();
+
+
+
+                    //new order
+                    let newOrder = new FutureOrder({
+                        pair_id: getPair._id,
+                        pair_name: getPair.name,
+                        type: type,
+                        future_type: future_type,
+                        method: method,
+                        user_id: user_id,
+                        usedUSDT: usedUSDT - fee,
+                        required_margin: usedUSDT - fee,
+                        fee: fee,
+                        isolated: 0.0,
+                        sl: req.body.sl ?? 0,
+                        tp: req.body.tp ?? 0,
+                        leverage: leverage,
+                        amount: amount,
+                        open_price: price,
+                        status: 1,
+                    });
+
+                    await newOrder.save();
 
                     await reverseOreders.save();
                     if (apiResult === false) {
@@ -350,6 +376,29 @@ const addFutureOrder = async (req, res) => {
                     return;
                 } else {
                     //Tersine ise
+
+                    //create a new order
+                    let newOrder = new FutureOrder({
+                        pair_id: getPair._id,
+                        pair_name: getPair.name,
+                        type: type,
+                        future_type: future_type,
+                        method: method,
+                        user_id: user_id,
+                        usedUSDT: usedUSDT - fee,
+                        required_margin: usedUSDT - fee,
+                        fee: fee,
+                        isolated: 0.0,
+                        sl: req.body.sl ?? 0,
+                        tp: req.body.tp ?? 0,
+                        leverage: leverage,
+                        amount: amount,
+                        open_price: price,
+                        status: 1,
+                    });
+
+                    await newOrder.save();
+
                     let checkusdt =
                         (reverseOreders.usedUSDT + reverseOreders.pnl) *
                         reverseOreders.leverage;
@@ -960,6 +1009,9 @@ const addFutureOrder = async (req, res) => {
             const fee = usedUSDT * leverage * (type == 'buy' ? 0.03 : 0.06) / 100.0;
             let totalUsedUSDT = usedUSDT - fee;
 
+            //calculate amount after fee
+            amount = (totalUsedUSDT * leverage) / price;
+
             let reverseOreders = await FutureOrder.findOne({
                 user_id: req.body.user_id,
                 pair_id: getPair._id,
@@ -974,6 +1026,29 @@ const addFutureOrder = async (req, res) => {
                     return;
                 }
                 if (reverseOreders.type == type) {
+
+                    //create new order
+                    let newOrder = new FutureOrder({
+                        pair_id: getPair._id,
+                        pair_name: getPair.name,
+                        type: type,
+                        future_type: future_type,
+                        method: method,
+                        user_id: user_id,
+                        usedUSDT: totalUsedUSDT,
+                        required_margin: totalUsedUSDT,
+                        fee: fee,
+                        isolated: 0.0,
+                        sl: req.body.sl ?? 0,
+                        tp: req.body.tp ?? 0,
+                        target_price: price,
+                        leverage: leverage,
+                        amount: amount,
+                        open_price: price,
+                        status: 1,
+                    });
+                    await newOrder.save();
+
                     let oldAmount = reverseOreders.amount;
                     let oldUsedUSDT = reverseOreders.usedUSDT;
                     let oldPNL = reverseOreders.pnl;
@@ -1002,6 +1077,29 @@ const addFutureOrder = async (req, res) => {
                     return res.json({ status: "success", data: reverseOreders });
                     return;
                 } else {
+
+                    //create a new order
+                    let newOrder = new FutureOrder({
+                        pair_id: getPair._id,
+                        pair_name: getPair.name,
+                        type: type,
+                        future_type: future_type,
+                        method: method,
+                        user_id: user_id,
+                        fee: fee,
+                        usedUSDT: usedUSDT - fee,
+                        required_margin: usedUSDT - fee,
+                        isolated: 0.0,
+                        sl: req.body.sl ?? 0,
+                        tp: req.body.tp ?? 0,
+                        leverage: leverage,
+                        amount: amount,
+                        open_price: price,
+                        status: 1,
+                    });
+
+                    await newOrder.save();
+
                     //Tersine ise
                     let checkusdt =
                         (reverseOreders.usedUSDT + reverseOreders.pnl) *
