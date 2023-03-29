@@ -83,7 +83,6 @@ const changeCrossLeverage = async (req, res) => {
     ).exec();
 
 
-    console.log(FutureOrderCheck);
 
 
     if (FutureOrderCheck == null || FutureOrderCheck.length == 0) {
@@ -96,9 +95,6 @@ const changeCrossLeverage = async (req, res) => {
         });
 
     }
-
-
-
 
 
 
@@ -126,7 +122,7 @@ const changeCrossLeverage = async (req, res) => {
         }
 
         //now we need to update the user balance
-        let newBalance = UserBalance.amount - (newUsedUSDT + usedUSDT);
+        let newBalance = balance - newUsedUSDT + usedUSDT;
 
 
         balance = newBalance;
@@ -184,8 +180,7 @@ const changeCrossLeverage = async (req, res) => {
     return res.json({
         status: "success",
         message: "Leverage changed successfully",
-        showableMessage: "Leverage changed successfully",
-        order: true
+        showableMessage: "Leverage changed successfully"
     });
 
 
