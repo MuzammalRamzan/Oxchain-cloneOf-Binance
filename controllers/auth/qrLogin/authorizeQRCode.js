@@ -1,8 +1,8 @@
 const QRCodes = require('../../../models/QRCodes');
 var authFile = require("../../../auth.js");
 
-const validateQRCode = async (req, res) => {
-    const { qrToken, api_key} = req.body;
+const authorizeQRCode = async (req, res) => {
+    const { qrToken, api_key, user_id} = req.body;
     var result = await authFile.apiKeyChecker(api_key);
     if (result === true) {
         let key = req.headers["key"];
@@ -26,17 +26,19 @@ const validateQRCode = async (req, res) => {
         if(!qrToken){
             return res.json({ status: "fail", message: "Required QR Token" });
         }
+        if(!user_id){
+            return res.json({ status: "fail", message: "User Id is Required" });
+        }
         const findqrToken = await QRCodes.findOne({qrToken: qrToken}).exec();
         if(findqrToken){
-            //prepare data
-            let data = {
-                ip: findqrToken.ip??null,
-                location: findqrToken.location??null,
-                device: (findqrToken.deviceName??null) + " (" + (findqrToken.deviceOs??null) +")"
-            };
-            findqrToken.status = 1;
+            findqrToken.status = 2;
             findqrToken.save();
-            return  res.json({ status: "success", message: "QR Token Found", data: data });
+
+            //put authorization code here.
+
+
+
+            return  res.json({ status: "success", message: "Authorization Success" });
         }else{
             return res.json({ status: "fail", message: "Invalid QR Token" });
         }
@@ -45,4 +47,4 @@ const validateQRCode = async (req, res) => {
 	    return res.status(500).json({ message: 'Internal server error' });
     }
 };
-module.exports = validateQRCode;
+module.exports = authorizeQRCode;
