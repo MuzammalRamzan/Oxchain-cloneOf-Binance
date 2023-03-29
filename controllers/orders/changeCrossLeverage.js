@@ -86,10 +86,14 @@ const changeCrossLeverage = async (req, res) => {
 
 
     if (!FutureOrderCheck) {
+
         return res.json({
-            status: "failed",
-            message: "No open orders"
+            status: "success",
+            message: "Leverage changed successfully",
+            showableMessage: "Leverage changed successfully",
+            order: false
         });
+
     }
 
 
@@ -179,7 +183,8 @@ const changeCrossLeverage = async (req, res) => {
     return res.json({
         status: "success",
         message: "Leverage changed successfully",
-        showableMessage: "Leverage changed successfully"
+        showableMessage: "Leverage changed successfully",
+        order: true
     });
 
 
