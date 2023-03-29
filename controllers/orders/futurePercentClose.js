@@ -63,7 +63,7 @@ const FuturePercentClose = async (req, res) => {
 
 
             let updateOrder = await FutureOrder.findOneAndUpdate(
-                { user_id: user_id, _id: order._id },
+                { user_id: user_id, _id: order._id, method: 'market', status: 0 },
                 {
                     status: 1,
                 }
