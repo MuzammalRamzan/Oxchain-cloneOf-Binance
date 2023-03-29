@@ -108,7 +108,7 @@ const changeCrossLeverage = async (req, res) => {
             return res.json({
                 status: "failed",
                 message: "Not enough balance to change leverage",
-                alert: "Balance is not enough to change leverage"
+                showableMessage: "Balance is not enough to change leverage"
             });
         }
 
@@ -127,7 +127,7 @@ const changeCrossLeverage = async (req, res) => {
         return res.json({
             status: "failed",
             message: "Not enough balance to change leverage",
-            alert: "Balance is not enough to change leverage"
+            showableMessage: "Balance is not enough to change leverage"
         });
     }
     else {
@@ -171,7 +171,7 @@ const changeCrossLeverage = async (req, res) => {
     return res.json({
         status: "success",
         message: "Leverage changed successfully",
-        alert: "Leverage changed successfully"
+        showableMessage: "Leverage changed successfully"
     });
 
 
