@@ -121,10 +121,8 @@ const changeCrossLeverage = async (req, res) => {
             });
         }
 
-        let pnl = order.pnl;
-
         //now we need to update the user balance
-        let newBalance = balance - newUsedUSDT + usedUSDT - order.fee + pnl;
+        let newBalance = balance - newUsedUSDT + usedUSDT;
 
 
         balance = newBalance;
