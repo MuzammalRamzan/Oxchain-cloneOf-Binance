@@ -85,6 +85,14 @@ const changeCrossLeverage = async (req, res) => {
 
 
 
+    if (!FutureOrderCheck) {
+        return res.json({
+            status: "failed",
+            message: "No open orders"
+        });
+    }
+
+
 
 
 
