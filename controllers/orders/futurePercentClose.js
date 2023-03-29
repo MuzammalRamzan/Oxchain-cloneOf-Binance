@@ -60,7 +60,7 @@ const FuturePercentClose = async (req, res) => {
         console.log("%100, kapanıyor");
         order.status = 1;
         await order.save();
-        wallet.amount = splitLengthNumber(parseFloat(wallet.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl)));
+        wallet.amount = parseFloat(wallet.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl));
         await wallet.save();
         let leverage = order.leverage;
         let type = order.type == "buy" ? "sell" : "buy";
@@ -98,13 +98,13 @@ const FuturePercentClose = async (req, res) => {
         let orderTotal = order.usedUSDT + order.pnl;
         let totalUSDT = parseFloat(orderTotal) * percent / 100.0;
         let totalAmount = parseFloat(order.amount) * percent / 100.0;
-        order.usedUSDT = splitLengthNumber(order.usedUSDT + order.pnl);
+        order.usedUSDT = order.usedUSDT + order.pnl;
         order.pnl = 0;
-        order.usedUSDT = splitLengthNumber(parseFloat(totalUSDT));
-        order.amount = splitLengthNumber(parseFloat(order.amount) - totalAmount);
+        order.usedUSDT = parseFloat(totalUSDT);
+        order.amount = parseFloat(order.amount) - totalAmount;
         await order.save();
         console.log(wallet.amount, (orderTotal - totalUSDT));
-        wallet.amount = splitLengthNumber(parseFloat(wallet.amount) + (orderTotal - totalUSDT));
+        wallet.amount = parseFloat(wallet.amount) + (orderTotal - totalUSDT);
         await wallet.save();
 
         const fee = (order.usedUSDT + pnl) * leverage * (type == 'buy' ? 0.03 : 0.06) / 100.0;
