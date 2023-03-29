@@ -57,6 +57,7 @@ const FuturePercentClose = async (req, res) => {
 
     percent = parseFloat(percent);
     if (percent == 100) {
+        console.log("%100, kapanıyor");
         order.status = 1;
         await order.save();
         wallet.amount = splitLengthNumber(parseFloat(wallet.amount) + (parseFloat(order.usedUSDT) + parseFloat(order.pnl)));
@@ -93,6 +94,7 @@ const FuturePercentClose = async (req, res) => {
 
     } else {
 
+        console.log("%100 değil, kısmi kapanıyor");
         let orderTotal = order.usedUSDT + order.pnl;
         let totalUSDT = parseFloat(orderTotal) * percent / 100.0;
         let totalAmount = parseFloat(order.amount) * percent / 100.0;

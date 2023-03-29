@@ -269,6 +269,8 @@ const EditSpotOrder = require('./controllers/orders/editSpotOrder.js'); //added
 const LimitFutureOrder = require('./controllers/orders/limitFutureOrder.js'); //added
 const cancelAllFutureLimit = require('./controllers/orders/cancelAllFutureLimit.js');
 
+const changeCrossLeverage = require('./controllers/orders/changeCrossLeverage.js'); //added
+
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -306,6 +308,7 @@ route.get('/', (req, res) => {
 });
 
 //QR Login Auth
+route.post('/changeCrossLeverage', changeCrossLeverage);
 route.post('/generateQRCode', generateQRCode);
 route.post('/validateQRCode', validateQRCode);
 route.post('/authorizeQRCode', authorizeQRCode);
@@ -499,7 +502,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) {}
+	async function (req, res) { }
 );
 route.post('/deleteOneStepWithdraw', deleteOneStepWithdraw);
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
