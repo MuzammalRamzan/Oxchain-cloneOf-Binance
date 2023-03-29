@@ -107,7 +107,8 @@ const changeCrossLeverage = async (req, res) => {
         if (balance < newUsedUSDT - usedUSDT) {
             return res.json({
                 status: "failed",
-                message: "Not enough balance to change leverage"
+                message: "Not enough balance to change leverage",
+                alert: "Balance is not enough to change leverage"
             });
         }
 
@@ -125,7 +126,8 @@ const changeCrossLeverage = async (req, res) => {
     if (balance < 0) {
         return res.json({
             status: "failed",
-            message: "Not enough balance to change leverage"
+            message: "Not enough balance to change leverage",
+            alert: "Balance is not enough to change leverage"
         });
     }
     else {
@@ -168,7 +170,8 @@ const changeCrossLeverage = async (req, res) => {
 
     return res.json({
         status: "success",
-        message: "Leverage changed successfully"
+        message: "Leverage changed successfully",
+        alert: "Leverage changed successfully"
     });
 
 
