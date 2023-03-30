@@ -124,7 +124,7 @@ const FuturePercentClose = async (req, res) => {
 
             await newOrder.save();
 
-            res.send({ status: 'success', data: 'OK' });
+            return res.send({ status: 'success', data: 'OK' });
 
 
         } else {
@@ -166,7 +166,7 @@ const FuturePercentClose = async (req, res) => {
 
             await newOrder.save();
 
-            res.send({ status: 'success', data: 'OK' });
+            return res.send({ status: 'success', data: 'OK' });
         }
 
 
