@@ -6,6 +6,7 @@ const Connection = require('./Connection');
 var bodyParser = require('body-parser');
 const multer = require('multer');
 const express = require('express');
+var queue = require('express-queue');
 var cors = require('cors');
 
 //express-fileupload
@@ -147,6 +148,9 @@ const getBonusHistory = require('./controllers/bonus/getBonusHistory.js'); //add
 const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
+
+//route use queue
+route.use(queue({ activeLimit: 1, queuedLimit: -1 }));
 const session = require('express-session');
 const addMarginCrossOrder = require('./controllers/orders/addMarginCrossOrder.js');
 const addMarginIsolatedOrder = require('./controllers/orders/addMarginIsolatedOrder.js');
