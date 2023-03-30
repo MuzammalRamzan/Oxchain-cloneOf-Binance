@@ -39,12 +39,12 @@ const FuturePercentClose = async (req, res) => {
         let user_id = req.body.user_id;
         let order_id = req.body.order_id;
         let percent = req.body.percent ?? 0.0;
-
+        console.log(user_id, order_id, percent);
         let order = await FutureOrder.findOne({ _id: order_id, user_id: user_id, method: 'market', status: 0 });
         let binanceData = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace('/', ''));
 
         if(binanceData != null){
-            
+
             let order = await FutureOrder.findOne({ _id: order_id, user_id: user_id, method: 'market', status: 0 });
             if (order == null) {
                 res.json({ status: 'fail', message: 'Order not found' });
@@ -61,16 +61,22 @@ const FuturePercentClose = async (req, res) => {
             let marketPrice = parseFloat(binanceData.data.data.ask);
             console.log(order.amount, percent, marketPrice);
             percent = parseFloat(percent);
+
+
             if (percent == 100) {
+
+
                 console.log("%100, kapanıyor");
                 let updateOrder = await FutureOrder.findOneAndUpdate(
                     { user_id: user_id, _id: order._id, method: 'market', status: 0 },
                     { status: 1 }
                 );
+
                 if (updateOrder == null) {
                     return res.json({ status: 'fail', message: 'Order not found', alert: "Order not found" });
-                }
-                else {
+                
+                } else {
+
                     console.log("Order updated");
                     let updateWallet = await FutureWalletModel.findOneAndUpdate(
                         { user_id: user_id, _id: wallet._id },
