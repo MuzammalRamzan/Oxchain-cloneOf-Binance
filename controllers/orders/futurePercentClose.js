@@ -71,7 +71,7 @@ const FuturePercentClose = async (req, res) => {
                     { user_id: user_id, _id: order._id, method: 'market', status: 0 },
                     { status: 1 }
                 );
-
+                console.log(updateOrder);
                 if (updateOrder == null) {
                     return res.json({ status: 'fail', message: 'Order not found', alert: "Order not found" });
                 
