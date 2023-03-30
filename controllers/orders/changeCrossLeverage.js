@@ -25,19 +25,31 @@ const changeCrossLeverage = async (req, res) => {
         return res.json({ status: "fail", message: "invalid_params (key, user id, device_id)" });
     }
 
+    /*
     let checkKey = await authFile.verifyKey(key, req.body.device_id, req.body.user_id);
 
 
     if (checkKey === "expired") {
-        return res.json({ status: "fail", message: "key_expired" });
+        // return res.json({ status: "fail", message: "key_expired" });
     }
 
     if (!checkKey) {
         return res.json({ status: "fail", message: "invalid_key" });
     }
+    */
 
 
     //find user balance
+
+
+    if (parseFloat(leverage) < 1 || parseFloat(leverage) > 100) {
+        return res.json({
+            status: "failed",
+            message: "Leverage must be between 1 and 100",
+            showableMessage: "Leverage must be between 1 and 100"
+        });
+    }
+
     let UserBalance = await FutureWalletModel.findOne(
         {
             user_id: user_id
@@ -140,8 +152,10 @@ const changeCrossLeverage = async (req, res) => {
         });
     }
     else {
+
         //update the user balance
-        await FutureWalletModel.updateOne(
+
+        let updateWallet = await FutureWalletModel.updateOne(
             {
                 user_id: user_id
             },
@@ -150,20 +164,32 @@ const changeCrossLeverage = async (req, res) => {
             }
         ).exec();
 
+        if (!updateWallet) {
+            console.log("Error updating wallet");
+            return res.json({
+                status: "failed",
+                message: "Error updating wallet"
+            });
+        }
+
+
         for (var j = 0; j < FutureOrderCheck.length; j++) {
 
-
-
             let orderFix = FutureOrderCheck[j];
+
 
             let usedUSDTFix = orderFix.usedUSDT;
             let sizeFix = usedUSDTFix * orderFix.leverage;
 
+
             //to keep the size the same, we need to calculate the new usedUSDT
             let newUsedUSDTFix = sizeFix / leverage;
 
-            //now we need to update the order
-            await FutureOrderModel.updateOne(
+
+            newUsedUSDTFix = parseFloat(newUsedUSDTFix.toFixed(8));
+
+
+            let updateOrder = await FutureOrderModel.updateOne(
                 {
                     _id: orderFix._id
                 },
@@ -173,6 +199,15 @@ const changeCrossLeverage = async (req, res) => {
                     required_margin: newUsedUSDTFix,
                 }
             ).exec();
+
+            if (!updateOrder) {
+                console.log("Error updating order");
+                return res.json({
+                    status: "failed",
+                    message: "Error updating order"
+                });
+            }
+
         }
     }
 
