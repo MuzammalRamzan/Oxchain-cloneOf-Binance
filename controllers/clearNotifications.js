@@ -1,4 +1,4 @@
-const NotificationsModel = require("../models/Notifications");
+const NotificationsModel = require("../models/UserNotifications");
 const authFile = require("../auth.js");
 
 const clearNotifications = async (req, res) => {
