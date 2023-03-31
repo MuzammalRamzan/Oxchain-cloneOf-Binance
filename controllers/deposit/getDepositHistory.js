@@ -14,32 +14,32 @@ const GetDepositHistory = async (req, res) => {
 		});
 	}
 
-	let key = req.headers['key'];
+	// let key = req.headers['key'];
 
-	if (!key) {
-		return res.json({ status: 'fail', message: 'key_not_found' });
-	}
+	// if (!key) {
+	// 	return res.json({ status: 'fail', message: 'key_not_found' });
+	// }
 
-	if (!req.body.device_id || !req.body.user_id) {
-		return res.json({
-			status: 'fail',
-			message: 'invalid_params (key, user id, device_id)',
-		});
-	}
+	// if (!req.body.device_id || !req.body.user_id) {
+	// 	return res.json({
+	// 		status: 'fail',
+	// 		message: 'invalid_params (key, user id, device_id)',
+	// 	});
+	// }
 
-	let checkKey = await authFile.verifyKey(
-		key,
-		req.body.device_id,
-		req.body.user_id
-	);
+	// let checkKey = await authFile.verifyKey(
+	// 	key,
+	// 	req.body.device_id,
+	// 	req.body.user_id
+	// );
 
-	if (checkKey === 'expired') {
-		return res.json({ status: 'fail', message: 'key_expired' });
-	}
+	// if (checkKey === 'expired') {
+	// 	return res.json({ status: 'fail', message: 'key_expired' });
+	// }
 
-	if (!checkKey) {
-		return res.json({ status: 'fail', message: 'invalid_key' });
-	}
+	// if (!checkKey) {
+	// 	return res.json({ status: 'fail', message: 'invalid_key' });
+	// }
 
 	let { user_id } = req.body;
 
@@ -56,7 +56,7 @@ const GetDepositHistory = async (req, res) => {
 	if (user_id) {
 		query.user_id = user_id;
 	}
-	if (coinInfo._id) {
+	if (coinInfo) {
 		query.coin_id = coinInfo._id;
 	}
 	if (status) {
