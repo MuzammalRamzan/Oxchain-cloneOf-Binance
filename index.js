@@ -276,6 +276,10 @@ const changeCrossLeverage = require('./controllers/orders/changeCrossLeverage.js
 
 const getLeverage = require('./controllers/orders/getLeverage.js'); //added
 
+const addTestNofitication = require('./controllers/users/addTestNotification.js'); //added
+
+
+
 route.use(
 	session({
 		secret: 'oxhain_login_session',
@@ -313,6 +317,7 @@ route.get('/', (req, res) => {
 });
 
 //QR Login Auth
+route.post('/addTestNotification', addTestNofitication);
 route.post('/changeCrossLeverage', changeCrossLeverage);
 route.post('/getLeverage', getLeverage);
 route.post('/generateQRCode', generateQRCode);
