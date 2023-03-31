@@ -39,9 +39,12 @@ const deleteActiveDevice = async function (req, res) {
     }).exec();
 
     if (device != null) {
-      device.status = 0;
-      device.save();
-
+      //remove device
+      await Device.deleteOne({
+        user_id: req.body.user_id,
+        deviceId: req.body.device_id,
+        status: 1,
+      }).exec();
 
       res.json({ status: "success", message: "device_deleted" });
     } else {
