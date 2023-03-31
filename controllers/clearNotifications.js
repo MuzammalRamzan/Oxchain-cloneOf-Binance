@@ -39,7 +39,7 @@ const clearNotifications = async (req, res) => {
       message: "Please provide user id",
     });
 
-  await NotificationsModel.deleteMany({ userId });
+  await NotificationsModel.deleteMany({ user_id: userId });
   return res.json({ status: "success", message: "cleared all user notifications!" });
 };
 
