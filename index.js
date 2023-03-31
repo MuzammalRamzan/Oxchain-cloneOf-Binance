@@ -149,8 +149,7 @@ const upload = multer();
 route.use(bodyParser.json());
 route.use(bodyParser.urlencoded({ extended: true }));
 
-//route use queue
-route.use(queue({ activeLimit: 1, queuedLimit: -1 }));
+//route.use(queue({ activeLimit: 1, queuedLimit: -1 }));
 const session = require('express-session');
 const addMarginCrossOrder = require('./controllers/orders/addMarginCrossOrder.js');
 const addMarginIsolatedOrder = require('./controllers/orders/addMarginIsolatedOrder.js');
