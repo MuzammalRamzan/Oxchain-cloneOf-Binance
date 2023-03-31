@@ -205,7 +205,7 @@ async function OxhainTasks() {
             }
             console.log(trx_balance, fee, deposit.address);
             let _amount = parseFloat(deposit.amount) * 1000000
-            var getWalletInfo = await WalletAddress.findOne({ wallet_address: deposit.address });
+             getWalletInfo = await WalletAddress.findOne({ wallet_address: deposit.address });
             let usdt_transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { to: process.env.TRCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: _amount });
             if (usdt_transaction.data.status == 'success') {
               deposit.move_to_admin = true;
