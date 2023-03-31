@@ -139,6 +139,9 @@ OxhainTasks();
 async function OxhainTasks() {
   await Connection.connection();
   //ADMIN TRANSFER
+  var  getTRXData = null;
+  var getWalletInfo = null;
+  
   schedule.scheduleJob('*/3 * * * *', async function () {
     let deposits = await Deposits.find({ move_to_admin: false, netowrk_id: { $exists: true } });
 
@@ -190,7 +193,7 @@ async function OxhainTasks() {
             let feeData = depositFeeReq.data;
             if (feeData.status != 'success') continue;
             let fee = feeData.data;
-            let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: deposit.address });
+            getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: deposit.address });
             if (getTRXData.data.status != 'success') {
               console.log(getTRXData.data);
               continue;
@@ -202,7 +205,7 @@ async function OxhainTasks() {
             }
             console.log(trx_balance, fee, deposit.address);
             let _amount = parseFloat(deposit.amount) * 1000000
-            let getWalletInfo = await WalletAddress.findOne({ wallet_address: deposit.address });
+            getWalletInfo = await WalletAddress.findOne({ wallet_address: deposit.address });
             let usdt_transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { to: process.env.TRCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: _amount });
             if (usdt_transaction.data.status == 'success') {
               deposit.move_to_admin = true;
@@ -212,7 +215,7 @@ async function OxhainTasks() {
               mailer.sendMail("support@oxhain.com", "Deposit moved to admin", deposit.tx_id + "  data moved to admin with " + usdt_transaction.data.data + " hash code ");
             }
 
-            let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: depo.address });
+            getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: depo.address });
             if (getTRXData.data.status == 'success') {
               let balance = getTRXData.data.data;
               if (balance < 12000000) {
