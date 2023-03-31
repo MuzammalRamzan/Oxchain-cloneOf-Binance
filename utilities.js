@@ -62,6 +62,10 @@ async function addDeposit(
             }
           );
           let userInfo = await User.findOne({ _id: user_id });
+          if(userInfo == null || userInfo.email == null) {
+            console.log(user_id, " bulunamadı");
+            return;
+          }
           let networkInfo = await Network.findOne({ _id: networkId });
           let html = "<p>New deposit added</p>\n<b>User :</b> " + userInfo.email + "</b><br>";
           html += "<b>Coin : </b> " + coin_name + " (" + networkInfo.symbol + ")<br>";

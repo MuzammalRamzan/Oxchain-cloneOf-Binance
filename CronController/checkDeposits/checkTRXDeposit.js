@@ -62,7 +62,6 @@ const checkTRXDeposit = async () => {
 							tx_id = item.hash;
 							amount = contractData.amount;
 
-							if (amount < 13000000) continue;
 
 							deposit = await Deposits.findOne({
 								user_id: user_id,

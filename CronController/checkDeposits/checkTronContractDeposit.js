@@ -36,6 +36,7 @@ const checkTronContractDeposit = async() => {
       for (let j = 0; j < checkRequest.data.data.length; j++) {
         let item = checkRequest.data.data[j];
         if(item.to.toLowerCase() != address.toLocaleLowerCase()) continue;
+        let fromAddress = item.from;
         tx_id = checkRequest.data.data[j].transaction_id;
         amount = checkRequest.data.data[j].value / 1000000;
 
@@ -49,6 +50,9 @@ const checkTronContractDeposit = async() => {
           if (getContractInfo == null) continue;
           let coinInfo = await CoinList.findOne({ _id: getContractInfo.coin_id });
           if (coinInfo == null) continue;
+
+         
+
           utilities.addDeposit(
             user_id,
             coinInfo.symbol,
@@ -56,7 +60,8 @@ const checkTronContractDeposit = async() => {
             address,
             tx_id,
             getContractInfo.coin_id,
-            networkId
+            networkId,
+            fromAddress
           );
         }
       }

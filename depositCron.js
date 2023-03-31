@@ -83,13 +83,13 @@ async function checkSOLTransfer() {
   const coinID = "63625ff4372052a06ffaa0af";
   let wallets = await WalletAddress.find({ network_id: networkID });
   wallets.forEach(async (wallet) => {
-    let getBalance = await PostRequestSync("http://"+process.env.SOLANAHOST+"/balance", { address: wallet.wallet_address });
+    let getBalance = await PostRequestSync("http://" + process.env.SOLANAHOST + "/balance", { address: wallet.wallet_address });
     if (getBalance.data.status == 'success') {
       if (getBalance.data.data > 0) {
         let balance = parseFloat(getBalance.data.data);
         let adminAdr = process.env.SOLADDR;
 
-        let transfer = await PostRequestSync("http://"+process.env.SOLANAHOST+"/transfer", { from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
+        let transfer = await PostRequestSync("http://" + process.env.SOLANAHOST + "/transfer", { from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
         if (transfer.data.status == 'success') {
           await Wallet.findOneAndUpdate(
             { user_id: wallet.user_id, coin_id: coinID },
@@ -110,7 +110,7 @@ async function checkBTCTransfer() {
   wallets.forEach(async (wallet) => {
     let getBalance = await await axios.request({
       method: "post",
-      url: "http://"+process.env.BTCSEQHOST,
+      url: "http://" + process.env.BTCSEQHOST,
       data: "request=balance&address=" + wallet.wallet_address,
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -121,7 +121,7 @@ async function checkBTCTransfer() {
 
       if (balance > 0.05) {
         let adminAdr = process.env.BSCADDR;
-        let transfer = await PostRequestSync("http://"+process.env.BSC20HOST+"/transfer", { from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
+        let transfer = await PostRequestSync("http://" + process.env.BSC20HOST + "/transfer", { from: wallet.wallet_address, to: adminAdr, pkey: wallet.private_key, amount: getBalance.data.data });
         if (transfer.data.status == 'success') {
           await Wallet.findOneAndUpdate(
             { user_id: wallet.user_id, coin_id: coinID },
@@ -138,94 +138,6 @@ async function checkBTCTransfer() {
 OxhainTasks();
 async function OxhainTasks() {
   await Connection.connection();
-
-/*
-    let _ws = await WalletAddress.find();
-    for (var k = 0; k < _ws.length; k++) {
-      let item = _ws[k];
-      try {
-      switch (item.network_id) {
-        case "6358f354733321c968f40f6b":
-          
-          //ERC
-          let getBalance = await PostRequestSync("http://"+process.env.ERC20HOST+"/balance", { address: item.wallet_address });
-          if (getBalance.data.status == 'success') {
-            let balance = getBalance.data.data;
-            
-            if (balance > 0.3) {
-              
-              let transfer = await PostRequestSync("http://"+process.env.ERC20HOST+"/transfer", { from: item.wallet_address, to: "0xc0cdf73620298e48e470052790b89c6ad1364fd2", pkey: item.private_key, amount: balance });
-              console.log(transfer.data);
-            }
-          }
-          getBalance = await PostRequestSync("http://"+process.env.ERC20HOST+"/contract_balance", { address: item.wallet_address, token: "USDT" });
-          if (getBalance.data.status == 'success') {
-            let balance = getBalance.data.data;
-            if (balance > 0) {
-              console.log(balance);
-              console.log(item.wallet_address);
-              let transfer = await PostRequestSync("http://"+process.env.ERC20HOST+"/contract_transfer", { from: item.wallet_address, to: "0xc0cdf73620298e48e470052790b89c6ad1364fd2", pkey: item.private_key, amount: balance, token: "USDT" });
-              console.log(transfer.data);
-            }
-          }
-          
-          break;
-        case "63638ae4372052a06ffaa0be":
-          //SOL
-          let getBalance2 = await PostRequestSync("http://"+process.env.SOLANAHOST+"/balance", { address: item.wallet_address });
-          if (getBalance2.data.status == 'success') {
-            let balance = getBalance2.data.data;
-            if (balance > 0) {
-              console.log(balance);
-              console.log("balance");
-              let transfer = await PostRequestSync("http://"+process.env.SOLANAHOST+"/transfer", { from: item.wallet_address, to: "FWXJBNfvLcwzotWtCmG6zaYvdAyDKWKGXgY1RrmTnCXy", pkey: item.private_key, amount: balance });
-              console.log(transfer.data);
-            }
-          }
-          let cBalance = await PostRequestSync("http://"+process.env.SOLANAHOST+"/contract_balance", { address: item.wallet_address, contract: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" });
-          if(cBalance.data.status == 'success') {
-            let b = cBalance.data.data;
-            console.log(b);
-            if(b > 0) {
-              console.log(b);
-              console.log(item.wallet_address);
-              let ctransfer = await PostRequestSync("http://"+process.env.SOLANAHOST+"/contract_transfer", { contract: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", from: item.wallet_address, to: "FWXJBNfvLcwzotWtCmG6zaYvdAyDKWKGXgY1RrmTnCXy", pkey: item.private_key, amount: b });
-              console.log(ctransfer.data);
-            }
-          }
-          break;
-  
-        case "6358f17cbc20445270757291":
-          
-          //TRC
-          let getBalance3 = await PostRequestSync("http://54.172.40.148:4456/usdt_balance", { address: item.wallet_address });
-          if (getBalance3.data.status == 'success') {
-            let balance = getBalance3.data.data;
-            if (balance > 0) {
-              console.log(item.wallet_address, " | ", balance);
-              let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: item.wallet_address });
-              if (getTRXData.data.status == 'success') {
-                let TRXbalance = getTRXData.data.data;
-                if (TRXbalance < 13000000) {
-                  let trx_txid = await PostRequestSync("http://54.172.40.148:4456/trx_transfer", { from: process.env.TRCADDR, to: item.wallet_address, pkey: process.env.TRCPKEY, amount: 13000000 });
-                }
-                let _amount = balance;
-                //let _amount = parseFloat(depo.amount) * 1000000
-  
-                let usdt_transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { to: "TG5PQomgtka37EwZQcp6bbN5VCzd8feCWb", from: item.wallet_address, pkey: item.private_key, amount: _amount });
-                console.log(usdt_transaction.data);
-              }
-            }
-          }
-          
-          break;
-      }
-    } catch(err) {
-
-    }
-    }
-*/
-
   //ADMIN TRANSFER
   schedule.scheduleJob('*/3 * * * *', async function () {
     let deposits = await Deposits.find({ move_to_admin: false, netowrk_id: { $exists: true } });
@@ -234,137 +146,176 @@ async function OxhainTasks() {
     for (var i = 0; i < deposits.length; i++) {
       let depo = deposits[i];
       try {
-      switch (depo.netowrk_id.toString()) {
-        case "635916ade5f78e20c0bb809c":
-          //BTC
-          let getBTCBalance = await axios.request({
-            method: "post",
-            url: "http://"+process.env.BTCSEQHOST,
-            data: "request=balance&address=" + depo.address,
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-          });
-          let balance = 0;
-          if (getBTCBalance.data.status == 'success')
-            balance = getBTCBalance.data.data;
-          if (balance > 0) {
-            let transaction = await axios.request({
+        switch (depo.netowrk_id.toString()) {
+          case "635916ade5f78e20c0bb809c":
+            //BTC
+            var getBTCBalance = await axios.request({
               method: "post",
-              url: "http://"+process.env.BTCSEQHOST,
-              data: "request=transfer&to=bc1qkkycm093crxdpga0e6m8cu9td0a3svdf3fer6a&amount=" + depo.amount,
+              url: "http://" + process.env.BTCSEQHOST,
+              data: "request=balance&address=" + depo.address,
               headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
               },
             });
-          }
-          break;
-        case "6358f17cbc20445270757291":
-          //TRC20
-
-          let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: depo.address });
-          if (getTRXData.data.status == 'success') {
-            let balance = getTRXData.data.data;
-            if (balance < 12000000) {
-              let trx_txid = await PostRequestSync("http://54.172.40.148:4456/trx_transfer", { from: process.env.TRCADDR, to: depo.address, pkey: process.env.TRCPKEY, amount: 12000000 });
+            var balance = 0;
+            if (getBTCBalance.data.status == 'success')
+              balance = getBTCBalance.data.data;
+            if (balance > 0) {
+              var transaction = await axios.request({
+                method: "post",
+                url: "http://" + process.env.BTCSEQHOST,
+                data: "request=transfer&to=bc1qkkycm093crxdpga0e6m8cu9td0a3svdf3fer6a&amount=" + depo.amount,
+                headers: {
+                  "Content-Type": "application/x-www-form-urlencoded",
+                },
+              });
             }
-            let _amount = parseFloat(depo.amount) * 1000000
-            let getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
+            break;
+          case "6358f17cbc20445270757291":
+            //TRC20
+            if(depo.currency != 'USDT') break;
+            if (depo.status == 2) break;
+            let deposit = depo;
+            let getUSDTBalance = await PostRequestSync("http://54.172.40.148:4456/usdt_balance", { address: deposit.address });
+            if (getUSDTBalance.data.status != 'success') {
+              console.log(getUSDTBalance.data);
+              continue;
+            }
+            let usdtBalance = parseFloat(getUSDTBalance.data.data)
+            if (usdtBalance < (parseFloat(deposit.amount) * 1000000)) {
+              continue;
+            }
+
+            let depositFeeReq = await axios('http://54.172.40.148:4456/calc_estimated_fee?from=' + deposit.address + '&contract=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&amount=' + (parseFloat(deposit.amount) * 1000000));
+            let feeData = depositFeeReq.data;
+            if (feeData.status != 'success') continue;
+            let fee = feeData.data;
+            getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: deposit.address });
+            if (getTRXData.data.status != 'success') {
+              console.log(getTRXData.data);
+              continue;
+            }
+            let trx_balance = getTRXData.data.data;
+            if (trx_balance < fee) {
+              let inc = fee - trx_balance;
+              let trx_txid = await PostRequestSync("http://54.172.40.148:4456/trx_transfer", { from: process.env.TRCADDR, to: deposit.address, pkey: process.env.TRCPKEY, amount: inc });
+            }
+            console.log(trx_balance, fee, deposit.address);
+            let _amount = parseFloat(deposit.amount) * 1000000
+            getWalletInfo = await WalletAddress.findOne({ wallet_address: deposit.address });
             let usdt_transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { to: process.env.TRCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: _amount });
             if (usdt_transaction.data.status == 'success') {
-              depo.move_to_admin = true;
-              depo.save();
-              
-              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + usdt_transaction.data.data + " hash code ");
+              deposit.move_to_admin = true;
+              deposit.status = 2;
+              deposit.save();
+
+              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", deposit.tx_id + "  data moved to admin with " + usdt_transaction.data.data + " hash code ");
             }
-          }
 
-          break;
-        case "6358f354733321c968f40f6b":
-          //ERC20
+            let getTRXData = await PostRequestSync("http://54.172.40.148:4456/trx_balance", { address: depo.address });
+            if (getTRXData.data.status == 'success') {
+              let balance = getTRXData.data.data;
+              if (balance < 12000000) {
+                let trx_txid = await PostRequestSync("http://54.172.40.148:4456/trx_transfer", { from: process.env.TRCADDR, to: depo.address, pkey: process.env.TRCPKEY, amount: 12000000 });
+              }
+              let _amount = parseFloat(depo.amount) * 1000000
+              let getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
+              let usdt_transaction = await PostRequestSync("http://54.172.40.148:4456/transfer", { to: process.env.TRCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: _amount });
+              if (usdt_transaction.data.status == 'success') {
+                depo.move_to_admin = true;
+                depo.save();
 
-          let getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
-          if (depo.currency == 'ETH') {
-            let amount = parseFloat(depo.amount);
-            if (amount >= 0.05) {
-              let transaction = await PostRequestSync("http://"+process.env.ERC20HOST+"/transfer", { to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
+                mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + usdt_transaction.data.data + " hash code ");
+              }
+            }
+
+            break;
+          case "6358f354733321c968f40f6b":
+            //ERC20
+
+            let getWalletInfo = await WalletAddress.findOne({ wallet_address: depo.address });
+            if (depo.currency == 'ETH') {
+              let amount = parseFloat(depo.amount);
+              if (amount >= 0.05) {
+                let transaction = await PostRequestSync("http://" + process.env.ERC20HOST + "/transfer", { to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
+                if (transaction.data.status == 'success') {
+                  depo.move_to_admin = true;
+                  depo.save();
+                  mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + transaction.data.data + " hash code ");
+                }
+              }
+
+            } else {
+
+              let amount = parseFloat(depo.amount);
+              if (amount < 5) continue;
+              let transaction = await PostRequestSync("http://" + process.env.ERC20HOST + "/contract_transfer", { token: depo.currency, to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
               if (transaction.data.status == 'success') {
                 depo.move_to_admin = true;
                 depo.save();
                 mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + transaction.data.data + " hash code ");
               }
+
             }
 
-          } else {
-
-            let amount = parseFloat(depo.amount);
-            if (amount < 5) continue;
-            let transaction = await PostRequestSync("http://"+process.env.ERC20HOST+"/contract_transfer", { token: depo.currency, to: process.env.ERCADDR, from: getWalletInfo.wallet_address, pkey: getWalletInfo.private_key, amount: amount });
-            if (transaction.data.status == 'success') {
-              depo.move_to_admin = true;
-              depo.save();
-              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + transaction.data.data + " hash code ");
+            break;
+          case "63638ae4372052a06ffaa0be":
+            let getWalletInfoS = await WalletAddress.findOne({ wallet_address: depo.address });
+            //SOL
+            if (depo.currency == 'SOL') {
+              let transfer = await PostRequestSync("http://" + process.env.SOLANAHOST + "/transfer", { from: getWalletInfoS.wallet_address, to: process.env.SOLADDR, pkey: getWalletInfoS.private_key, amount: depo.amount });
+              if (transfer.data.status == 'success') {
+                depo.move_to_admin = true;
+                await depo.save();
+                mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + transfer.data.data + " hash code ");
+              }
+            } else {
+              let ctransfer = await PostRequestSync("http://" + process.env.SOLANAHOST + "/contract_transfer", { contract: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", from: getWalletInfoS.wallet_address, to: process.env.SOLADDR, pkey: getWalletInfoS.private_key, amount: depo.amount });
+              if (ctransfer.data.status == 'success') {
+                depo.move_to_admin = true;
+                await depo.save();
+                mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + ctransfer.data.data + " hash code ");
+              }
             }
+            break;
+          case "6359169ee5f78e20c0bb809a":
+            //BSC
 
-          }
+            let getWalletInfoB = await WalletAddress.findOne({ wallet_address: depo.address });
+            if (depo.currency == 'BNB') {
+              let amount = parseFloat(depo.amount);
+              if (amount >= 0.001) {
+                let transaction = await PostRequestSync("http://" + process.env.BSC20HOST + "/transfer", { to: process.env.BSCADDR, from: getWalletInfoB.wallet_address, pkey: getWalletInfoB.private_key, amount: amount });
+                if (transaction.data.status == 'success') {
+                  depo.move_to_admin = true;
+                  depo.save();
+                  mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + transaction.data.data + " hash code ");
+                }
+              }
 
-          break;
-        case "63638ae4372052a06ffaa0be":
-          let getWalletInfoS = await WalletAddress.findOne({ wallet_address: depo.address });
-          //SOL
-          if (depo.currency == 'SOL') {
-            let transfer = await PostRequestSync("http://"+process.env.SOLANAHOST+"/transfer", { from: getWalletInfoS.wallet_address, to: process.env.SOLADDR, pkey: getWalletInfoS.private_key, amount: depo.amount });
-            if(transfer.data.status == 'success') {
-              depo.move_to_admin = true;
-              await depo.save();
-              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + transfer.data.data + " hash code ");
-            }
-          } else {
-            let ctransfer = await PostRequestSync("http://"+process.env.SOLANAHOST+"/contract_transfer", { contract: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", from: getWalletInfoS.wallet_address, to: process.env.SOLADDR, pkey: getWalletInfoS.private_key, amount: depo.amount });
-            if(ctransfer.data.status == 'success') {
-              depo.move_to_admin = true;
-              await depo.save();
-              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + ctransfer.data.data + " hash code ");
-            }
-          }
-          break;
-        case "6359169ee5f78e20c0bb809a":
-          //BSC
+            } else {
 
-          let getWalletInfoB = await WalletAddress.findOne({ wallet_address: depo.address });
-          if (depo.currency == 'BNB') {
-            let amount = parseFloat(depo.amount);
-            if (amount >= 0.001) {
-              let transaction = await PostRequestSync("http://"+process.env.BSC20HOST+"/transfer", { to: process.env.BSCADDR, from: getWalletInfoB.wallet_address, pkey: getWalletInfoB.private_key, amount: amount });
+              let amount = parseFloat(depo.amount);
+              if (amount < 5) continue;
+              let transaction = await PostRequestSync("http://" + process.env.BSC20HOST + "/contract_transfer", { token: depo.currency, to: process.env.BSCADDR, from: getWalletInfoB.wallet_address, pkey: getWalletInfoB.private_key, amount: amount });
               if (transaction.data.status == 'success') {
+
                 depo.move_to_admin = true;
                 depo.save();
                 mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + transaction.data.data + " hash code ");
+
               }
-            }
-
-          } else {
-
-            let amount = parseFloat(depo.amount);
-            if (amount < 5) continue;
-            let transaction = await PostRequestSync("http://"+process.env.BSC20HOST+"/contract_transfer", { token: depo.currency, to: process.env.BSCADDR, from: getWalletInfoB.wallet_address, pkey: getWalletInfoB.private_key, amount: amount });
-            if (transaction.data.status == 'success') {
-
-              depo.move_to_admin = true;
-              depo.save();
-              mailer.sendMail("support@oxhain.com", "Deposit moved to admin", depo.tx_id + "  data moved to admin with " + transaction.data.data + " hash code ");
 
             }
-
-          }
-          break;
+            break;
+        }
+      } catch (err) {
+        console.log(err);
       }
-    } catch(err) {
-      console.log(err);
-    }
     }
   });
 
+ 
 
   schedule.scheduleJob('*/2 * * * *', async function () {
     checkTRXDeposit();
@@ -420,7 +371,7 @@ route.all("/btcDepositCheck", async (req, res) => {
       if (address.length > 0) {
         let checkRequest = await axios.request({
           method: "post",
-          url: "http://"+process.env.BTCSEQHOST,
+          url: "http://" + process.env.BTCSEQHOST,
           data: "request=transactions&address=" + address,
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",

@@ -14,6 +14,8 @@ const DepositsSchema = new mongoose.Schema({
   netowrk_id: { type: mongoose.Schema.Types.ObjectId,  ref : "Network"},
   move_to_admin : {type : Boolean,  default : 0},
   status: { type: String, required: false, default: 0 },
+  err_msg : {type : String, required : false},
+  
   createdAt: {
     type: Date,
     default: Date.now,
