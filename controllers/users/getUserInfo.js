@@ -51,18 +51,21 @@ const getUserInfo = async function (req, res) {
       if (verificationId == null) {
         verificationStatus = "Not Verified";
       }
-      
-      if (verificationId.status == 1 || verificationId.status == "1") {
-        verificationStatus = "Verified";
+      else {
+        if (verificationId.status == 1 || verificationId.status == "1") {
+          verificationStatus = "Verified";
+        }
+
+        if (verificationId.status == 2 || verificationId.status == "2") {
+          verificationStatus = "Rejected";
+        }
+
+        if (verificationId.status == 0 || verificationId.status == "0") {
+          verificationStatus = "Pending";
+        }
       }
 
-      if (verificationId.status == 2 || verificationId.status == "2") {
-        verificationStatus = "Rejected";
-      }
 
-      if (verificationId.status == 0 || verificationId.status == "0") {
-        verificationStatus = "Pending";
-      }
 
       if (status == 1) {
         res.json({
