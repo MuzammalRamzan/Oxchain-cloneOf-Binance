@@ -250,7 +250,10 @@ async function fillMarketPrices() {
 async function checkRoomOrJoin(process, socket, id) {
     if (id.indexOf('-') <= 0) return;
     let split = id.split('-');
+    if(split.length < 2) return;
     let uid = split[0];
+    if(uid == null) return;
+
     if (socket.rooms.has(id) == false) {
         socket.join(id);
     }

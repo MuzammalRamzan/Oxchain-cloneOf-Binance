@@ -25,6 +25,8 @@ async function SpotFundsCalculate(wallets) {
             usdtPrice = amountData * parseFloat(btcPriceData.data.data.ask);
         }
         else {
+        
+            console.log("http://global.oxhain.com:8542/price?symbol="+coinInfo.symbol.toUpperCase()+"USDT")
             let priceData = await axios("http://global.oxhain.com:8542/price?symbol="+coinInfo.symbol.toUpperCase()+"USDT");
 
             btcPrice = amountData * parseFloat(priceData.data.data.ask) / parseFloat(btcPriceData.data.data.ask);
