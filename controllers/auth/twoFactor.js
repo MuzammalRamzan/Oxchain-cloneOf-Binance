@@ -47,6 +47,15 @@ const twoFactor = async function (req, res) {
         status: "completed"
       }).exec();
 
+      let deviceCheckForKey = await Device.findOne({
+        user_id: user._id,
+        deviceId: req.body.device_id,
+      }).exec();
+
+      if (deviceCheckForKey == null) {
+        return res.json({ status: "fail", message: "device_not_found", showableMessage: "Device not found" });
+      }
+
 
       let deviceCheck = await Device.findOne({
         user_id: user._id,
@@ -146,21 +155,27 @@ const twoFactor = async function (req, res) {
         'Successfully logged in from ' + ip
       );
 
+      let deviceKey = "";
+      if (deviceCheck == null) {
+        deviceKey = deviceCheckForKey.key;
+      } else {
+        deviceKey = deviceCheck.key;
+      }
 
 
 
       return res.json({
         status: "success", data: {
-          key: deviceCheck.key
+          key: deviceKey,
         }, showableMessage: "Login Success"
       });
 
 
     } else {
-      res.json({ status: "fail", message: "login_failed", showableMessage: "Login Failed" });
+      return res.json({ status: "fail", message: "login_failed", showableMessage: "Login Failed" });
     }
   } else {
-    res.json({ status: "fail", message: "403 Forbidden", showableMessage: "Forbidden 403" });
+    return res.json({ status: "fail", message: "403 Forbidden", showableMessage: "Forbidden 403" });
   }
 };
 
