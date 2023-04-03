@@ -141,6 +141,7 @@ route.use(bodyParser.json({ limit: '50mb' }));
 route.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 const topReferrals = require('./controllers/referrals/topReferrals.js'); //added
+const getReferralHistory = require('./controllers/referrals/getReferralHistory.js');
 const getReferral = require('./controllers/referrals/getReferral.js'); //added
 const addBonus = require('./controllers/bonus/addBonus.js'); //added
 const addBonusType = require('./controllers/bonusTypes/addBonusType.js'); //added
@@ -513,7 +514,7 @@ route.all(
 route.all(
 	'/enableWithdrawalWhiteList',
 	upload.none(),
-	async function (req, res) { }
+	async function (req, res) {}
 );
 route.post('/deleteOneStepWithdraw', deleteOneStepWithdraw);
 route.post('/editOneStepWithdraw', editOneStepWithdraw);
@@ -539,6 +540,7 @@ route.all('/getCoinNetworks', upload.none(), depositCoinNetworkOptions);
 route.all('/getCoinInfo', upload.none(), getCoinInfo);
 route.all('/getPairDetails', upload.none(), getPairDetails);
 //Referral Modules
+route.all('/getReferralHistory', upload.none(), getReferralHistory);
 route.all('/getReferral', upload.none(), getReferral);
 route.all('/topReferrals', upload.none(), topReferrals);
 route.all('/myReferrals', upload.none(), myReferrals);
