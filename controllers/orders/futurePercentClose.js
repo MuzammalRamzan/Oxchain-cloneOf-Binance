@@ -41,9 +41,13 @@ const FuturePercentClose = async (req, res) => {
         let percent = req.body.percent ?? 0.0;
         console.log(user_id, order_id, percent);
         let order = await FutureOrder.findOne({ _id: order_id, user_id: user_id, method: 'market', status: 0 });
+        if (order == null) {
+            console.log("Order not found");
+            return res.json({ status: 'fail', message: 'Order not found', showableMessage: 'Order not found' });
+        }
         let binanceData = await axios("http://global.oxhain.com:8542/price?symbol=" + order.pair_name.replace('/', ''));
 
-        if(binanceData != null){
+        if (binanceData != null) {
 
             let order = await FutureOrder.findOne({ _id: order_id, user_id: user_id, method: 'market', status: 0 });
             if (order == null) {
@@ -74,7 +78,7 @@ const FuturePercentClose = async (req, res) => {
                 console.log(updateOrder);
                 if (updateOrder == null) {
                     return res.json({ status: 'fail', message: 'Order not found', alert: "Order not found" });
-                
+
                 } else {
 
                     console.log("Order updated");
@@ -82,7 +86,7 @@ const FuturePercentClose = async (req, res) => {
                         { user_id: user_id, _id: wallet._id },
                         { $inc: { amount: (parseFloat(order.usedUSDT) + parseFloat(order.pnl)) } }
                     );
-    
+
                     if (updateWallet == null) {
                         return res.json({ status: 'fail', message: 'Wallet not found', alert: "Wallet not found" });
                     }
@@ -166,7 +170,7 @@ const FuturePercentClose = async (req, res) => {
 
                 return res.send({ status: 'success', data: 'OK' });
             }
-        }   
+        }
     }
     catch (err) {
         console.log(err);
