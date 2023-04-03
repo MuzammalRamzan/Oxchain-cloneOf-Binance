@@ -53,6 +53,7 @@ const addOrders = async function (req, res) {
     }
 
 
+
     let key = req.headers["key"];
 
     if (!key) {
@@ -74,6 +75,8 @@ const addOrders = async function (req, res) {
       return res.json({ status: "fail", message: "invalid_key" });
     }
 
+
+
     let percent = req.body.percent;
     let amount = req.body.amount;
 
@@ -94,7 +97,6 @@ const addOrders = async function (req, res) {
     let url =
       'http://global.oxhain.com:8542/price?symbol=' + urlPair;
     let result = await axios(url);
-    console.log(result.data.data)
     var price = result.data.data.ask;
 
     let target_price = req.body.target_price ?? 0.0;
@@ -117,9 +119,11 @@ const addOrders = async function (req, res) {
       });
     }
 
+
     //MARKET ORDERS
     if (req.body.type == 'market') {
       if (req.body.method == "buy") {
+
         return await AddMarketBuyOrder(req, res, getPair, price);
       } else if (req.body.method == "sell") {
         return await AddMarketSellOrder(req, res, getPair, price);

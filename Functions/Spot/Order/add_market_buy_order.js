@@ -16,9 +16,11 @@ const AddMarketBuyOrder = async (req, res, getPair, price, api_result, apiReques
     }).exec();
     let balance = towallet.amount;
     amount = (balance * percent / 100.0) / price;
-    if(amount <= 0) {
+    if (amount <= 0) {
         return res.json({ status: "fail", message: "Invalid amount" });
     }
+
+
     let total = amount * price;
 
     if (balance < total) {
@@ -66,5 +68,5 @@ const AddMarketBuyOrder = async (req, res, getPair, price, api_result, apiReques
 }
 function splitLengthNumber(q) {
     return q.toString().length > 10 ? parseFloat(q.toString().substring(0, 10)) : q;
-  }
+}
 module.exports = AddMarketBuyOrder;
