@@ -26,14 +26,14 @@ async function main() {
     }
 
     let request = { $and: [{ status: { $gt: 0 } }, { $or: [{ type: "limit" }, { type: "stop_limit" }] }] };
-        process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
+    process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
 
 
     var b_ws = new WebSocket("wss://global.oxhain.com:7010");
 
 
     b_ws.onopen = (event) => {
-        b_ws.send(JSON.stringify({ page: "all_prices" }));
+        b_ws.send(JSON.stringify({ page: "spot_all_prices" }));
     };
 
     // Reconnect connection when disconnect connection
@@ -41,11 +41,20 @@ async function main() {
         //b_ws.send(JSON.stringify(initSocketMessage));
     };
     b_ws.onmessage = async function (event) {
-        const data = JSON.parse(event.data);
+        let data = JSON.parse(event.data);
+
+        data = data.content;
+
         if (data != null && data != "undefined") {
-            for (key in data) {
-                MarketData[key] = data[key];
+
+            for (var k = 0; k < data.length; k++) {
+                let item = data[k];
+                let symbol = item.symbol;
+                let bid = item.bid;
+                let ask = item.ask;
+                MarketData[symbol] = { bid: bid, ask: ask };
             }
+
 
             let orders = await Orders.find(request).exec();
             await Run(orders);
@@ -55,11 +64,14 @@ async function main() {
 
 }
 
+
 async function Run(orders) {
 
 
     for (var k = 0; k < orders.length; k++) {
+
         let order = orders[k];
+
         let price = MarketData[order.pair_name.replace('/', '')];
         if (price == null) continue;
         price = price.ask;
@@ -67,6 +79,7 @@ async function Run(orders) {
         let target_price = parseFloat(order.target_price);
 
         if (order.type == 'limit') {
+
             if (order.status == 0) continue;
             if (order.method == 'buy') {
                 if (price <= target_price) {
