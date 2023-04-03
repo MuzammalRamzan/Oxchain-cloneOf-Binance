@@ -10,7 +10,7 @@ async function SpotFundsCalculate(wallets) {
         let wallet = wallets[i];
         if(wallet.amount <= 0) continue;
         let coinInfo = await CoinList.findOne({ _id: wallet.coin_id });
-        if(coinInfo.symbol == 'MARGIN') continue;
+        if(coinInfo.symbol == 'MARGIN' || coinInfo.symbol == 'USDT' ) continue;
  
         let btcPrice = 0;
         let usdtPrice = 0;
