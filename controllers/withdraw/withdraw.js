@@ -2,6 +2,7 @@ const Wallet = require("../../models/Wallet");
 const NotificationTokens = require("../../models/NotificationTokens");
 const Withdraws = require("../../models/Withdraw");
 var notifications = require("../../notifications.js");
+const fs = require('fs');
 var authFile = require("../../auth.js");
 const axios = require("axios");
 const Network = require("../../models/Network");
@@ -140,12 +141,13 @@ const withdraw = async (req, res) => {
     res.json({ status: "fail", message: "invalid_amount" });
     return;
   }
-  
+
+  console.log("asdasd")
   if (balance < amount) {
     res.json({ status: "fail", message: "invalid_balance" });
     return;
   }
-  
+
   let oneStepWithdrawCheck = await OneStepWithdrawModel.findOne({
     user_id: user_id,
   }).exec();
@@ -175,6 +177,7 @@ const withdraw = async (req, res) => {
     }
 
 
+    console.log(price)
     let amountUSDT = parseFloat(amount) * parseFloat(price);
 
     if (amountUSDT > maxAmount) {
@@ -203,7 +206,7 @@ const withdraw = async (req, res) => {
       }
 
       else {
-
+        console.log("http://global.oxhain.com:8542/price?symbol=" + coinInfo.symbol + "USDT")
         let getPrice = await axios("http://global.oxhain.com:8542/price?symbol=" + coinInfo.symbol + "USDT");
         price = getPrice.data.data.ask;
       }
@@ -278,7 +281,8 @@ const withdraw = async (req, res) => {
 
   let isError = false;
   let tx_id = "";
-  
+
+  console.log(networkInfo.symbol)
   switch (networkInfo.symbol) {
     case "TRC":
       transaction = await PostRequestSync("http://" + process.env.TRC20HOST + "/transfer", { from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000).toString() });
@@ -313,8 +317,28 @@ const withdraw = async (req, res) => {
           tx_id = transaction.data.data;
         }
       }
-
       break;
+
+    case "SOL":
+      console.log("bura")
+      coinInfo = await CoinList.findOne({ _id: coin_id });
+      console.log(coinInfo)
+      let adminPkey = JSON.parse(fs.readFileSync('./solpkey.json'));
+      
+      console.log(adminPkey)
+      if (coinInfo.symbol == 'SOL') {
+        transaction = await PostRequestSync("http://" + process.env.SOLANAHOST + "/transfer", { from: process.env.SOLADDR, to: to, pkey: adminPkey, amount: amount });
+        
+        if (transaction.data.status != 'success') {
+          res.json({ status: "fail", message: "unknow error" });
+          isError = true;
+        } else {
+          isError = false;
+          tx_id = transaction.data.data;
+        }
+      }
+      break;
+
     case "ERC":
       coinInfo = await CoinList.findOne({ _id: coin_id });
       if (coinInfo.symbol == 'ETH') {

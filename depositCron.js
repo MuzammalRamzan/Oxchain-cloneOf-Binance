@@ -138,6 +138,7 @@ async function checkBTCTransfer() {
 OxhainTasks();
 async function OxhainTasks() {
   await Connection.connection();
+
   //ADMIN TRANSFER
   var  getTRXData = null;
   var getWalletInfo = null;
@@ -317,8 +318,6 @@ async function OxhainTasks() {
       }
     }
   });
-
- 
 
   schedule.scheduleJob('*/2 * * * *', async function () {
     checkTRXDeposit();

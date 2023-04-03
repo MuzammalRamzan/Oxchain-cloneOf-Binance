@@ -3,12 +3,14 @@ const CoinList = require("../../models/CoinList");
 
 async function SpotAssetsCalculate(wallets) {
     try {
+        console.log("ab");
         let coinList = await CoinList.find({});
+        console.log(coinList)
 
         let totalBtcValue = 0.0;
         let totalUsdValue = 0.0;
         let priceData = await axios("http://global.oxhain.com:8542/price?symbol=BTCUSDT");
-        
+        console.log(priceData.data)
         let btcPrice = priceData.data.data.ask;
         let walletData = {};
 
@@ -36,7 +38,7 @@ async function SpotAssetsCalculate(wallets) {
                 totalUsdValue += walletData[value].amount;
             } else {
                 priceData = await axios("http://global.oxhain.com:8542/price?symbol=" + value + "USDT");
-                
+                console.log(priceData.data)
                 let price = parseFloat(priceData.data.data.ask);
 
                 if (price > 0) {
@@ -64,7 +66,12 @@ async function SpotAssetsCalculate(wallets) {
         }); 
         */
     } catch (err) {
-        
+    console.log(err);
+    return {
+        wallets: 0,
+        totalUSD: 0,
+        totalBTC: 0,
+    }    
     }
     return {
         wallets: 0,
