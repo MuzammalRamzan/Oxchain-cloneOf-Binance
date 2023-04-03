@@ -52,6 +52,15 @@ const GetWithdrawHistory = async (req, res) => {
 	let coinInfo = await CoinList.findOne({
 		symbol: coin,
 	}).exec();
+
+	if (coinInfo == null) {
+		return res.json({
+			status: 'fail',
+			message: 'coin not found',
+			showableMessage: 'Coin not found',
+		});
+	}
+
 	let query = {};
 	if (user_id) {
 		query.user_id = user_id;
