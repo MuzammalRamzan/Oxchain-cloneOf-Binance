@@ -140,11 +140,12 @@ const withdraw = async (req, res) => {
     res.json({ status: "fail", message: "invalid_amount" });
     return;
   }
+  
   if (balance < amount) {
     res.json({ status: "fail", message: "invalid_balance" });
     return;
   }
-
+  
   let oneStepWithdrawCheck = await OneStepWithdrawModel.findOne({
     user_id: user_id,
   }).exec();
@@ -162,8 +163,7 @@ const withdraw = async (req, res) => {
 
 
 
-
-    if (CoinList.symbol == "USDT") {
+    if (checkCoin.symbol == "USDT") {
       price = 1;
     }
     else {
@@ -278,7 +278,7 @@ const withdraw = async (req, res) => {
 
   let isError = false;
   let tx_id = "";
-  /*
+  
   switch (networkInfo.symbol) {
     case "TRC":
       transaction = await PostRequestSync("http://" + process.env.TRC20HOST + "/transfer", { from: process.env.TRCADDR, to: to, pkey: process.env.TRCPKEY, amount: (amount * 1000000).toString() });
@@ -360,8 +360,6 @@ const withdraw = async (req, res) => {
       isError = true;
       break;
   }
-
-  */
 
 
   let data = new Withdraws({
