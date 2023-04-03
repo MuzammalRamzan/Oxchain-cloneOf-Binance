@@ -140,7 +140,7 @@ const withdraw = async (req, res) => {
     res.json({ status: "fail", message: "invalid_amount" });
     return;
   }
-  if (balance <= amount) {
+  if (balance < amount) {
     res.json({ status: "fail", message: "invalid_balance" });
     return;
   }
