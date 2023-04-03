@@ -6,12 +6,12 @@ async function SpotFundsCalculate(wallets) {
     
     let btcPriceData = await axios("http://global.oxhain.com:8542/price?symbol=BTCUSDT")
     for (var i = 0; i < wallets.length; i++) {
-
+        
         let wallet = wallets[i];
         if(wallet.amount <= 0) continue;
         let coinInfo = await CoinList.findOne({ _id: wallet.coin_id });
-
-
+        if(coinInfo.symbol == 'MARGIN') continue;
+ 
         let btcPrice = 0;
         let usdtPrice = 0;
 
