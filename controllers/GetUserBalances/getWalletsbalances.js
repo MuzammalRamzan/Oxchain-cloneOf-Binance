@@ -28,7 +28,7 @@ const getWalletsBalance = async (req, res) => {
 	}
 
 	if (!req.body.device_id || !req.body.userId) {
-		return res.json({ status: "fail", message: "invalid_params (key, user id, device_id)" });
+		return res.json({ status: "fail", message: "invalid_params" });
 	}
 
 	let checkKey = await authFile.verifyKey(key, req.body.device_id, req.body.userId);

@@ -18,7 +18,7 @@ const getTransactions = async function (req, res) {
 	if (!req.body.device_id || !req.body.user_id) {
 		return res.json({
 			status: 'fail',
-			message: 'invalid_params (key, user id, device_id)',
+			message: 'invalid_params',
 		});
 	}
 
