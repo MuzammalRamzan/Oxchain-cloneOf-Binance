@@ -16,27 +16,29 @@ const getDirectMemberGraph = async (req, res) => {
 			});
 		}
 
-		let key = req.headers["key"];
+		let key = req.headers['key'];
 
 		if (!key) {
-			return res.json({ status: "fail", message: "key_not_found" });
+			return res.json({ status: 'fail', message: 'key_not_found' });
 		}
 
 		if (!req.body.device_id || !req.body.user_id) {
-			return res.json({ status: "fail", message: "invalid_params" });
+			return res.json({ status: 'fail', message: 'invalid_params' });
 		}
 
-		let checkKey = await authFile.verifyKey(key, req.body.device_id, req.body.user_id);
+		let checkKey = await authFile.verifyKey(
+			key,
+			req.body.device_id,
+			req.body.user_id
+		);
 
-
-		if (checkKey === "expired") {
-			return res.json({ status: "fail", message: "key_expired" });
+		if (checkKey === 'expired') {
+			return res.json({ status: 'fail', message: 'key_expired' });
 		}
 
 		if (!checkKey) {
-			return res.json({ status: "fail", message: "invalid_key" });
+			return res.json({ status: 'fail', message: 'invalid_key' });
 		}
-
 
 		const userRef = await UserRef.findOne({ user_id });
 		// Get the level 1 referrals
