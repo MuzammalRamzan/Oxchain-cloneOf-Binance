@@ -17,18 +17,14 @@ const uploadRankAwardImages = async (req, res) => {
 			});
 		}
 		// Validate request body
-		if (
-			!req.body.file ||
-			!req.body.level
-		) {
+		if (!req.body.file || !req.body.level) {
 			return res.status(400).json({
 				status: 'fail',
 				message: 'Bad Request',
-				showableMessage:
-					'file & level are required fields',
+				showableMessage: 'file & level are required fields',
 			});
 		}
-		// Create new news rank award image 
+		// Create new news rank award image
 		const rankAwards = new RankAwards({
 			imageUrl: result,
 			level: req.body.level,
